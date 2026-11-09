@@ -1,0 +1,71 @@
+{
+  "id": "mp-05-file-ends",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "The End of the File",
+  "intro": "The watchtower stands at the very end of the plains. Reach the first letter of tower on the last line.",
+  "startLines": [
+    "field",
+    "river",
+    "bridge",
+    "hill",
+    "tower"
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 4,
+        "col": 0
+      }
+    }
+  ],
+  "teaches": [
+    "motion.file"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq",
+    "motion.hjkl",
+    "motion.word",
+    "motion.WORD",
+    "motion.line"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "W",
+    "B",
+    "E",
+    "0",
+    "^",
+    "$",
+    "gg",
+    "G"
+  ],
+  "mustUse": [
+    "motion.file"
+  ],
+  "par": 1,
+  "solution": [
+    "G"
+  ],
+  "hints": [
+    "The tower is on the final line of the buffer.",
+    "There is a motion that jumps straight to the last line.",
+    "Press uppercase G to reach the tower."
+  ]
+}

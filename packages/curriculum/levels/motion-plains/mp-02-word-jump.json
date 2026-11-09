@@ -1,0 +1,59 @@
+{
+  "id": "mp-02-word-jump",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "Jumping Words",
+  "intro": "Words are scattered across the plains. Jump to the lost key at the start of key.",
+  "startLines": [
+    "field river key",
+    "The gate is locked.",
+    "A sheep looks innocent."
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 0,
+        "col": 12
+      }
+    }
+  ],
+  "teaches": [
+    "motion.word"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq",
+    "motion.hjkl"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e"
+  ],
+  "mustUse": [
+    "motion.word"
+  ],
+  "par": 2,
+  "solution": [
+    "w",
+    "w"
+  ],
+  "hints": [
+    "Cross the field one word at a time.",
+    "w jumps to the start of the next word.",
+    "Press w twice to land on key."
+  ]
+}
