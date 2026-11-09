@@ -156,6 +156,8 @@ export function wordMotion(state: EngineState, count: number, kind: WordKind, bi
   const keepPastEnd = kind === 'w' && operatorPending;
   const col = keepPastEnd ? walker.cursor.col : Math.min(walker.cursor.col, lastCol(line));
   const target = { line: walker.cursor.line, col };
-  if (samePosition(target, state.cursor)) return null;
+  // `de` on the final character still deletes it, so a stationary `e` stays valid for operators.
+  const keepStationary = kind === 'e' && operatorPending && line.length > 0;
+  if (samePosition(target, state.cursor) && !keepStationary) return null;
   return charwise(target, kind === 'e');
 }

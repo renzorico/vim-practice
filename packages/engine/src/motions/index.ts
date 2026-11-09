@@ -59,8 +59,10 @@ const firstNonBlank: MotionFn = (state) =>
   charwise({ line: state.cursor.line, col: firstNonBlankCol(lineAt(state, state.cursor.line)) }, false);
 
 const lineEnd: MotionFn = (state, count) => {
-  const line = state.cursor.line + count - 1;
-  if (line > state.lines.length - 1) return null;
+  const lastLine = state.lines.length - 1;
+  // `2$` on the last line fails; a count past the end otherwise clamps to the last line.
+  if (count > 1 && state.cursor.line >= lastLine) return null;
+  const line = Math.min(lastLine, state.cursor.line + count - 1);
   return charwise({ line, col: lastCol(lineAt(state, line)) }, true, { desiredCol: END_OF_LINE_COL });
 };
 
@@ -95,7 +97,8 @@ function findInLine(state: EngineState, count: number, command: FindCommand, cha
   }
   if (till) col -= step;
   const target = { line: state.cursor.line, col };
-  return charwise(target, true, isRepeat ? undefined : { lastFind: { command, char } });
+  // Backward finds are exclusive (`dF,` keeps the starting character); forward ones are inclusive.
+  return charwise(target, forward, isRepeat ? undefined : { lastFind: { command, char } });
 }
 
 function makeFindMotion(command: FindCommand): MotionFn {
@@ -121,7 +124,26 @@ const BRACKET_PAIRS: Readonly<Record<string, { readonly match: string; readonly 
   '}': { match: '{', forward: false },
 };
 
+/**
+ * True when `col` sits inside a double-quoted string. Like Vim, quotes are ignored on lines
+ * with an odd number of unescaped quotes.
+ */
+function isInsideQuotes(line: string, col: number): boolean {
+  let total = 0;
+  let before = 0;
+  for (let index = 0; index < line.length; index += 1) {
+    if (line[index] === '\\') {
+      index += 1;
+    } else if (line[index] === '"') {
+      total += 1;
+      if (index < col) before += 1;
+    }
+  }
+  return total % 2 === 0 && before % 2 === 1;
+}
+
 function findMatchingBracket(lines: readonly string[], from: Position, same: string, other: string, forward: boolean): Position | null {
+  const startInQuotes = isInsideQuotes(lines[from.line] ?? '', from.col);
   let depth = 0;
   let line = from.line;
   let col = from.col;
@@ -134,6 +156,8 @@ function findMatchingBracket(lines: readonly string[], from: Position, same: str
       col = forward ? 0 : (lines[line] ?? '').length - 1;
     }
     const char = lines[line]?.[col];
+    if (char !== same && char !== other) continue;
+    if (isInsideQuotes(lines[line] ?? '', col) !== startInQuotes) continue;
     if (char === same) depth += 1;
     else if (char === other) {
       if (depth === 0) return { line, col };
@@ -181,7 +205,8 @@ function moveParagraph(state: EngineState, count: number, forward: boolean): Mot
   const text = lineAt(state, current);
   const reachedEnd = forward && current === lastLine && text.length > 0;
   const target = { line: current, col: reachedEnd ? text.length - 1 : 0 };
-  if (samePosition(target, state.cursor)) return null;
+  // An operator on the final character still has a range (`d}` there deletes it).
+  if (samePosition(target, state.cursor) && !(reachedEnd && isOperatorPending(state))) return null;
   return charwise(target, reachedEnd);
 }
 

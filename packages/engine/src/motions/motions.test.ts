@@ -90,7 +90,8 @@ describe('0 ^ $', () => {
   it('$ sets desiredCol to end of line', () => expect(run('$', ['abc'], [0, 0])?.statePatch?.desiredCol).toBe(Number.MAX_SAFE_INTEGER));
   it('$ on an empty line stays at 0', () => expect(land('$', [''], [0, 0])).toBe('0,0'));
   it('2$ goes to the end of the next line', () => expect(land('$', ['ab', 'cdef'], [0, 0], { count: 2 })).toBe('1,3'));
-  it('count past the last line fails', () => expect(land('$', ['ab', 'cd'], [0, 0], { count: 3 })).toBeNull());
+  it('count past the last line clamps to the last line', () => expect(land('$', ['ab', 'cd'], [0, 0], { count: 3 })).toBe('1,1'));
+  it('counted $ on the last line fails', () => expect(land('$', ['ab', 'cd'], [1, 0], { count: 2 })).toBeNull());
   it('0 sets desiredCol to 0', () => expect(run('0', ['abc'], [0, 2])?.statePatch?.desiredCol).toBe(0));
 });
 
@@ -155,6 +156,10 @@ describe('e', () => {
   it('stops at punctuation', () => expect(land('e', ['foo.bar'], [0, 0])).toBe('0,2'));
   it('counts words', () => expect(land('e', ['a bb ccc'], [0, 0], { count: 3 })).toBe('0,7'));
   it('fails at the end of the buffer', () => expect(land('e', ['foo'], [0, 2])).toBeNull());
+  it('stays valid for an operator on the final character (de)', () => {
+    expect(land('e', ['foo'], [0, 2], { mode: 'operator-pending' })).toBe('0,2');
+    expect(run('e', ['foo'], [0, 2], { mode: 'operator-pending' })).toMatchObject({ inclusive: true });
+  });
   it('a huge count ends on the last character', () => expect(land('e', ['a b c'], [0, 0], { count: 99 })).toBe('0,4'));
   it('is inclusive', () => expect(run('e', ['foo bar'], [0, 0])).toMatchObject({ inclusive: true }));
 });
@@ -183,6 +188,15 @@ describe('f F t T ; ,', () => {
   it('f fails when the char is missing', () => expect(land('f', line, [0, 0], { arg: 'z' })).toBeNull());
   it('f does not match the current character', () => expect(land('f', line, [0, 1], { arg: ',' })).toBe('0,3'));
   it('f does not cross lines', () => expect(land('f', ['abc', 'xyz'], [0, 0], { arg: 'x' })).toBeNull());
+  it('F and T are exclusive, f and t inclusive', () => {
+    expect(run('F', line, [0, 6], { arg: ',' })).toMatchObject({ inclusive: false });
+    expect(run('T', line, [0, 6], { arg: ',' })).toMatchObject({ inclusive: false });
+    expect(run('f', line, [0, 0], { arg: ',' })).toMatchObject({ inclusive: true });
+  });
+  it('a backward repeat is exclusive', () => {
+    const patch = { lastFind: { command: 'f', char: ',' } as const };
+    expect(run(',', line, [0, 5], { patch })).toMatchObject({ inclusive: false });
+  });
   it('F searches backward', () => expect(land('F', line, [0, 6], { arg: ',' })).toBe('0,5'));
   it('2F finds the second match backward', () => expect(land('F', line, [0, 6], { arg: ',', count: 2 })).toBe('0,3'));
   it('t lands one column before the match', () => expect(land('t', ['abc,d'], [0, 0], { arg: ',' })).toBe('0,2'));
@@ -240,12 +254,23 @@ describe('%', () => {
   it('N% goes to a percentage of the file', () => expect(land('%', ['1', '2', '3', '4'], [0, 0], { count: 50 })).toBe('1,0'));
 });
 
+describe('% quotes', () => {
+  it('ignores a bracket inside a string when starting outside', () => expect(land('%', ['(")")'], [0, 0])).toBe('0,4'));
+  it('matches inside the string when starting inside it', () => expect(land('%', ['("(x)")'], [0, 2])).toBe('0,4'));
+  it('ignores escaped quotes', () => expect(land('%', ['(\\")")'], [0, 0])).toBe('0,3'));
+  it('ignores quotes on lines with an odd number of them', () => expect(land('%', ['(")'], [0, 0])).toBe('0,2'));
+});
+
 describe('{ }', () => {
   const text = ['a', 'b', '', 'c', 'd', '', '', 'e'];
   it('} goes to the next empty line', () => expect(land('}', text, [0, 0])).toBe('2,0'));
   it('} from an empty line goes to the following paragraph end', () => expect(land('}', text, [2, 0])).toBe('5,0'));
   it('} skips consecutive empty lines first', () => expect(land('}', text, [5, 0])).toBe('7,0'));
   it('2} jumps two paragraphs', () => expect(land('}', text, [0, 0], { count: 2 })).toBe('5,0'));
+  it('} on the final character stays valid for an operator (d})', () => {
+    expect(land('}', ['a', 'bcd'], [1, 2], { mode: 'operator-pending' })).toBe('1,2');
+    expect(land('}', ['a', 'bcd'], [1, 2])).toBeNull();
+  });
   it('} at the last paragraph goes to the last character', () => expect(land('}', text, [7, 0])).toBeNull());
   it('} on the last paragraph lands on the final character', () => expect(land('}', ['a', '', 'bcd'], [2, 0])).toBe('2,2'));
   it('} to the buffer end is inclusive', () => expect(run('}', ['a', '', 'bcd'], [2, 0])).toMatchObject({ inclusive: true }));
@@ -273,6 +298,17 @@ describe('findPattern', () => {
   it('is case sensitive', () => expect(findPattern(['Foo foo'], { line: 0, col: 0 }, 'foo', true)).toEqual({ line: 0, col: 4 }));
   it('whole-word pattern ignores substrings', () => expect(findPattern(['foobar foo'], { line: 0, col: 0 }, '\\<foo\\>', true)).toEqual({ line: 0, col: 7 }));
   it('whole-word backward', () => expect(findPattern(['foo foobar foo'], { line: 0, col: 11 }, '\\<foo\\>', false)).toEqual({ line: 0, col: 0 }));
+});
+
+describe('search repetition cycles', () => {
+  it('a huge count terminates and lands on the right match', () => {
+    const lines = ['a a a'];
+    const patch = { lastSearch: { pattern: 'a', forward: true } };
+    expect(land('n', lines, [0, 0], { patch, count: 1_000_000_001 })).toBe(land('n', lines, [0, 0], { patch, count: 2 }));
+  });
+  it('a single match cycles back to itself', () => {
+    expect(land('n', ['x foo y'], [0, 2], { patch: { lastSearch: { pattern: 'foo', forward: true } }, count: 999_999_999 })).toBe('0,2');
+  });
 });
 
 describe('n N', () => {

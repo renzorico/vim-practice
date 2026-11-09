@@ -69,6 +69,10 @@ export const findPattern: FindPatternFn = (lines, from, pattern, forward) => {
   return null;
 };
 
+/**
+ * Repeats a search `count` times. Wrapping makes results cycle, so a huge count is reduced
+ * modulo the cycle length instead of looping.
+ */
 function repeatSearch(
   lines: readonly string[],
   from: Position,
@@ -76,13 +80,23 @@ function repeatSearch(
   pattern: string,
   forward: boolean,
 ): Position | null {
+  const visited: Position[] = [];
+  const seenAt = new Map<string, number>();
   let position = from;
-  for (let step = 0; step < count; step += 1) {
+  while (visited.length < count) {
     const next = findPattern(lines, position, pattern, forward);
     if (next === null) return null;
+    const key = `${next.line}:${next.col}`;
+    const cycleStart = seenAt.get(key);
+    if (cycleStart !== undefined) {
+      const cycleLength = visited.length - cycleStart;
+      return visited[cycleStart + ((count - 1 - cycleStart) % cycleLength)] ?? null;
+    }
+    seenAt.set(key, visited.length);
+    visited.push(next);
     position = next;
   }
-  return position;
+  return visited[count - 1] ?? null;
 }
 
 /** n (sameDirection) and N (reversed): repeat the last search. */
