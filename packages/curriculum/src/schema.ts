@@ -35,12 +35,16 @@ export const LevelSchema = z.object({
   hints: z.array(z.string().max(160)).min(1).max(4),
 }).strict();
 
-/** Fails to compile if a schema-valid object would not be a valid Level. */
-type SchemaOutputIsLevel = z.infer<typeof LevelSchema> extends Level ? true : false;
-const schemaOutputIsLevel: SchemaOutputIsLevel = true;
-void schemaOutputIsLevel;
-
-/** Parses unknown JSON into a Level, or throws a ZodError listing every problem. */
+/**
+ * Parses unknown JSON into a Level, or throws a ZodError listing every problem.
+ * No cast: the return statement only compiles while schema output stays compatible with Level.
+ * Optional fields are dropped instead of set to undefined (exactOptionalPropertyTypes).
+ */
 export function parseLevel(json: unknown): Level {
-  return LevelSchema.parse(json) as Level;
+  const { allowedCommands, mustUse, ...required } = LevelSchema.parse(json);
+  return {
+    ...required,
+    ...(allowedCommands === undefined ? {} : { allowedCommands }),
+    ...(mustUse === undefined ? {} : { mustUse }),
+  };
 }
