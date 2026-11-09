@@ -404,3 +404,35 @@ describe('createMemoryStorage', () => {
     expect(storage.load()).not.toBe(storage.load());
   });
 });
+
+describe('prototype-safe lookups', () => {
+  for (const id of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+    describe(`level id ${id}`, () => {
+      const level = makeLevel(id, ['motion.hjkl']);
+      const gated = makeLevel('gated', ['motion.word'], ['motion.hjkl']);
+      const levels = [level, gated];
+
+      it('is not completed on an empty save', () => {
+        expect(learnedSkills(emptySave(), levels).size).toBe(0);
+        expect(isUnlocked(gated, emptySave(), levels)).toBe(false);
+        expect(pickReviewLevels(emptySave(), levels, T0, 5)).toEqual([]);
+      });
+      it('first win stores real best values', () => {
+        const next = recordResult(emptySave(), win(id, { keystrokes: 6, stars: 2 }), levels);
+        expect(Object.hasOwn(next.completed, id)).toBe(true);
+        expect(Object.getOwnPropertyDescriptor(next.completed, id)?.value).toEqual({ stars: 2, bestKeystrokes: 6 });
+        expect(isUnlocked(gated, next, levels)).toBe(true);
+      });
+      it('keeps best values on a second win', () => {
+        let next = recordResult(emptySave(), win(id, { keystrokes: 6, stars: 2 }), levels);
+        next = recordResult(next, win(id, { keystrokes: 9, stars: 1 }), levels);
+        expect(Object.getOwnPropertyDescriptor(next.completed, id)?.value).toEqual({ stars: 2, bestKeystrokes: 6 });
+      });
+    });
+  }
+  it('skill ids named like prototype members get a fresh mastery', () => {
+    const next = recordResult(emptySave(), win('x', { usedSkills: ['constructor', '__proto__'] }), [makeLevel('x', [])]);
+    expect(Object.getOwnPropertyDescriptor(next.mastery, 'constructor')?.value).toMatchObject({ box: 1, successes: 1 });
+    expect(Object.getOwnPropertyDescriptor(next.mastery, '__proto__')?.value).toMatchObject({ box: 1 });
+  });
+});

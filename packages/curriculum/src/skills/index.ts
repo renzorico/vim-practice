@@ -28,6 +28,10 @@ const toBox = (value: number): Box => {
 
 const compareText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
+/** Own-property lookup: ids like 'constructor' or 'toString' must not hit Object.prototype. */
+const getOwn = <T>(record: Readonly<Record<string, T>>, key: string): T | undefined =>
+  Object.hasOwn(record, key) ? record[key] : undefined;
+
 const cloneSave = (data: SaveData): SaveData => JSON.parse(JSON.stringify(data)) as SaveData;
 
 export const emptySave = (): SaveData => ({ version: 1, completed: {}, mastery: {} });
@@ -35,7 +39,7 @@ export const emptySave = (): SaveData => ({ version: 1, completed: {}, mastery: 
 export const learnedSkills = (save: SaveData, levels: readonly Level[]): ReadonlySet<SkillId> => {
   const learned = new Set<SkillId>();
   for (const level of levels) {
-    if (save.completed[level.id] === undefined) continue;
+    if (getOwn(save.completed, level.id) === undefined) continue;
     for (const skill of level.teaches) learned.add(skill);
   }
   return learned;
@@ -55,7 +59,7 @@ export const recordResult = (save: SaveData, result: LevelResult, levels: readon
 
   let completed = save.completed;
   if (result.won) {
-    const previous = completed[result.levelId];
+    const previous = getOwn(completed, result.levelId);
     completed = {
       ...completed,
       [result.levelId]: {
@@ -71,28 +75,28 @@ export const recordResult = (save: SaveData, result: LevelResult, levels: readon
     for (const skill of level.teaches) affected.add(skill);
   }
 
-  const mastery: Record<SkillId, Mastery> = { ...save.mastery };
+  const mastery = new Map<SkillId, Mastery>(Object.entries(save.mastery));
   for (const skill of [...affected].sort(compareText)) {
-    const current = mastery[skill] ?? emptyMastery(skill, result.finishedAt);
+    const current = mastery.get(skill) ?? emptyMastery(skill, result.finishedAt);
     if (result.won) {
-      mastery[skill] = {
+      mastery.set(skill, {
         ...current,
         box: toBox(current.box + 1),
         lastPracticed: result.finishedAt,
         successes: current.successes + 1,
-      };
+      });
     } else {
       const floor: Box = learnedBefore.has(skill) ? MIN_LEARNED_BOX : 0;
-      mastery[skill] = {
+      mastery.set(skill, {
         ...current,
         box: toBox(Math.max(floor, current.box - 1)),
         lastPracticed: result.finishedAt,
         failures: current.failures + 1,
-      };
+      });
     }
   }
 
-  return cloneSave({ version: 1, completed, mastery });
+  return cloneSave({ version: 1, completed, mastery: Object.fromEntries(mastery) });
 };
 
 const intervalMs = (box: Box): number => (REVIEW_INTERVAL_DAYS[box] ?? 0) * MS_PER_DAY;
@@ -137,7 +141,7 @@ export const pickReviewLevels = (
   if (count <= 0) return [];
   const queue = new Set(reviewQueue(save, now, Number.MAX_SAFE_INTEGER));
   const scored = levels
-    .filter((level) => save.completed[level.id] !== undefined)
+    .filter((level) => getOwn(save.completed, level.id) !== undefined)
     .map((level) => ({ level, score: new Set(level.teaches.filter((skill) => queue.has(skill))).size }))
     .filter((entry) => entry.score > 0);
   scored.sort((a, b) => b.score - a.score || compareText(a.level.id, b.level.id));
