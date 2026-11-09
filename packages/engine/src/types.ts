@@ -44,14 +44,19 @@ export interface EngineState {
   readonly marks: Readonly<Record<string, Position>>;
   /** Anchor of the visual selection; null outside visual modes. */
   readonly visualAnchor: Position | null;
-  /** Text typed after ':' or '/' while in command-line mode. */
+  /** Command-line contents INCLUDING the prompt character, e.g. ':wq' or '/foo'. Empty outside command-line mode. */
   readonly commandLine: string;
   readonly lastSearch: { readonly pattern: string; readonly forward: boolean } | null;
   /** Remembered column for j/k movement across short lines. */
   readonly desiredCol: number;
   /** Set by :q, :wq, :x, ZZ. The game decides what "quit" means. */
   readonly quitRequested: boolean;
+  /** Always equal to (changeSeq !== savedSeq). Kept as a field for cheap reads by the game. */
   readonly modified: boolean;
+  /** Number of the current buffer version. pushUndo increments it; undo/redo restore the snapshot's seq. */
+  readonly changeSeq: number;
+  /** changeSeq at the last write (:w, :wq, :x, ZZ). Starts at 0, like changeSeq. */
+  readonly savedSeq: number;
   /** Set by :w, :wq, :x, ZZ. Levels with a 'quit' goal and mustSave check this. */
   readonly saved: boolean;
   /** Keys typed so far for a command not yet complete, e.g. ['2', 'd'] while waiting for a motion. */
@@ -70,6 +75,8 @@ export interface EngineState {
 export interface Snapshot {
   readonly lines: readonly string[];
   readonly cursor: Position;
+  /** changeSeq of the buffer version this snapshot holds. */
+  readonly seq: number;
 }
 
 /**

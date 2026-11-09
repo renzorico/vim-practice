@@ -53,5 +53,6 @@ case "$RUNNER" in
 esac
 
 echo "[$(date -u +%FT%TZ)] ${TASK_ID} -> ${RUNNER} (${ROLE}) in ${WORKTREE_DIR}" | tee -a "$LOG_FILE"
-(cd "$WORKTREE_DIR" && "${CMD[@]}" >>"$LOG_FILE" 2>&1; echo "[$(date -u +%FT%TZ)] exit $?" >>"$LOG_FILE") &
+# Fully detach: no inherited stdin/stdout, or a caller piping our output (e.g. `| tail`) blocks until the agent ends.
+(cd "$WORKTREE_DIR" && "${CMD[@]}" >>"$LOG_FILE" 2>&1; echo "[$(date -u +%FT%TZ)] exit $?" >>"$LOG_FILE") </dev/null >/dev/null 2>&1 &
 echo "Started. Follow with: tail -f ${LOG_FILE}"
