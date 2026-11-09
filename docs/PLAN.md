@@ -74,8 +74,10 @@ Contracts: `packages/engine/src/types.ts` and `packages/curriculum/src/types.ts`
 4. **Scope creep**: plugins, LSP, vimrc editor are out of v1. Park ideas in BITACORA "Parking lot".
 5. **Cost**: Opus only for contracts, merges and milestone audits.
 
+## Phase plans
+- Phase 2: [PHASE-2.md](PHASE-2.md) (retro CRT style, GitHub Pages deploy)
+
 ## Open (not blocking)
 
 - Final name ("ESCAPE" is a working title)
-- Visual theme: retro green CRT or modern dark
 - Sound: none or chiptune effects
