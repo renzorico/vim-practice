@@ -148,7 +148,7 @@ Tags: `#fanout` `#gates` `#contracts`
 
 **Decision:** The game teaches **Neovim defaults**. They're what most new learners install, and the oracle has to be one well-defined program.
 
-**Not done yet:** The P1-A and P1-D review fixes are still uncommitted, because the classifier blocked me from committing them. The integration branch has their pre-fix versions, so `tsc` shows 3 errors in A's old tests. `phase-1/engine` isn't pushed.
+**Update:** Renzo committed the P1-A and P1-D fixes, and they were merged. Final gates: tsc clean, 958 tests, 161/161 golden cases.
 
 **Lesson:** A golden oracle is only as good as its configuration. The ambiguous brief line cost more than any model mistake did, and the oracle caught it in minutes.
 
