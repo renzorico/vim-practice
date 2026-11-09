@@ -1,5 +1,7 @@
 # ESCAPE
 
+**Play the alpha:** https://renzorico.github.io/vim-practice/
+
 A browser game that teaches Vim, from "how do I exit?" to text objects, registers and search.
 The world is a text buffer: you move through it with Vim motions, so playing is practicing.
 
@@ -11,6 +13,8 @@ model routing (Opus / Sonnet / Haiku / local Ollama), and tests as the merge gat
 npm install
 npm run typecheck
 npm test
+npm run dev -w @escape/game   # play locally at http://localhost:5173
+npm run play                  # terminal playground for the raw engine
 ```
 
 ## Env vars
