@@ -1,0 +1,27 @@
+{
+  "id": "p-01-trapped",
+  "region": "prologue",
+  "type": "reach",
+  "title": "Trapped",
+  "intro": "You opened Vim by accident. Every key you press does something strange. There is exactly one way out.",
+  "startLines": [
+    "You are inside Vim.",
+    "",
+    "Typing here does not type. Clicking does not click.",
+    "Legend says the exit is a colon, the letter q, and Enter.",
+    "",
+    "Type  :q  then press Enter."
+  ],
+  "startCursor": { "line": 0, "col": 0 },
+  "goals": [{ "type": "quit", "mustSave": false }],
+  "teaches": ["ex.q"],
+  "requires": [],
+  "allowedCommands": [":q", ":q!"],
+  "par": 3,
+  "solution": [":", "q", "<CR>"],
+  "hints": [
+    "The bottom line is where Vim listens for commands.",
+    "Commands start with a colon.",
+    "Type : then q then press Enter."
+  ]
+}

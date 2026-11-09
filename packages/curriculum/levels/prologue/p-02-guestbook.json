@@ -1,0 +1,26 @@
+{
+  "id": "p-02-guestbook",
+  "region": "prologue",
+  "type": "transform",
+  "title": "The Guestbook",
+  "intro": "Before you leave, sign the guestbook. In Vim you cannot just type: you have to ask for permission first.",
+  "startLines": [
+    "GUESTBOOK - sign on the empty line, then save and quit.",
+    ""
+  ],
+  "startCursor": { "line": 1, "col": 0 },
+  "goals": [
+    { "type": "transform", "targetLines": ["GUESTBOOK - sign on the empty line, then save and quit.", "I was here"] },
+    { "type": "quit", "mustSave": true }
+  ],
+  "teaches": ["mode.insert", "ex.wq"],
+  "requires": ["ex.q"],
+  "allowedCommands": ["i", ":wq", ":x", "ZZ", ":q", ":q!", ":w"],
+  "par": 16,
+  "solution": ["i", "I", " ", "w", "a", "s", " ", "h", "e", "r", "e", "<Esc>", ":", "w", "q", "<CR>"],
+  "hints": [
+    "Vim starts in Normal mode, where letters are commands. You need Insert mode.",
+    "Press i to start typing, and Esc when you are done.",
+    "Type: i, then I was here, then Esc, then :wq and Enter."
+  ]
+}
