@@ -11,3 +11,4 @@ coverage/
 Thumbs.db
 *.tsbuildinfo
 .agents/
+.claude/worktrees/
