@@ -52,6 +52,24 @@ export interface EngineState {
   /** Set by :q, :wq, :x, ZZ. The game decides what "quit" means. */
   readonly quitRequested: boolean;
   readonly modified: boolean;
+  /** Set by :w, :wq, :x, ZZ. Levels with a 'quit' goal and mustSave check this. */
+  readonly saved: boolean;
+  /** Keys typed so far for a command not yet complete, e.g. ['2', 'd'] while waiting for a motion. */
+  readonly pendingKeys: readonly Key[];
+  /** Undo history. Each entry is the buffer + cursor before one change. Newest last. */
+  readonly undoStack: readonly Snapshot[];
+  readonly redoStack: readonly Snapshot[];
+  /** Keys of the last completed change (including inserted text and <Esc>), replayed by '.'. */
+  readonly lastChange: readonly Key[] | null;
+  /** Keys of the change being recorded right now (e.g. during an insert), or null. */
+  readonly changeInProgress: readonly Key[] | null;
+  /** Last f/F/t/T search, repeated by ';' and ','. */
+  readonly lastFind: { readonly command: 'f' | 'F' | 't' | 'T'; readonly char: string } | null;
+}
+
+export interface Snapshot {
+  readonly lines: readonly string[];
+  readonly cursor: Position;
 }
 
 /**
