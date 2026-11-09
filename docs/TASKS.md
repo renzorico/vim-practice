@@ -21,14 +21,14 @@ Rules:
 
 | ID | Task | Owns files | Runner | Reviewer | Branch | Status |
 |---|---|---|---|---|---|---|
-| P2-0 | Contracts: runner, progress, GameStore | `packages/curriculum/src/types.ts`, `packages/curriculum/src/contracts/**` | orchestrator | codex | | todo |
-| P2-A | Level runner + goals + constraints + stars | `packages/curriculum/src/runner/**` | codex | claude-sonnet | | todo |
-| P2-B | Skill graph, mastery, review picker, unlocks | `packages/curriculum/src/skills/**` | claude-sonnet | codex | | todo |
-| P2-C | App shell, CRT renderer, key capture, HUD | `apps/game/**` | claude-sonnet | codex | | todo |
-| P2-D | Ollama level drafts + fixes for Region 1 | `packages/curriculum/levels/**`, `tools/draft-levels.ts` | ollama + codex | renzo | | todo |
-| P2-E | Level schema validation + replay gate | `tools/levels/**` | claude-haiku | orchestrator | | todo |
-| P2-F | Wire app, buffer overworld, Prologue levels | integration | orchestrator | codex | | todo |
-| P2-G | GitHub Pages deploy | `.github/workflows/deploy.yml` | orchestrator | | | todo |
+| P2-0 | Contracts: runner, progress, GameStore | `packages/curriculum/src/types.ts`, `packages/curriculum/src/contracts/**` | orchestrator | codex | | merged |
+| P2-A | Level runner + goals + constraints + stars | `packages/curriculum/src/runner/**` | codex | claude-sonnet | | merged |
+| P2-B | Skill graph, mastery, review picker, unlocks | `packages/curriculum/src/skills/**` | claude-sonnet | codex | | merged |
+| P2-C | App shell, CRT renderer, key capture, HUD | `apps/game/**` | claude-sonnet | codex | | merged |
+| P2-D | Ollama level drafts + fixes for Region 1 | `packages/curriculum/levels/**`, `tools/draft-levels.ts` | ollama + codex | renzo | | merged |
+| P2-E | Level schema validation + replay gate | `tools/levels/**` | claude-haiku | orchestrator | | merged |
+| P2-F | Wire app, buffer overworld, Prologue levels | integration | orchestrator | codex | | merged |
+| P2-G | GitHub Pages deploy | `.github/workflows/deploy.yml` | orchestrator | | | merged |
 
 ## Backlog (minor review findings, not blocking merge)
 
