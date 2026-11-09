@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 
-/** Minimal MessagePack subset for nvim_exec_lua requests and scalar/array replies. */
-function encode(value: string | number | readonly unknown[]): Buffer {
+/** Minimal MessagePack subset for Neovim RPC requests and replies. */
+function encode(value: unknown): Buffer {
   if (typeof value === 'number') {
     const bytes = Buffer.alloc(5);
     bytes[0] = 0xce;
@@ -15,15 +15,20 @@ function encode(value: string | number | readonly unknown[]): Buffer {
     header.writeUInt32BE(contents.length, 1);
     return Buffer.concat([header, contents]);
   }
-  const header = Buffer.alloc(5);
-  header[0] = 0xdd;
-  header.writeUInt32BE(value.length, 1);
-  return Buffer.concat([header, ...value.map((entry) => {
-    if (typeof entry !== 'string' && typeof entry !== 'number' && !Array.isArray(entry)) {
-      throw new Error('Unsupported RPC argument');
-    }
-    return encode(entry);
-  })]);
+  if (Array.isArray(value)) {
+    const header = Buffer.alloc(5);
+    header[0] = 0xdd;
+    header.writeUInt32BE(value.length, 1);
+    return Buffer.concat([header, ...value.map(encode)]);
+  }
+  if (typeof value === 'object' && value !== null) {
+    const entries = Object.entries(value);
+    const header = Buffer.alloc(5);
+    header[0] = 0xdf;
+    header.writeUInt32BE(entries.length, 1);
+    return Buffer.concat([header, ...entries.flatMap(([key, entry]) => [encode(key), encode(entry)])]);
+  }
+  throw new Error('Unsupported RPC argument');
 }
 
 const INCOMPLETE = Symbol('incomplete');
@@ -57,6 +62,11 @@ function decode(bytes: Buffer, start = 0): { value: unknown; end: number } {
     if ((tag & 0xf0) === 0x90 || tag === 0xdc || tag === 0xdd) {
       length = (tag & 0xf0) === 0x90 ? tag & 0xf : tag === 0xdc ? take(2).readUInt16BE() : take(4).readUInt32BE();
       return Array.from({ length }, () => read());
+    }
+    if ((tag & 0xf0) === 0x80 || tag === 0xde || tag === 0xdf) {
+      length = (tag & 0xf0) === 0x80 ? tag & 0xf
+        : tag === 0xde ? take(2).readUInt16BE() : take(4).readUInt32BE();
+      return Object.fromEntries(Array.from({ length }, () => [String(read()), read()]));
     }
     throw new Error(`Unsupported MessagePack tag: ${tag}`);
   }
@@ -102,16 +112,20 @@ export function startNeovim() {
       if (error !== INCOMPLETE) fail(error instanceof Error ? error : new Error(String(error)));
     }
   });
-  return {
-    lua(code: string, arguments_: readonly string[] = []): Promise<unknown> {
-      if (failure) return Promise.reject(failure);
-      const id = nextId++;
-      return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
-        child.stdin.write(encode([0, id, 'nvim_exec_lua', [code, arguments_]]), (error) => {
-          if (error) fail(error);
-        });
+  function request(method: string, arguments_: readonly unknown[] = []): Promise<unknown> {
+    if (failure) return Promise.reject(failure);
+    const id = nextId++;
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject });
+      child.stdin.write(encode([0, id, method, arguments_]), (error) => {
+        if (error) fail(error);
       });
+    });
+  }
+  return {
+    request,
+    lua(code: string, arguments_: readonly string[] = []): Promise<unknown> {
+      return request('nvim_exec_lua', [code, arguments_]);
     },
     async close(): Promise<void> {
       if (child.exitCode !== null || child.signalCode !== null) return;

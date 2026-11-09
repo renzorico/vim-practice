@@ -68,6 +68,32 @@ describe('Neovim golden generation (requires nvim)', () => {
     expect(await captureNeovim({ name, lines: ['abc', 'def'], cursor: [0, 0], keys })).toMatchObject({ mode, cursor });
   });
 
+  it.each([
+    ['f', 'n'], ['F', 'n'], ['t', 'n'], ['T', 'n'], ['g', 'n'], ['r', 'R'],
+    ['m', 'n'], ['"', 'n'], ['di', 'no'], ['vi', 'v'],
+    ['dv', 'nov'], ['dV', 'noV'], ['d<C-v>', 'no\u0016'],
+    ['R', 'R'], ['gR', 'Rv'],
+  ])('captures unfinished %s without completing the command', async (keys, mode) => {
+    expect(await captureNeovim({ name: `pending ${keys}`, lines: ['abc'], cursor: [0, 0], keys }))
+      .toEqual({ lines: ['abc'], cursor: [0, 0], mode });
+  });
+
+  it.each(['<Space>', '<Left>', '<C-w>', '<Enter>', '<unknown>', '<>'])('rejects unsupported notation %s', async (keys) => {
+    await expect(captureNeovim({ name: 'unsupported', lines: ['abc'], cursor: [0, 0], keys }))
+      .rejects.toThrow(`Unsupported key notation ${keys}`);
+  });
+
+  it('rejects raw newlines in input', async () => {
+    await expect(captureNeovim({ name: 'newline', lines: ['abc'], cursor: [0, 0], keys: 'i\n' }))
+      .rejects.toThrow('Raw newline');
+  });
+
+  it('preserves Unicode and control bytes across snapshot chunks', async () => {
+    const lines = ['é😀'.repeat(300), '\tcontrol\rbytes'];
+    expect(await captureNeovim({ name: 'chunk boundaries', lines, cursor: [0, 0], keys: '' }))
+      .toEqual({ lines, cursor: [0, 0], mode: 'n' });
+  });
+
   it('does not undo initial buffer loading', async () => {
     expect(await captureNeovim({ name: 'initial undo', lines: ['seed'], cursor: [0, 0], keys: 'u' }))
       .toEqual({ lines: ['seed'], cursor: [0, 0], mode: 'n' });
@@ -77,6 +103,20 @@ describe('Neovim golden generation (requires nvim)', () => {
     const lines = ["é😀'\\\"", ...Array.from({ length: 3000 }, (_, index) => `line ${index}`)];
     expect(await captureNeovim({ name: 'transport', lines, cursor: [0, 0], keys: '' }))
       .toEqual({ lines, cursor: [0, 0], mode: 'n' });
+  });
+
+  it('rejects unsupported notation before writing even with an existing golden', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'golden-test-'));
+    try {
+      const file = join(directory, 'unsupported.json');
+      const original = JSON.stringify([{ name: 'unsupported', lines: ['abc'], cursor: [0, 0], keys: '<Space>',
+        expect: { lines: ['abc'], cursor: [0, 0], mode: 'n' } }]);
+      await writeFile(file, original);
+      await expect(generateFile(file)).rejects.toThrow('Unsupported key notation <Space>');
+      expect(await readFile(file, 'utf8')).toBe(original);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
   it('rejects malformed files before writing', async () => {
