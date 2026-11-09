@@ -2,10 +2,14 @@
   "name": "escape-vim",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "play": "tsx tools/play.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
