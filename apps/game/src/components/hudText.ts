@@ -20,7 +20,7 @@ export function describeGoal(goal: Goal): string {
     case 'reach':
       return `Move the cursor to line ${goal.target.line + 1}, column ${goal.target.col + 1}`;
     case 'transform':
-      return 'Edit the buffer to match the target text';
+      return 'Edit the buffer to match the TARGET below';
     case 'collect':
       return `Get "${goal.text}" into register ${goal.register}`;
     case 'quit':
@@ -56,3 +56,12 @@ export function failureMessage(reason: LevelRun['failureReason']): string {
 }
 
 export const starText = (stars: number): string => '*'.repeat(stars) + '.'.repeat(Math.max(0, 3 - stars));
+
+/** Indexes of target lines that differ from the current buffer line (missing lines count as different). */
+export function mismatchedLines(current: readonly string[], target: readonly string[]): ReadonlySet<number> {
+  const mismatched = new Set<number>();
+  target.forEach((line, index) => {
+    if (current[index] !== line) mismatched.add(index);
+  });
+  return mismatched;
+}

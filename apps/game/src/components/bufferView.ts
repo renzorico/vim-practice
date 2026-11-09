@@ -38,6 +38,15 @@ export function isSelected(view: BufferView, line: number, col: number): boolean
   return true;
 }
 
+/** True when a charwise selection runs past the end of this line, so its line break is selected too. */
+export function selectionIncludesLineBreak(view: BufferView, line: number): boolean {
+  const anchor = view.visualAnchor;
+  if (anchor === null || view.mode !== 'visual') return false;
+  const firstLine = Math.min(anchor.line, view.cursor.line);
+  const lastLine = Math.max(anchor.line, view.cursor.line);
+  return line >= firstLine && line < lastLine;
+}
+
 export function cursorShape(mode: EngineState['mode']): CursorShape {
   if (mode === 'insert') return 'bar';
   if (mode === 'command-line') return null;
@@ -75,7 +84,7 @@ export function buildLineCells(view: BufferView, lineIndex: number): Cell[] {
 
   // Past the end of the line (empty line, insert at end, selected line break): a blank cell.
   const cursorPastEnd = hasCursor && view.cursor.col >= line.length;
-  const selectedPastEnd = line.length === 0 && isSelected(view, lineIndex, 0);
+  const selectedPastEnd = (line.length === 0 && isSelected(view, lineIndex, 0)) || selectionIncludesLineBreak(view, lineIndex);
   if (cursorPastEnd || selectedPastEnd) {
     cells.push({ text: ' ', selected: selectedPastEnd, cursor: cursorPastEnd ? shape : null });
   }

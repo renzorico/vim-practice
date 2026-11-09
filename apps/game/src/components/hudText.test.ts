@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeGoal, failureMessage, hasMoreHints, keystrokeText, modeLabel, parStatus, starText, visibleHints } from './hudText.js';
+import { describeGoal, failureMessage, hasMoreHints, keystrokeText, mismatchedLines, modeLabel, parStatus, starText, visibleHints } from './hudText.js';
 
 describe('hudText', () => {
   it('labels modes', () => {
@@ -12,7 +12,7 @@ describe('hudText', () => {
     expect(describeGoal({ type: 'quit', mustSave: true })).toBe('Save and quit');
     expect(describeGoal({ type: 'quit', mustSave: false })).toBe('Quit');
     expect(describeGoal({ type: 'collect', register: 'k', text: 'key' })).toContain('register k');
-    expect(describeGoal({ type: 'transform', targetLines: [] })).toContain('target');
+    expect(describeGoal({ type: 'transform', targetLines: [] })).toContain('TARGET');
   });
 
   it('compares keystrokes with par', () => {
@@ -35,5 +35,11 @@ describe('hudText', () => {
     expect(failureMessage('quit')).toContain('left Vim');
     expect(failureMessage('must-use')).toContain('required');
     expect(starText(2)).toBe('**.');
+  });
+
+  it('finds target lines that differ from the buffer', () => {
+    expect([...mismatchedLines(['a', 'x', 'c'], ['a', 'b', 'c'])]).toEqual([1]);
+    expect([...mismatchedLines(['a'], ['a', 'b'])]).toEqual([1]);
+    expect(mismatchedLines(['a'], ['a']).size).toBe(0);
   });
 });

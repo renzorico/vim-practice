@@ -19,7 +19,9 @@ export function App() {
   }, []);
   const onHint = useCallback(() => hintReveal.current(), []);
   const onKey = useCallback((key: Key) => pressKey(key), [pressKey]);
-  useKeyCapture({ onKey, onHint });
+  const activeMode = screen.kind === 'level' && run ? run.state.mode : null;
+  const captureTab = activeMode === 'insert' || activeMode === 'command-line';
+  useKeyCapture({ onKey, onHint, captureTab });
 
   const startFromTitle = useCallback(() => pressKey('<CR>'), [pressKey]);
 

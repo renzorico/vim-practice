@@ -79,6 +79,16 @@ describe('isSelected', () => {
   });
 });
 
+describe('line break selection', () => {
+  it('adds a selected trailing cell when a charwise selection spans lines', () => {
+    const selection = view({ mode: 'visual', visualAnchor: { line: 0, col: 6 }, cursor: { line: 1, col: 2 } });
+    const first = buildLineCells(selection, 0);
+    expect(first).toHaveLength('hello world'.length + 1);
+    expect(first[first.length - 1]?.selected).toBe(true);
+    expect(buildLineCells(selection, 1)).toHaveLength('second'.length);
+  });
+});
+
 describe('gutterWidth', () => {
   it('grows with the line count', () => {
     expect(gutterWidth(5)).toBe(2);

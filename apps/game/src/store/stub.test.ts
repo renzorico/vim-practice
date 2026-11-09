@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { parseLevel } from '@escape/curriculum';
 import { parseKeys } from '@escape/engine';
 import { DEMO_LEVEL, useGameStore } from './stub.js';
 
@@ -7,6 +8,10 @@ const press = (keys: string): void => {
 };
 
 describe('stub game store', () => {
+  it('demo level passes the frozen level schema', () => {
+    expect(() => parseLevel(DEMO_LEVEL)).not.toThrow();
+  });
+
   beforeEach(() => {
     useGameStore.setState({ screen: { kind: 'title' }, run: null });
   });

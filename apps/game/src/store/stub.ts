@@ -17,7 +17,7 @@ export const DEMO_LEVEL: Level = {
   startLines: ['the quick bad fox', 'jumps over the lazy dog'],
   startCursor: { line: 0, col: 0 },
   goals: [{ type: 'transform', targetLines: ['the quick fox', 'jumps over the lazy dog'] }],
-  teaches: ['operator.d'],
+  teaches: ['motion.word'],
   requires: [],
   par: 4,
   solution: ['w', 'w', 'd', 'w'],

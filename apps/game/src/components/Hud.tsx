@@ -3,6 +3,7 @@ import {
   describeGoal,
   hasMoreHints,
   keystrokeText,
+  mismatchedLines,
   modeLabel,
   parStatus,
   visibleHints,
@@ -45,6 +46,24 @@ export function Hud({ run, revealedHints, onRevealHint }: HudProps) {
           ))}
         </ul>
       </section>
+
+      {level.goals.map((goal, goalIndex) =>
+        goal.type === 'transform' ? (
+          <section key={`target-${goalIndex}`}>
+            <h2 className="hud__heading">Target</h2>
+            <div className="target" aria-label="Target text">
+              {goal.targetLines.map((line, lineIndex) => (
+                <div
+                  key={lineIndex}
+                  className={mismatchedLines(state.lines, goal.targetLines).has(lineIndex) ? 'target__line target__line--diff' : 'target__line'}
+                >
+                  {line.replaceAll('\t', '        ') || ' '}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null,
+      )}
 
       <section>
         <h2 className="hud__heading">Hints</h2>

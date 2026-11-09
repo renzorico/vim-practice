@@ -4,6 +4,7 @@
   --fg: #33ff66;
   --fg-dim: #1f9e41;
   --fg-faint: #135c26;
+  --gutter: #4fae69;
   --accent: #ffd34d;
   --danger: #ff5c5c;
   --select-bg: #1d6b34;
@@ -167,7 +168,7 @@ body {
 }
 
 .buffer__gutter {
-  color: var(--fg-faint);
+  color: var(--gutter);
   text-align: right;
   padding-right: 1ch;
   user-select: none;
@@ -182,7 +183,8 @@ body {
 .buffer__cmdline {
   min-height: 1.25em;
   margin-top: 8px;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .cell--selected {
@@ -291,4 +293,20 @@ body {
   .cell--cursor-bar {
     animation: none;
   }
+}
+
+.target {
+  border: 1px dashed var(--fg-faint);
+  padding: 4px 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.target__line {
+  color: var(--fg-dim);
+}
+
+.target__line--diff {
+  background: var(--select-bg);
+  color: var(--fg);
 }
