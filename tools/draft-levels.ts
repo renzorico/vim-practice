@@ -10,7 +10,9 @@ import type { Level, RegionId } from '../packages/curriculum/src/types.js';
 const REGIONS = ['prologue', 'motion-plains', 'edit-forge', 'jump-canyon', 'text-object-temple', 'search-archive'] as const;
 const LEVEL_TYPES = ['reach', 'transform', 'hunt', 'golf', 'boss', 'review'] as const;
 const DEFAULT_OUT = 'packages/curriculum/levels/drafts';
-const REQUEST_TIMEOUT_MS = 120_000;
+/** Per-request timeout. A 14B model on a laptop can need several minutes per level; override with OLLAMA_TIMEOUT_MS. */
+const DEFAULT_TIMEOUT_MS = 600_000;
+const REQUEST_TIMEOUT_MS = Number(process.env['OLLAMA_TIMEOUT_MS'] ?? DEFAULT_TIMEOUT_MS);
 const stringArray = { type: 'array', items: { type: 'string' } };
 const skillArray = { type: 'array', items: { type: 'string', enum: [...SKILL_IDS] } };
 const position = {
@@ -104,7 +106,8 @@ async function askOllama(host: string, model: string, messages: readonly Message
   try {
     response = await fetch(endpoint, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, stream: false, format: LEVEL_JSON_SCHEMA, messages }),
+      // think: false skips qwen3's reasoning trace: much faster, and the output is schema-constrained anyway.
+      body: JSON.stringify({ model, stream: false, think: false, format: LEVEL_JSON_SCHEMA, messages }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (error) {
