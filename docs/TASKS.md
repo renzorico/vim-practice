@@ -17,6 +17,19 @@ Rules:
 | P1-E | Edge-case golden cases for P1-B and P1-C | `tools/golden/cases/**` | claude subagent (Haiku) | orchestrator | worktree-agent-a5d697fd | merged |
 | P1-F | Wire modules into `Engine.step` (after A-D merge) | `packages/engine/src/engine.ts` | orchestrator | codex | phase-1/engine | merged |
 
+### Phase 2 (see docs/PHASE-2.md)
+
+| ID | Task | Owns files | Runner | Reviewer | Branch | Status |
+|---|---|---|---|---|---|---|
+| P2-0 | Contracts: runner, progress, GameStore | `packages/curriculum/src/types.ts`, `packages/curriculum/src/contracts/**` | orchestrator | codex | | todo |
+| P2-A | Level runner + goals + constraints + stars | `packages/curriculum/src/runner/**` | codex | claude-sonnet | | todo |
+| P2-B | Skill graph, mastery, review picker, unlocks | `packages/curriculum/src/skills/**` | claude-sonnet | codex | | todo |
+| P2-C | App shell, CRT renderer, key capture, HUD | `apps/game/**` | claude-sonnet | codex | | todo |
+| P2-D | Ollama level drafts + fixes for Region 1 | `packages/curriculum/levels/**`, `tools/draft-levels.ts` | ollama + codex | renzo | | todo |
+| P2-E | Level schema validation + replay gate | `tools/levels/**` | claude-haiku | orchestrator | | todo |
+| P2-F | Wire app, buffer overworld, Prologue levels | integration | orchestrator | codex | | todo |
+| P2-G | GitHub Pages deploy | `.github/workflows/deploy.yml` | orchestrator | | | todo |
+
 ## Backlog (minor review findings, not blocking merge)
 
 | From | Item | Suggested owner |
