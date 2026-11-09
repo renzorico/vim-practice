@@ -75,7 +75,7 @@ Contracts: `packages/engine/src/types.ts` and `packages/curriculum/src/types.ts`
 5. **Cost**: Opus only for contracts, merges and milestone audits.
 
 ## Phase plans
-- Phase 2: [PHASE-2.md](PHASE-2.md) (retro CRT style, GitHub Pages deploy)
+- Phase 2: [PHASE-2.md](PHASE-2.md) (retro CRT style, GitHub Pages deploy). **Done:** alpha live at https://renzorico.github.io/vim-practice/
 
 ## Open (not blocking)
 

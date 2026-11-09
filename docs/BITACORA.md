@@ -184,6 +184,46 @@ Tags: `#gates` `#agentdefs`
 
 ---
 
+## 2026-11-09: Phase 2, playable alpha live (3 vendors, 11 PRs, no human merges)
+Phase: 2 | Agent(s): Codex/GPT (P2-A, P2-D1, P2-D2), Claude Sonnet (P2-B, P2-C), Claude Haiku (P2-E), Ollama qwen3:14b (Region 1 drafts), Orchestrator Opus (P2-0, P2-F, P2-G, Prologue) | PRs: #7-#17
+Tags: `#contracts` `#fanout` `#routing` `#gates` `#hybrid` `#eval`
+
+**Result:** https://renzorico.github.io/vim-practice/ is live. 9 levels (Prologue + Region 1), a buffer overworld you navigate with Vim motions, skill-based unlocks, Leitner mastery, saved progress, retro CRT style. On `main`: 942 tests, 161 Neovim goldens, and a level gate that replays every level through the real runner. Verified in a browser on the live URL. Every PR was merged by CI + auto-merge; none by a human.
+
+| Task | Runner | Reviewer | Worst bug the review caught |
+|---|---|---|---|
+| P2-A runner | Codex | Sonnet | none ("merge") |
+| P2-B skills, mastery | Sonnet | Codex | a level id `constructor` counted as completed (inherited object properties) |
+| P2-C app, CRT UI | Sonnet | Codex | transform levels never showed the target; Enter on Retry pressed Continue |
+| P2-D1 Ollama drafter | Codex | Sonnet | drafts never replayed, so broken puzzles were "valid" |
+| P2-E level gate | Haiku | Codex | an early win hid extra keys, so over-par levels passed |
+| P2-F integration | Opus | Codex | blocked storage crashed startup; a corrupted save crashed the overworld |
+
+**The local-model pilot, in numbers:**
+| Run | Valid drafts | What changed |
+|---|---|---|
+| 1 | 1/6, then timeout | 120 s timeout too short for a 14B model on 24 GB |
+| 2 | 0/6 | model kept picking skills whose prerequisites were not taught |
+| 3 | 2/6 | script now assigns one skill per level in prerequisite order |
+| repair | 6/6 | Codex fixed the 4 rejects; the level gate verified all 6 |
+Rejects in run 3 were real puzzle errors (solutions that missed their own goal, over par, `3w` as one key): exactly what a cheap model gets wrong and a gate catches.
+
+**What went wrong (and the fix):**
+1. Claude subagent worktrees start from `main`, not from the orchestrator's branch: all 3 started without contracts. All 3 stopped and reported instead of guessing. Fix: merge contracts into `main` before dispatching.
+2. `tools/` was never typechecked (`tsc -b` skipped it) and local `tsc -b` cache hid a schema error that fresh CI caught. Fix: `npm run typecheck` covers tools and the app.
+3. Replaying the Prologue found an engine bug: with `allowedCommands`, `:` itself was blocked, so no restricted level could ever be quit.
+4. A zsh loop variable named `path` wiped `$PATH` (zsh ties them). Small, but it cost a retry.
+5. My browser tool cannot type `:`. Verified with synthetic key events instead, and said so.
+
+**Not done:** the content is thin. Region 1 levels are par 1-2. Renzo's design pass on the Prologue and Region 1 is the next human step; review chapters are deferred to Phase 3.
+
+**Lessons:**
+- **Structure in code, content from the model.** The 14B model failed when it had to plan, and worked when the script planned and it only wrote puzzles.
+- **Every gate earned its keep:** schema → replay → cross-vendor review → CI → browser check each caught something the previous one could not.
+- **Reviews do not care who wrote the code:** the orchestrator's own integration code had the 2 crash bugs.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
