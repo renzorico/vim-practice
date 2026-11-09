@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseKeys } from '../../packages/engine/src/keys.js';
 import type { Case, Expectation } from './runner.js';
 import { startNeovim } from './rpc.js';
 
@@ -24,13 +25,17 @@ local text = case.lines[case.cursor[1] + 1] or ''
 local byte_col = vim.str_byteindex(text, 'utf-16', case.cursor[2], false)
 vim.api.nvim_win_set_cursor(0, {case.cursor[1] + 1, byte_col})
 _G.escape_golden_keys = case.keys
+_G.escape_golden_read_state = function(offset)
+  if offset > 0 then return _G.escape_golden_snapshot:sub(offset + 1, offset + 512) end
+  local p = vim.api.nvim_win_get_cursor(0)
+  local line = vim.api.nvim_get_current_line()
+  _G.escape_golden_snapshot = vim.json.encode({lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
+    cursor = {p[1] - 1, vim.str_utfindex(line, 'utf-16', p[2], false)}, mode = vim.api.nvim_get_mode().mode}):gsub('.', function(byte) return string.format('%02x', string.byte(byte)) end)
+  return _G.escape_golden_snapshot:sub(1, 512)
+end
 
 `;
 
-const READ_STATE = `local p = vim.api.nvim_win_get_cursor(0)
-local line = vim.api.nvim_get_current_line()
-return vim.json.encode({lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
-  cursor = {p[1] - 1, vim.str_utfindex(line, 'utf-16', p[2], false)}, mode = vim.api.nvim_get_mode().mode})`;
 const FEED_KEYS = `local keys = _G.escape_golden_keys
 local accepted = vim.api.nvim_input(keys)
 if accepted ~= #keys then error('Input exceeds Neovim input queue capacity') end
@@ -38,19 +43,50 @@ return accepted`;
 
 /** Capture through RPC so unfinished insert/visual/operator commands stay unfinished. */
 export async function captureNeovim(testCase: Case): Promise<Expectation> {
+  assertSupportedKeys(testCase.keys);
   const nvim = startNeovim();
-  const timeout = setTimeout(() => { void nvim.close(); }, PROCESS_TIMEOUT_MS);
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    void nvim.close();
+  }, PROCESS_TIMEOUT_MS);
   try {
     await nvim.lua(INIT, [JSON.stringify(testCase)]);
     await nvim.lua(FEED_KEYS);
-    const result = await nvim.lua(READ_STATE);
+    // A round trip lets queued input run; blocking is also valid for pending suffixes.
+    await nvim.request('nvim_get_mode');
+    // Statusline evaluation is fast even inside getchar(). Read a cached snapshot
+    // as hex chunks to preserve Unicode and control bytes across statusline limits.
+    let result = '';
+    let chunk: string;
+    do {
+      const reply = await nvim.request('nvim_eval_statusline', [
+        `%{v:lua.escape_golden_read_state(${result.length})}`, { maxwidth: 4096 },
+      ]) as { str: string };
+      chunk = reply.str;
+      result += chunk;
+    } while (chunk.length === 512);
     if (typeof result !== 'string') throw new Error('Neovim returned a non-JSON result');
-    const captured = JSON.parse(result) as Expectation;
+    const captured = JSON.parse(Buffer.from(result, 'hex').toString('utf8')) as Expectation;
     return { lines: captured.lines, cursor: captured.cursor, mode: captured.mode };
+  } catch (error) {
+    if (timedOut) {
+      throw new Error(`Neovim capture timed out after ${PROCESS_TIMEOUT_MS}ms for ${testCase.name} (keys: ${JSON.stringify(testCase.keys)})`, { cause: error });
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
     await nvim.close();
   }
+}
+
+function assertSupportedKeys(keys: string): void {
+  for (const match of keys.matchAll(/<[^<>]*>/g)) {
+    if (parseKeys(match[0]).length !== 1) {
+      throw new Error(`Unsupported key notation ${match[0]}; use supported parseKeys notation or <lt> for a literal <`);
+    }
+  }
+  if (keys.includes('\n')) throw new Error('Raw newline in keys; use <CR> instead');
 }
 
 function assertCases(value: unknown, file: string): asserts value is Case[] {
@@ -65,6 +101,7 @@ function assertCases(value: unknown, file: string): asserts value is Case[] {
     if (typeof item.name !== 'string' || !lines(item.lines) || !position(item.cursor) || typeof item.keys !== 'string') {
       throw new Error(`${file}: invalid case ${String(item.name)}`);
     }
+    assertSupportedKeys(item.keys);
     if (item.expect !== undefined) {
       const expected = item.expect as Record<string, unknown> | null;
       if (!expected || !lines(expected.lines) || !position(expected.cursor) || typeof expected.mode !== 'string') {

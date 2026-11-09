@@ -26,6 +26,9 @@ export interface Result {
 const MODES: Readonly<Record<string, Mode>> = {
   n: 'normal', i: 'insert', v: 'visual', V: 'visual-line',
   '\u0016': 'visual-block', c: 'command-line', no: 'operator-pending',
+  nov: 'operator-pending', noV: 'operator-pending', 'no\u0016': 'operator-pending',
+  niI: 'normal', niR: 'normal', niV: 'normal',
+  R: 'insert', Rv: 'insert', s: 'visual', S: 'visual-line', '\u0013': 'visual-block',
 };
 
 /** Replay each case independently, collecting every mismatch (including missing goldens). */

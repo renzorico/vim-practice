@@ -36,6 +36,9 @@ describe('runGolden', () => {
   it.each<[string, Mode]>([
     ['n', 'normal'], ['i', 'insert'], ['v', 'visual'], ['V', 'visual-line'],
     ['\u0016', 'visual-block'], ['c', 'command-line'], ['no', 'operator-pending'],
+    ['nov', 'operator-pending'], ['noV', 'operator-pending'], ['no\u0016', 'operator-pending'],
+    ['niI', 'normal'], ['niR', 'normal'], ['niV', 'normal'],
+    ['R', 'insert'], ['Rv', 'insert'], ['s', 'visual'], ['S', 'visual-line'], ['\u0013', 'visual-block'],
   ])('maps Neovim mode %j', (nvimMode, engineMode) => {
     const engine = fakeEngine();
     engine.init = (lines, cursor) => ({ ...createInitialState(lines, cursor), mode: engineMode });
@@ -58,6 +61,6 @@ describe('runGolden', () => {
   });
 
   it('does not equate an unsupported Neovim mode with normal mode', () => {
-    expect(runGolden(fakeEngine(), [{ ...base, expect: { ...base.expect!, mode: 'R' } }])[0]?.passed).toBe(false);
+    expect(runGolden(fakeEngine(), [{ ...base, expect: { ...base.expect!, mode: 'unsupported-mode' } }])[0]?.passed).toBe(false);
   });
 });
