@@ -1,0 +1,55 @@
+{
+  "id": "mp-01-first-step",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "Move with hjkl",
+  "intro": "The plains stretch ahead. Follow the path down to the exit.",
+  "startLines": [
+    "start",
+    "path",
+    "exit"
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 2,
+        "col": 0
+      }
+    }
+  ],
+  "teaches": [
+    "motion.hjkl"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l"
+  ],
+  "mustUse": [
+    "motion.hjkl"
+  ],
+  "par": 2,
+  "solution": [
+    "j",
+    "j"
+  ],
+  "hints": [
+    "The exit is two rows below you.",
+    "In Normal mode, j moves down one line.",
+    "Press j twice to reach the exit."
+  ]
+}

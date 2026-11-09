@@ -1,0 +1,63 @@
+{
+  "id": "mp-03-big-word-jump",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "Stepping Stones",
+  "intro": "The river-stone is one stepping stone, hyphen and all. Jump across it to the start of key.",
+  "startLines": [
+    "field river-stone key",
+    "Cold water below.",
+    "Keep your boots dry."
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 0,
+        "col": 18
+      }
+    }
+  ],
+  "teaches": [
+    "motion.WORD"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq",
+    "motion.hjkl",
+    "motion.word"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "W",
+    "B",
+    "E"
+  ],
+  "mustUse": [
+    "motion.WORD"
+  ],
+  "par": 2,
+  "solution": [
+    "W",
+    "W"
+  ],
+  "hints": [
+    "Treat the hyphenated stone as one chunk.",
+    "W jumps between space-separated WORDs, keeping punctuation inside.",
+    "Press uppercase W twice to reach key."
+  ]
+}

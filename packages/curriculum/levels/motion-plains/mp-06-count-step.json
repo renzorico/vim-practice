@@ -1,0 +1,71 @@
+{
+  "id": "mp-06-count-step",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "Count the Words",
+  "intro": "The orchard keeper hid a key after three fruit stalls. Reach the start of key with a counted motion.",
+  "startLines": [
+    "apple banana cherry key",
+    "date elderflower grape",
+    "honey nut orange"
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 0,
+        "col": 20
+      }
+    }
+  ],
+  "teaches": [
+    "motion.count"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq",
+    "motion.hjkl",
+    "motion.word",
+    "motion.WORD",
+    "motion.line",
+    "motion.file"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "W",
+    "B",
+    "E",
+    "0",
+    "^",
+    "$",
+    "gg",
+    "G"
+  ],
+  "mustUse": [
+    "motion.count"
+  ],
+  "par": 2,
+  "solution": [
+    "3",
+    "w"
+  ],
+  "hints": [
+    "Count the jumps from apple to key.",
+    "Put a number before w to repeat the word jump.",
+    "Press 3, then w: three jumps in two keys."
+  ]
+}

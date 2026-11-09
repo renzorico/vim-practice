@@ -1,0 +1,66 @@
+{
+  "id": "mp-04-line-end",
+  "region": "motion-plains",
+  "type": "reach",
+  "title": "End of the Line",
+  "intro": "A lost signpost points along the riverbank. Follow this line to the X at its end.",
+  "startLines": [
+    "start --- river --- X",
+    "The sign says: keep right.",
+    "The ducks offer no advice."
+  ],
+  "startCursor": {
+    "line": 0,
+    "col": 0
+  },
+  "goals": [
+    {
+      "type": "reach",
+      "target": {
+        "line": 0,
+        "col": 20
+      }
+    }
+  ],
+  "teaches": [
+    "motion.line"
+  ],
+  "requires": [
+    "ex.q",
+    "ex.q!",
+    "mode.insert",
+    "ex.wq",
+    "motion.hjkl",
+    "motion.word",
+    "motion.WORD"
+  ],
+  "allowedCommands": [
+    ":q",
+    ":q!",
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "W",
+    "B",
+    "E",
+    "0",
+    "^",
+    "$"
+  ],
+  "mustUse": [
+    "motion.line"
+  ],
+  "par": 1,
+  "solution": [
+    "$"
+  ],
+  "hints": [
+    "The marker is at the far end of your current line.",
+    "$ jumps to the last character of a line.",
+    "Press $ to land on X."
+  ]
+}
