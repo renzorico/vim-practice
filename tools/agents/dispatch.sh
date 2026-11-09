@@ -4,6 +4,7 @@
 # Usage: tools/agents/dispatch.sh <task-id> <runner> <brief-file>
 #   runner: claude-sonnet | claude-haiku | codex
 #   role:   set ROLE=<engine-builder|game-builder|test-writer|content-reviewer> (default engine-builder)
+#   base:   set BASE=<branch> to start from something other than main
 #
 # Every runner gets the same inputs (AGENTS.md is read by both Claude and Codex, role rules,
 # task brief) and the same gate (typecheck + tests). That is what makes vendors swappable.
@@ -13,6 +14,7 @@ TASK_ID="${1:?task id}"
 RUNNER="${2:?runner}"
 BRIEF="${3:?brief file}"
 ROLE="${ROLE:-engine-builder}"
+BASE="${BASE:-main}"
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 WORKTREE_DIR="${REPO_ROOT}/../vim-practice-wt/${TASK_ID}"
@@ -26,7 +28,7 @@ ROLE_FILE="${REPO_ROOT}/.claude/agents/${ROLE}.md"
 mkdir -p "$LOG_DIR"
 
 if [[ ! -d "$WORKTREE_DIR" ]]; then
-  git -C "$REPO_ROOT" worktree add -b "$BRANCH" "$WORKTREE_DIR" main
+  git -C "$REPO_ROOT" worktree add -b "$BRANCH" "$WORKTREE_DIR" "$BASE"
   (cd "$WORKTREE_DIR" && npm install --silent)
 fi
 
