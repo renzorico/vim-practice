@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { Key } from '@escape/engine';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { LevelScreen, OverworldScreen, ResultScreen, TitleScreen } from './screens/Screens.js';
-import { useGameStore } from './store/stub.js';
+import { useGameStore } from './game/useGameStore.js';
 
 /** Routes by store.screen. Only this file knows which store backs the game (P2-F swaps it). */
 export function App() {
