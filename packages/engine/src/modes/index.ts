@@ -24,15 +24,15 @@ function moveCursor(state: EngineState, cursor: Position): EngineState {
 }
 
 export function enterInsert(state: EngineState, how: InsertCommand, deps: ModeDeps): EngineState {
-  // One undo snapshot covers the entire ensuing insert session.
-  const before = deps.pushUndo(state);
   const { line, col } = state.cursor;
   const text = state.lines[line] ?? '';
   if (how === 'o' || how === 'O') {
+    // Opening a line changes the buffer immediately; other insert entries do not.
+    const before = deps.pushUndo(state);
     const insertionLine = how === 'o' ? line + 1 : line;
     const lines = [...before.lines];
     lines.splice(insertionLine, 0, '');
-    return moveCursor({ ...before, lines, mode: 'insert', modified: true }, {
+    return moveCursor({ ...before, lines, mode: 'insert', modified: before.changeSeq !== before.savedSeq }, {
       line: insertionLine, col: 0,
     });
   }
@@ -46,7 +46,7 @@ export function enterInsert(state: EngineState, how: InsertCommand, deps: ModeDe
   } else if (how === 'A') {
     column = text.length;
   }
-  return moveCursor({ ...before, mode: 'insert' }, { line, col: column });
+  return moveCursor({ ...state, mode: 'insert' }, { line, col: column });
 }
 
 export function exitToNormal(state: EngineState): EngineState {
@@ -86,7 +86,8 @@ export function handleInsertKey(state: EngineState, key: Key): EngineState {
   } else {
     return recorded;
   }
-  return moveCursor({ ...recorded, lines, modified: true }, cursor);
+  // The caller starts the undo transaction before the first actual insert edit.
+  return moveCursor({ ...recorded, lines, modified: recorded.changeSeq !== recorded.savedSeq }, cursor);
 }
 
 export function enterVisual(state: EngineState, kind: 'visual' | 'visual-line'): EngineState {
@@ -94,7 +95,7 @@ export function enterVisual(state: EngineState, kind: 'visual' | 'visual-line'):
 }
 
 export function enterCommandLine(state: EngineState, prompt: Prompt): EngineState {
-  // The frozen state has no separate prompt field: retain it as the first character.
+  // The contract includes the prompt in commandLine.
   return { ...state, mode: 'command-line', commandLine: prompt };
 }
 
@@ -116,16 +117,22 @@ function executeEx(state: EngineState, input: string): CommandLineOutcome {
       state: {
         ...state,
         saved: write || state.saved,
-        modified: write ? false : state.modified,
+        savedSeq: state.changeSeq,
+        modified: false,
         quitRequested: command !== 'w' || state.quitRequested,
       },
       completed, error: null,
     };
   }
-  if (/^\d+$/u.test(command)) {
-    const line = Math.max(0, Math.min(state.lines.length - 1, Number(command) - 1));
+  if (/^\d+$/u.test(command) || command === '$' || command === '.' || command === '-1') {
+    const address = command === '$' ? state.lines.length - 1
+      : command === '.' ? state.cursor.line
+        : command === '-1' ? state.cursor.line - 1 : Number(command) - 1;
+    const line = Math.max(0, Math.min(state.lines.length - 1, address));
+    const text = state.lines[line] ?? '';
+    const col = Math.min(state.desiredCol, previousColumn(text, text.length));
     return {
-      state: moveCursor(state, { line, col: firstNonBlank(state.lines[line] ?? '') }),
+      state: { ...state, cursor: { line, col } },
       completed, error: null,
     };
   }

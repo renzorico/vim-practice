@@ -12,14 +12,17 @@ function dependencies(target: Position | null = null): ModeDeps {
     findPattern: vi.fn(() => target),
     pushUndo: vi.fn((state: EngineState): EngineState => ({
       ...state,
-      undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor }],
+      undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq }],
       redoStack: [],
+      changeSeq: state.changeSeq + 1,
+      modified: state.changeSeq + 1 !== state.savedSeq,
     })),
   };
 }
 
 function insertState(lines: readonly string[], cursor: Position = { line: 0, col: 0 }): EngineState {
-  return { ...createInitialState(lines, cursor), mode: 'insert' };
+  // Model the caller opening an undo transaction before an actual insert edit.
+  return { ...createInitialState(lines, cursor), mode: 'insert', changeSeq: 1, modified: true };
 }
 
 function execute(
@@ -44,9 +47,10 @@ describe('enterInsert', () => {
     expect(result).toMatchObject({ mode: 'insert', cursor: { line: 0, col: expected }, desiredCol: expected });
     expect(result.lines).toEqual([text]);
     expect(result.modified).toBe(false);
-    expect(deps.pushUndo).toHaveBeenCalledTimes(1);
-    expect(deps.pushUndo).toHaveBeenCalledWith(state);
-    expect(result.undoStack).toEqual([{ lines: [text], cursor: state.cursor }]);
+    expect(deps.pushUndo).not.toHaveBeenCalled();
+    expect(result.undoStack).toBe(state.undoStack);
+    expect(result.changeSeq).toBe(state.changeSeq);
+    expect(handleInsertKey(result, '<Esc>').modified).toBe(false);
   });
 
   it.each([
@@ -60,16 +64,28 @@ describe('enterInsert', () => {
     expect(result).toMatchObject({ cursor: { line: target, col: 0 }, desiredCol: 0, mode: 'insert', modified: true });
     expect(deps.pushUndo).toHaveBeenCalledTimes(1);
     expect(deps.pushUndo).toHaveBeenCalledWith(state);
-    expect(result.undoStack).toEqual([{ lines: ['one', 'two'], cursor: state.cursor }]);
+    expect(result.undoStack).toEqual([{ lines: ['one', 'two'], cursor: state.cursor, seq: state.changeSeq }]);
     expect(state.lines).toEqual(['one', 'two']);
   });
 
   it('opens a line in an empty buffer and preserves dependency state', () => {
-    const state = { ...createInitialState([]), redoStack: [{ lines: ['old'], cursor: { line: 0, col: 0 } }] };
+    const state = { ...createInitialState([]), redoStack: [{ lines: ['old'], cursor: { line: 0, col: 0 }, seq: 0 }] };
     const result = enterInsert(state, 'o', dependencies());
     expect(result.lines).toEqual(['', '']);
     expect(result.redoStack).toEqual([]);
     expect(state.redoStack).toHaveLength(1);
+  });
+
+  it.each(['i', 'a', 'I', 'A'] as const)('%s followed by escape preserves saved version and redo history', (how) => {
+    const state: EngineState = {
+      ...createInitialState(['abc']), changeSeq: 3, savedSeq: 3,
+      redoStack: [{ lines: ['abcd'], cursor: { line: 0, col: 3 }, seq: 4 }],
+    };
+    const deps = dependencies();
+    const result = handleInsertKey(enterInsert(state, how, deps), '<Esc>');
+    expect(result).toMatchObject({ mode: 'normal', changeSeq: 3, savedSeq: 3, modified: false });
+    expect(result.redoStack).toBe(state.redoStack);
+    expect(deps.pushUndo).not.toHaveBeenCalled();
   });
 });
 
@@ -125,7 +141,7 @@ describe('handleInsertKey', () => {
     ['abc', 0, 0], ['abc', 1, 0], ['abc', 3, 2], ['', 0, 0], ['😀a', 2, 0],
   ] as const)('escape in %j at %i lands at %i', (text, col, expected) => {
     const result = handleInsertKey(insertState([text], { line: 0, col }), '<Esc>');
-    expect(result).toMatchObject({ mode: 'normal', cursor: { line: 0, col: expected }, modified: false });
+    expect(result).toMatchObject({ mode: 'normal', cursor: { line: 0, col: expected }, modified: true });
     expect(result.lines).toEqual([text]);
   });
 
@@ -170,6 +186,12 @@ describe('mode transitions and command-line editing', () => {
     expect(next.cursor).toBe(state.cursor);
   });
 
+  it.each([[':', 'wq'], ['/', 'foo'], ['?', 'foo']] as const)('retains %s while typing %s', (prompt, text) => {
+    let state = enterCommandLine(createInitialState(['foo']), prompt);
+    for (const key of text) state = handleCommandLineKey(state, key, dependencies()).state;
+    expect(state.commandLine).toBe(prompt + text);
+  });
+
   it('types characters and backspaces without completing a command', () => {
     const deps = dependencies();
     let state = enterCommandLine(createInitialState(['abc']), ':');
@@ -211,7 +233,7 @@ describe('ex commands', () => {
   });
 
   it('q reports E37 on modified text', () => {
-    const state = { ...createInitialState(['abc']), modified: true };
+    const state = { ...createInitialState(['abc']), modified: true, changeSeq: 7, savedSeq: 2 };
     expect(execute(state, 'q')).toMatchObject({
       state: { quitRequested: false, modified: true, mode: 'normal', commandLine: '' },
       error: { code: 'not-allowed', message: 'E37: No write since last change (add ! to override)' },
@@ -220,15 +242,15 @@ describe('ex commands', () => {
   });
 
   it('q! quits without saving modified text', () => {
-    expect(execute({ ...createInitialState(['abc']), modified: true }, 'q!')).toMatchObject({
+    expect(execute({ ...createInitialState(['abc']), modified: true, changeSeq: 7, savedSeq: 2 }, 'q!')).toMatchObject({
       state: { quitRequested: true, saved: false, modified: true }, error: null,
     });
   });
 
   it.each(['w', 'wq', 'x'] as const)('%s writes modified text', (command) => {
-    const state = { ...createInitialState(['abc']), modified: true };
+    const state = { ...createInitialState(['abc']), modified: true, changeSeq: 7, savedSeq: 2 };
     expect(execute(state, command)).toMatchObject({
-      state: { saved: true, modified: false, quitRequested: command !== 'w' },
+      state: { saved: true, modified: false, changeSeq: 7, savedSeq: 7, quitRequested: command !== 'w' },
       completed: { id: `:${command}`, kind: 'ex' }, error: null,
     });
   });
@@ -238,23 +260,43 @@ describe('ex commands', () => {
   });
 
   it.each([false, true])('x without changes preserves saved=%s', (saved) => {
-    expect(execute({ ...createInitialState(['abc']), saved }, 'x')).toMatchObject({
-      state: { quitRequested: true, saved, modified: false }, error: null,
+    expect(execute({ ...createInitialState(['abc']), saved, changeSeq: 5, savedSeq: 5 }, 'x')).toMatchObject({
+      state: { quitRequested: true, saved, modified: false, changeSeq: 5, savedSeq: 5 }, error: null,
     });
   });
 
+  it.each(['w', 'wq', 'x'])('%s saves the restored sequence after undo', (command) => {
+    const state = { ...createInitialState(['older']), changeSeq: 2, savedSeq: 7, modified: true };
+    const result = execute(state, command).state;
+    expect(result).toMatchObject({ changeSeq: 2, savedSeq: 2, modified: false, saved: true });
+    expect(state.savedSeq).toBe(7);
+  });
+
   it.each([
-    ['1', 0, 2], ['2', 1, 0], ['3', 2, 1], ['0', 0, 2],
-    ['99', 3, 0], ['0003', 2, 1], ['9'.repeat(400), 3, 0],
+    ['1', 0, 2], ['2', 1, 2], ['3', 2, 2], ['0', 0, 2],
+    ['99', 3, 0], ['0003', 2, 2], ['9'.repeat(400), 3, 0],
+    ['$', 3, 0], ['.', 1, 2], ['-1', 0, 2],
   ])(':%s goes to line %i column %i', (command, line, col) => {
     const state = createInitialState(['  first', '   ', '\tlast', ''], { line: 1, col: 2 });
     const result = execute(state, String(command));
     expect(result.state.cursor).toEqual({ line, col });
-    expect(result.state.desiredCol).toBe(col);
+    expect(result.state.desiredCol).toBe(state.desiredCol);
     expect(result.error).toBeNull();
   });
 
-  it.each(['bogus', '  bogus  ', 'wibble', '-1'])('reports Vim E492 for %j', (command) => {
+  it(':-1 at the first line stays there without an error', () => {
+    const state = createInitialState(['first', 'second'], { line: 0, col: 3 });
+    expect(execute(state, '-1')).toMatchObject({ state: { cursor: state.cursor }, error: null });
+  });
+
+  it('Ex addresses restore the preferred column after crossing an empty line', () => {
+    const state = createInitialState(['abcdef', '', 'abcdef'], { line: 0, col: 4 });
+    const middle = execute(state, '2').state;
+    expect(middle.cursor).toEqual({ line: 1, col: 0 });
+    expect(execute(middle, '$').state.cursor).toEqual({ line: 2, col: 4 });
+  });
+
+  it.each(['bogus', '  bogus  ', 'wibble'])('reports Vim E492 for %j', (command) => {
     expect(execute(createInitialState(['abc']), command)).toMatchObject({
       state: { quitRequested: false, mode: 'normal', commandLine: '' },
       error: { code: 'unknown-command', message: `E492: Not an editor command: ${command}` },
@@ -337,7 +379,7 @@ describe('complete insert sessions', () => {
     expect(state.cursor).toEqual({ line: 1, col: 1 });
     expect(state.mode).toBe('normal');
     expect(state.changeInProgress).toEqual(['o', ...keys]);
-    expect(state.undoStack).toEqual([{ lines: original.lines, cursor: original.cursor }]);
+    expect(state.undoStack).toEqual([{ lines: original.lines, cursor: original.cursor, seq: original.changeSeq }]);
     expect(deps.pushUndo).toHaveBeenCalledTimes(1);
   });
 
@@ -346,8 +388,9 @@ describe('complete insert sessions', () => {
       ...createInitialState(Object.freeze(['abc']), Object.freeze({ line: 0, col: 1 })),
       changeInProgress: Object.freeze(['i']), undoStack: Object.freeze([]), redoStack: Object.freeze([]),
     });
-    const inserted = enterInsert(state, 'i', dependencies());
-    const edited = handleInsertKey(inserted, 'z');
+    const deps = dependencies();
+    const inserted = enterInsert(state, 'i', deps);
+    const edited = handleInsertKey(deps.pushUndo(inserted), 'z');
     expect(edited.lines).toEqual(['azbc']);
     expect(state.lines).toEqual(['abc']);
     expect(state.changeInProgress).toEqual(['i']);
