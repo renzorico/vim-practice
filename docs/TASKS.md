@@ -25,5 +25,6 @@ Rules:
 | P1-A review | E37 uses code `not-allowed`, which collides with allowedCommands rejection; add an error code in a later contract change | orchestrator |
 | P1-A review | Insert ignores `<Tab>`; cmdline ignores `<C-c>`, `<C-u>`, `<C-w>` | Phase 2 |
 | P1-B review | Failed `f`/`t` should still set `lastFind` (needs MotionFn contract change) | deferred |
+| P1-C fix | engine.ts must pass an exclusive empty range for `d$` `de` `dl` on an empty line (operators treat inclusive empty ranges as `vd`) | P1-F wiring |
 | P1-B/P1-C | `''`, `` `` `` jump-back marks; `cw` as `ce`; o_v linewise promotion for `d}`; `"1` for `%` `(` `{` deletes | P1-F wiring |
 | P1-D review | Better watchdog error, pending-command tests, edge-case samples, reject raw `\n` in keys | Phase 2 |

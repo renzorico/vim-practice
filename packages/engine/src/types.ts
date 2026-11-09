@@ -53,7 +53,10 @@ export interface EngineState {
   readonly quitRequested: boolean;
   /** Always equal to (changeSeq !== savedSeq). Kept as a field for cheap reads by the game. */
   readonly modified: boolean;
-  /** Number of the current buffer version. pushUndo increments it; undo/redo restore the snapshot's seq. */
+  /**
+   * Number of the current buffer version. pushUndo sets it to max(changeSeq, savedSeq) + 1, so a new change
+   * after undoing past a write can never look saved. undo/redo restore the snapshot's seq.
+   */
   readonly changeSeq: number;
   /** changeSeq at the last write (:w, :wq, :x, ZZ). Starts at 0, like changeSeq. */
   readonly savedSeq: number;
