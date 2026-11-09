@@ -1,0 +1,29 @@
+[
+  { "name": "i inserts text before cursor", "lines": ["alpha"], "cursor": [0, 2], "keys": "iXY<Esc>" },
+  { "name": "i on empty line inserts text", "lines": [""], "cursor": [0, 0], "keys": "iabc<Esc>" },
+  { "name": "<BS> in insert deletes a typed character", "lines": ["abc"], "cursor": [0, 1], "keys": "iXY<BS><Esc>" },
+  { "name": "a appends text after cursor", "lines": ["abc"], "cursor": [0, 0], "keys": "aX<Esc>" },
+  { "name": "A appends text at end of line", "lines": ["abc"], "cursor": [0, 0], "keys": "AX<Esc>" },
+  { "name": "I inserts before first non-blank", "lines": ["   abc"], "cursor": [0, 5], "keys": "IX<Esc>" },
+  { "name": "o opens a line below and inserts", "lines": ["one", "two"], "cursor": [0, 1], "keys": "oX<Esc>" },
+  { "name": "O opens a line above and inserts", "lines": ["one", "two"], "cursor": [1, 1], "keys": "OX<Esc>" },
+  { "name": "<CR> in middle of line splits it", "lines": ["alphabeta"], "cursor": [0, 5], "keys": "i<CR><Esc>" },
+  { "name": "<BS> at column 0 joins with previous line", "lines": ["one", "two"], "cursor": [1, 0], "keys": "i<BS>X<Esc>" },
+  { "name": "<Tab> in insert inserts a tab character", "lines": ["abc"], "cursor": [0, 0], "keys": "i<Tab>X<Esc>" },
+  { "name": "insert accented character after cafe", "lines": ["cafe"], "cursor": [0, 3], "keys": "aé<Esc>" },
+  { "name": "3ia repeats inserted text three times", "lines": ["x"], "cursor": [0, 0], "keys": "3iab<Esc>" },
+  { "name": "o on last line adds a new last line", "lines": ["only"], "cursor": [0, 0], "keys": "oX<Esc>" },
+  { "name": "a on empty line inserts at column 0", "lines": [""], "cursor": [0, 0], "keys": "aX<Esc>" },
+  { "name": "<Esc> after A leaves cursor on last inserted character", "lines": ["abc"], "cursor": [0, 0], "keys": "AX<Esc>" },
+
+  { "name": ":w<CR> writes buffer without quitting", "lines": ["one"], "cursor": [0, 0], "keys": ":w<CR>" },
+  { "name": ":q<CR> quits a clean buffer", "lines": ["one"], "cursor": [0, 0], "keys": ":q<CR>" },
+  { "name": ":q! quits and discards edits", "lines": ["one"], "cursor": [0, 0], "keys": "xx:q!<CR>" },
+  { "name": ":wq<CR> writes and quits after an edit", "lines": ["one"], "cursor": [0, 0], "keys": "x:wq<CR>" },
+  { "name": ":x<CR> on unmodified buffer quits", "lines": ["one"], "cursor": [0, 0], "keys": ":x<CR>" },
+
+  { "name": "/foo<CR> jumps to next match", "lines": ["foo bar", "baz foo"], "cursor": [0, 4], "keys": "/foo<CR>" },
+  { "name": "/foo<CR> wraps to top when no match after cursor", "lines": ["foo bar", "baz"], "cursor": [1, 0], "keys": "/foo<CR>" },
+  { "name": "n repeats last search forward", "lines": ["foo", "x foo", "foo"], "cursor": [0, 0], "keys": "/foo<CR>n" },
+  { "name": "N repeats last search backward", "lines": ["foo", "x foo", "foo"], "cursor": [2, 0], "keys": "/foo<CR>N" }
+]
