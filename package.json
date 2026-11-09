@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -b && tsc -p tools/golden/tsconfig.json && tsc -p tools/tsconfig.json",
+    "typecheck": "tsc -b && tsc -p tools/golden/tsconfig.json && tsc -p tools/tsconfig.json && npm run typecheck -w @escape/game",
     "test": "vitest run",
     "play": "tsx tools/play.ts"
   },
