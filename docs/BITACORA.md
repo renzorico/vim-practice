@@ -154,6 +154,18 @@ Tags: `#fanout` `#gates` `#contracts`
 
 ---
 
+## 2026-11-09: Phase 1 merged + CI merge gate
+Phase: 1 → 2 | Agent(s): Orchestrator (Opus) | PRs: #1 (engine, merged), #2 (CI)
+Tags: `#gates`
+
+**What:** PR #1 merged with a merge commit, so the per-agent commits stay visible in history. PR #2 adds `.github/workflows/ci.yml`: typecheck, Vitest and the Neovim golden check on every PR, with Neovim pinned to v0.11.4 (the version that generated the goldens).
+
+**Why:** In Phase 1 the gates ran only on the orchestrator's laptop, so "tests pass" meant "the orchestrator says tests pass". With CI, the gate runs on neutral infrastructure for every agent from every vendor, and the PR shows the result.
+
+**Lesson:** Set up CI before fan-out, not after. Phase 2's 3 parallel builders will open PRs that CI can check without anyone in the loop.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
