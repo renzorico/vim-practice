@@ -55,6 +55,24 @@ four project agent definitions (`.claude/agents/`), the plan and this log.
 
 ---
 
+## 2026-11-09: Multi-vendor setup (Claude + Codex + Ollama)
+Phase: 0 | Agent(s): Orchestrator (Opus) | Branch: main
+Tags: `#fanout` `#routing` `#agentdefs` `#hybrid`
+
+**What:** Added Codex (ChatGPT Plus) as a second builder vendor. Added `tools/agents/dispatch.sh`, which runs one task in its own worktree with `claude -p` or `codex exec`. Added `docs/TASKS.md` as the shared task board and file lock. Rewrote `MODEL-ROUTING.md` for three vendors. Switched the local model to `qwen3:14b`, which was already installed.
+
+**Why:**
+- *Two subscriptions = two usage windows.* Running builders on both roughly doubles parallel capacity.
+- *Vendor-neutral inputs.* Both CLIs read `AGENTS.md`, and the dispatcher feeds the same role rules and brief to both. That makes a runner swappable per task.
+- *Cross-vendor review.* A GPT model reviewing Claude's diff (and the other way round) catches errors that same-model review misses.
+- *Rejected: a single "super-agent" framework (LangGraph, CrewAI).* For a solo project, plain CLIs + git + a markdown board are easier to debug, and they are what teams actually use.
+
+**Result:** Dispatcher passes `bash -n`. Not run end to end yet: the Codex binary is missing (broken Homebrew install) and needs `codex login`.
+
+**Lesson:** Orchestration across vendors does not need a framework. It needs shared instructions, isolated workspaces, an ownership lock and the same merge gate for everyone.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

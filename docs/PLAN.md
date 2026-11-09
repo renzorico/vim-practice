@@ -13,7 +13,8 @@ Who does each task: [MODEL-ROUTING.md](MODEL-ROUTING.md). What happened and why:
 | Engine | Own Vim subset in TypeScript, pure functions | The game sees every command; levels can restrict commands; replay in CI |
 | Scope | Prologue + 5 regions, ~30 levels, 6-8 weeks part-time | Finishable, still impressive |
 | Stack | npm workspaces, TS strict, Vite + React + Zustand, Vitest | npm instead of pnpm: already installed, no extra tool |
-| Local LLM | Ollama `qwen2.5-coder:14b` on M4 Pro 24 GB | Drafts level content only |
+| LLMs | Claude (orchestrator + builders), Codex via ChatGPT Plus (builders + cross-review), Ollama (drafts) | Parallel across vendors; see MODEL-ROUTING.md |
+| Local LLM | Ollama `qwen3:14b` on M4 Pro 24 GB (already installed) | Drafts level content only |
 | Platform | Desktop browser, static deploy (Vercel or GitHub Pages) | Keyboard needed, so no mobile |
 
 ## Game design
