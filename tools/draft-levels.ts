@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { createEngine } from '../packages/engine/src/engine.js';
 import { SKILLS, SKILL_IDS } from '../packages/curriculum/src/catalog.js';
 import { parseLevel } from '../packages/curriculum/src/schema.js';
-import type { Level, RegionId } from '../packages/curriculum/src/types.js';
+import type { Level, RegionId, Skill } from '../packages/curriculum/src/types.js';
 
 const REGIONS = ['prologue', 'motion-plains', 'edit-forge', 'jump-canyon', 'text-object-temple', 'search-archive'] as const;
 const LEVEL_TYPES = ['reach', 'transform', 'hunt', 'golf', 'boss', 'review'] as const;
@@ -166,9 +166,15 @@ export async function draftLevels(options: DraftOptions): Promise<DraftResult[]>
   await mkdir(out, { recursive: true });
   const acceptedIds = new Set([...EXAMPLES.map(({ id }) => id), ...(await readdir(out, { withFileTypes: true })).filter((entry) => entry.isFile() && entry.name.endsWith('.json')).map((entry) => entry.name.slice(0, -5))]);
   const results: DraftResult[] = [];
+  // The script decides the curriculum order; the model only writes the puzzle. A 14B model left to choose
+  // kept picking skills whose prerequisites were not taught yet (6 of 6 drafts rejected in the first live run).
+  const plan = teachingOrder(regionSkills, learned);
   for (let number = 1; number <= options.count; number += 1) {
+    const target = plan[(number - 1) % plan.length];
+    if (target === undefined) throw new Error(`No teachable skills in region "${options.region}".`);
     const messages: Message[] = [{ role: 'user', content: [
       `Draft one ESCAPE level as JSON only, number ${number} of ${options.count}, region ${options.region}.`,
+      `This level MUST teach exactly one skill: ${JSON.stringify(target.id)} (${target.name}). Set "teaches" to [${JSON.stringify(target.id)}] and design the puzzle around it.`,
       `Region skills (id, name, prerequisites): ${JSON.stringify(regionSkills.map(({ id, name, prerequisites }) => ({ id, name, prerequisites })))}`,
       `Learned skills (requires may use any subset): ${JSON.stringify([...learned])}.`,
       `Already accepted ids (choose a unique id): ${JSON.stringify([...acceptedIds])}.`,
@@ -199,10 +205,9 @@ export async function draftLevels(options: DraftOptions): Promise<DraftResult[]>
         if (level.requires.some((skill) => !learned.has(skill))) {
           throw new Error(`requires must use only learned skills: ${JSON.stringify([...learned])}`);
         }
-        if (level.teaches.some((id) => !regionSkills.some((skill) => skill.id === id && skill.prerequisites.every((prerequisite) => learned.has(prerequisite))))) {
-          throw new Error('teaches must use region skills with already learned prerequisites.');
+        if (level.teaches.length !== 1 || level.teaches[0] !== target.id) {
+          throw new Error(`teaches must be exactly [${JSON.stringify(target.id)}].`);
         }
-        if (level.type !== 'review' && level.teaches.length === 0) throw new Error('teaches must be nonempty unless type is review.');
         validateSolution(level);
         await writeFile(join(out, `${level.id}.json`), `${JSON.stringify(level, null, 2)}\n`, { flag: 'wx' });
         acceptedIds.add(level.id);
@@ -225,6 +230,8 @@ export async function draftLevels(options: DraftOptions): Promise<DraftResult[]>
         console.error(`Cannot archive rejected draft ${number}: ${errorText(error)}`);
       }
       results.push({ id: `rejected/${number}`, valid: false, retries });
+      // Keep the planned order moving: a rejected draft leaves a gap for a human, and the level gate reports it.
+      learned.add(target.id);
     }
   }
   console.table(results);
@@ -236,4 +243,20 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     console.error(errorText(error));
     process.exitCode = 1;
   });
+}
+
+/** Region skills in prerequisite order: each skill comes after everything it depends on. */
+export function teachingOrder(regionSkills: readonly Skill[], alreadyLearned: ReadonlySet<string>): Skill[] {
+  const known = new Set(alreadyLearned);
+  const remaining = [...regionSkills];
+  const order: Skill[] = [];
+  while (remaining.length > 0) {
+    const index = remaining.findIndex((skill) => skill.prerequisites.every((prerequisite) => known.has(prerequisite)));
+    if (index === -1) throw new Error(`Skill prerequisites cannot be satisfied: ${remaining.map(({ id }) => id).join(', ')}`);
+    const [next] = remaining.splice(index, 1);
+    if (next === undefined) break;
+    order.push(next);
+    known.add(next.id);
+  }
+  return order;
 }

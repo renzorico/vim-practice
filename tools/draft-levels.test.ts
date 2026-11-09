@@ -17,6 +17,8 @@ const level: Level = {
   teaches: ['motion.hjkl'], requires: earlier, par: 1, solution: ['j'],
   hints: ['Follow the trail.', 'Move down.', 'Press j.'],
 };
+/** The script plans skills in prerequisite order, so a second draft in a run must teach motion.word. */
+const wordLevel: Level = { ...level, id: 'mp-02-word', teaches: ['motion.word'] };
 const reply = (value: unknown): Response => Response.json({ message: { content: JSON.stringify(value) } });
 
 // Requests are inspected through the real fetch signature, with no untyped casts.
@@ -71,9 +73,9 @@ describe('Ollama level drafter', () => {
 
   it('archives two invalid answers with the error and continues to the next draft', async () => {
     fetchMock.mockResolvedValueOnce(reply({})).mockResolvedValueOnce(reply({}))
-      .mockResolvedValueOnce(reply(level));
+      .mockResolvedValueOnce(reply(wordLevel));
     expect(await draftLevels({ ...options(), count: 2 })).toEqual([
-      { id: 'rejected/1', valid: false, retries: 1 }, { id: level.id, valid: true, retries: 0 },
+      { id: 'rejected/1', valid: false, retries: 1 }, { id: wordLevel.id, valid: true, retries: 0 },
     ]);
     const rejected = await readFile(join(out, 'rejected/1.json'), 'utf8');
     expect(JSON.parse(rejected)).toMatchObject({ answer: '{}', error: expect.stringContaining('Required') });
@@ -99,10 +101,10 @@ describe('Ollama level drafter', () => {
     }, 'Ollama request timed out'],
   ])('records %s errors, continues and prints the summary', async (_name, failure, reason) => {
     vi.stubEnv('OLLAMA_HOST', 'http://local-model:11434/');
-    fetchMock.mockImplementationOnce(failure).mockResolvedValueOnce(reply(level));
+    fetchMock.mockImplementationOnce(failure).mockResolvedValueOnce(reply(wordLevel));
     const results = await draftLevels({ ...options(), count: 2 });
     expect(results).toEqual([
-      { id: 'rejected/1', valid: false, retries: 0 }, { id: level.id, valid: true, retries: 0 },
+      { id: 'rejected/1', valid: false, retries: 0 }, { id: wordLevel.id, valid: true, retries: 0 },
     ]);
     expect(JSON.parse(await readFile(join(out, 'rejected/1.json'), 'utf8')).error).toContain(reason);
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -134,7 +136,7 @@ describe('Ollama level drafter', () => {
 
   it('pre-seeds existing ids, records collisions and continues without overwriting', async () => {
     await writeFile(join(out, `${level.id}.json`), 'existing draft');
-    const next = { ...level, id: 'mp-next' };
+    const next = { ...wordLevel, id: 'mp-next' };
     fetchMock.mockResolvedValueOnce(reply(level)).mockResolvedValueOnce(reply(level)).mockResolvedValueOnce(reply(next));
     const results = await draftLevels({ ...options(), count: 2 });
     expect(results).toEqual([
@@ -162,11 +164,17 @@ describe('Ollama level drafter', () => {
     expect(requestBody(fetchMock, 1)).toContain(`Duplicate level id: ${id}`);
   });
 
-  it('requires teaches on ordinary levels and permits an empty review', async () => {
-    fetchMock.mockResolvedValueOnce(reply({ ...level, teaches: [] }))
-      .mockResolvedValueOnce(reply({ ...level, type: 'review', teaches: [] }));
+  it('requires teaches to be exactly the planned skill', async () => {
+    fetchMock.mockResolvedValueOnce(reply({ ...level, teaches: [] })).mockResolvedValueOnce(reply(level));
     expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 1 }]);
-    expect(requestBody(fetchMock, 1)).toContain('teaches must be nonempty');
+    expect(requestBody(fetchMock, 0)).toContain('MUST teach exactly one skill: \\"motion.hjkl\\"');
+    expect(requestBody(fetchMock, 1)).toContain('teaches must be exactly [\\"motion.hjkl\\"]');
+  });
+
+  it('plans skills in prerequisite order across a run, even past a rejected draft', async () => {
+    fetchMock.mockImplementationOnce(() => Promise.reject(new TypeError('fetch failed'))).mockResolvedValueOnce(reply(wordLevel));
+    await draftLevels({ ...options(), count: 2 });
+    expect(requestBody(fetchMock, 1)).toContain('MUST teach exactly one skill: \\"motion.word\\"');
   });
 
   it.each([
