@@ -224,6 +224,22 @@ Rejects in run 3 were real puzzle errors (solutions that missed their own goal, 
 
 ---
 
+## 2026-11-09: First human playtest, "the game is a non-sense right now"
+Phase: 2 → 3 | Agent(s): Renzo (playtester), Orchestrator (Opus) | No code
+Tags: `#eval` `#gates`
+
+**What:** Renzo played the live alpha. Verdict: not an open world, unclear challenges, tiring palette, no structure, no story. He got stuck on "End of the Line" (it expects `$`, which nothing taught). The Guestbook cost him a star for `:w` + `:q!`, a valid solution, because `:wq` was never taught either.
+
+**Root cause:** every gate in the pipeline measured *correctness*: types, tests, Neovim goldens, replay, cross-vendor review, CI, a browser check that it does not crash. None measured *clarity or fun*, and the orchestrator reported "verified end to end" without saying that this meant "works", not "good". The pipeline did exactly what it was designed to do; the design was missing.
+
+**Decisions (Renzo):** ASCII roguelike world explored with Vim motions; "trapped in the machine" story; warm modern dark visuals chosen from mockups; a failed attempt = giving up (`:q`, restart) or going far over par; after 5 failures the game shows the solution with an explanation and serves a *different* puzzle of the same difficulty; after 3 failed variants, "skip level" appears.
+
+**Process change:** design docs and mockups get approved before code, and **a human playtest is now a gate**: no phase is done until Renzo has played it.
+
+**Lesson:** Agents optimise for the checks they are given. Automated gates verify that software works; only a human playtest tells you whether a game is good. The most important gate was missing because it cannot be automated.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
