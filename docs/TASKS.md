@@ -10,11 +10,11 @@ Rules:
 
 | ID | Task | Owns files | Runner | Reviewer | Branch | Status |
 |---|---|---|---|---|---|---|
-| P1-A | Modes, insert mode, ex `:q :q! :w :wq :x`, `ZZ` | `packages/engine/src/modes/**` | codex | claude-sonnet | task/P1-A | fixing |
-| P1-B | Motions `hjkl w b e 0 ^ $ gg G f t ; , % { }` + counts | `packages/engine/src/motions/**` | claude subagent (Sonnet) | codex | worktree-agent-a23eb1dc | fixing |
-| P1-C | Operators `d c y p`, registers, undo/redo, `.` | `packages/engine/src/operators/**`, `packages/engine/src/registers/**` | claude subagent (Sonnet) | codex | worktree-agent-a300c4f4 | fixing |
-| P1-D | nvim golden-test harness | `tools/golden/**` (not cases), `packages/engine/src/keys.ts` | codex | claude-sonnet | task/P1-D | fixing |
-| P1-E | Edge-case golden cases for P1-B and P1-C | `tools/golden/cases/**` | claude subagent (Haiku) | orchestrator | worktree-agent-a5d697fd | fixing |
+| P1-A | Modes, insert mode, ex `:q :q! :w :wq :x`, `ZZ` | `packages/engine/src/modes/**` | codex | claude-sonnet | task/P1-A | ready-to-merge |
+| P1-B | Motions `hjkl w b e 0 ^ $ gg G f t ; , % { }` + counts | `packages/engine/src/motions/**` | claude subagent (Sonnet) | codex | worktree-agent-a23eb1dc | ready-to-merge |
+| P1-C | Operators `d c y p`, registers, undo/redo, `.` | `packages/engine/src/operators/**`, `packages/engine/src/registers/**` | claude subagent (Sonnet) | codex | worktree-agent-a300c4f4 | ready-to-merge |
+| P1-D | nvim golden-test harness | `tools/golden/**` (not cases), `packages/engine/src/keys.ts` | codex | claude-sonnet | task/P1-D | ready-to-merge |
+| P1-E | Edge-case golden cases for P1-B and P1-C | `tools/golden/cases/**` | claude subagent (Haiku) | orchestrator | worktree-agent-a5d697fd | ready-to-merge |
 | P1-F | Wire modules into `Engine.step` (after A-D merge) | `packages/engine/src/engine.ts` | orchestrator | codex | task/P1-F | todo |
 
 ## Backlog (minor review findings, not blocking merge)

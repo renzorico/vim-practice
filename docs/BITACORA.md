@@ -104,6 +104,35 @@ Tags: `#contracts` `#fanout` `#routing` `#gates` `#agentdefs`
 
 ---
 
+## 2026-11-09: Phase 1 cross-vendor review and fix round
+Phase: 1 | Agent(s): Codex reviews Claude branches (B, C), Claude Sonnet reviews Codex branches (A, D); the original builders fix | Branches: all 4 builder branches
+Tags: `#gates` `#eval` `#fanout` `#routing`
+
+**What:** Each branch was reviewed by the other vendor with one shared read-only prompt. All 4 verdicts were "merge-after-fixes": 20 MAJOR findings, 0 CRITICAL. The orchestrator issued contract rulings; then each original builder fixed its own branch.
+
+| Branch | Majors | Worst catch | After fix |
+|---|---|---|---|
+| A modes (Codex) | 2 | `i<Esc>` created an empty undo step | 119 tests |
+| B motions (Sonnet) | 7 | `dF,` deleted one char too many; huge `n` counts froze the game | 191 tests |
+| C operators (Sonnet) | 6 | edit, save, undo let `:q` quit and lose the edit; `x` split emoji | 114 tests |
+| D harness (Codex) | 3 | `f`/`di` hung the oracle for 10 s; `<Space>` silently diverged | 68 tests |
+
+**Why it matters:** Every branch had passed its own tests. The builders' tests encoded the builders' own misunderstandings, and a reviewer from a different model family found them.
+
+**Contract rulings:**
+- `{ }` are charwise. **My contract comment was wrong**, and a reviewer flagged the builder for disagreeing with it.
+- `commandLine` keeps its prompt character.
+- `changeSeq`/`savedSeq` added for safe "modified" tracking. The builder then improved my rule to `max(changeSeq, savedSeq) + 1`, which closes an edit-save-undo-edit hole I had missed. Accepted.
+- "Failed `f` keeps `lastFind`": deferred.
+
+**What went wrong:**
+1. My new rule "if a guard blocks you, stop" made both Codex fixers quit on harmless blocks (nvim swap files, `ps`). The rewrite says: use a legitimate alternative (`nvim -n -i NONE`), and stop only if the only way forward is to get around a guard.
+2. A hook now blocks pushes to `main`. Phase 1 will go up as a feature branch + PR.
+
+**Lesson:** Reviews from a different vendor pay for themselves. Agent safety rules have to name what *is* allowed, or they make agents either reckless or useless. The orchestrator is wrong sometimes too; reviews catch contract bugs as well as code bugs.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
