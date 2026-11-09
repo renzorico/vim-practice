@@ -1,0 +1,62 @@
+# Bitácora
+
+A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
+Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
+
+## Entry template
+
+```
+## YYYY-MM-DD: <title>
+Phase: <n> | Agent(s): <role (model)> | Branch/commit: <ref>
+What: what changed, in 1-3 lines.
+Why: the decision and the alternative we rejected.
+Result: what now works, and how to try it.
+Cost: rough usage (claudemeter / /cost), and the share on cheap models.
+Lesson: one agentic-engineering takeaway.
+```
+
+## Skills this project shows (for the job search)
+
+Each entry tags the skills it shows, so the portfolio story writes itself:
+
+| Tag | Skill |
+|---|---|
+| `#contracts` | Contract-first design: freezing interfaces so agents can work in parallel |
+| `#fanout` | Fan-out / fan-in: parallel agents in git worktrees, one integrator |
+| `#routing` | Model routing and escalation: the right model per task, measured cost |
+| `#gates` | Automated verification: tests, golden tests, replay as merge criteria |
+| `#hybrid` | Local + cloud LLMs: Ollama for bulk drafts, Claude for review |
+| `#agentdefs` | Writing agent definitions and briefs: scoped tools, clear done criteria |
+| `#eval` | Evaluating LLM output: schema validation, LLM-as-reviewer, human pass |
+
+---
+
+## 2026-11-09: Phase 0, setup and contracts
+Phase: 0 | Agent(s): Orchestrator (Opus planning, Sonnet setup) | Branch: main
+Tags: `#contracts` `#routing` `#agentdefs`
+
+**What:** Created the private GitHub repo, an npm-workspaces monorepo (TS strict), the two frozen contracts
+(`packages/engine/src/types.ts`, `packages/curriculum/src/types.ts`), the model-routing table,
+four project agent definitions (`.claude/agents/`), the plan and this log.
+
+**Why:**
+- *Contracts before code.* Phase 1 runs 4 builders in parallel. If they shared no fixed types, each would invent its own and merging would fail. Freezing `Engine.step(state, key) -> { state, commands, error }` lets them work blind to each other.
+- *Pure engine.* No DOM or timers means the same keys always give the same result. That enables two automatic gates: comparing against real Neovim, and replaying every level's solution in CI.
+- *`CommandRecord` log.* The engine reports "the player used `2dw`", not just the new text. The game needs that for skills, hints and "solve it with a text object" rules.
+- *Levels are data.* A local model can draft JSON safely; code it cannot.
+- *npm instead of pnpm.* npm was already installed; pnpm adds a tool for no real gain at this size.
+- *Agents get a model in their frontmatter* (`model: sonnet` / `haiku`), so routing is enforced by config, not memory.
+
+**Result:** `npm install && npm run typecheck` passes. Nothing playable yet.
+
+**Cost:** Planning on Opus; setup on Sonnet. No builders run yet.
+
+**Lesson:** Parallel agents are only as good as the interfaces between them. The hour spent on contracts is what makes the next phase parallel.
+
+---
+
+## Parking lot
+Ideas that are out of v1 scope, kept so they are not lost:
+- Supabase leaderboards and accounts
+- Tauri desktop build (fixes `<C-w>` in browsers)
+- Regions 6-9: macros, ex commands, windows/buffers, workflows
