@@ -104,6 +104,56 @@ Tags: `#contracts` `#fanout` `#routing` `#gates` `#agentdefs`
 
 ---
 
+## 2026-11-09: Phase 1 cross-vendor review and fix round
+Phase: 1 | Agent(s): Codex reviews Claude branches (B, C), Claude Sonnet reviews Codex branches (A, D); the original builders fix | Branches: all 4 builder branches
+Tags: `#gates` `#eval` `#fanout` `#routing`
+
+**What:** Each branch was reviewed by the other vendor with one shared read-only prompt. All 4 verdicts were "merge-after-fixes": 20 MAJOR findings, 0 CRITICAL. The orchestrator issued contract rulings; then each original builder fixed its own branch.
+
+| Branch | Majors | Worst catch | After fix |
+|---|---|---|---|
+| A modes (Codex) | 2 | `i<Esc>` created an empty undo step | 119 tests |
+| B motions (Sonnet) | 7 | `dF,` deleted one char too many; huge `n` counts froze the game | 191 tests |
+| C operators (Sonnet) | 6 | edit, save, undo let `:q` quit and lose the edit; `x` split emoji | 114 tests |
+| D harness (Codex) | 3 | `f`/`di` hung the oracle for 10 s; `<Space>` silently diverged | 68 tests |
+
+**Why it matters:** Every branch had passed its own tests. The builders' tests encoded the builders' own misunderstandings, and a reviewer from a different model family found them.
+
+**Contract rulings:**
+- `{ }` are charwise. **My contract comment was wrong**, and a reviewer flagged the builder for disagreeing with it.
+- `commandLine` keeps its prompt character.
+- `changeSeq`/`savedSeq` added for safe "modified" tracking. The builder then improved my rule to `max(changeSeq, savedSeq) + 1`, which closes an edit-save-undo-edit hole I had missed. Accepted.
+- "Failed `f` keeps `lastFind`": deferred.
+
+**What went wrong:**
+1. My new rule "if a guard blocks you, stop" made both Codex fixers quit on harmless blocks (nvim swap files, `ps`). The rewrite says: use a legitimate alternative (`nvim -n -i NONE`), and stop only if the only way forward is to get around a guard.
+2. A hook now blocks pushes to `main`. Phase 1 will go up as a feature branch + PR.
+
+**Lesson:** Reviews from a different vendor pay for themselves. Agent safety rules have to name what *is* allowed, or they make agents either reckless or useless. The orchestrator is wrong sometimes too; reviews catch contract bugs as well as code bugs.
+
+---
+
+## 2026-11-09: P1-F, integration + wiring, engine matches Neovim
+Phase: 1 | Agent(s): Orchestrator (Opus) | Branch: phase-1/engine
+Tags: `#fanout` `#gates` `#contracts`
+
+**What:** The 5 builder branches were merged into `phase-1/engine` (0 conflicts). I wrote `engine.ts`, which wires the modules into `Engine.step`: a key parser for `["x][count]cmd` and `op[count]motion`, Vim's exclusive-to-linewise rule, `cw` as `ce`, `.` repeat, counted insert, collapsing empty-insert undo steps, and visual operators. Neovim generated the expectations for the 161 golden cases.
+
+**Result:** First run 152/161 → **161/161 golden cases match real Neovim**, and 909 tests pass.
+
+**The 9 first-run failures, by root cause:**
+- 3 came from **my own P1-D brief**: "`set nowrapscan` off" is ambiguous, and the generator turned wrapscan off. It also pinned `cpoptions` without Neovim's `_` flag. Ruling: **the oracle is stock Neovim defaults.**
+- 2 were Vim-vs-Neovim default differences (`nostartofline`, `Y` = `y$`). Same ruling: follow Neovim.
+- 4 were real wiring gaps (counted insert, `3dd` past the end, `<Tab>`, `cw`).
+
+**Decision:** The game teaches **Neovim defaults**. They're what most new learners install, and the oracle has to be one well-defined program.
+
+**Update:** Renzo committed the P1-A and P1-D fixes, and they were merged. Final gates: tsc clean, 958 tests, 161/161 golden cases.
+
+**Lesson:** A golden oracle is only as good as its configuration. The ambiguous brief line cost more than any model mistake did, and the oracle caught it in minutes.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

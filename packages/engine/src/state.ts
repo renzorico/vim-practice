@@ -14,6 +14,8 @@ export function createInitialState(lines: readonly string[], cursor: Position = 
     desiredCol: cursor.col,
     quitRequested: false,
     modified: false,
+    changeSeq: 0,
+    savedSeq: 0,
     saved: false,
     pendingKeys: [],
     undoStack: [],

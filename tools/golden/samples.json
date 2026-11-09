@@ -1,0 +1,217 @@
+[
+  {
+    "name": "counted word deletion",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2dw",
+    "expect": {
+      "lines": [
+        "three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change inner word",
+    "lines": [
+      "hello world"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciwfoo<Esc>",
+    "expect": {
+      "lines": [
+        "foo world"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "insert remains active",
+    "lines": [
+      "tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ihead ",
+    "expect": {
+      "lines": [
+        "head tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "i"
+    }
+  },
+  {
+    "name": "visual selection",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "v2l",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "v"
+    }
+  },
+  {
+    "name": "visual lines",
+    "lines": [
+      "first",
+      "second",
+      "third"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "Vj",
+    "expect": {
+      "lines": [
+        "first",
+        "second",
+        "third"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "V"
+    }
+  },
+  {
+    "name": "split line",
+    "lines": [
+      "ab"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "i<CR><Esc>",
+    "expect": {
+      "lines": [
+        "a",
+        "b"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backspace in insert",
+    "lines": [
+      "tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ixy<BS><Esc>",
+    "expect": {
+      "lines": [
+        "xtail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "literal less than and tab",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "i<lt><Tab><Esc>",
+    "expect": {
+      "lines": [
+        "<\t"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "undo and redo",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xu<C-r>",
+    "expect": {
+      "lines": [
+        "bc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "UTF-16 cursor",
+    "lines": [
+      "é😀xy"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "l",
+    "expect": {
+      "lines": [
+        "é😀xy"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  }
+]

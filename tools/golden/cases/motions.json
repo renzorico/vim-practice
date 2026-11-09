@@ -1,0 +1,1764 @@
+[
+  {
+    "name": "h at column 0 stays put",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "h",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3h moves three columns left",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "3h",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "l on last character stays on it",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "l",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "9l clamps to last character",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "9l",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "j keeps the column",
+    "lines": [
+      "abcdef",
+      "ghijkl"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "j",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "j on last line stays put",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      1,
+      1
+    ],
+    "keys": "j",
+    "expect": {
+      "lines": [
+        "one",
+        "two"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "k on first line stays put",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "k",
+    "expect": {
+      "lines": [
+        "one",
+        "two"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "5j stops at last line",
+    "lines": [
+      "a",
+      "b",
+      "c"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "5j",
+    "expect": {
+      "lines": [
+        "a",
+        "b",
+        "c"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "j onto shorter line clamps column",
+    "lines": [
+      "abcdef",
+      "ab",
+      "xyz"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "j",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ab",
+        "xyz"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "k onto empty line goes to column 0",
+    "lines": [
+      "",
+      "abc"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "k",
+    "expect": {
+      "lines": [
+        "",
+        "abc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w moves to next word",
+    "lines": [
+      "alpha beta gamma"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "alpha beta gamma"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w stops at punctuation inside foo.bar",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "foo.bar baz"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w from last word wraps to next line first word",
+    "lines": [
+      "alpha beta",
+      "gamma"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "alpha beta",
+        "gamma"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w at end of file stays on last character",
+    "lines": [
+      "alpha",
+      "beta"
+    ],
+    "cursor": [
+      1,
+      3
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "alpha",
+        "beta"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2w skips two words",
+    "lines": [
+      "one two three four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2w",
+    "expect": {
+      "lines": [
+        "one two three four"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w jumps over multiple spaces",
+    "lines": [
+      "one     two"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "one     two"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w stops on empty line",
+    "lines": [
+      "one",
+      "",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w handles accented word café",
+    "lines": [
+      "café latte"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "café latte"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "9w past end lands on last character",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "9w",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "w over punctuation run stops at next word",
+    "lines": [
+      "... word"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "w",
+    "expect": {
+      "lines": [
+        "... word"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b moves to previous word start",
+    "lines": [
+      "alpha beta gamma"
+    ],
+    "cursor": [
+      0,
+      11
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "alpha beta gamma"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b from line start goes to previous line last word",
+    "lines": [
+      "alpha beta",
+      "gamma"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "alpha beta",
+        "gamma"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b at file start stays put",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2b moves two words back",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      10
+    ],
+    "keys": "2b",
+    "expect": {
+      "lines": [
+        "one two three"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b from middle of word goes to word start",
+    "lines": [
+      "alphabet"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "alphabet"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b stops at punctuation inside foo.bar",
+    "lines": [
+      "foo.bar"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "foo.bar"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "b skips over empty line",
+    "lines": [
+      "one",
+      "",
+      "two"
+    ],
+    "cursor": [
+      2,
+      0
+    ],
+    "keys": "b",
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e moves to end of word",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e from word end goes to next word end",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e stops at punctuation inside foo.bar",
+    "lines": [
+      "foo.bar"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "foo.bar"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e at end of file stays put",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      9
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2e moves to second word end",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2e",
+    "expect": {
+      "lines": [
+        "one two three"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e on single character word moves to next word end",
+    "lines": [
+      "a b c"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "a b c"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "e crosses to next line word end",
+    "lines": [
+      "alpha",
+      "beta"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "e",
+    "expect": {
+      "lines": [
+        "alpha",
+        "beta"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "W skips punctuation inside WORD",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "W",
+    "expect": {
+      "lines": [
+        "foo.bar baz"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "W from foo.bar moves to baz",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "W",
+    "expect": {
+      "lines": [
+        "foo.bar baz"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2W skips two WORDs",
+    "lines": [
+      "a.b c.d e.f"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2W",
+    "expect": {
+      "lines": [
+        "a.b c.d e.f"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "W from last WORD on line goes to next line",
+    "lines": [
+      "one two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "W",
+    "expect": {
+      "lines": [
+        "one two",
+        "three"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "W at end of file stays put",
+    "lines": [
+      "a.b"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "W",
+    "expect": {
+      "lines": [
+        "a.b"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "B moves back over punctuation to WORD start",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "B",
+    "expect": {
+      "lines": [
+        "foo.bar baz"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "B from line start goes to previous line",
+    "lines": [
+      "one two",
+      "three"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "B",
+    "expect": {
+      "lines": [
+        "one two",
+        "three"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "B at file start is a no-op",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "B",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2B moves two WORDs back",
+    "lines": [
+      "a.b c.d e.f"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "2B",
+    "expect": {
+      "lines": [
+        "a.b c.d e.f"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "B from d in a.b c.d lands on c",
+    "lines": [
+      "a.b c.d"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "B",
+    "expect": {
+      "lines": [
+        "a.b c.d"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "E moves to end of WORD with punctuation",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "E",
+    "expect": {
+      "lines": [
+        "foo.bar baz"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "E crosses lines to end of next WORD",
+    "lines": [
+      "one",
+      "two three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "E",
+    "expect": {
+      "lines": [
+        "one",
+        "two three"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2E moves to second WORD end",
+    "lines": [
+      "a.b c.d e.f"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2E",
+    "expect": {
+      "lines": [
+        "a.b c.d e.f"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "E at file end stays put",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "E",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "0 from middle goes to column 0",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "0",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "0 on tab-indented line goes before the indent",
+    "lines": [
+      "\tindented"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "0",
+    "expect": {
+      "lines": [
+        "\tindented"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "^ goes to first non-blank character",
+    "lines": [
+      "   text"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "^",
+    "expect": {
+      "lines": [
+        "   text"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "^ on whitespace-only line",
+    "lines": [
+      "     "
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "^",
+    "expect": {
+      "lines": [
+        "     "
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "$ goes to last character",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "$",
+    "expect": {
+      "lines": [
+        "alpha beta"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3$ ends on third line",
+    "lines": [
+      "one",
+      "two",
+      "three four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3$",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three four"
+      ],
+      "cursor": [
+        2,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "$ on empty line stays at column 0",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "$",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "0 on empty line stays at column 0",
+    "lines": [
+      "",
+      ""
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "0",
+    "expect": {
+      "lines": [
+        "",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "^ on line without indent goes to column 0",
+    "lines": [
+      "alpha"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "^",
+    "expect": {
+      "lines": [
+        "alpha"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "gg from middle goes to first line",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      2,
+      2
+    ],
+    "keys": "gg",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "G goes to last line",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "G",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3G goes to line 3",
+    "lines": [
+      "one",
+      "two",
+      "three",
+      "four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3G",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three",
+        "four"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "99G clamps to last line",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "99G",
+    "expect": {
+      "lines": [
+        "one",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "gg on single empty line",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "gg",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "G on indented last line goes to first non-blank",
+    "lines": [
+      "x",
+      "  indented"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "G",
+    "expect": {
+      "lines": [
+        "x",
+        "  indented"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "fx finds next x on line",
+    "lines": [
+      "abxcdx"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "fx",
+    "expect": {
+      "lines": [
+        "abxcdx"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Fx finds previous x on line",
+    "lines": [
+      "abxcdx"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "Fx",
+    "expect": {
+      "lines": [
+        "abxcdx"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "tx stops before next x",
+    "lines": [
+      "abxcdx"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "tx",
+    "expect": {
+      "lines": [
+        "abxcdx"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Tx stops after previous x",
+    "lines": [
+      "abxcdx"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "Tx",
+    "expect": {
+      "lines": [
+        "abxcdx"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "; repeats f to next match",
+    "lines": [
+      "a.b.c.d"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "f.;",
+    "expect": {
+      "lines": [
+        "a.b.c.d"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": ", reverses the last f search",
+    "lines": [
+      "a.b.c.d"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "f.;,",
+    "expect": {
+      "lines": [
+        "a.b.c.d"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "; after t does not stay on adjacent match",
+    "lines": [
+      "a,,b,c"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "t,;",
+    "expect": {
+      "lines": [
+        "a,,b,c"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2fa finds second a on line",
+    "lines": [
+      "banana"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2fa",
+    "expect": {
+      "lines": [
+        "banana"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "f with no match leaves cursor in place",
+    "lines": [
+      "alpha"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "fz",
+    "expect": {
+      "lines": [
+        "alpha"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3; repeats f with count",
+    "lines": [
+      "a.b.c.d.e"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "f.3;",
+    "expect": {
+      "lines": [
+        "a.b.c.d.e"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "F then ; continues backward",
+    "lines": [
+      "x.y.z"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "F.;",
+    "expect": {
+      "lines": [
+        "x.y.z"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "; after failed f does nothing",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "fz;",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "% jumps to matching paren",
+    "lines": [
+      "f(a(b)c)"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "%",
+    "expect": {
+      "lines": [
+        "f(a(b)c)"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "% searches forward on line for a bracket",
+    "lines": [
+      "foo(bar)"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "%",
+    "expect": {
+      "lines": [
+        "foo(bar)"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "} moves to next blank line",
+    "lines": [
+      "one",
+      "two",
+      "",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "}",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "",
+        "three"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "{ moves to previous blank line",
+    "lines": [
+      "one",
+      "",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      3,
+      2
+    ],
+    "keys": "{",
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2} skips two blank lines",
+    "lines": [
+      "a",
+      "",
+      "b",
+      "",
+      "c"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2}",
+    "expect": {
+      "lines": [
+        "a",
+        "",
+        "b",
+        "",
+        "c"
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

@@ -1,0 +1,464 @@
+[
+  {
+    "name": "i inserts text before cursor",
+    "lines": [
+      "alpha"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "iXY<Esc>",
+    "expect": {
+      "lines": [
+        "alXYpha"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "i on empty line inserts text",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "iabc<Esc>",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<BS> in insert deletes a typed character",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "iXY<BS><Esc>",
+    "expect": {
+      "lines": [
+        "aXbc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "a appends text after cursor",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "aX<Esc>",
+    "expect": {
+      "lines": [
+        "aXbc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "A appends text at end of line",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "AX<Esc>",
+    "expect": {
+      "lines": [
+        "abcX"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "I inserts before first non-blank",
+    "lines": [
+      "   abc"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "IX<Esc>",
+    "expect": {
+      "lines": [
+        "   Xabc"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "o opens a line below and inserts",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "oX<Esc>",
+    "expect": {
+      "lines": [
+        "one",
+        "X",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "O opens a line above and inserts",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      1,
+      1
+    ],
+    "keys": "OX<Esc>",
+    "expect": {
+      "lines": [
+        "one",
+        "X",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<CR> in middle of line splits it",
+    "lines": [
+      "alphabeta"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "i<CR><Esc>",
+    "expect": {
+      "lines": [
+        "alpha",
+        "beta"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<BS> at column 0 joins with previous line",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "i<BS>X<Esc>",
+    "expect": {
+      "lines": [
+        "oneXtwo"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<Tab> in insert inserts a tab character",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "i<Tab>X<Esc>",
+    "expect": {
+      "lines": [
+        "\tXabc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "insert accented character after cafe",
+    "lines": [
+      "cafe"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "aé<Esc>",
+    "expect": {
+      "lines": [
+        "cafeé"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3ia repeats inserted text three times",
+    "lines": [
+      "x"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3iab<Esc>",
+    "expect": {
+      "lines": [
+        "abababx"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "o on last line adds a new last line",
+    "lines": [
+      "only"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "oX<Esc>",
+    "expect": {
+      "lines": [
+        "only",
+        "X"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "a on empty line inserts at column 0",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "aX<Esc>",
+    "expect": {
+      "lines": [
+        "X"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<Esc> after A leaves cursor on last inserted character",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "AX<Esc>",
+    "expect": {
+      "lines": [
+        "abcX"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": ":w<CR> writes buffer without quitting",
+    "lines": [
+      "one"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": ":w<CR>",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "/foo<CR> jumps to next match",
+    "lines": [
+      "foo bar",
+      "baz foo"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "/foo<CR>",
+    "expect": {
+      "lines": [
+        "foo bar",
+        "baz foo"
+      ],
+      "cursor": [
+        1,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "/foo<CR> wraps to top when no match after cursor",
+    "lines": [
+      "foo bar",
+      "baz"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "/foo<CR>",
+    "expect": {
+      "lines": [
+        "foo bar",
+        "baz"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "n repeats last search forward",
+    "lines": [
+      "foo",
+      "x foo",
+      "foo"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "/foo<CR>n",
+    "expect": {
+      "lines": [
+        "foo",
+        "x foo",
+        "foo"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "N repeats last search backward",
+    "lines": [
+      "foo",
+      "x foo",
+      "foo"
+    ],
+    "cursor": [
+      2,
+      0
+    ],
+    "keys": "/foo<CR>N",
+    "expect": {
+      "lines": [
+        "foo",
+        "x foo",
+        "foo"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

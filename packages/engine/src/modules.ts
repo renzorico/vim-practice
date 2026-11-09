@@ -14,7 +14,10 @@ import type { EngineError, EngineState, Key, Position, RegisterName } from './ty
 /** Where a motion lands, and how an operator should treat the covered text. */
 export interface MotionResult {
   readonly target: Position;
-  /** Linewise motions (j, k, gg, G, ', {, }) make operators act on whole lines. */
+  /**
+   * Linewise motions (j, k, gg, G, ') make operators act on whole lines.
+   * { and } are charwise exclusive in Vim; engine.ts applies the :help o_v rule that can make d} linewise.
+   */
   readonly linewise: boolean;
   /** Inclusive motions (e, $, f, t, %) include the target character in an operator range. */
   readonly inclusive: boolean;
