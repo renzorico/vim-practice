@@ -1,0 +1,39 @@
+# Merge gate for every agent's work, whatever the vendor: typecheck, unit tests and the
+# Neovim golden fidelity check. A branch merges only when this is green (see AGENTS.md).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The golden harness tests drive a real Neovim. Pinned to the version the goldens were generated with.
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: v0.11.4
+
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Tests (unit + golden fidelity)
+        run: npx vitest run

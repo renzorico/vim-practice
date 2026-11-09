@@ -15,6 +15,6 @@ npm workspaces, TypeScript strict, Vitest. Later: Vite + React + Zustand in apps
 1. Contracts are frozen: `packages/engine/src/types.ts`, `packages/curriculum/src/types.ts`. Only the orchestrator edits them.
 2. The engine is pure (no DOM, timers or randomness) so it can be replayed and compared with Neovim.
 3. One agent = one worktree = one module. Do not touch files outside your brief.
-4. A branch merges only when typecheck, tests, golden tests and level replay pass.
+4. A branch merges only when CI (`.github/workflows/ci.yml`: typecheck, tests, golden tests; level replay from Phase 2) is green.
 5. Every merge gets a BITACORA entry (the orchestrator writes it).
 6. Keys use Vim notation strings: 'j', '<Esc>', '<CR>', '<C-r>'.
