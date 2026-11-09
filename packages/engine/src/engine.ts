@@ -220,7 +220,9 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
   }
   const { id, count, arg, register, operator, operatorCount } = parsed;
   const commandId = operator !== null && id !== `${operator}${operator}` ? operator : id;
-  if (id !== '<Esc>' && !isAllowed(commandId, options)) return result(clean, [], notAllowed(commandId));
+  // ':' '/' '?' only open the command line; the completed command (':wq', '/') is checked in stepCommandLine.
+  const opensCommandLine = id === ':' || id === '/' || id === '?';
+  if (id !== '<Esc>' && !opensCommandLine && !isAllowed(commandId, options)) return result(clean, [], notAllowed(commandId));
 
   if (operator !== null) {
     const total = count === null && operatorCount === null ? null : Math.min((count ?? 1) * (operatorCount ?? 1), MAX_COUNT);

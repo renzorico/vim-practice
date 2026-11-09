@@ -1,0 +1,26 @@
+{
+  "id": "p-03-no-way-back",
+  "region": "prologue",
+  "type": "transform",
+  "title": "No Way Back",
+  "intro": "You wrote something you regret. Vim will not let you walk away from unsaved changes, unless you insist.",
+  "startLines": [
+    "Dear boss,",
+    "",
+    "Write anything you like on the empty line. Then try :q and read the error.",
+    "Then leave WITHOUT saving."
+  ],
+  "startCursor": { "line": 1, "col": 0 },
+  "goals": [{ "type": "quit", "mustSave": false }],
+  "teaches": ["ex.q!"],
+  "requires": ["mode.insert", "ex.q"],
+  "allowedCommands": ["i", ":q", ":q!", ":w", ":wq", ":x", "ZZ"],
+  "mustUse": ["ex.q!"],
+  "par": 7,
+  "solution": ["i", "x", "<Esc>", ":", "q", "!", "<CR>"],
+  "hints": [
+    ":q refuses to quit when there are unsaved changes. That is the E37 error.",
+    "An exclamation mark means: I know, do it anyway.",
+    "Type :q! and press Enter to quit and throw the changes away."
+  ]
+}
