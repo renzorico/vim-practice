@@ -1,14 +1,19 @@
 import type { CommandOutcome, Range } from '../modules.js';
 import type { EngineError, EngineState, Position, RegisterName } from '../types.js';
 import { linewiseText, writeRegister } from './registers.js';
-import { clamp, extractText, lastCol, lineAt, removeText } from './text.js';
+import { charLengthAt, clamp, extractText, lastCol, lineAt, removeText } from './text.js';
 
 /** Snapshot before a change so `u` can restore it. A new change clears the redo history. */
 export function pushUndo(state: EngineState): EngineState {
+  // The new revision number must differ from savedSeq even after undo moved changeSeq
+  // below it (edit, save, undo, edit), otherwise `modified` would read false.
+  const changeSeq = Math.max(state.changeSeq, state.savedSeq) + 1;
   return {
     ...state,
-    undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor }],
+    undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq }],
     redoStack: [],
+    changeSeq,
+    modified: changeSeq !== state.savedSeq,
   };
 }
 
@@ -38,7 +43,10 @@ function isRangeInBuffer(lines: readonly string[], range: Range): boolean {
 /**
  * Turns a charwise Range into start + exclusive end.
  * - Exclusive range ending in column 0 of a later line stops at the end of the
- *   previous line (Vim's "o_v" rule, so `dw` on a last word never joins lines).
+ *   previous line (first half of Vim's "o_v" rule, so `dw` on a last word never
+ *   joins lines). The other half, promotion to linewise when the start is at or
+ *   before the first non-blank (`d/target<CR>`), needs the motion and belongs to
+ *   engine.ts, which then passes a linewise Range.
  * - Inclusive range ending past the last character (visual selection over a line
  *   break, or an empty line inside a multi-line selection) also takes the line break.
  */
@@ -53,11 +61,12 @@ function resolveCharRegion(lines: readonly string[], range: Range): CharRegion {
   }
 
   const endLine = lineAt(lines, end.line);
-  const exclusiveCol = range.inclusive ? end.col + 1 : end.col;
+  const exclusiveCol = range.inclusive ? end.col + Math.max(1, charLengthAt(endLine, end.col)) : end.col;
   const overshoots = range.inclusive && end.col >= endLine.length;
-  const takesLineBreak =
-    overshoots && end.line < lines.length - 1 && (endLine.length > 0 || end.line > start.line);
-  if (takesLineBreak) {
+  // An inclusive range cannot be told apart from a visual selection here, so an
+  // empty line selected on its own (`vd`) takes its line break. engine.ts must pass
+  // an exclusive empty range for `d$`, `de`, `dl` on an empty line (Vim does nothing).
+  if (overshoots && end.line < lines.length - 1) {
     return { start: regionStart, end: { line: end.line + 1, col: 0 } };
   }
   return { start: regionStart, end: { line: end.line, col: Math.min(exclusiveCol, endLine.length) } };

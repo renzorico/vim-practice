@@ -54,9 +54,9 @@ describe('operator d', () => {
   });
 
   it('pushes an undo snapshot and clears redo', () => {
-    const start = { ...state(['abc']), redoStack: [{ lines: ['zzz'], cursor: { line: 0, col: 0 } }] };
+    const start = { ...state(['abc']), redoStack: [{ lines: ['zzz'], cursor: { line: 0, col: 0 }, seq: 5 }] };
     const out = operators.d(start, charRange(0, 0, 0, 1, false), null);
-    expect(out.state.undoStack).toEqual([{ lines: ['abc'], cursor: { line: 0, col: 0 } }]);
+    expect(out.state.undoStack).toEqual([{ lines: ['abc'], cursor: { line: 0, col: 0 }, seq: 0 }]);
     expect(out.state.redoStack).toEqual([]);
   });
 
@@ -103,9 +103,9 @@ describe('operator d', () => {
     expect(out.state.registers['"']).toEqual(charwise('a\n\n'));
   });
 
-  it('does nothing for an empty region (d$ on an empty line)', () => {
+  it('does nothing for an empty exclusive region (dl on an empty line)', () => {
     const start = state(['', 'x']);
-    const out = operators.d(start, charRange(0, 0, 0, 0, true), null);
+    const out = operators.d(start, charRange(0, 0, 0, 0, false), null);
     expect(out.state).toBe(start);
     expect(out.error).toBeNull();
   });
@@ -287,9 +287,9 @@ describe('writeRegister', () => {
 
 describe('pushUndo', () => {
   it('snapshots lines and cursor and clears redo', () => {
-    const start = { ...state(['a'], 0, 0), redoStack: [{ lines: ['b'], cursor: { line: 0, col: 0 } }] };
+    const start = { ...state(['a'], 0, 0), redoStack: [{ lines: ['b'], cursor: { line: 0, col: 0 }, seq: 5 }] };
     const out = pushUndo(start);
-    expect(out.undoStack).toEqual([{ lines: ['a'], cursor: { line: 0, col: 0 } }]);
+    expect(out.undoStack).toEqual([{ lines: ['a'], cursor: { line: 0, col: 0 }, seq: 0 }]);
     expect(out.redoStack).toEqual([]);
   });
 });
@@ -678,5 +678,114 @@ describe('u and <C-r>', () => {
   it('undo returns to normal mode', () => {
     const changed = { ...simple('x', state(['abc'])).state, mode: 'insert' as const };
     expect(simple('u', changed).state.mode).toBe('normal');
+  });
+});
+
+describe('review regressions', () => {
+  it('vd on an empty non-final line deletes its line break and registers it', () => {
+    const out = operators.d(state(['a', '', 'b'], 1, 0), charRange(1, 0, 1, 0, true), null);
+    expect(out.state.lines).toEqual(['a', 'b']);
+    expect(out.state.registers['1']).toEqual(charwise('\n'));
+    expect(cursorOf(out)).toEqual([1, 0]);
+  });
+
+  it('vy on an empty non-final line yanks the line break', () => {
+    const out = operators.y(state(['a', '', 'b'], 1, 0), charRange(1, 0, 1, 0, true), null);
+    expect(out.state.registers['0']).toEqual(charwise('\n'));
+    expect(out.state.lines).toEqual(['a', '', 'b']);
+  });
+
+  it('d/target style range promoted to linewise by engine.ts deletes whole lines', () => {
+    const out = operators.d(state(['abc', 'target'], 0, 0), lineRange(0, 0), null);
+    expect(out.state.lines).toEqual(['target']);
+  });
+
+  it('multi-line charwise paste after the last character keeps the cursor on the line', () => {
+    const out = simple('p', state(['abc'], 0, 2, { '"': charwise('\nx') }));
+    expect(out.state.lines).toEqual(['abc', 'x']);
+    expect(cursorOf(out)).toEqual([0, 2]);
+  });
+
+  it('edit, save, undo keeps modified true', () => {
+    const edited = simple('x', state(['abc'])).state;
+    expect(edited.modified).toBe(true);
+    const saved = { ...edited, savedSeq: edited.changeSeq, modified: false, saved: true };
+    const undone = simple('u', saved).state;
+    expect(undone.changeSeq).toBe(0);
+    expect(undone.modified).toBe(true);
+    const redone = simple('<C-r>', undone).state;
+    expect(redone.changeSeq).toBe(saved.changeSeq);
+    expect(redone.modified).toBe(false);
+  });
+
+  it('undoing back to the saved revision is not modified', () => {
+    const edited = simple('x', state(['abc'])).state;
+    expect(simple('u', edited).state.modified).toBe(false);
+  });
+
+  it('a new edit after save and undo is modified even when seq numbers would collide', () => {
+    const edited = simple('x', state(['abc'])).state;
+    const saved = { ...edited, savedSeq: edited.changeSeq, modified: false };
+    const undone = simple('u', saved).state;
+    const again = simple('x', undone).state;
+    expect(again.changeSeq).not.toBe(again.savedSeq);
+    expect(again.modified).toBe(true);
+  });
+
+  it('pushUndo increments changeSeq and records the previous seq', () => {
+    const out = pushUndo(state(['a']));
+    expect(out.changeSeq).toBe(1);
+    expect(out.undoStack[0]?.seq).toBe(0);
+    expect(out.modified).toBe(true);
+  });
+
+  it('a huge undo count stops at the available history', () => {
+    let current = state(['abc']);
+    current = simple('x', current).state;
+    const out = simple('u', current, Number.MAX_SAFE_INTEGER);
+    expect(out.state.lines).toEqual(['abc']);
+    expect(out.error).toBeNull();
+    const redo = simple('<C-r>', out.state, Number.MAX_SAFE_INTEGER);
+    expect(redo.state.lines).toEqual(['bc']);
+  });
+
+  it('x deletes a whole surrogate pair', () => {
+    const out = simple('x', state(['a😀b'], 0, 1));
+    expect(out.state.lines).toEqual(['ab']);
+    expect(out.state.registers['-']).toEqual(charwise('😀'));
+  });
+
+  it('2x counts characters, not UTF-16 units', () => {
+    expect(simple('x', state(['😀😀😀']), 2).state.lines).toEqual(['😀']);
+  });
+
+  it('x on a final emoji leaves the cursor on it start', () => {
+    const out = simple('x', state(['a😀'], 0, 1));
+    expect(out.state.lines).toEqual(['a']);
+    expect(cursorOf(out)).toEqual([0, 0]);
+  });
+
+  it('X deletes the whole character before the cursor', () => {
+    const out = simple('X', state(['😀b'], 0, 2));
+    expect(out.state.lines).toEqual(['b']);
+    expect(out.state.registers['-']).toEqual(charwise('😀'));
+  });
+
+  it('r replaces a whole emoji and counts characters', () => {
+    expect(simple('r', state(['😀b']), 1, null, 'x').state.lines).toEqual(['xb']);
+    expect(simple('r', state(['😀b']), 2, null, 'x').state.lines).toEqual(['xx']);
+    expect(simple('r', state(['😀b']), 3, null, 'x').error).not.toBeNull();
+  });
+
+  it('r with an emoji argument keeps the cursor on the emoji start', () => {
+    const out = simple('r', state(['abc']), 1, null, '😀');
+    expect(out.state.lines).toEqual(['😀bc']);
+    expect(cursorOf(out)).toEqual([0, 0]);
+  });
+
+  it('p after an emoji does not split it', () => {
+    const out = simple('p', state(['😀'], 0, 0, { '"': charwise('x') }));
+    expect(out.state.lines).toEqual(['😀x']);
+    expect(cursorOf(out)).toEqual([0, 2]);
   });
 });

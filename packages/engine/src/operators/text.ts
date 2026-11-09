@@ -8,9 +8,44 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-/** Highest valid normal-mode column of a line (0 for an empty line). */
+function isHighSurrogate(code: number): boolean {
+  return code >= 0xd800 && code <= 0xdbff;
+}
+
+function isLowSurrogate(code: number): boolean {
+  return code >= 0xdc00 && code <= 0xdfff;
+}
+
+/** UTF-16 length (1 or 2) of the character starting at `col`; 0 past the end. */
+export function charLengthAt(line: string, col: number): number {
+  if (col >= line.length) {
+    return 0;
+  }
+  const next = line.charCodeAt(col + 1);
+  return isHighSurrogate(line.charCodeAt(col)) && isLowSurrogate(next) ? 2 : 1;
+}
+
+/** Column just after `count` characters starting at `col` (clamped to the line end). */
+export function advanceChars(line: string, col: number, count: number): number {
+  let index = col;
+  for (let step = 0; step < count && index < line.length; step += 1) {
+    index += charLengthAt(line, index);
+  }
+  return index;
+}
+
+/** Column `count` characters before `col` (clamped to 0); never lands inside a surrogate pair. */
+export function retreatChars(line: string, col: number, count: number): number {
+  let index = col;
+  for (let step = 0; step < count && index > 0; step += 1) {
+    index -= isLowSurrogate(line.charCodeAt(index - 1)) && index > 1 && isHighSurrogate(line.charCodeAt(index - 2)) ? 2 : 1;
+  }
+  return index;
+}
+
+/** Start column of the last character of a line (0 for an empty line): the highest normal-mode column. */
 export function lastCol(line: string): number {
-  return Math.max(0, line.length - 1);
+  return line.length === 0 ? 0 : retreatChars(line, line.length, 1);
 }
 
 export function firstNonBlankCol(line: string): number {
