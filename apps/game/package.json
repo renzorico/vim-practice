@@ -14,7 +14,8 @@
     "@escape/engine": "*",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "zustand": "5.0.2"
+    "zustand": "5.0.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/react": "18.3.12",
