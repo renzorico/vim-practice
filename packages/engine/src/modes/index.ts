@@ -1,0 +1,180 @@
+import type { CommandLineOutcome, ModeDeps } from '../modules.js';
+import type { EngineState, Key, Position } from '../types.js';
+
+type InsertCommand = 'i' | 'a' | 'I' | 'A' | 'o' | 'O';
+type Prompt = ':' | '/' | '?';
+
+function firstNonBlank(line: string): number {
+  const column = line.search(/\S/u);
+  return column < 0 ? 0 : column;
+}
+
+/** Columns are UTF-16 offsets; moving left still crosses one whole character. */
+function previousColumn(line: string, column: number): number {
+  const previous = column - 1;
+  if (previous > 0 && /[\uDC00-\uDFFF]/u.test(line[previous] ?? '')
+    && /[\uD800-\uDBFF]/u.test(line[previous - 1] ?? '')) {
+    return previous - 1;
+  }
+  return Math.max(0, previous);
+}
+
+function moveCursor(state: EngineState, cursor: Position): EngineState {
+  return { ...state, cursor, desiredCol: cursor.col };
+}
+
+export function enterInsert(state: EngineState, how: InsertCommand, deps: ModeDeps): EngineState {
+  // One undo snapshot covers the entire ensuing insert session.
+  const before = deps.pushUndo(state);
+  const { line, col } = state.cursor;
+  const text = state.lines[line] ?? '';
+  if (how === 'o' || how === 'O') {
+    const insertionLine = how === 'o' ? line + 1 : line;
+    const lines = [...before.lines];
+    lines.splice(insertionLine, 0, '');
+    return moveCursor({ ...before, lines, mode: 'insert', modified: true }, {
+      line: insertionLine, col: 0,
+    });
+  }
+  let column = col;
+  if (how === 'a') {
+    const character = text.codePointAt(col);
+    column = Math.min(text.length, col + (character !== undefined && character > 0xFFFF ? 2 : 1));
+  } else if (how === 'I') {
+    // Unlike ^, I goes past all whitespace when the line contains only blanks.
+    column = /\S/u.test(text) ? firstNonBlank(text) : text.length;
+  } else if (how === 'A') {
+    column = text.length;
+  }
+  return moveCursor({ ...before, mode: 'insert' }, { line, col: column });
+}
+
+export function exitToNormal(state: EngineState): EngineState {
+  return { ...state, mode: 'normal', visualAnchor: null, commandLine: '' };
+}
+
+export function handleInsertKey(state: EngineState, key: Key): EngineState {
+  const recorded: EngineState = state.changeInProgress === null ? state : {
+    ...state, changeInProgress: [...state.changeInProgress, key],
+  };
+  const { line, col } = state.cursor;
+  const text = state.lines[line] ?? '';
+  if (key === '<Esc>') {
+    return moveCursor(exitToNormal(recorded), { line, col: previousColumn(text, col) });
+  }
+
+  const lines = [...state.lines];
+  let cursor: Position;
+  if (key === '<BS>') {
+    if (col > 0) {
+      const column = previousColumn(text, col);
+      lines[line] = text.slice(0, column) + text.slice(col);
+      cursor = { line, col: column };
+    } else if (line > 0) {
+      const previous = lines[line - 1] ?? '';
+      lines.splice(line - 1, 2, previous + text);
+      cursor = { line: line - 1, col: previous.length };
+    } else {
+      return recorded;
+    }
+  } else if (key === '<CR>') {
+    lines.splice(line, 1, text.slice(0, col), text.slice(col));
+    cursor = { line: line + 1, col: 0 };
+  } else if (/^[^\u0000-\u001F\u007F-\u009F]$/u.test(key)) {
+    lines[line] = text.slice(0, col) + key + text.slice(col);
+    cursor = { line, col: col + key.length };
+  } else {
+    return recorded;
+  }
+  return moveCursor({ ...recorded, lines, modified: true }, cursor);
+}
+
+export function enterVisual(state: EngineState, kind: 'visual' | 'visual-line'): EngineState {
+  return { ...state, mode: kind, visualAnchor: { ...state.cursor } };
+}
+
+export function enterCommandLine(state: EngineState, prompt: Prompt): EngineState {
+  // The frozen state has no separate prompt field: retain it as the first character.
+  return { ...state, mode: 'command-line', commandLine: prompt };
+}
+
+function executeEx(state: EngineState, input: string): CommandLineOutcome {
+  const command = input.trim();
+  const completed = { id: `:${command}`, kind: 'ex' as const };
+  if (command === 'q' && state.modified) {
+    return {
+      state, completed,
+      error: { code: 'not-allowed', message: 'E37: No write since last change (add ! to override)' },
+    };
+  }
+  if (command === 'q' || command === 'q!') {
+    return { state: { ...state, quitRequested: true }, completed, error: null };
+  }
+  if (command === 'w' || command === 'wq' || command === 'x') {
+    const write = command !== 'x' || state.modified;
+    return {
+      state: {
+        ...state,
+        saved: write || state.saved,
+        modified: write ? false : state.modified,
+        quitRequested: command !== 'w' || state.quitRequested,
+      },
+      completed, error: null,
+    };
+  }
+  if (/^\d+$/u.test(command)) {
+    const line = Math.max(0, Math.min(state.lines.length - 1, Number(command) - 1));
+    return {
+      state: moveCursor(state, { line, col: firstNonBlank(state.lines[line] ?? '') }),
+      completed, error: null,
+    };
+  }
+  if (command === '') return { state, completed, error: null };
+  return {
+    state, completed,
+    error: { code: 'unknown-command', message: `E492: Not an editor command: ${input}` },
+  };
+}
+
+function executeSearch(state: EngineState, input: string, forward: boolean, deps: ModeDeps): CommandLineOutcome {
+  const completed = { id: forward ? '/' : '?', kind: 'search' as const };
+  const pattern = input || state.lastSearch?.pattern;
+  if (!pattern) {
+    return {
+      state, completed,
+      error: { code: 'no-previous-search', message: 'E35: No previous regular expression' },
+    };
+  }
+  const searched = { ...state, lastSearch: { pattern, forward } };
+  const target = deps.findPattern(state.lines, state.cursor, pattern, forward);
+  if (target === null) {
+    return {
+      state: searched, completed,
+      error: { code: 'pattern-not-found', message: `E486: Pattern not found: ${pattern}` },
+    };
+  }
+  return { state: moveCursor(searched, target), completed, error: null };
+}
+
+export function handleCommandLineKey(state: EngineState, key: Key, deps: ModeDeps): CommandLineOutcome {
+  if (key === '<Esc>') return { state: exitToNormal(state), completed: null, error: null };
+  if (key === '<BS>') {
+    return {
+      state: state.commandLine.length <= 1 ? exitToNormal(state) : {
+        ...state, commandLine: state.commandLine.slice(0, previousColumn(state.commandLine, state.commandLine.length)),
+      },
+      completed: null, error: null,
+    };
+  }
+  if (key === '<CR>') {
+    const normal = exitToNormal(state);
+    const prompt = state.commandLine[0];
+    const input = state.commandLine.slice(1);
+    return prompt === '/' || prompt === '?'
+      ? executeSearch(normal, input, prompt === '/', deps)
+      : executeEx(normal, input);
+  }
+  const next = /^[^\u0000-\u001F\u007F-\u009F]$/u.test(key)
+    ? { ...state, commandLine: state.commandLine + key } : state;
+  return { state: next, completed: null, error: null };
+}
