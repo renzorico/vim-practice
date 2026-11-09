@@ -133,6 +133,27 @@ Tags: `#gates` `#eval` `#fanout` `#routing`
 
 ---
 
+## 2026-11-09: P1-F, integration + wiring, engine matches Neovim
+Phase: 1 | Agent(s): Orchestrator (Opus) | Branch: phase-1/engine
+Tags: `#fanout` `#gates` `#contracts`
+
+**What:** The 5 builder branches were merged into `phase-1/engine` (0 conflicts). I wrote `engine.ts`, which wires the modules into `Engine.step`: a key parser for `["x][count]cmd` and `op[count]motion`, Vim's exclusive-to-linewise rule, `cw` as `ce`, `.` repeat, counted insert, collapsing empty-insert undo steps, and visual operators. Neovim generated the expectations for the 161 golden cases.
+
+**Result:** First run 152/161 → **161/161 golden cases match real Neovim**, and 909 tests pass.
+
+**The 9 first-run failures, by root cause:**
+- 3 came from **my own P1-D brief**: "`set nowrapscan` off" is ambiguous, and the generator turned wrapscan off. It also pinned `cpoptions` without Neovim's `_` flag. Ruling: **the oracle is stock Neovim defaults.**
+- 2 were Vim-vs-Neovim default differences (`nostartofline`, `Y` = `y$`). Same ruling: follow Neovim.
+- 4 were real wiring gaps (counted insert, `3dd` past the end, `<Tab>`, `cw`).
+
+**Decision:** The game teaches **Neovim defaults**. They're what most new learners install, and the oracle has to be one well-defined program.
+
+**Not done yet:** The P1-A and P1-D review fixes are still uncommitted, because the classifier blocked me from committing them. The integration branch has their pre-fix versions, so `tsc` shows 3 errors in A's old tests. `phase-1/engine` isn't pushed.
+
+**Lesson:** A golden oracle is only as good as its configuration. The ambiguous brief line cost more than any model mistake did, and the oracle caught it in minutes.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

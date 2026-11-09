@@ -15,7 +15,7 @@ Rules:
 | P1-C | Operators `d c y p`, registers, undo/redo, `.` | `packages/engine/src/operators/**`, `packages/engine/src/registers/**` | claude subagent (Sonnet) | codex | worktree-agent-a300c4f4 | ready-to-merge |
 | P1-D | nvim golden-test harness | `tools/golden/**` (not cases), `packages/engine/src/keys.ts` | codex | claude-sonnet | task/P1-D | ready-to-merge |
 | P1-E | Edge-case golden cases for P1-B and P1-C | `tools/golden/cases/**` | claude subagent (Haiku) | orchestrator | worktree-agent-a5d697fd | ready-to-merge |
-| P1-F | Wire modules into `Engine.step` (after A-D merge) | `packages/engine/src/engine.ts` | orchestrator | codex | task/P1-F | todo |
+| P1-F | Wire modules into `Engine.step` (after A-D merge) | `packages/engine/src/engine.ts` | orchestrator | codex | phase-1/engine | review |
 
 ## Backlog (minor review findings, not blocking merge)
 
