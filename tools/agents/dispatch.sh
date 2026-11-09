@@ -46,7 +46,7 @@ case "$RUNNER" in
     ;;
   codex)
     # Uses your ChatGPT Plus login (`codex login`). Sandboxed to the worktree.
-    CMD=(codex exec --full-auto -C "$WORKTREE_DIR" "$PROMPT")
+    CMD=(codex exec -s workspace-write --add-dir "$(git -C "$REPO_ROOT" rev-parse --path-format=absolute --git-common-dir)" -C "$WORKTREE_DIR" "$PROMPT")
     ;;
   *)
     echo "Unknown runner: $RUNNER" >&2; exit 1 ;;
