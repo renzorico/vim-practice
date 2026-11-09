@@ -7,3 +7,4 @@
 - When unsure how Vim behaves, check real Neovim: `nvim --headless -u NONE` (it is installed). Do not guess.
 - Done = `npx tsc -b` and `npx vitest run` both pass. Then commit on your branch with a Conventional Commit message.
 - Final report, max 12 lines: files, commands supported, test count, any behaviour you could not match to Vim.
+- If a sandbox or guard blocks you, stop and report it. Never work around it (no absolute binary paths, no sandbox overrides).
