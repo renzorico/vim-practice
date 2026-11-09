@@ -153,10 +153,21 @@ describe('replayLevel', () => {
     expect(result).toEqual({ won: true, keystrokes: 4, overPar: true, failureReason: null });
   });
 
-  it('does not count keys sent after the win', () => {
+  it('fails with extra-keys when the level is won before the solution ends', () => {
     const result = replayLevel(makeLevel({ id: 'c', par: 5, solution: ['y', 'x'] }), fakeRunnerRecording([]));
-    expect(result.keystrokes).toBe(1);
-    expect(result.won).toBe(true);
+    expect(result).toEqual({ won: false, keystrokes: 1, overPar: false, failureReason: 'extra-keys' });
+  });
+
+  it('regression: a 3-key solution with par 1 is overPar even when it wins on key 1', () => {
+    const result = replayLevel(makeLevel({ id: 'f', par: 1, solution: ['y', 'x', 'x'] }), fakeRunnerRecording([]));
+    expect(result.overPar).toBe(true);
+    expect(result.won).toBe(false);
+    expect(result.failureReason).toBe('extra-keys');
+  });
+
+  it('wins and is overPar when the solution is longer than par with no extra keys', () => {
+    const result = replayLevel(makeLevel({ id: 'g', par: 2, solution: ['x', 'x', 'y'] }), fakeRunnerRecording([]));
+    expect(result).toEqual({ won: true, keystrokes: 3, overPar: true, failureReason: null });
   });
 
   it('reports the runner failure reason when the player quits', () => {

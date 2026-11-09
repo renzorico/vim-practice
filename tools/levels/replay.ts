@@ -7,28 +7,40 @@ export interface LevelRunner {
   readonly stepLevel: StepLevelFn;
 }
 
-/** 'unfinished': the solution ran out before the level was won and the run did not fail. */
-export type ReplayFailure = NonNullable<LevelRun['failureReason']> | 'unfinished';
+/**
+ * 'unfinished': the solution ran out before the level was won and the run did not fail.
+ * 'extra-keys': the level was won before the solution ran out, so the solution is not canonical.
+ */
+export type ReplayFailure = NonNullable<LevelRun['failureReason']> | 'unfinished' | 'extra-keys';
 
 export interface ReplayResult {
+  /** True only when every goal was met AND no solution key was left over after the win. */
   readonly won: boolean;
+  /** Keys the runner counted while playing. The runner stops counting after a win. */
   readonly keystrokes: number;
-  /** True when keystrokes exceed the level's par. CI requires won && !overPar. */
+  /** True when the solution length exceeds par (the Level contract: solution length <= par). CI requires won && !overPar. */
   readonly overPar: boolean;
   readonly failureReason: ReplayFailure | null;
 }
 
 /** Feeds the level's known-good solution through the runner and reports the outcome. */
 export function replayLevel(level: Level, runner: LevelRunner): ReplayResult {
-  const finalRun = level.solution.reduce<LevelRun>(
-    (run, key) => runner.stepLevel(run, key),
-    runner.startLevel(level),
-  );
-  const won = finalRun.status === 'won';
+  let run = runner.startLevel(level);
+  let fedKeys = 0;
+  for (const key of level.solution) {
+    if (run.status !== 'playing') break;
+    run = runner.stepLevel(run, key);
+    fedKeys += 1;
+  }
+  const won = run.status === 'won';
+  const hasExtraKeys = fedKeys < level.solution.length;
+  const failureReason: ReplayFailure | null = won
+    ? (hasExtraKeys ? 'extra-keys' : null)
+    : (run.failureReason ?? 'unfinished');
   return {
-    won,
-    keystrokes: finalRun.keystrokes,
-    overPar: finalRun.keystrokes > level.par,
-    failureReason: won ? null : (finalRun.failureReason ?? 'unfinished'),
+    won: won && !hasExtraKeys,
+    keystrokes: run.keystrokes,
+    overPar: level.solution.length > level.par,
+    failureReason,
   };
 }
