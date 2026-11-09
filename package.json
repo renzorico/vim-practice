@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tools/golden/tsconfig.json && tsc -p tools/tsconfig.json",
     "test": "vitest run",
     "play": "tsx tools/play.ts"
   },
