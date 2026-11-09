@@ -1,7 +1,8 @@
-/** Local Ollama authoring tool. Drafts still need the curriculum replay gate. */
-import { mkdir, writeFile } from 'node:fs/promises';
+/** Local Ollama authoring tool. Validates and replays drafts before writing them. */
+import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createEngine } from '../packages/engine/src/engine.js';
 import { SKILLS, SKILL_IDS } from '../packages/curriculum/src/catalog.js';
 import { parseLevel } from '../packages/curriculum/src/schema.js';
 import type { Level, RegionId } from '../packages/curriculum/src/types.js';
@@ -107,10 +108,21 @@ async function askOllama(host: string, model: string, messages: readonly Message
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(`Ollama request timed out at ${endpoint}. ${errorText(error)}`);
+    }
     throw new Error(`Cannot reach Ollama at ${endpoint}. Start Ollama and check OLLAMA_HOST. ${errorText(error)}`);
   }
   if (!response.ok) throw new Error(`Ollama at ${endpoint} returned HTTP ${response.status}. Check that model "${model}" is installed.`);
-  const payload: unknown = await response.json();
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(`Ollama request timed out at ${endpoint}. ${errorText(error)}`);
+    }
+    throw new Error(`Cannot read Ollama JSON response at ${endpoint}. ${errorText(error)}`);
+  }
   if (typeof payload !== 'object' || payload === null || !('message' in payload)
       || typeof payload.message !== 'object' || payload.message === null || !('content' in payload.message)
       || typeof payload.message.content !== 'string') {
@@ -119,26 +131,49 @@ async function askOllama(host: string, model: string, messages: readonly Message
   return payload.message.content;
 }
 
+/** Replays keys through the engine; goals inspect only the resulting state. */
+function validateSolution(level: Level): void {
+  if (level.solution.length > level.par) throw new Error('solution length exceeds par');
+  const engine = createEngine();
+  let state = engine.init(level.startLines, level.startCursor);
+  for (const key of level.solution) {
+    const result = engine.step(state, key, level.allowedCommands === undefined ? {} : { allowedCommands: level.allowedCommands });
+    if (result.error) throw new Error(`solution replay failed: ${result.error.code}: ${result.error.message}`);
+    state = result.state;
+  }
+  for (const [index, goal] of level.goals.entries()) {
+    let met: boolean;
+    switch (goal.type) {
+      case 'reach': met = state.cursor.line === goal.target.line && state.cursor.col === goal.target.col; break;
+      case 'transform': met = JSON.stringify(state.lines) === JSON.stringify(goal.targetLines); break;
+      case 'collect': met = state.registers[goal.register]?.text === goal.text; break;
+      case 'quit': met = state.quitRequested && (!goal.mustSave || state.saved); break;
+    }
+    if (!met) throw new Error(`solution does not meet goal ${index + 1} (${goal.type})`);
+  }
+}
+
 export async function draftLevels(options: DraftOptions): Promise<DraftResult[]> {
   if (!Number.isSafeInteger(options.count) || options.count < 1) throw new Error('Count must be a positive integer.');
   const regionIndex = REGIONS.indexOf(options.region);
   const regionSkills = SKILLS.filter((skill) => skill.region === options.region);
   if (regionSkills.length === 0) throw new Error(`No skills are catalogued for region "${options.region}".`);
   const learned = new Set(SKILLS.filter((skill) => REGIONS.indexOf(skill.region) < regionIndex).map((skill) => skill.id));
-  const acceptedIds = new Set<string>();
   const out = resolve(options.out ?? DEFAULT_OUT);
   await mkdir(out, { recursive: true });
+  const acceptedIds = new Set([...EXAMPLES.map(({ id }) => id), ...(await readdir(out, { withFileTypes: true })).filter((entry) => entry.isFile() && entry.name.endsWith('.json')).map((entry) => entry.name.slice(0, -5))]);
   const results: DraftResult[] = [];
   for (let number = 1; number <= options.count; number += 1) {
     const messages: Message[] = [{ role: 'user', content: [
       `Draft one ESCAPE level as JSON only, number ${number} of ${options.count}, region ${options.region}.`,
       `Region skills (id, name, prerequisites): ${JSON.stringify(regionSkills.map(({ id, name, prerequisites }) => ({ id, name, prerequisites })))}`,
-      `Earlier skills, all required cumulatively in requires: ${JSON.stringify([...learned])}.`,
+      `Learned skills (requires may use any subset): ${JSON.stringify([...learned])}.`,
       `Already accepted ids (choose a unique id): ${JSON.stringify([...acceptedIds])}.`,
       `Level types: ${LEVEL_TYPES.join(', ')}. hunt uses a collect goal; golf has a keystroke par; boss combines skills; review practises earlier skills.`,
       `Two short example levels (illustrations only): ${JSON.stringify(EXAMPLES)}`,
       'Use tiny buffers of 3-8 lines; an intro of at most 2 sentences; 1-4 hints progressing from vague to specific.',
       'requires must only use skills from earlier levels or regions; never require a skill first taught here. Teach only region skills whose prerequisites are already earlier skills.',
+      'teaches must be nonempty unless type is review. Never reuse an example id.',
       'Use only catalogued skills. Include a known-good solution as individual Vim notation keys, e.g. [":","q","<CR>"], and a positive par at least its length. Positions are zero-based.',
     ].join('\n') }];
     let answer = '';
@@ -147,18 +182,27 @@ export async function draftLevels(options: DraftOptions): Promise<DraftResult[]>
     let retries = 0;
     for (let attempt = 0; attempt < 2; attempt += 1) {
       retries = attempt;
-      answer = await askOllama(process.env.OLLAMA_HOST ?? 'http://localhost:11434', options.model, messages);
+      try {
+        answer = await askOllama(process.env.OLLAMA_HOST ?? 'http://localhost:11434', options.model, messages);
+      } catch (error) {
+        validationError = errorText(error);
+        break;
+      }
       try {
         const json: unknown = JSON.parse(answer);
         const level = parseLevel(json);
         if (level.region !== options.region) throw new Error(`region must be ${options.region}`);
         if (acceptedIds.has(level.id)) throw new Error(`Duplicate level id: ${level.id}`);
-        if (level.requires.some((skill) => !learned.has(skill)) || [...learned].some((skill) => !level.requires.includes(skill))) {
-          throw new Error(`requires must contain exactly the earlier skills: ${JSON.stringify([...learned])}`);
+        if (level.requires.some((skill) => !learned.has(skill))) {
+          throw new Error(`requires must use only learned skills: ${JSON.stringify([...learned])}`);
         }
         if (level.teaches.some((id) => !regionSkills.some((skill) => skill.id === id && skill.prerequisites.every((prerequisite) => learned.has(prerequisite))))) {
           throw new Error('teaches must use region skills with already learned prerequisites.');
         }
+        if (level.type !== 'review' && level.teaches.length === 0) throw new Error('teaches must be nonempty unless type is review.');
+        validateSolution(level);
+        await writeFile(join(out, `${level.id}.json`), `${JSON.stringify(level, null, 2)}\n`, { flag: 'wx' });
+        acceptedIds.add(level.id);
         accepted = level;
         break;
       } catch (error) {
@@ -167,14 +211,16 @@ export async function draftLevels(options: DraftOptions): Promise<DraftResult[]>
       }
     }
     if (accepted) {
-      await writeFile(join(out, `${accepted.id}.json`), `${JSON.stringify(accepted, null, 2)}\n`, { flag: 'wx' });
-      acceptedIds.add(accepted.id);
       accepted.teaches.forEach((skill) => learned.add(skill));
       results.push({ id: accepted.id, valid: true, retries });
     } else {
       const rejected = join(out, 'rejected');
-      await mkdir(rejected, { recursive: true });
-      await writeFile(join(rejected, `${number}.json`), `${JSON.stringify({ answer, error: validationError }, null, 2)}\n`);
+      try {
+        await mkdir(rejected, { recursive: true });
+        await writeFile(join(rejected, `${number}.json`), `${JSON.stringify({ answer, error: validationError }, null, 2)}\n`);
+      } catch (error) {
+        console.error(`Cannot archive rejected draft ${number}: ${errorText(error)}`);
+      }
       results.push({ id: `rejected/${number}`, valid: false, retries });
     }
   }

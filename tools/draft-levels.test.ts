@@ -2,8 +2,10 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
+import { SKILL_IDS } from '../packages/curriculum/src/catalog.js';
 import { createEngine } from '../packages/engine/src/engine.js';
-import { parseLevel } from '../packages/curriculum/src/schema.js';
+import { LevelSchema, parseLevel } from '../packages/curriculum/src/schema.js';
 import type { Level } from '../packages/curriculum/src/types.js';
 import { draftLevels, LEVEL_JSON_SCHEMA, parseArguments } from './draft-levels.js';
 
@@ -84,25 +86,38 @@ describe('Ollama level drafter', () => {
     expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 1 }]);
   });
 
-  it('reports unreachable Ollama clearly without a validation retry', async () => {
+  it.each([
+    ['network', () => Promise.reject(new TypeError('fetch failed')), 'Cannot reach Ollama at http://local-model:11434/api/chat'],
+    ['timeout', () => Promise.reject(new DOMException('deadline', 'TimeoutError')), 'Ollama request timed out'],
+    ['HTTP', () => Promise.resolve(new Response('', { status: 404 })), 'HTTP 404'],
+    ['missing content', () => Promise.resolve(Response.json({})), 'no message.content'],
+    ['bad response JSON', () => Promise.resolve(new Response('not JSON')), 'Cannot read Ollama JSON response'],
+    ['body timeout', () => {
+      const response = Response.json({});
+      vi.spyOn(response, 'json').mockRejectedValue(new DOMException('deadline', 'TimeoutError'));
+      return Promise.resolve(response);
+    }, 'Ollama request timed out'],
+  ])('records %s errors, continues and prints the summary', async (_name, failure, reason) => {
     vi.stubEnv('OLLAMA_HOST', 'http://local-model:11434/');
-    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
-    await expect(draftLevels(options())).rejects.toThrow('Cannot reach Ollama at http://local-model:11434/api/chat. Start Ollama and check OLLAMA_HOST.');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fetchMock.mockImplementationOnce(failure).mockResolvedValueOnce(reply(level));
+    const results = await draftLevels({ ...options(), count: 2 });
+    expect(results).toEqual([
+      { id: 'rejected/1', valid: false, retries: 0 }, { id: level.id, valid: true, retries: 0 },
+    ]);
+    expect(JSON.parse(await readFile(join(out, 'rejected/1.json'), 'utf8')).error).toContain(reason);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(console.table).toHaveBeenCalledWith(results);
   });
 
-  it('reports HTTP errors and missing response content', async () => {
-    fetchMock.mockResolvedValueOnce(new Response('', { status: 404 }));
-    await expect(draftLevels(options())).rejects.toThrow('HTTP 404');
-    fetchMock.mockResolvedValueOnce(Response.json({}));
-    await expect(draftLevels(options())).rejects.toThrow('no message.content');
-  });
-
-  it('requires skills cumulatively only after a valid level teaches them', async () => {
-    const second: Level = { ...level, id: 'mp-02-words', teaches: ['motion.word'], requires: [...earlier, 'motion.hjkl'] };
-    fetchMock.mockResolvedValueOnce(reply(level)).mockResolvedValueOnce(reply(second));
-    expect(await draftLevels({ ...options(), count: 2 })).toHaveLength(2);
-    expect(requestBody(fetchMock, 1)).toContain('Earlier skills, all required cumulatively in requires: [\\"ex.q\\",\\"ex.q!\\",\\"mode.insert\\",\\"ex.wq\\",\\"motion.hjkl\\"]');
+  it('accepts any subset of learned skills, including skills taught earlier in the run', async () => {
+    const first = { ...level, requires: [] };
+    const second = { ...level, id: 'mp-02-words', teaches: ['motion.word'], requires: ['motion.hjkl'] };
+    fetchMock.mockResolvedValueOnce(reply(first)).mockResolvedValueOnce(reply(second));
+    expect(await draftLevels({ ...options(), count: 2 })).toEqual([
+      { id: level.id, valid: true, retries: 0 }, { id: second.id, valid: true, retries: 0 },
+    ]);
+    expect(requestBody(fetchMock, 1)).toContain('requires may use any subset');
+    expect(requestBody(fetchMock, 1)).toContain('motion.hjkl');
   });
 
   it('rejects future requirements, unmet teaching prerequisites and wrong regions', async () => {
@@ -117,11 +132,74 @@ describe('Ollama level drafter', () => {
     }
   });
 
-  it('does not overwrite existing valid drafts', async () => {
+  it('pre-seeds existing ids, records collisions and continues without overwriting', async () => {
     await writeFile(join(out, `${level.id}.json`), 'existing draft');
-    fetchMock.mockResolvedValueOnce(reply(level));
-    await expect(draftLevels(options())).rejects.toThrow('EEXIST');
+    const next = { ...level, id: 'mp-next' };
+    fetchMock.mockResolvedValueOnce(reply(level)).mockResolvedValueOnce(reply(level)).mockResolvedValueOnce(reply(next));
+    const results = await draftLevels({ ...options(), count: 2 });
+    expect(results).toEqual([
+      { id: 'rejected/1', valid: false, retries: 1 }, { id: next.id, valid: true, retries: 0 },
+    ]);
+    expect(requestBody(fetchMock, 0)).toContain(level.id);
+    expect(JSON.parse(await readFile(join(out, 'rejected/1.json'), 'utf8')).error).toContain('Duplicate level id');
     expect(await readFile(join(out, `${level.id}.json`), 'utf8')).toBe('existing draft');
+    expect(console.table).toHaveBeenCalledWith(results);
+  });
+
+  it('records a file collision occurring after directory scanning without aborting', async () => {
+    fetchMock.mockImplementationOnce(async () => {
+      await writeFile(join(out, `${level.id}.json`), 'concurrent draft');
+      return reply(level);
+    }).mockResolvedValueOnce(reply(level));
+    expect(await draftLevels(options())).toEqual([{ id: 'rejected/1', valid: false, retries: 1 }]);
+    expect(await readFile(join(out, `${level.id}.json`), 'utf8')).toBe('concurrent draft');
+    expect(JSON.parse(await readFile(join(out, 'rejected/1.json'), 'utf8')).error).toContain('EEXIST');
+  });
+
+  it.each(['example-first-exit', 'example-first-step'])('reserves example id %s', async (id) => {
+    fetchMock.mockResolvedValueOnce(reply({ ...level, id })).mockResolvedValueOnce(reply(level));
+    expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 1 }]);
+    expect(requestBody(fetchMock, 1)).toContain(`Duplicate level id: ${id}`);
+  });
+
+  it('requires teaches on ordinary levels and permits an empty review', async () => {
+    fetchMock.mockResolvedValueOnce(reply({ ...level, teaches: [] }))
+      .mockResolvedValueOnce(reply({ ...level, type: 'review', teaches: [] }));
+    expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 1 }]);
+    expect(requestBody(fetchMock, 1)).toContain('teaches must be nonempty');
+  });
+
+  it.each([
+    ['reach', { ...level, solution: ['k'] }, 'does not meet goal'],
+    ['transform', { ...level, goals: [{ type: 'transform', targetLines: ['changed'] }] }, 'does not meet goal'],
+    ['collect', { ...level, goals: [{ type: 'collect', register: 'k', text: 'key' }] }, 'does not meet goal'],
+    ['quit', { ...level, goals: [{ type: 'quit', mustSave: false }] }, 'does not meet goal'],
+    ['save', { ...level, solution: [':', 'q', '<CR>'], par: 3, goals: [{ type: 'quit', mustSave: true }] }, 'does not meet goal'],
+    ['all goals', { ...level, goals: [...level.goals, { type: 'reach', target: { line: 2, col: 0 } }] }, 'goal 2'],
+    ['command restriction', { ...level, allowedCommands: ['k'] }, 'not-allowed'],
+    ['par', { ...level, solution: ['j', 'k', 'j'] }, 'exceeds par'],
+  ])('retries and archives a solution failing %s', async (_name, invalid, reason) => {
+    fetchMock.mockResolvedValueOnce(reply(invalid)).mockResolvedValueOnce(reply(invalid));
+    expect(await draftLevels(options())).toEqual([{ id: 'rejected/1', valid: false, retries: 1 }]);
+    expect(requestBody(fetchMock, 1)).toContain(reason);
+    expect(JSON.parse(await readFile(join(out, 'rejected/1.json'), 'utf8')).error).toContain(reason);
+    expect(await readdir(out)).toEqual(['rejected']);
+  });
+
+  it('accepts a corrected replay after sending the failure reason', async () => {
+    fetchMock.mockResolvedValueOnce(reply({ ...level, solution: ['k'] })).mockResolvedValueOnce(reply(level));
+    expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 1 }]);
+    expect(requestBody(fetchMock, 1)).toContain('solution does not meet goal');
+  });
+
+  it.each([
+    { ...level, allowedCommands: ['j'] },
+    { ...level, goals: [{ type: 'transform', targetLines: level.startLines }] },
+    { ...level, solution: ['y', 'y'], par: 2, goals: [{ type: 'collect', register: '"', text: 'start\n' }] },
+    { ...level, solution: [':', 'w', 'q', '<CR>'], par: 4, goals: [{ type: 'quit', mustSave: true }] },
+  ])('accepts executable goal and allowed-command variants %#', async (valid) => {
+    fetchMock.mockResolvedValueOnce(reply(valid));
+    expect(await draftLevels(options())).toEqual([{ id: level.id, valid: true, retries: 0 }]);
   });
 
   it('refuses regions without catalogued skills before requesting Ollama', async () => {
@@ -175,5 +253,118 @@ describe('drafter CLI arguments', () => {
     for (const args of [[], ['--region'], ['--wat', 'x'], ['--model', 'a', '--model', 'b'], ['--region', 'nowhere', '--count', '1', '--model', 'x']]) {
       expect(() => parseArguments(args)).toThrow();
     }
+  });
+});
+
+/** Derive the mirrored constraints independently from Zod, including nested objects. */
+function schemaMirror(schema: z.ZodType<unknown>): Record<string, unknown> {
+  if (schema instanceof z.ZodOptional) return schemaMirror(schema.unwrap());
+  if (schema instanceof z.ZodEffects) {
+    // Skill membership is a refinement rather than a Zod enum.
+    expect([...SKILL_IDS].every((id) => schema.safeParse(id).success)).toBe(true);
+    expect(schema.safeParse('unknown.skill').success).toBe(false);
+    return { ...schemaMirror(schema.innerType()), enum: [...SKILL_IDS] };
+  }
+  if (schema instanceof z.ZodObject) {
+    expect(schema._def.unknownKeys).toBe('strict');
+    const shape: Record<string, z.ZodType<unknown>> = schema.shape;
+    return {
+      type: 'object', additionalProperties: false,
+      required: Object.keys(shape).filter((key) => !shape[key]?.isOptional()),
+      properties: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, schemaMirror(value)])),
+    };
+  }
+  if (schema instanceof z.ZodArray) {
+    return {
+      type: 'array', items: schemaMirror(schema.element),
+      ...(schema._def.minLength ? { minItems: schema._def.minLength.value } : {}),
+      ...(schema._def.maxLength ? { maxItems: schema._def.maxLength.value } : {}),
+    };
+  }
+  if (schema instanceof z.ZodDiscriminatedUnion) return { oneOf: schema.options.map((option: z.ZodType<unknown>) => schemaMirror(option)) };
+  if (schema instanceof z.ZodEnum) return { type: 'string', enum: schema.options };
+  if (schema instanceof z.ZodLiteral) return { const: schema.value };
+  if (schema instanceof z.ZodBoolean) return { type: 'boolean' };
+  if (schema instanceof z.ZodString) {
+    const result: Record<string, unknown> = { type: 'string' };
+    for (const check of schema._def.checks) {
+      switch (check.kind) {
+        case 'min': result.minLength = check.value; break;
+        case 'max': result.maxLength = check.value; break;
+        case 'length': result.minLength = check.value; result.maxLength = check.value; break;
+        case 'regex': result.pattern = check.regex.source; break;
+        default: throw new Error(`Unmirrored string check: ${check.kind}`);
+      }
+    }
+    return result;
+  }
+  if (schema instanceof z.ZodNumber) {
+    const result: Record<string, unknown> = { type: schema.isInt ? 'integer' : 'number' };
+    for (const check of schema._def.checks) {
+      if (check.kind === 'min') result.minimum = check.inclusive ? check.value : check.value + 1;
+      else if (check.kind !== 'int') throw new Error(`Unmirrored number check: ${check.kind}`);
+    }
+    return result;
+  }
+  throw new Error('Unmirrored schema node');
+}
+
+interface JsonSchema {
+  readonly type?: string;
+  readonly const?: unknown;
+  readonly enum?: readonly unknown[];
+  readonly additionalProperties?: boolean;
+  readonly required?: readonly string[];
+  readonly properties?: Readonly<Record<string, JsonSchema>>;
+  readonly items?: JsonSchema;
+  readonly oneOf?: readonly JsonSchema[];
+  readonly minimum?: number;
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly minItems?: number;
+  readonly maxItems?: number;
+  readonly pattern?: string;
+}
+
+/** Fixture evaluator for the JSON Schema keywords used by the Ollama format. */
+function matchesSchema(schema: JsonSchema, value: unknown): boolean {
+  if (schema.oneOf) return schema.oneOf.filter((option) => matchesSchema(option, value)).length === 1;
+  if ('const' in schema && value !== schema.const) return false;
+  if (schema.enum && !schema.enum.includes(value)) return false;
+  switch (schema.type) {
+    case 'object': {
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+      const properties = schema.properties ?? {};
+      return (schema.required ?? []).every((key) => Object.hasOwn(value, key))
+        && Object.entries(value).every(([key, entry]) => properties[key]
+          ? matchesSchema(properties[key], entry) : schema.additionalProperties !== false);
+    }
+    case 'array': return Array.isArray(value)
+      && value.length >= (schema.minItems ?? 0) && value.length <= (schema.maxItems ?? Infinity)
+      && value.every((entry: unknown) => !schema.items || matchesSchema(schema.items, entry));
+    case 'string': return typeof value === 'string'
+      && value.length >= (schema.minLength ?? 0) && value.length <= (schema.maxLength ?? Infinity)
+      && (!schema.pattern || new RegExp(schema.pattern).test(value));
+    case 'integer': return typeof value === 'number' && Number.isInteger(value) && value >= (schema.minimum ?? -Infinity);
+    case 'boolean': return typeof value === 'boolean';
+    default: return true;
+  }
+}
+
+describe('Ollama JSON Schema parity', () => {
+  it('mirrors Zod key sets, required keys, strictness, nested goal shapes, bounds and enums', () => {
+    expect(LEVEL_JSON_SCHEMA).toEqual(schemaMirror(LevelSchema));
+  });
+
+  it.each([
+    ['valid', level, true],
+    ['extra key', { ...level, extra: true }, false],
+    ['bad goal', { ...level, goals: [{ type: 'reach', target: { line: -1, col: 0 } }] }, false],
+    ['unknown goal', { ...level, goals: [{ type: 'unknown' }] }, false],
+    ['5 hints', { ...level, hints: ['a', 'b', 'c', 'd', 'e'] }, false],
+    ['unknown skill', { ...level, teaches: ['unknown.skill'] }, false],
+  ])('agrees with LevelSchema on %s', (_name, fixture, valid) => {
+    expect(LevelSchema.safeParse(fixture).success).toBe(valid);
+    expect(matchesSchema(LEVEL_JSON_SCHEMA, fixture)).toBe(valid);
   });
 });
