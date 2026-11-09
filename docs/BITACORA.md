@@ -166,6 +166,24 @@ Tags: `#gates`
 
 ---
 
+## 2026-11-09: Humans out of the merge loop: public repo + auto-merge
+Phase: 1 → 2 | Agent(s): Orchestrator (Opus) | PRs: #3 (playground), #4 (merge policy), this one
+Tags: `#gates` `#agentdefs`
+
+**What:** Renzo authorized agents to merge without waiting for him (AGENTS.md rule 6). Making that real took 4 layers:
+1. **Policy:** written in AGENTS.md and in agent memory.
+2. **Local permissions:** the auto-mode classifier blocked `gh pr merge` and worktree commits even after a verbal OK. Renzo added explicit allow rules himself; an agent must not edit its own permissions.
+3. **Platform:** GitHub Free does not allow branch protection or auto-merge on private repos (HTTP 403). The repo went public, after a scan of all 42 commits found no secrets.
+4. **Enforcement:** `main` now requires the CI `gates` check, force-pushes and deletion are blocked, auto-merge is on, and merged branches are deleted automatically.
+
+**Result:** A PR merges itself the moment CI passes, whichever vendor opened it. No human, and no orchestrator polling.
+
+**Also:** `npm run play` (PR #3) is a terminal playground for typing Vim keys into the live engine.
+
+**Lesson:** "You have permission" means nothing until it exists in 3 places: the policy the agents read, the permission system that runs them, and the platform that enforces the gate.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
