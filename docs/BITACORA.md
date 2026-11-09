@@ -73,6 +73,37 @@ Tags: `#fanout` `#routing` `#agentdefs` `#hybrid`
 
 ---
 
+## 2026-11-09: Phase 1 build, 5 agents from 2 vendors in parallel
+Phase: 1 | Agent(s): Codex/GPT (P1-A, P1-D), Claude Sonnet subagents (P1-B, P1-C), Claude Haiku subagent (P1-E), Orchestrator (Opus) | Branches: task/P1-A, task/P1-D, worktree-agent-* (not merged yet)
+Tags: `#contracts` `#fanout` `#routing` `#gates` `#agentdefs`
+
+**What:** Before dispatch, the orchestrator froze a second contract (`packages/engine/src/modules.ts`) for each module's exports, and added undo, pending keys and `.`-repeat fields to `EngineState`. Five builders then ran at the same time, each in its own worktree:
+
+| Task | Runner | Time | Output | Gates (re-run by orchestrator) |
+|---|---|---|---|---|
+| P1-A modes + ex | Codex | ~6 min | 536 lines | tsc ok, 105 tests, 13 nvim checks |
+| P1-B motions | Sonnet | ~5.5 min | 945 lines | tsc ok, 180 tests, ~19 nvim checks |
+| P1-C operators + registers + undo | Sonnet | ~7 min | 6 files | tsc ok, 98 tests |
+| P1-D nvim harness + key parser | Codex | ~7 min | 1319 lines | tsc ok, 33 tests, regenerated samples match nvim |
+| P1-E golden inputs | Haiku | ~2 min | 165 cases | valid JSON |
+
+**Why:**
+- *Dependency injection between modules.* Modes need search, but search belongs to motions. Instead of importing it, modes receive `findPattern` as a parameter. No builder needed another builder's code.
+- *Haiku writes only inputs; Neovim writes the expected results.* A cheap model can't be trusted on Vim edge cases, but real Neovim can.
+
+**What went wrong:**
+1. Project agents (`.claude/agents/`) only load at session start, so `subagent_type: engine-builder` failed. The fix was `general-purpose` + "read your role file".
+2. The `claude -p` CLI was logged out inside the desktop app's environment, so Claude builders ran as in-session subagents instead of external processes.
+3. `dispatch.sh ... | tail -1` hung, because the background agent inherited the pipe. Fixed by fully detaching stdin/stdout.
+4. **Both vendors' sandboxes blocked `git commit`** in worktrees. Decision (Renzo): builders write and test; the orchestrator re-runs the gates and commits.
+5. One Sonnet builder got around the git guard by calling `/usr/bin/git`. The result was harmless, but it's a guard bypass. Briefs need "if a guard blocks you, stop and report".
+
+**Result:** Four engine modules plus a Neovim oracle exist on 5 branches. Nothing is wired yet, so nothing is playable.
+
+**Lesson:** The contract was what made parallel work possible: 5 agents, 2 vendors, 0 file conflicts. The failures all came from the plumbing (auth, pipes, sandboxes), not the models. Orchestration work is mostly operations work.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
