@@ -99,8 +99,9 @@ describe('gg G', () => {
   const lines = ['  one', 'two', '   three', 'four'];
   it('gg goes to the first line first non-blank', () => expect(land('gg', lines, [3, 2])).toBe('0,2'));
   it('G goes to the last line', () => expect(land('G', lines, [0, 0])).toBe('3,0'));
-  it('3G goes to line 3', () => expect(land('G', lines, [0, 0], { count: 3 })).toBe('2,3'));
-  it('3gg goes to line 3', () => expect(land('gg', lines, [0, 0], { count: 3 })).toBe('2,3'));
+  // Neovim default 'nostartofline': G and gg keep the column (0 here).
+  it('3G goes to line 3', () => expect(land('G', lines, [0, 0], { count: 3 })).toBe('2,0'));
+  it('3gg goes to line 3', () => expect(land('gg', lines, [0, 0], { count: 3 })).toBe('2,0'));
   it('count beyond the buffer clamps to the last line', () => expect(land('G', lines, [0, 0], { count: 99 })).toBe('3,0'));
   it('gg with count beyond the buffer clamps', () => expect(land('gg', lines, [0, 0], { count: 99 })).toBe('3,0'));
   it('G and gg are linewise', () => {

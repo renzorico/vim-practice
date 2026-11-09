@@ -66,9 +66,17 @@ const lineEnd: MotionFn = (state, count) => {
   return charwise({ line, col: lastCol(lineAt(state, line)) }, true, { desiredCol: END_OF_LINE_COL });
 };
 
-function gotoLine(state: EngineState, line: number): MotionResult {
+/** Linewise jump to the first non-blank, used by ' marks (Vim does this regardless of 'startofline'). */
+function gotoLineFirstNonBlank(state: EngineState, line: number): MotionResult {
   const clamped = Math.min(state.lines.length - 1, Math.max(0, line));
   return linewise({ line: clamped, col: firstNonBlankCol(lineAt(state, clamped)) });
+}
+
+function gotoLine(state: EngineState, line: number): MotionResult {
+  const clamped = Math.min(state.lines.length - 1, Math.max(0, line));
+  // Neovim default 'nostartofline': gg/G keep the remembered column instead of jumping to the first non-blank.
+  const col = Math.max(0, Math.min(state.desiredCol, lastCol(lineAt(state, clamped))));
+  return { ...linewise({ line: clamped, col }), statePatch: { desiredCol: state.desiredCol } };
 }
 
 const gotoFirstLine: MotionFn = (state, count, hasCount) => gotoLine(state, hasCount ? count - 1 : 0);
@@ -220,7 +228,7 @@ export const setMark = (state: EngineState, name: string): EngineState =>
 
 const jumpToMarkLine: MotionFn = (state, _count, _hasCount, arg) => {
   const mark = arg === null ? undefined : state.marks[arg];
-  return mark === undefined ? null : gotoLine(state, mark.line);
+  return mark === undefined ? null : gotoLineFirstNonBlank(state, mark.line);
 };
 
 const jumpToMarkExact: MotionFn = (state, _count, _hasCount, arg) => {

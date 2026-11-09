@@ -10,11 +10,11 @@ const PROCESS_TIMEOUT_MS = 10_000;
 // JSON input avoids evaluating case contents as Lua, Vimscript or shell commands.
 const INIT = `
 local case = vim.json.decode(...)
-vim.cmd('set nocompatible nowrapscan noautoindent nosmartindent nocindent nopaste nostartofline')
+vim.cmd('set nocompatible wrapscan noautoindent nosmartindent nocindent nopaste nostartofline')
 vim.cmd('set encoding=utf-8 fileencoding=utf-8 backspace=indent,eol,start whichwrap=b,s')
 vim.cmd('set selection=inclusive selectmode= virtualedit= tabstop=8 shiftwidth=8 softtabstop=0 noexpandtab')
 vim.cmd('set textwidth=0 wrapmargin=0 formatoptions=nrq nomodeline noswapfile noundofile')
-vim.cmd('set noignorecase nosmartcase magic cpoptions=aABceFs scrolloff=0 sidescrolloff=0')
+vim.cmd('set noignorecase nosmartcase magic cpoptions=aABceFs_ scrolloff=0 sidescrolloff=0')
 vim.cmd('set lines=24 columns=80 scroll=11')
 vim.bo.undolevels = -1
 vim.api.nvim_buf_set_lines(0, 0, -1, false, case.lines)

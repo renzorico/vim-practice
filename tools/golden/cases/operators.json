@@ -1,70 +1,1333 @@
 [
-  { "name": "dw at end of line keeps the newline", "lines": ["alpha beta", "gamma"], "cursor": [0, 6], "keys": "dw" },
-  { "name": "dw in middle of line deletes one word", "lines": ["alpha beta gamma"], "cursor": [0, 6], "keys": "dw" },
-  { "name": "d$ deletes to end of line", "lines": ["alpha beta"], "cursor": [0, 5], "keys": "d$" },
-  { "name": "d0 deletes back to column 0", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "d0" },
-  { "name": "dj deletes two lines linewise", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "dj" },
-  { "name": "dG deletes from cursor to end of file", "lines": ["one", "two", "three"], "cursor": [1, 0], "keys": "dG" },
-  { "name": "dfx deletes through the x", "lines": ["abcxdef"], "cursor": [0, 0], "keys": "dfx" },
-  { "name": "dt) deletes up to but not including the paren", "lines": ["f(a b)c"], "cursor": [0, 2], "keys": "dt)" },
-  { "name": "d% deletes to matching paren", "lines": ["x(a(b)c)y"], "cursor": [0, 1], "keys": "d%" },
-  { "name": "d2w deletes two words across line end", "lines": ["one two", "three four"], "cursor": [0, 0], "keys": "d2w" },
-
-  { "name": "cw changes a word", "lines": ["alpha beta"], "cursor": [0, 0], "keys": "cwX<Esc>" },
-  { "name": "cw on a blank changes only one blank", "lines": ["a  b"], "cursor": [0, 1], "keys": "cwX<Esc>" },
-  { "name": "c$ changes to end of line", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "c$X<Esc>" },
-  { "name": "cb changes the word before the cursor", "lines": ["alpha beta"], "cursor": [0, 8], "keys": "cbX<Esc>" },
-  { "name": "c2j changes two lines linewise", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "c2jX<Esc>" },
-
-  { "name": "yw then p pastes after the end of line", "lines": ["alpha beta"], "cursor": [0, 0], "keys": "yw$p" },
-  { "name": "yj copies two lines then p pastes below", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "yjGp" },
-  { "name": "y$ then 0 then P pastes before the line start", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "y$0P" },
-  { "name": "ye yanks to end of word then P pastes it", "lines": ["foo.bar baz"], "cursor": [0, 0], "keys": "yeP" },
-  { "name": "yw on empty line does not change text", "lines": ["", "next"], "cursor": [0, 0], "keys": "yw" },
-  { "name": "yb at line start yanks from previous line", "lines": ["one two", "three"], "cursor": [1, 0], "keys": "yb" },
-
-  { "name": "dd on last line moves cursor to previous line", "lines": ["one", "two"], "cursor": [1, 0], "keys": "dd" },
-  { "name": "dd on only line leaves an empty buffer", "lines": ["only"], "cursor": [0, 0], "keys": "dd" },
-  { "name": "3dd near end deletes the remaining lines", "lines": ["one", "two"], "cursor": [0, 0], "keys": "3dd" },
-  { "name": "2yy then P pastes two lines above", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "2yyP" },
-  { "name": "cc on indented line replaces the whole line", "lines": ["    indented"], "cursor": [0, 4], "keys": "ccX<Esc>" },
-  { "name": "dd on empty line removes it", "lines": ["a", "", "b"], "cursor": [1, 0], "keys": "dd" },
-
-  { "name": "x at end of line moves cursor left", "lines": ["abc"], "cursor": [0, 2], "keys": "x" },
-  { "name": "x on empty line does nothing", "lines": [""], "cursor": [0, 0], "keys": "x" },
-  { "name": "X at column 0 does nothing", "lines": ["abc"], "cursor": [0, 0], "keys": "X" },
-  { "name": "3x past end deletes to end of line", "lines": ["abcd"], "cursor": [0, 1], "keys": "3x" },
-  { "name": "X in middle deletes previous character", "lines": ["abcd"], "cursor": [0, 2], "keys": "X" },
-  { "name": "r replaces one character", "lines": ["abc"], "cursor": [0, 1], "keys": "rZ" },
-  { "name": "3rx replaces three characters", "lines": ["abcdef"], "cursor": [0, 0], "keys": "3rx" },
-  { "name": "5rx with too few characters left does nothing", "lines": ["abc"], "cursor": [0, 1], "keys": "5rx" },
-
-  { "name": "D deletes from cursor to end of line", "lines": ["alpha beta gamma"], "cursor": [0, 6], "keys": "D" },
-  { "name": "C changes from cursor to end of line", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "CX<Esc>" },
-  { "name": "Y yanks whole line then p pastes below", "lines": ["one", "two"], "cursor": [0, 1], "keys": "Yp" },
-  { "name": "J joins two lines with one space", "lines": ["one", "two"], "cursor": [0, 0], "keys": "J" },
-  { "name": "J strips leading whitespace of the joined line", "lines": ["one", "   two"], "cursor": [0, 0], "keys": "J" },
-  { "name": "3J joins three lines", "lines": ["a", "b", "c", "d"], "cursor": [0, 0], "keys": "3J" },
-  { "name": "J on last line does nothing", "lines": ["a", "b"], "cursor": [1, 0], "keys": "J" },
-
-  { "name": "u undoes dd", "lines": ["one", "two"], "cursor": [0, 0], "keys": "ddu" },
-  { "name": "<C-r> redoes an undone dd", "lines": ["one", "two"], "cursor": [0, 0], "keys": "ddu<C-r>" },
-  { "name": "u after several x changes undoes only the last", "lines": ["abc"], "cursor": [0, 0], "keys": "xxu" },
-  { "name": "u restores character deleted by x", "lines": ["abc"], "cursor": [0, 1], "keys": "xu" },
-
-  { "name": "p after dw pastes after cursor", "lines": ["alpha beta"], "cursor": [0, 0], "keys": "dwp" },
-  { "name": "P before cursor pastes deleted word", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "dwP" },
-  { "name": "p after dd pastes line below current line", "lines": ["one", "two"], "cursor": [0, 0], "keys": "ddp" },
-
-  { "name": "\"ayy stores line in a then \"ap pastes it", "lines": ["one", "two"], "cursor": [0, 0], "keys": "\"ayy\"ap" },
-  { "name": "\"Ayy appends a line to register a", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "\"ayyj\"Ayy\"ap" },
-  { "name": "\"_dd does not overwrite the unnamed register", "lines": ["keep", "drop", "end"], "cursor": [1, 0], "keys": "yyj\"_ddP" },
-  { "name": "\"0 still holds last yank after dd", "lines": ["one", "two"], "cursor": [0, 0], "keys": "yyjdd\"0P" },
-  { "name": "\"1 holds last deleted line after dd", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "dd\"1p" },
-  { "name": "\"2p after two linewise deletes pastes the first deleted line", "lines": ["one", "two", "three"], "cursor": [0, 0], "keys": "dddd\"2p" },
-  { "name": "\"aP pastes charwise word stored by \"ayw", "lines": ["alpha beta"], "cursor": [0, 6], "keys": "\"aywP" },
-  { "name": "\"_x does not overwrite the unnamed register", "lines": ["abc"], "cursor": [0, 1], "keys": "yl\"_xP" },
-  { "name": "\"bdw stores word in b then \"bp pastes it", "lines": ["alpha beta"], "cursor": [0, 0], "keys": "\"bdw$\"bp" },
-  { "name": "\"Ayw appends charwise text to register a", "lines": ["one two three"], "cursor": [0, 0], "keys": "\"ayww\"Ayw$\"ap" },
-  { "name": "register a survives a later unnamed yank", "lines": ["one", "two"], "cursor": [0, 0], "keys": "\"ayyjyy\"ap" }
+  {
+    "name": "dw at end of line keeps the newline",
+    "lines": [
+      "alpha beta",
+      "gamma"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "dw",
+    "expect": {
+      "lines": [
+        "alpha ",
+        "gamma"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dw in middle of line deletes one word",
+    "lines": [
+      "alpha beta gamma"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "dw",
+    "expect": {
+      "lines": [
+        "alpha gamma"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "d$ deletes to end of line",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "d$",
+    "expect": {
+      "lines": [
+        "alpha"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "d0 deletes back to column 0",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "d0",
+    "expect": {
+      "lines": [
+        "beta"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dj deletes two lines linewise",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dj",
+    "expect": {
+      "lines": [
+        "three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dG deletes from cursor to end of file",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "dG",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dfx deletes through the x",
+    "lines": [
+      "abcxdef"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dfx",
+    "expect": {
+      "lines": [
+        "def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dt) deletes up to but not including the paren",
+    "lines": [
+      "f(a b)c"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "dt)",
+    "expect": {
+      "lines": [
+        "f()c"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "d% deletes to matching paren",
+    "lines": [
+      "x(a(b)c)y"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "d%",
+    "expect": {
+      "lines": [
+        "xy"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "d2w deletes two words across line end",
+    "lines": [
+      "one two",
+      "three four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d2w",
+    "expect": {
+      "lines": [
+        "",
+        "three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cw changes a word",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "cwX<Esc>",
+    "expect": {
+      "lines": [
+        "X beta"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cw on a blank changes only one blank",
+    "lines": [
+      "a  b"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "cwX<Esc>",
+    "expect": {
+      "lines": [
+        "aXb"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "c$ changes to end of line",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "c$X<Esc>",
+    "expect": {
+      "lines": [
+        "alpha X"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cb changes the word before the cursor",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "cbX<Esc>",
+    "expect": {
+      "lines": [
+        "alpha Xta"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "c2j changes two lines linewise",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "c2jX<Esc>",
+    "expect": {
+      "lines": [
+        "X"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yw then p pastes after the end of line",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yw$p",
+    "expect": {
+      "lines": [
+        "alpha betaalpha "
+      ],
+      "cursor": [
+        0,
+        15
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yj copies two lines then p pastes below",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yjGp",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three",
+        "one",
+        "two"
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "y$ then 0 then P pastes before the line start",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "y$0P",
+    "expect": {
+      "lines": [
+        "betaalpha beta"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ye yanks to end of word then P pastes it",
+    "lines": [
+      "foo.bar baz"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yeP",
+    "expect": {
+      "lines": [
+        "foofoo.bar baz"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yw on empty line does not change text",
+    "lines": [
+      "",
+      "next"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yw",
+    "expect": {
+      "lines": [
+        "",
+        "next"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yb at line start yanks from previous line",
+    "lines": [
+      "one two",
+      "three"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "yb",
+    "expect": {
+      "lines": [
+        "one two",
+        "three"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dd on last line moves cursor to previous line",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "dd",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dd on only line leaves an empty buffer",
+    "lines": [
+      "only"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dd",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3dd near end deletes the remaining lines",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3dd",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "2yy then P pastes two lines above",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2yyP",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "one",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cc on indented line replaces the whole line",
+    "lines": [
+      "    indented"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ccX<Esc>",
+    "expect": {
+      "lines": [
+        "X"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dd on empty line removes it",
+    "lines": [
+      "a",
+      "",
+      "b"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "dd",
+    "expect": {
+      "lines": [
+        "a",
+        "b"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "x at end of line moves cursor left",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "x",
+    "expect": {
+      "lines": [
+        "ab"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "x on empty line does nothing",
+    "lines": [
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "X at column 0 does nothing",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "X",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3x past end deletes to end of line",
+    "lines": [
+      "abcd"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "3x",
+    "expect": {
+      "lines": [
+        "a"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "X in middle deletes previous character",
+    "lines": [
+      "abcd"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "X",
+    "expect": {
+      "lines": [
+        "acd"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "r replaces one character",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "rZ",
+    "expect": {
+      "lines": [
+        "aZc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3rx replaces three characters",
+    "lines": [
+      "abcdef"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3rx",
+    "expect": {
+      "lines": [
+        "xxxdef"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "5rx with too few characters left does nothing",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "5rx",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "D deletes from cursor to end of line",
+    "lines": [
+      "alpha beta gamma"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "D",
+    "expect": {
+      "lines": [
+        "alpha "
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "C changes from cursor to end of line",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "CX<Esc>",
+    "expect": {
+      "lines": [
+        "alpha X"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Y yanks whole line then p pastes below",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Yp",
+    "expect": {
+      "lines": [
+        "onnee",
+        "two"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "J joins two lines with one space",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "J",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "J strips leading whitespace of the joined line",
+    "lines": [
+      "one",
+      "   two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "J",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "3J joins three lines",
+    "lines": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3J",
+    "expect": {
+      "lines": [
+        "a b c",
+        "d"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "J on last line does nothing",
+    "lines": [
+      "a",
+      "b"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "J",
+    "expect": {
+      "lines": [
+        "a",
+        "b"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "u undoes dd",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ddu",
+    "expect": {
+      "lines": [
+        "one",
+        "two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "<C-r> redoes an undone dd",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ddu<C-r>",
+    "expect": {
+      "lines": [
+        "two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "u after several x changes undoes only the last",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xxu",
+    "expect": {
+      "lines": [
+        "bc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "u restores character deleted by x",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "xu",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "p after dw pastes after cursor",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dwp",
+    "expect": {
+      "lines": [
+        "balpha eta"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "P before cursor pastes deleted word",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "dwP",
+    "expect": {
+      "lines": [
+        "alphabeta "
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "p after dd pastes line below current line",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ddp",
+    "expect": {
+      "lines": [
+        "two",
+        "one"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"ayy stores line in a then \"ap pastes it",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayy\"ap",
+    "expect": {
+      "lines": [
+        "one",
+        "one",
+        "two"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"Ayy appends a line to register a",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayyj\"Ayy\"ap",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "one",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"_dd does not overwrite the unnamed register",
+    "lines": [
+      "keep",
+      "drop",
+      "end"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "yyj\"_ddP",
+    "expect": {
+      "lines": [
+        "keep",
+        "drop",
+        "drop"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"0 still holds last yank after dd",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yyjdd\"0P",
+    "expect": {
+      "lines": [
+        "one",
+        "one"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"1 holds last deleted line after dd",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dd\"1p",
+    "expect": {
+      "lines": [
+        "two",
+        "one",
+        "three"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"2p after two linewise deletes pastes the first deleted line",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dddd\"2p",
+    "expect": {
+      "lines": [
+        "three",
+        "one"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"aP pastes charwise word stored by \"ayw",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "\"aywP",
+    "expect": {
+      "lines": [
+        "alpha betabeta"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"_x does not overwrite the unnamed register",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yl\"_xP",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"bdw stores word in b then \"bp pastes it",
+    "lines": [
+      "alpha beta"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"bdw$\"bp",
+    "expect": {
+      "lines": [
+        "betaalpha "
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "\"Ayw appends charwise text to register a",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayww\"Ayw$\"ap",
+    "expect": {
+      "lines": [
+        "one two threeone two "
+      ],
+      "cursor": [
+        0,
+        20
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "register a survives a later unnamed yank",
+    "lines": [
+      "one",
+      "two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayyjyy\"ap",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "one"
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  }
 ]

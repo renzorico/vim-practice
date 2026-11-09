@@ -1,0 +1,46 @@
+[
+  {
+    "name": ":q<CR> quits a clean buffer",
+    "lines": [
+      "one"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": ":q<CR>"
+  },
+  {
+    "name": ":q! quits and discards edits",
+    "lines": [
+      "one"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xx:q!<CR>"
+  },
+  {
+    "name": ":wq<CR> writes and quits after an edit",
+    "lines": [
+      "one"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x:wq<CR>"
+  },
+  {
+    "name": ":x<CR> on unmodified buffer quits",
+    "lines": [
+      "one"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": ":x<CR>"
+  }
+]
