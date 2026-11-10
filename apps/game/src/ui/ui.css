@@ -1,0 +1,75 @@
+/* Component styles for apps/game/src/ui. Tokens come from tokens.css. */
+body { margin: 0; background: var(--bg); }
+.ui { background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 15px; min-height: 100vh; padding: 24px; box-sizing: border-box; }
+.ui *, .ui *::before, .ui *::after { box-sizing: border-box; }
+.ui h1, .ui h2, .ui h3, .ui p { margin: 0; }
+.ui-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 8px; }
+.ui-panel { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; }
+.ui-quote { color: var(--text-soft); font-style: italic; }
+.ui-muted { color: var(--text-muted); }
+
+.ui-btn { font: inherit; font-weight: 500; color: var(--text); background: var(--surface-raised); border: 0; border-bottom: 3px solid var(--line-strong); border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.ui-btn:hover { color: var(--you); }
+.ui-btn:focus-visible { outline: 2px solid var(--friend); outline-offset: 2px; }
+.ui-btn--primary { background: var(--you); color: var(--bg); border-bottom-color: var(--door); }
+.ui-btn--primary:hover { color: var(--bg); filter: brightness(1.08); }
+
+.keycap { display: inline-block; font-family: var(--font-mono); font-size: 14px; color: var(--text); background: var(--surface-raised); border-bottom: 3px solid var(--line-strong); border-radius: 5px; padding: 3px 9px; min-width: 28px; text-align: center; }
+.keycap--locked { background: transparent; border: 1px dashed var(--line-strong); color: var(--text-faint); }
+.keycap--new { color: var(--you); }
+.keycap--large { font-size: 28px; padding: 6px 18px; }
+.keycaps { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.header__brand { display: flex; align-items: baseline; gap: 16px; }
+.header__wordmark { font-family: var(--font-mono); font-weight: 600; font-size: 20px; color: var(--you); }
+.header__stats { display: flex; align-items: center; gap: 24px; font-family: var(--font-mono); }
+.power { display: inline-flex; align-items: center; gap: 8px; color: var(--door); }
+.power__track { width: 96px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.power__fill { height: 100%; background: var(--door); }
+
+.buffer { font-family: var(--font-mono); font-size: 16px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); overflow-x: auto; }
+.buffer__line { display: flex; white-space: pre; }
+.buffer__gutter { color: var(--text-faint); text-align: right; padding-right: 16px; user-select: none; }
+.buffer__cmdline { min-height: 1.5em; color: var(--text-soft); white-space: pre; }
+.cell--cursor-block { background: var(--you); color: var(--bg); }
+.cell--cursor-bar { box-shadow: -2px 0 0 var(--you); }
+.cell--selected { background: var(--line-strong); }
+.cell--target { outline: 2px solid var(--goal); outline-offset: 0; border-radius: 2px; }
+.glyph--you { background: var(--you); color: var(--bg); }
+.glyph--note { color: var(--friend); font-weight: 600; }
+.glyph--door { color: var(--door); font-weight: 600; }
+.glyph--key { color: var(--goal); font-weight: 600; }
+.glyph--echo { color: var(--friend); font-weight: 600; text-decoration: underline; }
+.glyph--corrupted { color: var(--danger); }
+.glyph--fog { color: var(--text-faint); }
+.glyph--wall { color: var(--text-faint); }
+
+.map-layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+.side { display: flex; flex-direction: column; gap: 16px; }
+.side__section ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.log__line--operator { color: var(--text-soft); }
+.log__line--gc { color: var(--danger); text-transform: uppercase; }
+
+.title-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: 70vh; text-align: center; }
+.title-screen__wordmark { font-family: var(--font-mono); font-weight: 600; font-size: 56px; color: var(--you); }
+.title-screen__actions { display: flex; gap: 16px; }
+
+.lesson-card { display: flex; flex-direction: column; gap: 16px; max-width: 520px; }
+.lesson-card--compact { max-width: 420px; }
+.lesson-card__definition { font-size: 18px; }
+.lesson-card__steps { color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; min-height: 1.4em; }
+.lesson-card__actions { display: flex; gap: 12px; }
+
+.room { display: grid; grid-template-columns: 420px 1fr; gap: 16px; align-items: start; }
+.room__main { display: flex; flex-direction: column; gap: 16px; }
+.room__goal { font-size: 20px; }
+.room__stats { display: flex; gap: 24px; font-family: var(--font-mono); color: var(--text-muted); }
+.room__stats strong { color: var(--text); font-weight: 600; }
+.room__actions { display: flex; gap: 12px; align-items: center; }
+.banner { background: var(--surface-raised); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.banner__actions { display: flex; gap: 12px; }
+.hint { color: var(--friend); }
+
+.replay__explain { font-size: 16px; min-height: 1.5em; color: var(--text-soft); }
+.replay__progress { font-family: var(--font-mono); color: var(--text-muted); }
