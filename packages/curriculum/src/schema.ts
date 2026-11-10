@@ -23,6 +23,7 @@ export const LevelSchema = z.object({
   type: z.enum(['reach', 'transform', 'hunt', 'golf', 'boss', 'review']),
   title: z.string().min(1).max(60),
   intro: z.string().min(1).max(280),
+  goalText: z.string().min(1).max(160).optional(),
   startLines: z.array(z.string()).min(1),
   startCursor: position,
   goals: z.array(goal).min(1),
@@ -41,10 +42,11 @@ export const LevelSchema = z.object({
  * Optional fields are dropped instead of set to undefined (exactOptionalPropertyTypes).
  */
 export function parseLevel(json: unknown): Level {
-  const { allowedCommands, mustUse, ...required } = LevelSchema.parse(json);
+  const { allowedCommands, mustUse, goalText, ...required } = LevelSchema.parse(json);
   return {
     ...required,
     ...(allowedCommands === undefined ? {} : { allowedCommands }),
     ...(mustUse === undefined ? {} : { mustUse }),
+    ...(goalText === undefined ? {} : { goalText }),
   };
 }
