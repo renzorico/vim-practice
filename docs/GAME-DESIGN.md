@@ -79,11 +79,14 @@ Hand-writing 5+ variants per skill does not scale, and par values written by peo
 ## 8. Cumulative learning: corrupted sectors (rechapters)
 Each skill has a mastery box (Leitner, already built). As boxes decay, the **Garbage Collector** corrupts sectors you already cleared (`~` on the map). Repairing one is a short mixed room built by the generators from your weakest skills. It's review that lives in the world and the story, not a separate menu.
 
+## 8b. Skipping the Prologue
+The title screen offers **"I know how to quit Vim"**. That opens one short test room: insert a line of text, then save and quit, with no hints and no score. Pass it and the game starts in Region 1 with `ex.q`, `ex.q!`, `mode.insert` and `ex.wq` marked learned (mastery box 1, so they still come back in review). Fail it twice and the game suggests the Prologue, without forcing it.
+
 ## 9. What we keep from Phases 1-2
 The Vim engine (Neovim-verified), runner, mastery model, level schema and gate, save system, CI, auto-merge, deploy. **Replaced:** the overworld list, the stub-era HUD layout, the CRT style, and the current level content.
 
 ## 10. Phase 3 scope (proposal)
 1. Approve this doc, STORY.md and the visual mockups (Renzo).
 2. Build the map mode (wall collision, notes, doors, fog, keys), the lesson and practice screens, the failure flow, the solver and 6 generators (Region 1 skills plus the Prologue commands).
-3. Rewrite the Prologue and Region 1 inside the story.
+3. Rewrite the Prologue and Region 1 inside the story (STORY.md), add the Prologue skip test, and seed the ECHO twist.
 4. **Gate: Renzo playtests** before Phase 3 counts as done.

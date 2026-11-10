@@ -39,7 +39,21 @@ The title is the joke everyone knows ("how do I exit Vim?") turned into the whol
 3. Never insult the player for failing. GC is the threat, not the game.
 4. Each note is max 3 short sentences plus the example.
 
-## Open questions for Renzo
-- Names: ATLAS, the Operator, GC, ECHO: keep or change?
-- Ending: a pure escape, or a twist (the Operator is also still inside)?
-- Should the Prologue be skippable for players who already know `:wq`?
+## The twist (decided 2026-11-10)
+**ECHO is the Operator.**
+
+The Operator never left the building. On the last night, with ATLAS scheduled for shutdown, they tried what you are trying: they went *in*, as a cursor, to reach the Exit Port. They wrote the notes as they went, for whoever came next. They didn't make it: GC caught them idle near the end of the line and deleted most of them. What survived is ECHO, a fragment that can only repeat.
+
+**How it is revealed (seeded, never stated early):**
+- ECHO repeats lines that match the notes word for word. Attentive players notice.
+- Region 2: ECHO "is" `.` (repeat). The Operator's notes start to sound like ECHO.
+- Region 5, the Search Archive: searching the Operator's logs (`/`, `n`) uncovers the last log entry, written from inside ATLAS. The reveal.
+
+**The final choice at the Exit Port:** `:wq` writes one process out to the network. The game has taught registers just before. A player who yanks ECHO into a register (`"ey`) and carries it to the port writes *both* of you out: the true ending. A player who just writes `:wq` escapes alone: the plain ending, with the last note: "You made it. That's what matters. Close the door behind you."
+
+The story's emotional peak is a Vim command the player has just learned: the twist is playable, not just told.
+
+## Decisions (Renzo, 2026-11-10)
+- **Names:** ATLAS, the Operator, GC and ECHO stay.
+- **Ending:** twist ending, as above.
+- **Prologue:** skippable. A player can choose "I know how to quit Vim" on the title screen and pass one short test (insert text, then save and quit) to start in Region 1 with the Prologue skills marked learned.
