@@ -1,9 +1,9 @@
 import type { EngineState, Key } from '@escape/engine';
-import { parseKeys } from '../../../engine/src/keys.js';
+import { parseKeys } from '@escape/engine';
 import { SKILLS } from '../catalog.js';
 import type { LevelRun } from '../contracts.js';
 import type { SolveFn } from '../phase3.js';
-import { startLevel, stepLevel } from '../runner/index.js';
+import { startLevel, stepLevel, usedSkills } from '../runner/index.js';
 import type { Level } from '../types.js';
 
 const DEFAULT_MAX_KEYS = 14;
@@ -117,12 +117,14 @@ function intern(value: string, values: Map<string, number>): number {
 }
 
 /** Intern contents, so motion edges need not repeatedly hash the entire buffer. */
-function stateIdentity(): (state: EngineState) => string {
+function stateIdentity(level: Level): (run: LevelRun) => string {
   const lines = new WeakMap<readonly string[], number>();
   const registers = new WeakMap<EngineState['registers'], number>();
   const buffers = new Map<string, number>();
   const registerContents = new Map<string, number>();
-  return (state) => {
+  const mustUse = [...new Set(level.mustUse ?? [])].sort();
+  return (run) => {
+    const { state } = run;
     let buffer = lines.get(state.lines);
     if (buffer === undefined) {
       buffer = intern(JSON.stringify(state.lines), buffers);
@@ -136,22 +138,27 @@ function stateIdentity(): (state: EngineState) => string {
       })), registerContents);
       registers.set(state.registers, registerValues);
     }
+    const skills = mustUse.length === 0 ? undefined : usedSkills(run.commandLog);
     return JSON.stringify([
       buffer, state.cursor.line, state.cursor.col, state.mode, state.pendingKeys,
-      registerValues, state.quitRequested, state.saved,
+      registerValues, state.quitRequested, state.saved, state.desiredCol, state.lastFind,
+      skills === undefined ? [] : mustUse.filter((skill) => skills.has(skill)),
     ]);
   };
 }
 
 export const solve: SolveFn = (level, options) => {
   const maxKeys = options?.maxKeys ?? DEFAULT_MAX_KEYS;
-  if (!Number.isFinite(maxKeys) || maxKeys < 1) return null;
+  if (!Number.isFinite(maxKeys) || maxKeys < 0) return null;
+  const run = startLevel(level);
+  // The runner evaluates victory on a keypress; an already solved room needs none.
+  if (run.goalsMet.every(Boolean) && (level.mustUse?.length ?? 0) === 0) return { keys: [] };
+  if (maxKeys < 1) return null;
   const commands = commandsFor(level);
   const counts = [...level.teaches, ...level.requires].includes('motion.count');
   const actionCache = new WeakMap<readonly string[], readonly Action[]>();
-  const identity = stateIdentity();
-  const run = startLevel(level);
-  const initial: SearchNode = { run, keys: [], actions: [], identity: identity(run.state) };
+  const identity = stateIdentity(level);
+  const initial: SearchNode = { run, keys: [], actions: [], identity: identity(run) };
   const best = new Map<string, SearchNode>([[initial.identity, initial]]);
   const frontier = new Frontier();
   frontier.push(initial);
@@ -187,7 +194,7 @@ export const solve: SolveFn = (level, options) => {
       // Only complete command boundaries are search vertices.
       if (nextRun.status !== 'won' && (nextRun.state.mode === 'insert'
         || nextRun.state.mode === 'command-line' || nextRun.state.pendingKeys.length !== 0)) continue;
-      const nextIdentity = identity(nextRun.state);
+      const nextIdentity = identity(nextRun);
       const previous = best.get(nextIdentity);
       if (nextRun.status !== 'won' && previous !== undefined
         && (previous.keys.length < cost || (previous.keys.length === cost

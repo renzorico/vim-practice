@@ -144,6 +144,33 @@ describe('command expansion', () => {
     expect(solve(level)?.keys).toEqual([':', 'q', '!', '<CR>']);
   });
 
+  it('solves a quit goal that requires force quit', () => {
+    const level = room({
+      allowedCommands: [':q', ':q!'], goals: [{ type: 'quit', mustSave: false }], mustUse: ['ex.q!'],
+    });
+    const keys = [':', 'q', '!', '<CR>'];
+    expect(solve(level)?.keys).toEqual(keys);
+    wins(level, keys);
+  });
+
+  it('preserves a remembered column changed without moving the cursor', () => {
+    const level = room({
+      startLines: ['a', 'abcd'], allowedCommands: ['$', 'j'],
+      goals: [{ type: 'reach', target: { line: 1, col: 3 } }],
+    });
+    expect(solve(level, { maxKeys: 2 })?.keys).toEqual(['$', 'j']);
+    wins(level, ['$', 'j']);
+  });
+
+  it('preserves a find recorded without moving the cursor for repeat', () => {
+    const level = room({
+      startLines: ['axbxc'], allowedCommands: ['t', ';'],
+      goals: [{ type: 'reach', target: { line: 0, col: 2 } }],
+    });
+    expect(solve(level, { maxKeys: 3 })?.keys).toEqual(['t', 'x', ';']);
+    wins(level, ['t', 'x', ';']);
+  });
+
   it('honors an explicitly empty command list', () => expect(solve(room({ allowedCommands: [] }))).toBeNull());
 });
 
@@ -224,12 +251,29 @@ describe('uniform cost, runner semantics and bounds', () => {
     expect(solve(level)?.keys).toEqual(['k']);
   });
 
-  it('charges a complete action even if the runner wins on its first key', () => {
+  it.each([undefined, 0])('returns no keys when goals are already met (maxKeys=%s)', (maxKeys) => {
     const level = room({
       allowedCommands: [':q', 'gg'], goals: [{ type: 'reach', target: { line: 0, col: 0 } }],
     });
-    expect(solve(level, { maxKeys: 1 })).toBeNull();
-    expect(solve(level)?.keys).toEqual(['g', 'g']);
+    expect(solve(level, maxKeys === undefined ? undefined : { maxKeys })).toEqual({ keys: [] });
+  });
+
+  it('does not consider initial goals won while must-use skills are missing', () => {
+    const level = room({
+      allowedCommands: ['0'], mustUse: ['motion.line'],
+      goals: [{ type: 'reach', target: { line: 0, col: 0 } }],
+    });
+    expect(solve(level)?.keys).toEqual(['0']);
+    wins(level, ['0']);
+  });
+
+  it('preserves must-use progress at an otherwise identical state', () => {
+    const level = room({
+      startLines: ['a b'], allowedCommands: ['0', 'w'], mustUse: ['motion.line'],
+      goals: [{ type: 'reach', target: { line: 0, col: 2 } }],
+    });
+    expect(solve(level, { maxKeys: 2 })?.keys).toEqual(['0', 'w']);
+    wins(level, ['0', 'w']);
   });
 
   it('treats must-use failures as dead ends', () => {
