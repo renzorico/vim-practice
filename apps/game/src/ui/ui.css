@@ -29,7 +29,8 @@ body { margin: 0; background: var(--bg); }
 .power__fill { display: block; height: 100%; background: var(--door); }
 
 .buffer { font-family: var(--font-mono); font-size: 16px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); overflow-x: auto; }
-.buffer__line { display: flex; white-space: pre; }
+.buffer__line { display: flex; white-space: pre; min-height: 1.5em; }
+.map-layout .buffer { font-size: 18px; }
 .buffer__gutter { color: var(--text-faint); text-align: right; padding-right: 16px; user-select: none; }
 .buffer__cmdline { min-height: 1.5em; color: var(--text-soft); white-space: pre; }
 .cell--selected { background: var(--line-strong); }

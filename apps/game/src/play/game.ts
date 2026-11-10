@@ -61,8 +61,10 @@ export interface GameDeps {
   readonly now: () => string;
 }
 
-/** Skills in teaching order: the Prologue first, then Region 1, each after its prerequisites (catalog order). */
-export const SKILL_ORDER: readonly SkillId[] = SKILLS.map((skill) => skill.id);
+/** Skills in the order the player meets their notes on the map (reading order), which is the teaching order. */
+export const SKILL_ORDER: readonly SkillId[] = WORLD.entities
+  .filter((entity) => entity.kind === 'note' && entity.skill !== undefined)
+  .map((entity) => entity.skill ?? '');
 const PROLOGUE_SKILLS: readonly SkillId[] = SKILLS.filter((skill) => skill.region === 'prologue').map((skill) => skill.id);
 const BOOT_KEY = 'key-boot-sector';
 const MAX_LOG = 4;

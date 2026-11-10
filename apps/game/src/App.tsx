@@ -62,17 +62,24 @@ function RoomView({ room, game }: { room: Room; game: Game }) {
   const failed = failures(session);
   const helpAvailable = session.phase === 'challenge' && (canShowSolution(session) || canSkip(session))
     && failed > room.bannerDismissedAt;
+  const mustUseKeys = keycapsOf(level.mustUse);
+  const targetLines = targetLinesOf(level);
+  const target = targetOf(level);
+  // exactOptionalPropertyTypes: optional props are passed only when they have a value.
+  const optional = {
+    ...(mustUseKeys === undefined ? {} : { mustUseKeys }),
+    ...(targetLines === undefined ? {} : { targetLines }),
+    ...(target === undefined ? {} : { target }),
+  };
   return (
     <ChallengeRoom
       lesson={lesson}
       roomNumber={session.variant + 1}
       title={session.phase === 'practice' ? `Practice: ${level.title}` : level.title}
       goalText={level.goalText ?? level.intro}
-      {...(keycapsOf(level.mustUse) === undefined ? {} : { mustUseKeys: keycapsOf(level.mustUse) ?? [] })}
-      {...(targetLinesOf(level) === undefined ? {} : { targetLines: targetLinesOf(level) ?? [] })}
+      {...optional}
       lastError={run.lastError?.message ?? null}
       state={run.state}
-      {...(targetOf(level) === undefined ? {} : { target: targetOf(level) })}
       keysUsed={run.keystrokes}
       par={level.par}
       attempts={failed}
