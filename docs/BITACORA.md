@@ -240,6 +240,18 @@ Tags: `#eval` `#gates`
 
 ---
 
+## 2026-11-10: Visual direction chosen from mockups ("Ember")
+Phase: 3 (design) | Agent(s): Orchestrator (Opus), Renzo (decision) | Branch: design/phase-3
+Tags: `#eval`
+
+**What:** 6 mockups on a design canvas (https://claude.ai/artifact/Mez6my1ekfde4HgTkmtWNB): 3 warm dark directions (Ember, Dusk, Moss), each as a map screen and a challenge room. The challenge rooms show the redesigned "End of the Line" (lesson first, plain-words goal, marked target) and the new fail flow (5 attempts → explained solution → variant rooms → skip). Renzo picked **Ember**; its tokens are in `docs/VISUAL-DESIGN.md`.
+
+**Why mockups first:** the Phase 2 CRT look went from a brief straight into code, and the playtest rejected it. A mockup costs minutes; a rebuilt UI costs a phase.
+
+**Lesson:** Put a human decision on a cheap artifact before the expensive one. Mockups are the design-phase version of a test.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

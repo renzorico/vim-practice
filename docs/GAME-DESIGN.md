@@ -1,7 +1,7 @@
 # ESCAPE: game design (Phase 3 redesign, draft for Renzo's review)
 
 Replaces the Phase 2 "list of portals + isolated puzzles" design after the first playtest.
-Story: [STORY.md](STORY.md). Process: no code until this doc, the story and the visual mockups are approved.
+Story: [STORY.md](STORY.md). Visuals: [VISUAL-DESIGN.md](VISUAL-DESIGN.md) ("Ember", chosen 2026-11-10). Process: no code until this doc and the story are approved.
 
 ## 1. The pitch in one sentence
 You are a stray cursor trapped inside a dying mainframe; you explore it with real Vim motions, and every command you learn is a new way to move, repair and finally escape.
