@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* Ember tokens: docs/VISUAL-DESIGN.md. No other colours or fonts. */
+:root {
+  --bg: #1d2021;
+  --surface: #282828;
+  --surface-raised: #3c3836;
+  --line: #32302f;
+  --line-strong: #504945;
+  --text: #ebdbb2;
+  --text-soft: #d5c4a1;
+  --text-muted: #a89984;
+  --text-faint: #665c54;
+  --you: #fabd2f;
+  --goal: #b8bb26;
+  --door: #fe8019;
+  --friend: #83a598;
+  --danger: #d3869b;
+  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
