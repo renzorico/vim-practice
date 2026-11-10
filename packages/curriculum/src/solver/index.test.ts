@@ -313,9 +313,9 @@ describe('uniform cost, runner semantics and bounds', () => {
   });
 });
 
-// Budget: 200 ms on a developer laptop. Shared CI runners are about 3-4x slower, so CI gets a ceiling that still
-  // catches an algorithmic regression (exponential blow-up) without failing on machine speed.
-  it('solves a full-sized Region 1 room with 12 commands within the time budget', () => {
+// About 120 ms on a developer laptop and about 700 ms on a shared CI runner. The ceiling sits above both, so machine
+// speed never fails the build while an algorithmic regression (exponential blow-up) still does.
+it('solves a full-sized Region 1 room with 12 commands within the time budget', () => {
   const level = room({
     startLines: Array.from({ length: 8 }, () => 'x'.repeat(60)),
     teaches: ['motion.count'],
@@ -327,5 +327,5 @@ describe('uniform cost, runner semantics and bounds', () => {
   const elapsed = performance.now() - before;
   expect(solution).not.toBeNull();
   if (solution !== null) wins(level, solution.keys);
-  expect(elapsed).toBeLessThan(200);
+  expect(elapsed).toBeLessThan(1500);
 });
