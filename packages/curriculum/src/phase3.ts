@@ -61,14 +61,15 @@ export interface RoomGenerator {
  *   export const finalizeRoom: (room: GeneratedRoom, solve: SolveFn) => Level
  *       par = length of solve(room) when it is not null and not longer than intendedSolution, else
  *       intendedSolution.length; solution = the shorter of the two (solver wins ties).
- * Every generated room: id `gen-<skill>-<difficulty>-<seed>`, teaches [skill], requires = the skill's
+ * Every generated room: id `gen-${skillSlug(skill)}-<difficulty>-<seed>` (skillSlug from catalog.ts), teaches [skill], requires = the skill's
  * catalog prerequisites (transitively), allowedCommands that make the skill the efficient path and
  * always include ':q' and ':q!', a plain-words `goalText`, 2-3 hints vague to specific.
  */
 export type FinalizeRoomFn = (room: GeneratedRoom, solve: SolveFn) => Level;
 
 // ---------------------------------------------------------------------------
-// Lessons (content, P3-F): packages/curriculum/content/lessons/<skill>.json
+// Lessons (content, P3-F): packages/curriculum/content/lessons.json (one array; never one file per skill:
+// skill ids differ only by case, which collides on case-insensitive file systems)
 // ---------------------------------------------------------------------------
 
 export interface Lesson {
