@@ -50,6 +50,7 @@ body { margin: 0; background: var(--bg); }
 .side__section ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .log__line--operator { color: var(--text-soft); }
 .log__line--gc { color: var(--danger); text-transform: uppercase; }
+.log__line--echo { color: var(--friend); font-style: italic; }
 
 .title-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: 70vh; text-align: center; }
 .title-screen__wordmark { font-family: var(--font-mono); font-weight: 600; font-size: 56px; color: var(--you); }

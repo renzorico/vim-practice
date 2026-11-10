@@ -26,7 +26,7 @@ export function differingLines(current: readonly string[], target: readonly stri
   return target.map((line, index) => current[index] !== line);
 }
 
-export type LogSpeaker = 'operator' | 'gc';
+export type LogSpeaker = 'operator' | 'gc' | 'echo';
 
 export interface LogLine {
   readonly speaker: LogSpeaker;
