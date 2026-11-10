@@ -27,6 +27,10 @@ export interface Room {
   readonly run: LevelRun;
   /** Failure count at which the player dismissed the help banner ("Keep trying"). */
   readonly bannerDismissedAt: number;
+  /** Practice micro-tasks finished in this room (the challenge starts after PRACTICE_ROUNDS). */
+  readonly practiceWins: number;
+  /** Hints revealed during practice (the session tracks challenge hints). */
+  readonly practiceHints: number;
 }
 
 export type Screen = 'title' | 'map' | 'room';
@@ -69,6 +73,11 @@ const PROLOGUE_SKILLS: readonly SkillId[] = SKILLS.filter((skill) => skill.regio
 const BOOT_KEY = 'key-boot-sector';
 const MAX_LOG = 4;
 const PRACTICE: Difficulty = 1;
+/** Guided micro-tasks before the challenge (GAME-DESIGN §4: 2-3). */
+const PRACTICE_ROUNDS = 2;
+/** The skip test gives up and suggests the Prologue after this many failed tries. */
+const SKIP_TEST_TRIES = 2;
+const SEED_STRIDE = 1000;
 const CHALLENGE: Difficulty = 2;
 /** Where a player who passed the skip test starts: the first Region 1 note. */
 const REGION_ONE_START: Position = { line: 8, col: 2 };
@@ -77,6 +86,17 @@ export const doorIdFor = (skill: SkillId): string => `door-${skillSlug(skill)}`;
 
 export function learnedSkills(save: SaveData): ReadonlySet<SkillId> {
   return new Set(Object.values(save.mastery).filter((mastery) => mastery.box >= 1).map((mastery) => mastery.skill));
+}
+
+/** Doors the player has finished with: cleared, or skipped (skipped skills come back in review). */
+export function resolvedDoors(progress: Progress): ReadonlySet<string> {
+  return new Set([...progress.clearedDoors, ...progress.skippedDoors]);
+}
+
+/** Catalog prerequisites of a skill that the player has not learned yet. */
+export function missingPrerequisites(skill: SkillId, learned: ReadonlySet<SkillId>): SkillId[] {
+  const definition = SKILLS.find((candidate) => candidate.id === skill);
+  return (definition?.prerequisites ?? []).filter((prerequisite) => !learned.has(prerequisite));
 }
 
 export function mapProgressOf(progress: Progress): MapProgress {
@@ -90,7 +110,8 @@ export function mapProgressOf(progress: Progress): MapProgress {
 /** The next thing to do, in plain words. */
 export function objectiveFor(progress: Progress): string {
   const learned = learnedSkills(progress.save);
-  const next = SKILL_ORDER.find((skill) => !progress.clearedDoors.includes(doorIdFor(skill)));
+  const resolved = resolvedDoors(progress);
+  const next = SKILL_ORDER.find((skill) => !resolved.has(doorIdFor(skill)));
   if (next === undefined) return 'The Memory Fields are clear. The rest of ATLAS is still dark.';
   const keycap = LESSONS.get(next)?.keycap ?? next;
   if (!learned.has(next)) return `Find the Operator's note (N) about ${keycap} and press Enter on it.`;
@@ -110,8 +131,9 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
     return finalizeRoom(generator.generate(seed, difficulty), deps.solve);
   };
 
+  // A lesson leads into practice, so it is served a practice room too.
   const levelFor = (session: RoomSession): Level =>
-    buildLevel(session.skill, session.seed, session.phase === 'practice' ? PRACTICE : CHALLENGE);
+    buildLevel(session.skill, session.seed, session.phase === 'practice' || session.phase === 'lesson' ? PRACTICE : CHALLENGE);
 
   const mapFor = (progress: Progress): MapState => startMap(WORLD, mapProgressOf(progress));
 
@@ -143,7 +165,9 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
       persist({ ...progress, seedCounter: seed });
       set({
         screen: 'room',
-        room: { skill, doorId, skipTest, session, level, run: startLevel(level), bannerDismissedAt: 0 },
+        room: {
+          skill, doorId, skipTest, session, level, run: startLevel(level), bannerDismissedAt: 0, practiceWins: 0, practiceHints: 0,
+        },
       });
     };
 
@@ -158,7 +182,8 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
     };
 
     const winRoom = (room: Room, run: LevelRun): void => {
-      let progress = record(get().progress, room, run, true);
+      // The skip test grants the Prologue skills once (passSkipTest); recording the run too would count them twice.
+      let progress = room.skipTest ? get().progress : record(get().progress, room, run, true);
       if (room.doorId !== null && !progress.clearedDoors.includes(room.doorId)) {
         progress = { ...progress, clearedDoors: [...progress.clearedDoors, room.doorId] };
       }
@@ -194,7 +219,12 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
       }
       if (phase !== 'practice' && phase !== 'challenge') return;
 
-      const run = stepLevel(room.run, key);
+      const stepped = stepLevel(room.run, key);
+      // The runner only fails a quit in rooms without a quit goal. In a "save and quit" room, a wrong quit
+      // (e.g. :q! when the goal needs a save) would leave the run stuck: treat any quit that did not win as a failure.
+      const run: LevelRun = stepped.status === 'playing' && stepped.state.quitRequested
+        ? { ...stepped, status: 'failed', failureReason: 'quit' }
+        : stepped;
       if (run.status === 'playing') {
         if (phase === 'challenge' && isOverParLimit(run.keystrokes, room.level.par)) {
           say('operator', 'That was a lot of keys. The room resets: try the move the note taught.');
@@ -207,10 +237,17 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
       }
       if (phase === 'practice') {
         if (run.status === 'won') {
+          const practiceWins = room.practiceWins + 1;
+          if (practiceWins < PRACTICE_ROUNDS) {
+            const level = buildLevel(room.skill, room.session.seed + SEED_STRIDE * practiceWins, PRACTICE);
+            say('operator', 'Good. One more, a little different.');
+            set({ room: { ...room, level, run: startLevel(level), practiceWins, practiceHints: 0 } });
+            return;
+          }
           const progress = record(get().progress, room, run, true);
           persist(progress);
-          say('operator', `Good. ${LESSONS.get(room.skill)?.keycap ?? room.skill} is yours now, on the map too.`);
-          set({ room: applyEvent(room, { type: 'practice-done' }) });
+          say('operator', `${LESSONS.get(room.skill)?.keycap ?? room.skill} is yours now, on the map too. Now the real room.`);
+          set({ room: applyEvent({ ...room, practiceWins }, { type: 'practice-done' }) });
         } else {
           set({ room: { ...room, run: startLevel(room.level) } });
         }
@@ -222,15 +259,29 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
       }
       // A failed challenge run (gave up with :q, or a must-use rule) counts one failed attempt; play again.
       const next = applyEvent(room, { type: 'run-ended', run });
+      if (room.skipTest && next.session.attempts >= SKIP_TEST_TRIES) {
+        say('operator', 'No shame in it. Start from the Boot Sector: the notes there teach exactly this.');
+        set({ screen: 'map', room: null, map: mapFor(get().progress) });
+        return;
+      }
       set({ room: { ...next, run: next.run === room.run ? startLevel(next.level) : next.run } });
     };
 
     const handleMapEvent = (event: MapEvent): void => {
       const progress = get().progress;
       switch (event.type) {
-        case 'open-note':
-          if (event.entity.skill !== undefined) openRoom(event.entity.skill, doorIdFor(event.entity.skill), false);
+        case 'open-note': {
+          const skill = event.entity.skill;
+          if (skill === undefined) return;
+          const missing = missingPrerequisites(skill, learnedSkills(progress.save));
+          if (missing.length > 0) {
+            const names = missing.map((prerequisite) => LESSONS.get(prerequisite)?.keycap ?? prerequisite).join(', ');
+            say('operator', `This note builds on ${names}. Read that note first.`);
+            return;
+          }
+          openRoom(skill, doorIdFor(skill), false);
           return;
+        }
         case 'open-door':
           if (event.entity.skill !== undefined) openRoom(event.entity.skill, event.entity.id, false);
           return;
@@ -239,10 +290,24 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
           say('operator', `This door is sealed. You need ${missing} first.`);
           return;
         }
-        case 'key-collected':
+        case 'key-collected': {
+          // A key only comes loose once every door of its own sector is resolved.
+          const region = WORLD.regions.find((candidate) =>
+            event.entity.at.line >= candidate.rows.from && event.entity.at.line <= candidate.rows.to);
+          const resolved = resolvedDoors(progress);
+          const open = WORLD.entities.filter((entity) => entity.kind === 'door' && region !== undefined
+            && entity.at.line >= region.rows.from && entity.at.line <= region.rows.to && !resolved.has(entity.id));
+          if (open.length > 0) {
+            const fresh = mapFor(progress);
+            const cursor = get().map.engine.cursor;
+            set({ map: { ...fresh, engine: { ...fresh.engine, cursor, desiredCol: cursor.col } } });
+            say('operator', `The key won't budge. ${open.length} door${open.length === 1 ? '' : 's'} in this sector still need${open.length === 1 ? 's' : ''} you.`);
+            return;
+          }
           persist({ ...progress, collectedKeys: [...progress.collectedKeys, event.entity.id] });
           say('gc', 'Sector access granted. Memory Fields online. Idle processes will be collected.');
           return;
+        }
         case 'echo': {
           const visits = get().echoVisits;
           const lines = ECHO.visits[visits] ?? [ECHO.after_all_visits];
@@ -299,7 +364,11 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
 
       hint() {
         const room = get().room;
-        if (room === null) return;
+        if (room === null || room.skipTest) return;
+        if (room.session.phase === 'practice') {
+          set({ room: { ...room, practiceHints: Math.min(room.practiceHints + 1, room.level.hints.length) } });
+          return;
+        }
         set({ room: applyEvent(room, { type: 'hint' }) });
       },
 
@@ -324,7 +393,16 @@ export function createGame(deps: GameDeps): StoreApi<Game> {
       skip() {
         const room = get().room;
         if (room === null || !canSkip(room.session)) return;
-        persist(record(get().progress, room, room.run, false));
+        // Mark the room's own skill weak (whatever this run used) and resolve its door so the objective moves on.
+        const { progress } = get();
+        const save = recordResult(progress.save, {
+          levelId: room.level.id, won: false, stars: 0, keystrokes: room.run.keystrokes, usedSkills: [room.skill], finishedAt: deps.now(),
+        }, [room.level]);
+        const door = room.doorId;
+        persist({
+          ...progress, save,
+          skippedDoors: door === null || progress.skippedDoors.includes(door) ? progress.skippedDoors : [...progress.skippedDoors, door],
+        });
         say('gc', 'Room abandoned. Skill marked weak. It will come back.');
         set({ room: applyEvent(room, { type: 'skip' }) });
       },

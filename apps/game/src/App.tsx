@@ -62,6 +62,7 @@ function RoomView({ room, game }: { room: Room; game: Game }) {
   const failed = failures(session);
   const helpAvailable = session.phase === 'challenge' && (canShowSolution(session) || canSkip(session))
     && failed > room.bannerDismissedAt;
+  const hintsShown = session.phase === 'practice' ? room.practiceHints : session.hintsShown;
   const mustUseKeys = keycapsOf(level.mustUse);
   const targetLines = targetLinesOf(level);
   const target = targetOf(level);
@@ -75,7 +76,7 @@ function RoomView({ room, game }: { room: Room; game: Game }) {
     <ChallengeRoom
       lesson={lesson}
       roomNumber={session.variant + 1}
-      title={session.phase === 'practice' ? `Practice: ${level.title}` : level.title}
+      title={room.skipTest ? `Prove it: ${level.title}` : session.phase === 'practice' ? `Practice ${room.practiceWins + 1} of 2: ${level.title}` : level.title}
       goalText={level.goalText ?? level.intro}
       {...optional}
       lastError={run.lastError?.message ?? null}
@@ -84,13 +85,15 @@ function RoomView({ room, game }: { room: Room; game: Game }) {
       par={level.par}
       attempts={failed}
       allowedKeys={level.allowedCommands ?? []}
-      hint={session.hintsShown > 0 ? level.hints[Math.min(session.hintsShown, level.hints.length) - 1] ?? null : null}
+      hint={hintsShown > 0 ? level.hints[Math.min(hintsShown, level.hints.length) - 1] ?? null : null}
       canShowSolution={helpAvailable && canShowSolution(session)}
       canSkip={helpAvailable && canSkip(session)}
       onHint={game.hint}
       onShowSolution={game.showSolution}
       onKeepTrying={game.keepTrying}
       onSkip={game.skip}
+      onLeave={game.leaveRoom}
+      assist={!room.skipTest}
     />
   );
 }

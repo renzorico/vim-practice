@@ -38,6 +38,10 @@ describe('Phase 3 game', () => {
 
     store.getState().continueLesson();
     expect(store.getState().room?.session.phase).toBe('practice');
+    expect(store.getState().room?.level.id).toMatch(/-1-\d+$/); // practice rooms are difficulty 1
+    playSolution();
+    expect(store.getState().room?.session.phase).toBe('practice');
+    expect(store.getState().room?.practiceWins).toBe(1);
     playSolution();
     expect(store.getState().room?.session.phase).toBe('challenge');
     expect(learnedSkills(store.getState().progress.save).has('ex.q')).toBe(true);
@@ -59,6 +63,7 @@ describe('Phase 3 game', () => {
     press('<CR>'); // on note-motion-hjkl at (8,2)
     expect(store.getState().room?.skill).toBe('motion.hjkl');
     store.getState().continueLesson();
+    playSolution();
     playSolution();
     expect(store.getState().room?.session.phase).toBe('challenge');
     const original = store.getState().room?.session.seed;
@@ -86,11 +91,12 @@ describe('Phase 3 game', () => {
   it('seals doors whose prerequisites are not learned and says why', () => {
     const { store, press } = setup();
     press('<CR>');
-    // door-mode-insert sits at line 2, col 19; walk there with l.
-    press('17l<CR>');
-    const last = store.getState().log.at(-1);
+    // door-mode-insert sits at line 2, col 19. Counts are not learned yet, so walk with single l presses.
+    press('l'.repeat(19));
+    expect(store.getState().map.engine.cursor).toEqual({ line: 2, col: 19 });
+    press('<CR>');
     expect(store.getState().screen).toBe('map');
-    expect(last?.text).toMatch(/sealed|not something you know/);
+    expect(store.getState().log.at(-1)?.text).toMatch(/sealed.*:q/);
   });
 
   it('the skip test clears the Prologue and drops the player in the Memory Fields', () => {
@@ -109,6 +115,70 @@ describe('Phase 3 game', () => {
     store.getState().leaveRoom();
     expect(store.getState().map.engine.cursor).toEqual({ line: 8, col: 2 });
     expect(objectiveFor(store.getState().progress)).toMatch(/hjkl/);
+  });
+
+  it('gates notes on their prerequisites', () => {
+    const { store, press } = setup();
+    press('<CR>');
+    press('l'.repeat(28)); // note-ex-wq at (2,28) builds on i
+    press('<CR>');
+    expect(store.getState().screen).toBe('map');
+    expect(store.getState().log.at(-1)?.text).toMatch(/builds on .*i/);
+  });
+
+  it('keeps the Boot Sector key in place until every Prologue door is resolved', () => {
+    const { store, press } = setup();
+    press('<CR>jj');
+    press('l'.repeat(47));
+    expect(store.getState().progress.collectedKeys).toEqual([]);
+    expect(store.getState().log.at(-1)?.text).toMatch(/won't budge/);
+    expect(store.getState().map.revealed.has('motion-plains')).toBe(false);
+  });
+
+  it('grants the skip-test skills exactly once (mastery box 1)', () => {
+    const { store, playSolution } = setup();
+    store.getState().startSkipTest();
+    playSolution();
+    for (const mastery of Object.values(store.getState().progress.save.mastery)) expect(mastery.box).toBe(1);
+  });
+
+  it('skip test: no hints, and two failed tries send the player to the Boot Sector', () => {
+    const { store, press } = setup();
+    store.getState().startSkipTest();
+    store.getState().hint();
+    expect(store.getState().room?.session.hintsShown).toBe(0);
+    press(':q!<CR>');
+    press(':q!<CR>');
+    expect(store.getState().screen).toBe('map');
+    expect(store.getState().log.at(-1)?.text).toMatch(/Boot Sector/);
+  });
+
+  it('practice hints are revealed one at a time', () => {
+    const { store, press } = setup();
+    press('<CR>ll<CR>');
+    store.getState().continueLesson();
+    store.getState().hint();
+    store.getState().hint();
+    expect(store.getState().room?.practiceHints).toBe(2);
+  });
+
+  it('skipping marks the skill weak and moves the objective on', () => {
+    const { store, press, playSolution } = setup();
+    store.getState().startSkipTest();
+    playSolution();
+    store.getState().leaveRoom();
+    press('<CR>');
+    store.getState().continueLesson();
+    playSolution();
+    playSolution();
+    for (let attempt = 0; attempt < 5; attempt += 1) press(':q<CR>');
+    store.getState().showSolution();
+    store.getState().newRoomAfterSolution();
+    for (let failed = 0; failed < 3; failed += 1) press(':q<CR>');
+    store.getState().skip();
+    const { progress } = store.getState();
+    expect(progress.skippedDoors).toContain('door-motion-hjkl');
+    expect(objectiveFor(progress)).not.toMatch(/hjkl/);
   });
 
   it('saves progress and restores it in a new game', () => {

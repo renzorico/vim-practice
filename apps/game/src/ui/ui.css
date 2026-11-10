@@ -82,3 +82,5 @@ body { margin: 0; background: var(--bg); }
 .target__line { display: flex; white-space: pre; border-left: 3px solid transparent; padding-left: 8px; }
 .target__line--diff { border-left-color: var(--goal); color: var(--goal); }
 .target__mark { width: 2ch; user-select: none; }
+
+.room--test { grid-template-columns: minmax(0, 1fr); }

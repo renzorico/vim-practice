@@ -89,6 +89,7 @@ export function Gallery() {
         onShowSolution={noop}
         onKeepTrying={noop}
         onSkip={noop}
+        onLeave={noop}
       />
       <SolutionReplay startLines={ROOM_LINES} startCursor={{ line: 0, col: 4 }} solution={['j', '$']} onNewRoom={noop} />
     </>

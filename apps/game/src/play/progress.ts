@@ -7,6 +7,8 @@ export interface Progress {
   readonly save: SaveData;
   readonly collectedKeys: readonly string[];
   readonly clearedDoors: readonly string[];
+  /** Doors the player skipped after the fail flow; their skills are marked weak. */
+  readonly skippedDoors: readonly string[];
   /** Seeds for generated rooms: each room opened takes the next one, so rooms differ between visits. */
   readonly seedCounter: number;
 }
@@ -16,7 +18,7 @@ export interface ProgressStorage {
   save(progress: Progress): void;
 }
 
-export const emptyProgress = (): Progress => ({ save: emptySave(), collectedKeys: [], clearedDoors: [], seedCounter: 0 });
+export const emptyProgress = (): Progress => ({ save: emptySave(), collectedKeys: [], clearedDoors: [], skippedDoors: [], seedCounter: 0 });
 
 const STORAGE_KEY = 'escape.progress.v3';
 
@@ -37,6 +39,7 @@ const ProgressSchema = z.object({
   }).strict(),
   collectedKeys: z.array(z.string()),
   clearedDoors: z.array(z.string()),
+  skippedDoors: z.array(z.string()).default([]),
   seedCounter: z.number().int().nonnegative(),
 }).strict();
 

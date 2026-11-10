@@ -252,6 +252,36 @@ Tags: `#eval`
 
 ---
 
+## 2026-11-10: Phase 3, the redesigned game (5 builders, 3 vendors, 11 PRs)
+Phase: 3 | Agent(s): Codex/GPT (P3-A solver, P3-C world map), Claude Sonnet (P3-B generators, P3-E Ember UI), Claude Haiku (P3-D fail flow), Orchestrator Opus (contracts, story content, integration) | PRs: #20-#27
+Tags: `#contracts` `#fanout` `#routing` `#gates` `#eval`
+
+**What:** The game Renzo asked for after the first playtest. An ASCII world (Boot Sector + Memory Fields) explored with only the motions you have learned; Operator notes teach each command (lesson card with animated example, then 2 practice rooms); doors hold challenge rooms with the fail flow (solution after 5 failures, a different room of the same difficulty, skip after 3 failed variants); a "Prove it" skip test for the Prologue; ECHO lines seeding the twist; progress saved; Ember visuals.
+
+**How the work split:** the contracts were merged *before* dispatch this time (the Phase 2 lesson), so every builder started from them. The solver proves par (no more guessed par values); the generators redraw any room an earlier skill can solve as fast as the new one.
+
+**What the gates caught:**
+| Where | Caught by | Bug |
+|---|---|---|
+| Contract | building the content | skill ids differing only by case collided on macOS and broke level ids → `skillSlug()` |
+| P3-C brief | Codex (stopped and asked) | the brief asked to test `f`, which is not in the catalog yet |
+| P3-B | Codex review | rooms where `kk` tied `gg` at par; a `:q!` room that would quit fine in real Vim |
+| P3-A | Sonnet review | dedupe hid `mustUse` solutions |
+| P3-A | CI | a 200 ms timing test that failed on slower CI machines (and my first fix only edited a comment) |
+| P3-C | Sonnet review, playing the real map | the "only G" shaft was walkable; counted `8j` tunnelled through walls → walking vs jumping rule |
+| P3-E | orchestrator in the browser | white title page, missing room header, invisible target |
+| P3-G (mine) | Codex review | practice used the challenge difficulty, notes ignored prerequisites, the key was collectible before any room, no way out of a room, a wrong quit left a run stuck |
+
+**Result:** 1260 tests, verified in a browser end to end (first room, skip test, persistence). **Not done:** Renzo's playtest, the real gate.
+
+**Lessons:**
+- **Contracts before dispatch, merged.** Zero builders started without them this time.
+- **A builder that stops and says "the brief is wrong" is the system working.** Twice this phase.
+- **The orchestrator's own code needs the same review.** The integration had the most bugs of any PR.
+- **Never trust a fix you did not see apply.** A one-line edit silently missed, and CI caught it.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
