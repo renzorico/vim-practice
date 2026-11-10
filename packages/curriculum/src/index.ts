@@ -6,3 +6,4 @@ export { checkGoals, startLevel, stepLevel, usedSkills } from './runner/index.js
 export {
   createMemoryStorage, effectiveBox, emptySave, isUnlocked, learnedSkills, pickReviewLevels, recordResult, reviewQueue,
 } from './skills/index.js';
+export type * from './phase3.js';

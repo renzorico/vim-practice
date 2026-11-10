@@ -37,6 +37,8 @@ export interface Level {
   readonly title: string;
   /** Short in-game story text. Max ~2 sentences. */
   readonly intro: string;
+  /** The goal in plain words, shown in the HUD: "Put the cursor on the X at the end of line 2." Phase 3+. */
+  readonly goalText?: string;
   readonly startLines: readonly string[];
   readonly startCursor: Position;
   readonly goals: readonly Goal[];

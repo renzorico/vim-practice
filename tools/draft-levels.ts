@@ -30,6 +30,7 @@ export const LEVEL_JSON_SCHEMA = {
     type: { type: 'string', enum: LEVEL_TYPES },
     title: { type: 'string', minLength: 1, maxLength: 60 },
     intro: { type: 'string', minLength: 1, maxLength: 280 },
+    goalText: { type: 'string', minLength: 1, maxLength: 160 },
     startLines: { ...stringArray, minItems: 1 },
     startCursor: position,
     goals: {

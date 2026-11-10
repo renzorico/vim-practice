@@ -30,6 +30,20 @@ Rules:
 | P2-F | Wire app, buffer overworld, Prologue levels | integration | orchestrator | codex | | merged |
 | P2-G | GitHub Pages deploy | `.github/workflows/deploy.yml` | orchestrator | | | merged |
 
+### Phase 3 (see docs/PHASE-3.md)
+
+| ID | Task | Owns files | Runner | Reviewer | Branch | Status |
+|---|---|---|---|---|---|---|
+| P3-0 | Contracts: solver, generators, lessons, world, session | `packages/curriculum/src/phase3.ts` | orchestrator | codex | phase-3/contracts | review |
+| P3-A | Solver | `packages/curriculum/src/solver/**` | codex | claude-sonnet | | todo |
+| P3-B | Room generators (10 skills) | `packages/curriculum/src/generators/**` | claude-sonnet | codex | | todo |
+| P3-C | World map engine | `packages/curriculum/src/world/**` | codex | claude-sonnet | | todo |
+| P3-D | Room session (fail flow) | `packages/curriculum/src/session/**` | claude-haiku | codex | | todo |
+| P3-E | Ember UI components | `apps/game/src/ui/**` | claude-sonnet | codex | | todo |
+| P3-F | Story content: map, lessons, notes, rooms | `packages/curriculum/content/**` | orchestrator | renzo | | todo |
+| P3-G | Integration + skip test + deploy | integration | orchestrator | codex | | todo |
+| P3-H | Playtest | | renzo | | | todo |
+
 ## Backlog (minor review findings, not blocking merge)
 
 | From | Item | Suggested owner |
