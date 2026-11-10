@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeStep, initialFrameIndex, replayFrames, REPLAY_INTERVAL_MS } from './replay.js';
+import { describeStep, initialFrameIndex, replayFrames, replayReducer, startReplayState, REPLAY_INTERVAL_MS } from './replay.js';
 
 describe('replayFrames', () => {
   it('has a start frame plus one frame per key, using the real engine', () => {
@@ -29,6 +29,36 @@ describe('describeStep', () => {
     expect(describeStep(frames[0]!)).toBe('Start.');
     expect(describeStep(frames[1]!)).toContain('waiting');
     expect(describeStep(frames[2]!)).toBe('dw changes text.');
+  });
+});
+
+describe('replayReducer', () => {
+  it('animates from the start and stops on the last frame', () => {
+    let state = startReplayState(3, false);
+    expect(state).toEqual({ index: 0, playing: true });
+    state = replayReducer(state, { type: 'tick', frameCount: 3 });
+    expect(state).toEqual({ index: 1, playing: true });
+    state = replayReducer(state, { type: 'tick', frameCount: 3 });
+    expect(state).toEqual({ index: 2, playing: false });
+    expect(replayReducer(state, { type: 'tick', frameCount: 3 })).toEqual({ index: 2, playing: false });
+  });
+
+  it('shows the end state and never plays under reduced motion', () => {
+    expect(startReplayState(4, true)).toEqual({ index: 3, playing: false });
+  });
+
+  it('steps instantly on replay under reduced motion, wrapping around', () => {
+    let state = startReplayState(3, true);
+    state = replayReducer(state, { type: 'replay', frameCount: 3, reduced: true });
+    expect(state).toEqual({ index: 0, playing: false });
+    state = replayReducer(state, { type: 'replay', frameCount: 3, reduced: true });
+    expect(state).toEqual({ index: 1, playing: false });
+  });
+
+  it('restarts the animation on replay and on reset with new frames', () => {
+    const done = { index: 2, playing: false };
+    expect(replayReducer(done, { type: 'replay', frameCount: 3, reduced: false })).toEqual({ index: 0, playing: true });
+    expect(replayReducer(done, { type: 'reset', frameCount: 5, reduced: false })).toEqual({ index: 0, playing: true });
   });
 });
 

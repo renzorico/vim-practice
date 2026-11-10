@@ -1,5 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { classifyGlyph, classifyRow, markerIndex } from './glyphs.js';
+import { classifyGlyph, classifyRow, describeMapSummary, describeOffset, markerIndex } from './glyphs.js';
+
+describe('describeMapSummary', () => {
+  const markers = [
+    { at: { line: 2, col: 4 }, kind: 'note' },
+    { at: { line: 2, col: 15 }, kind: 'door' },
+  ] as const;
+
+  it('names position, nearest entity and objective', () => {
+    const text = describeMapSummary({ line: 2, col: 11 }, markers, 'Open the door.');
+    expect(text).toBe('You are at row 3, column 12. Nearest: a door, 4 columns east. Objective: Open the door.');
+  });
+
+  it('says what you stand on', () => {
+    const text = describeMapSummary({ line: 2, col: 4 }, markers, 'Go.');
+    expect(text).toContain('standing on a note');
+    expect(text).toContain('Nearest: a door, 11 columns east');
+  });
+
+  it('describes offsets in both axes', () => {
+    expect(describeOffset({ line: 0, col: 5 }, { line: 1, col: 3 })).toBe('2 columns west, 1 row south');
+  });
+});
 
 const none = markerIndex([]);
 const away = { line: 9, col: 9 };

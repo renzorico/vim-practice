@@ -72,7 +72,10 @@ export function Gallery() {
         lesson={SAMPLE_LESSON}
         roomNumber={3}
         title="The Long Line"
-        goalText="Put the cursor on the x at the end of line 2."
+        goalText="Put the cursor on the X at the end of line 2."
+        mustUseKeys={['$']}
+        targetLines={['the quick brown fox', 'jumps over the lazy dog']}
+        lastError="`G` is not unlocked yet"
         state={roomState}
         {...(ROOM_TARGET === null ? {} : { target: ROOM_TARGET })}
         keysUsed={7}

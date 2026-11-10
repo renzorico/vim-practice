@@ -1,6 +1,6 @@
 import type { Position } from '@escape/engine';
 import { Header } from './Header.js';
-import { classifyRow, markerIndex, type MapMarker } from './glyphs.js';
+import { classifyRow, describeMapSummary, markerIndex, type MapMarker } from './glyphs.js';
 import { KeycapRow } from './Keycap.js';
 import { logText, type LogLine } from './labels.js';
 
@@ -33,7 +33,7 @@ interface MapBufferProps {
 function MapBuffer({ lines, cursor, markers }: MapBufferProps) {
   const index = markerIndex(markers);
   return (
-    <div className="buffer" role="img" aria-label="World map">
+    <div className="buffer" aria-hidden="true">
       {lines.map((line, lineIndex) => (
         <div className="buffer__line" key={lineIndex}>
           {classifyRow(line, lineIndex, cursor, index).map((run, runIndex) => (
@@ -59,7 +59,10 @@ export function MapScreen(props: MapScreenProps) {
         maxPower={props.maxPower}
       />
       <div className="map-layout">
-        <MapBuffer lines={props.lines} cursor={props.cursor} markers={props.markers} />
+        <div>
+          <p className="sr-only">{describeMapSummary(props.cursor, props.markers, props.objective)}</p>
+          <MapBuffer lines={props.lines} cursor={props.cursor} markers={props.markers} />
+        </div>
         <aside className="side">
           <section className="ui-panel side__section">
             <h2 className="ui-label">Objective</h2>

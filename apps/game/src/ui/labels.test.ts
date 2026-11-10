@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { formatKeyCount, keysVersusBest, logText, powerPercent, roomTitle, showFailBanner } from './labels.js';
+import { differingLines, formatKeyCount, keysVersusBest, logText, powerPercent, roomTitle, showFailBanner } from './labels.js';
+
+describe('differingLines', () => {
+  it('flags the target lines that differ from the buffer', () => {
+    expect(differingLines(['a', 'b', 'c'], ['a', 'x', 'c'])).toEqual([false, true, false]);
+  });
+
+  it('flags lines the buffer does not have yet', () => {
+    expect(differingLines(['a'], ['a', 'b'])).toEqual([false, true]);
+  });
+});
 
 describe('labels', () => {
   it('formats key counts', () => {

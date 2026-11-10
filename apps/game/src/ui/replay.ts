@@ -49,6 +49,41 @@ const KIND_PHRASE: Readonly<Record<CommandKind, string>> = {
   repeat: 'repeats the last change',
 };
 
+export interface ReplayState {
+  readonly index: number;
+  readonly playing: boolean;
+}
+
+export type ReplayAction =
+  | { readonly type: 'tick'; readonly frameCount: number }
+  | { readonly type: 'reset'; readonly frameCount: number; readonly reduced: boolean }
+  | { readonly type: 'replay'; readonly frameCount: number; readonly reduced: boolean };
+
+/** Start of a playback: animated from frame 0, or static on the last frame under reduced motion. */
+export function startReplayState(frameCount: number, reduced: boolean): ReplayState {
+  return { index: initialFrameIndex(reduced, frameCount), playing: !reduced && frameCount > 1 };
+}
+
+/**
+ * Pure playback logic. Under reduced motion nothing animates: 'replay' moves one frame
+ * (wrapping to frame 0 after the last) with no timer.
+ */
+export function replayReducer(state: ReplayState, action: ReplayAction): ReplayState {
+  const last = Math.max(0, action.frameCount - 1);
+  switch (action.type) {
+    case 'reset':
+      return startReplayState(action.frameCount, action.reduced);
+    case 'tick': {
+      if (!state.playing || state.index >= last) return { index: Math.min(state.index, last), playing: false };
+      const index = state.index + 1;
+      return { index, playing: index < last };
+    }
+    case 'replay':
+      if (action.reduced) return { index: state.index >= last ? 0 : state.index + 1, playing: false };
+      return { index: 0, playing: last > 0 };
+  }
+}
+
 /** One plain-words line for a replay step. */
 export function describeStep(frame: ReplayFrame): string {
   if (frame.key === null) return 'Start.';

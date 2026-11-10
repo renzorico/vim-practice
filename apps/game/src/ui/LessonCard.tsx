@@ -18,7 +18,7 @@ interface ExampleReplayProps {
 
 function ExampleReplay({ example }: ExampleReplayProps) {
   const frames = useMemo(() => replayFrames(example.lines, example.cursor, example.keys), [example]);
-  const { index, playing, replay } = useReplay(frames.length);
+  const { index, playing, reduced, replay } = useReplay(frames.length, frames);
   const frame = frames[index] ?? frames[0];
   if (frame === undefined) return null;
   return (
@@ -29,7 +29,7 @@ function ExampleReplay({ example }: ExampleReplayProps) {
         {describeStep(frame)}
       </p>
       <button type="button" className="ui-btn" onClick={replay} disabled={playing}>
-        Replay
+        {reduced ? 'Next key' : 'Replay'}
       </button>
     </div>
   );

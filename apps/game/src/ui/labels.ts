@@ -21,6 +21,11 @@ export function showFailBanner(canShowSolution: boolean, canSkip: boolean): bool
   return canShowSolution || canSkip;
 }
 
+/** For each target line, true when it differs from the same line of the current buffer (extra or missing lines count). */
+export function differingLines(current: readonly string[], target: readonly string[]): boolean[] {
+  return target.map((line, index) => current[index] !== line);
+}
+
 export type LogSpeaker = 'operator' | 'gc';
 
 export interface LogLine {

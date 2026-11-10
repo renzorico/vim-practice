@@ -15,7 +15,7 @@ interface SolutionReplayProps {
 
 export function SolutionReplay({ startLines, startCursor, solution, explanations, onNewRoom }: SolutionReplayProps) {
   const frames = useMemo(() => replayFrames(startLines, startCursor, solution), [startLines, startCursor, solution]);
-  const { index, playing, replay } = useReplay(frames.length);
+  const { index, playing, reduced, replay } = useReplay(frames.length, frames);
   const frame = frames[index] ?? frames[0];
   if (frame === undefined) return null;
   const explanation = explanations?.[index - 1] ?? describeStep(frame);
@@ -33,7 +33,7 @@ export function SolutionReplay({ startLines, startCursor, solution, explanations
       </p>
       <div className="room__actions">
         <button type="button" className="ui-btn" onClick={replay} disabled={playing}>
-          Replay
+          {reduced ? 'Next key' : 'Replay'}
         </button>
         <button type="button" className="ui-btn ui-btn--primary" onClick={onNewRoom}>
           Try a new room

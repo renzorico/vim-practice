@@ -48,6 +48,36 @@ export function classifyGlyph(
   return kind === undefined ? 'floor' : ENTITY_CLASS[kind];
 }
 
+const plural = (count: number, unit: string): string => `${count} ${unit}${count === 1 ? '' : 's'}`;
+
+/** "3 columns east, 1 row south"; empty when the points coincide. */
+export function describeOffset(from: Position, to: Position): string {
+  const parts: string[] = [];
+  const cols = to.col - from.col;
+  const rows = to.line - from.line;
+  if (cols !== 0) parts.push(`${plural(Math.abs(cols), 'column')} ${cols > 0 ? 'east' : 'west'}`);
+  if (rows !== 0) parts.push(`${plural(Math.abs(rows), 'row')} ${rows > 0 ? 'south' : 'north'}`);
+  return parts.join(', ');
+}
+
+const distance = (a: Position, b: Position): number => Math.abs(a.line - b.line) + Math.abs(a.col - b.col);
+
+/** Text for screen readers: where you are, what is under or near you, and the objective. */
+export function describeMapSummary(cursor: Position, markers: readonly MapMarker[], objective: string): string {
+  const parts = [`You are at row ${cursor.line + 1}, column ${cursor.col + 1}.`];
+  const under = markers.find((marker) => distance(marker.at, cursor) === 0);
+  if (under !== undefined) parts.push(`You are standing on a ${under.kind}.`);
+  let nearest: MapMarker | undefined;
+  for (const marker of markers) {
+    const gap = distance(marker.at, cursor);
+    if (gap === 0) continue;
+    if (nearest === undefined || gap < distance(nearest.at, cursor)) nearest = marker;
+  }
+  if (nearest !== undefined) parts.push(`Nearest: a ${nearest.kind}, ${describeOffset(cursor, nearest.at)}.`);
+  parts.push(`Objective: ${objective}`);
+  return parts.join(' ');
+}
+
 export interface GlyphRun {
   readonly text: string;
   readonly glyph: GlyphClass;

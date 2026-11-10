@@ -26,15 +26,15 @@ body { margin: 0; background: var(--bg); }
 .header__stats { display: flex; align-items: center; gap: 24px; font-family: var(--font-mono); }
 .power { display: inline-flex; align-items: center; gap: 8px; color: var(--door); }
 .power__track { width: 96px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
-.power__fill { height: 100%; background: var(--door); }
+.power__fill { display: block; height: 100%; background: var(--door); }
 
 .buffer { font-family: var(--font-mono); font-size: 16px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); overflow-x: auto; }
 .buffer__line { display: flex; white-space: pre; }
 .buffer__gutter { color: var(--text-faint); text-align: right; padding-right: 16px; user-select: none; }
 .buffer__cmdline { min-height: 1.5em; color: var(--text-soft); white-space: pre; }
+.cell--selected { background: var(--line-strong); }
 .cell--cursor-block { background: var(--you); color: var(--bg); }
 .cell--cursor-bar { box-shadow: -2px 0 0 var(--you); }
-.cell--selected { background: var(--line-strong); }
 .cell--target { outline: 2px solid var(--goal); outline-offset: 0; border-radius: 2px; }
 .glyph--you { background: var(--you); color: var(--bg); }
 .glyph--note { color: var(--friend); font-weight: 600; }
@@ -73,3 +73,10 @@ body { margin: 0; background: var(--bg); }
 
 .replay__explain { font-size: 16px; min-height: 1.5em; color: var(--text-soft); }
 .replay__progress { font-family: var(--font-mono); color: var(--text-muted); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.room__must { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.room__status { min-height: 1.4em; color: var(--door); }
+.target__line { display: flex; white-space: pre; border-left: 3px solid transparent; padding-left: 8px; }
+.target__line--diff { border-left-color: var(--goal); color: var(--goal); }
+.target__mark { width: 2ch; user-select: none; }

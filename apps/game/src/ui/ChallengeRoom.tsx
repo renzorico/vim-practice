@@ -3,7 +3,7 @@ import type { Position } from '@escape/engine';
 import { Buffer } from './Buffer.js';
 import { KeycapRow } from './Keycap.js';
 import { LessonCard } from './LessonCard.js';
-import { keysVersusBest, roomTitle, showFailBanner } from './labels.js';
+import { differingLines, keysVersusBest, roomTitle, showFailBanner } from './labels.js';
 import type { ComponentProps } from 'react';
 
 type BufferState = ComponentProps<typeof Buffer>['state'];
@@ -13,6 +13,12 @@ interface ChallengeRoomProps {
   readonly roomNumber: number;
   readonly title: string;
   readonly goalText: string;
+  /** Keycaps of skills the room requires (Level.mustUse), shown so the pass rule is never hidden. */
+  readonly mustUseKeys?: readonly string[];
+  /** Transform goals: the lines the buffer must become. */
+  readonly targetLines?: readonly string[];
+  /** Why the last key was rejected, e.g. "`G` is not unlocked yet". */
+  readonly lastError?: string | null;
   readonly state: BufferState;
   readonly target?: Position;
   readonly keysUsed: number;
@@ -35,6 +41,32 @@ interface FailBannerProps {
   readonly onShowSolution: () => void;
   readonly onKeepTrying: () => void;
   readonly onSkip: () => void;
+}
+
+interface TargetPanelProps {
+  readonly current: readonly string[];
+  readonly target: readonly string[];
+}
+
+/** The buffer as it must become; lines that still differ are marked (bar and "!") and coloured. */
+function TargetPanel({ current, target }: TargetPanelProps) {
+  const differs = differingLines(current, target);
+  return (
+    <section>
+      <h2 className="ui-label">Target</h2>
+      <div className="buffer">
+        {target.map((line, index) => (
+          <div className={`target__line${differs[index] === true ? ' target__line--diff' : ''}`} key={index}>
+            <span className="target__mark" aria-hidden="true">
+              {differs[index] === true ? '!' : ' '}
+            </span>
+            <span>{line === '' ? ' ' : line}</span>
+            {differs[index] === true && <span className="sr-only"> (differs from your buffer)</span>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function FailBanner({ canShowSolution, canSkip, onShowSolution, onKeepTrying, onSkip }: FailBannerProps) {
@@ -76,7 +108,14 @@ export function ChallengeRoom(props: ChallengeRoomProps) {
         <section>
           <h2 className="ui-label">Goal</h2>
           <p className="room__goal">{props.goalText}</p>
+          {props.mustUseKeys !== undefined && props.mustUseKeys.length > 0 && (
+            <div className="room__must">
+              <span className="ui-muted">Must use:</span>
+              <KeycapRow keys={props.mustUseKeys} />
+            </div>
+          )}
         </section>
+        {props.targetLines !== undefined && <TargetPanel current={props.state.lines} target={props.targetLines} />}
         <div className="room__stats">
           <span>
             Keys: <strong>{keysVersusBest(props.keysUsed, props.par)}</strong>
@@ -86,6 +125,9 @@ export function ChallengeRoom(props: ChallengeRoomProps) {
           </span>
         </div>
         <Buffer state={props.state} {...(props.target === undefined ? {} : { target: props.target })} />
+        <p className="room__status" role="status" aria-live="polite">
+          {props.lastError ?? ''}
+        </p>
         <section>
           <h2 className="ui-label">Allowed keys</h2>
           <KeycapRow keys={props.allowedKeys} />
