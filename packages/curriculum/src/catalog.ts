@@ -25,3 +25,14 @@ export const SKILLS: readonly Skill[] = [
 ];
 
 export const SKILL_IDS: ReadonlySet<string> = new Set(SKILLS.map((skill) => skill.id));
+
+/**
+ * A file-name- and id-safe form of a skill id. Skill ids differ only by case ('motion.word' vs 'motion.WORD') and
+ * contain '.' and '!', which break case-insensitive file systems (macOS) and the level id format.
+ * Lowercase, '.' -> '-', '!' -> '-force', plus '-caps' when the id has uppercase letters:
+ * 'motion.WORD' -> 'motion-word-caps', 'ex.q!' -> 'ex-q-force'.
+ */
+export function skillSlug(skill: string): string {
+  const base = skill.toLowerCase().replaceAll('.', '-').replaceAll('!', '-force');
+  return skill === skill.toLowerCase() ? base : `${base}-caps`;
+}
