@@ -33,6 +33,10 @@ interface ChallengeRoomProps {
   readonly onShowSolution: () => void;
   readonly onKeepTrying: () => void;
   readonly onSkip: () => void;
+  /** Leaves the room for the map. Always available, so the player is never trapped. */
+  readonly onLeave: () => void;
+  /** False for a test (the Prologue skip test): no lesson column, no hints, no solution help. Default true. */
+  readonly assist?: boolean;
 }
 
 interface FailBannerProps {
@@ -100,10 +104,12 @@ export function ChallengeRoom(props: ChallengeRoomProps) {
           <span className="header__wordmark">ESCAPE</span>
           <span className="ui-muted">{roomTitle(props.roomNumber, props.title)}</span>
         </div>
-        <span className="ui-muted header__stats">:q leaves the room</span>
+        <button type="button" className="ui-btn" onClick={props.onLeave}>
+          Back to the map
+        </button>
       </header>
-      <div className="room">
-      <LessonCard lesson={props.lesson} compact />
+      <div className={props.assist === false ? 'room room--test' : 'room'}>
+      {props.assist !== false && <LessonCard lesson={props.lesson} compact />}
       <div className="room__main">
         <section>
           <h2 className="ui-label">Goal</h2>
@@ -132,13 +138,15 @@ export function ChallengeRoom(props: ChallengeRoomProps) {
           <h2 className="ui-label">Allowed keys</h2>
           <KeycapRow keys={props.allowedKeys} />
         </section>
-        <div className="room__actions">
-          <button type="button" className="ui-btn" onClick={props.onHint}>
-            Hint (F1)
-          </button>
-          {props.hint !== null && <span className="hint">{props.hint}</span>}
-        </div>
-        {showFailBanner(props.canShowSolution, props.canSkip) && (
+        {props.assist !== false && (
+          <div className="room__actions">
+            <button type="button" className="ui-btn" onClick={props.onHint}>
+              Hint (F1)
+            </button>
+            {props.hint !== null && <span className="hint">{props.hint}</span>}
+          </div>
+        )}
+        {props.assist !== false && showFailBanner(props.canShowSolution, props.canSkip) && (
           <FailBanner
             canShowSolution={props.canShowSolution}
             canSkip={props.canSkip}

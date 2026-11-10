@@ -34,15 +34,15 @@ Rules:
 
 | ID | Task | Owns files | Runner | Reviewer | Branch | Status |
 |---|---|---|---|---|---|---|
-| P3-0 | Contracts: solver, generators, lessons, world, session | `packages/curriculum/src/phase3.ts` | orchestrator | codex | phase-3/contracts | review |
-| P3-A | Solver | `packages/curriculum/src/solver/**` | codex | claude-sonnet | | todo |
-| P3-B | Room generators (10 skills) | `packages/curriculum/src/generators/**` | claude-sonnet | codex | | todo |
-| P3-C | World map engine | `packages/curriculum/src/world/**` | codex | claude-sonnet | | todo |
-| P3-D | Room session (fail flow) | `packages/curriculum/src/session/**` | claude-haiku | codex | | todo |
-| P3-E | Ember UI components | `apps/game/src/ui/**` | claude-sonnet | codex | | todo |
-| P3-F | Story content: map, lessons, notes, rooms | `packages/curriculum/content/**` | orchestrator | renzo | | todo |
-| P3-G | Integration + skip test + deploy | integration | orchestrator | codex | | todo |
-| P3-H | Playtest | | renzo | | | todo |
+| P3-0 | Contracts: solver, generators, lessons, world, session | `packages/curriculum/src/phase3.ts` | orchestrator | codex | phase-3/contracts | merged |
+| P3-A | Solver | `packages/curriculum/src/solver/**` | codex | claude-sonnet | | merged |
+| P3-B | Room generators (10 skills) | `packages/curriculum/src/generators/**` | claude-sonnet | codex | | merged |
+| P3-C | World map engine | `packages/curriculum/src/world/**` | codex | claude-sonnet | | merged |
+| P3-D | Room session (fail flow) | `packages/curriculum/src/session/**` | claude-haiku | codex | | merged |
+| P3-E | Ember UI components | `apps/game/src/ui/**` | claude-sonnet | codex | | merged |
+| P3-F | Story content: map, lessons, notes, rooms | `packages/curriculum/content/**` | orchestrator | renzo | | merged |
+| P3-G | Integration + skip test + deploy | integration | orchestrator | codex | | merged |
+| P3-H | Playtest | | renzo | | | **next** |
 
 ## Backlog (minor review findings, not blocking merge)
 
@@ -55,3 +55,6 @@ Rules:
 | P1-C fix | engine.ts must pass an exclusive empty range for `d$` `de` `dl` on an empty line (operators treat inclusive empty ranges as `vd`) | P1-F wiring |
 | P1-B/P1-C | `''`, `` `` `` jump-back marks; `cw` as `ce`; o_v linewise promotion for `d}`; `"1` for `%` `(` `{` deletes | P1-F wiring |
 | P1-D review | Better watchdog error, pending-command tests, edge-case samples, reject raw `\n` in keys | Phase 2 |
+
+| P3 review | Old `escape.save.v1` Phase 2 saves are not migrated: the redesign replaced every level, so there is nothing meaningful to carry over (decision, not a bug) | orchestrator |
+| P3 browser | Lesson card sits small top-left with no header; map glyph colours for N could be warmer | P3-H polish |

@@ -1,0 +1,255 @@
+{
+  "lines": [
+    "  boot sector . the editor you woke up in",
+    "",
+    "  N   D        N   D        N   D        N   D",
+    "",
+    "                                               K",
+    "############################################### ############",
+    "  memory fields . open ram, quiet for now",
+    "",
+    "  N    D",
+    "",
+    "  N  relay relay relay relay relay relay  D",
+    "",
+    "  N  node-7.alpha relay.beta grid-9.core sink.delta  D",
+    "",
+    "  N  the end of the line . . . . . . . . . . . .  E  D",
+    "",
+    "  N  one two three four five six seven eight  D",
+    "",
+    "  N  the drop: the bottom is a long way down",
+    "|||",
+    "|||",
+    "|||",
+    "|||",
+    "|||",
+    "|||",
+    "|||",
+    "  D"
+  ],
+  "entities": [
+    {
+      "kind": "note",
+      "at": {
+        "line": 2,
+        "col": 2
+      },
+      "id": "note-ex-q",
+      "skill": "ex.q"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 2,
+        "col": 6
+      },
+      "id": "door-ex-q",
+      "skill": "ex.q"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 2,
+        "col": 15
+      },
+      "id": "note-mode-insert",
+      "skill": "mode.insert"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 2,
+        "col": 19
+      },
+      "id": "door-mode-insert",
+      "skill": "mode.insert"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 2,
+        "col": 28
+      },
+      "id": "note-ex-wq",
+      "skill": "ex.wq"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 2,
+        "col": 32
+      },
+      "id": "door-ex-wq",
+      "skill": "ex.wq"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 2,
+        "col": 41
+      },
+      "id": "note-ex-q-force",
+      "skill": "ex.q!"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 2,
+        "col": 45
+      },
+      "id": "door-ex-q-force",
+      "skill": "ex.q!"
+    },
+    {
+      "kind": "key",
+      "at": {
+        "line": 4,
+        "col": 47
+      },
+      "id": "key-boot-sector",
+      "unlocks": "motion-plains"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 8,
+        "col": 2
+      },
+      "id": "note-motion-hjkl",
+      "skill": "motion.hjkl"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 8,
+        "col": 7
+      },
+      "id": "door-motion-hjkl",
+      "skill": "motion.hjkl"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 10,
+        "col": 2
+      },
+      "id": "note-motion-word",
+      "skill": "motion.word"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 10,
+        "col": 42
+      },
+      "id": "door-motion-word",
+      "skill": "motion.word"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 12,
+        "col": 2
+      },
+      "id": "note-motion-word-caps",
+      "skill": "motion.WORD"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 12,
+        "col": 53
+      },
+      "id": "door-motion-word-caps",
+      "skill": "motion.WORD"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 14,
+        "col": 2
+      },
+      "id": "note-motion-line",
+      "skill": "motion.line"
+    },
+    {
+      "kind": "echo",
+      "at": {
+        "line": 14,
+        "col": 50
+      },
+      "id": "echo-end-of-line"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 14,
+        "col": 53
+      },
+      "id": "door-motion-line",
+      "skill": "motion.line"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 16,
+        "col": 2
+      },
+      "id": "note-motion-count",
+      "skill": "motion.count"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 16,
+        "col": 46
+      },
+      "id": "door-motion-count",
+      "skill": "motion.count"
+    },
+    {
+      "kind": "note",
+      "at": {
+        "line": 18,
+        "col": 2
+      },
+      "id": "note-motion-file",
+      "skill": "motion.file"
+    },
+    {
+      "kind": "door",
+      "at": {
+        "line": 26,
+        "col": 2
+      },
+      "id": "door-motion-file",
+      "skill": "motion.file"
+    }
+  ],
+  "regions": [
+    {
+      "id": "prologue",
+      "title": "Boot Sector",
+      "rows": {
+        "from": 0,
+        "to": 5
+      },
+      "unlockedBy": null
+    },
+    {
+      "id": "motion-plains",
+      "title": "Memory Fields",
+      "rows": {
+        "from": 6,
+        "to": 26
+      },
+      "unlockedBy": "key-boot-sector"
+    }
+  ],
+  "start": {
+    "line": 2,
+    "col": 0
+  },
+  "walls": "#|"
+}

@@ -1,0 +1,217 @@
+[
+  {
+    "skill": "ex.q",
+    "keycap": ":q",
+    "definition": "Quits the current window, if nothing is unsaved.",
+    "quote": "Everybody's first question in here is how to leave. Colon, q, Enter. It only closes the door you're standing in, though.",
+    "example": {
+      "lines": [
+        "you are inside Vim"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        ":",
+        "q",
+        "<CR>"
+      ]
+    },
+    "opposite": ":q! quits even with unsaved changes."
+  },
+  {
+    "skill": "ex.q!",
+    "keycap": ":q!",
+    "definition": "Quits and throws away every unsaved change.",
+    "quote": "The exclamation mark means: I know, do it anyway. Use it when you broke something and want it gone.",
+    "example": {
+      "lines": [
+        "a line you regret"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        ":",
+        "q",
+        "!",
+        "<CR>"
+      ]
+    },
+    "opposite": ":wq saves before quitting."
+  },
+  {
+    "skill": "mode.insert",
+    "keycap": "i",
+    "definition": "Starts typing before the cursor; Esc goes back to moving.",
+    "quote": "In here, letters are commands until you ask to type. Press i, write, then Esc. Forget the Esc and you'll write commands into the wall.",
+    "example": {
+      "lines": [
+        "sign here:  "
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 11
+      },
+      "keys": [
+        "i",
+        "O",
+        "K",
+        "<Esc>"
+      ]
+    },
+    "opposite": "Esc always brings you back to Normal mode."
+  },
+  {
+    "skill": "ex.wq",
+    "keycap": ":wq",
+    "definition": "Writes (saves) the file, then quits.",
+    "quote": "Quitting doesn't get you out. Saving does. Write your name into the process table, or GC will file you under garbage.",
+    "example": {
+      "lines": [
+        "cursor process: unnamed"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        ":",
+        "w",
+        "q",
+        "<CR>"
+      ]
+    },
+    "opposite": ":w saves without quitting; ZZ does the same as :wq."
+  },
+  {
+    "skill": "motion.hjkl",
+    "keycap": "hjkl",
+    "definition": "Moves one cell: h left, j down, k up, l right.",
+    "quote": "Arrow keys are for tourists. Keep your fingers home: j looks like an arrow pointing down, if you squint.",
+    "example": {
+      "lines": [
+        "start . . .",
+        "      exit"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "j",
+        "l",
+        "l",
+        "l",
+        "l",
+        "l",
+        "l"
+      ]
+    },
+    "opposite": "Counts multiply them later: 5j moves five lines."
+  },
+  {
+    "skill": "motion.word",
+    "keycap": "w",
+    "definition": "Jumps to the start of the next word. b jumps back, e to a word's end.",
+    "quote": "Walking cell by cell through RAM is how I wore out two keyboards. Jump word to word instead.",
+    "example": {
+      "lines": [
+        "power cable signal memory"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "w",
+        "w"
+      ]
+    },
+    "opposite": "b jumps back a word; e lands on the end of one."
+  },
+  {
+    "skill": "motion.WORD",
+    "keycap": "W",
+    "definition": "Jumps to the next WORD: anything up to a space, punctuation included.",
+    "quote": "Small w stops at every dot and dash. Capital W ignores them and only stops at spaces.",
+    "example": {
+      "lines": [
+        "node-7.alpha relay.beta exit"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "W",
+        "W"
+      ]
+    },
+    "opposite": "B and E are the capital versions of b and e."
+  },
+  {
+    "skill": "motion.line",
+    "keycap": "$",
+    "definition": "Jumps to the last character of the line.",
+    "quote": "You could press l forty times. Or press $ once and go get a coffee.",
+    "example": {
+      "lines": [
+        "signal lost near the river"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "$"
+      ]
+    },
+    "opposite": "0 jumps to the very start; ^ to the first letter."
+  },
+  {
+    "skill": "motion.file",
+    "keycap": "G",
+    "definition": "Jumps to the last line. gg jumps to the first.",
+    "quote": "Long files feel endless until you learn G. Bottom of the file in one key, top again with gg.",
+    "example": {
+      "lines": [
+        "top of the archive",
+        "...",
+        "...",
+        "...",
+        "the last entry"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "G"
+      ]
+    },
+    "opposite": "5G jumps straight to line 5."
+  },
+  {
+    "skill": "motion.count",
+    "keycap": "3w",
+    "definition": "A number before a motion repeats it: 3w jumps three words.",
+    "quote": "Counting is cheaper than pressing. Type the number first, then the move.",
+    "example": {
+      "lines": [
+        "one two three four five"
+      ],
+      "cursor": {
+        "line": 0,
+        "col": 0
+      },
+      "keys": [
+        "3",
+        "w"
+      ]
+    },
+    "opposite": "It works with almost every motion: 4j, 2e, 10l."
+  }
+]
