@@ -163,12 +163,96 @@ describe('engine motion and collision', () => {
     expect(result.state.engine.pendingKeys).toEqual(['g']);
     expect(stepMap(result.state, 'g', progress).events).toEqual([{ type: 'bump' }]);
   });
-  it('lets G reach a door whose row above is entirely wall', () => {
+  it('treats G over a wall as a jump to a clear door', () => {
     const world = { ...map, lines: map.lines.slice(0, 5) };
     const result = stepMap(at({ line: 2, col: 0 }, world), 'G', progress);
     expect(result.state.engine.cursor).toEqual({ line: 4, col: 0 });
     expect(result.events).toEqual([]);
     expect(stepMap(result.state, '<CR>', progress).events[0]?.type).toBe('open-door');
+  });
+  it.each([
+    { keys: ['2', 'j'], cursor: { line: 2, col: 1 } },
+    { keys: ['8', 'j'], cursor: { line: 2, col: 1 } },
+    { keys: ['2', 'k'], cursor: { line: 4, col: 1 } },
+    { keys: ['3', 'l'], cursor: { line: 1, col: 2 } },
+    { keys: ['3', 'h'], cursor: { line: 1, col: 5 } },
+  ])('bumps counted walking $keys across an intermediate wall', ({ keys, cursor }) => {
+    const world = { ...map, lines: map.lines.slice(0, 5) };
+    const initial = at(cursor, world);
+    const pending = press(initial, keys.slice(0, -1));
+    const result = stepMap(pending, keys[keys.length - 1]!, progress);
+    expect(result.events).toEqual([{ type: 'bump' }]);
+    expect(result.state.engine.cursor).toEqual(cursor);
+    expect(result.state.engine.desiredCol).toBe(initial.engine.desiredCol);
+    expect(result.state.engine.pendingKeys).toEqual([]);
+  });
+  it('lets plain w jump over wall characters inside a word', () => {
+    const world = { ...map, lines: ['ax b'], walls: 'x', entities: [], regions: [] };
+    const result = stepMap(startMap({ ...world, start: { line: 0, col: 0 } }, progress), 'w', progress);
+    expect(result.events).toEqual([]);
+    expect(result.state.engine.cursor).toEqual({ line: 0, col: 3 });
+  });
+  it('lets counted w jump over an intermediate wall to a clear landing cell', () => {
+    const world = { ...map, lines: ['a # b'], entities: [], regions: [] };
+    const pending = press(at({ line: 0, col: 0 }, world), ['2']);
+    const result = stepMap(pending, 'w', progress);
+    expect(result.events).toEqual([]);
+    expect(result.state.engine.cursor).toEqual({ line: 0, col: 4 });
+  });
+  it.each([
+    { keys: ['2', 'j'], cursor: { line: 0, col: 0 } },
+    { keys: ['2', 'k'], cursor: { line: 2, col: 0 } },
+  ])('cancels walking $keys across fog even with a visible landing', ({ keys, cursor }) => {
+    const world: WorldMap = {
+      ...map, lines: ['a', 'b', 'c'], entities: [],
+      regions: [{ id: 'edit-forge', title: 'Hidden', rows: { from: 1, to: 1 }, unlockedBy: 'key' }],
+    };
+    const initial = at(cursor, world);
+    const pending = press(initial, keys.slice(0, -1));
+    const result = stepMap(pending, keys[keys.length - 1]!, progress);
+    expect(result.events).toEqual([{ type: 'fog' }]);
+    expect(result.state.engine.cursor).toEqual(cursor);
+    expect(result.state.engine.desiredCol).toBe(initial.engine.desiredCol);
+  });
+  it('lets G jump across fog to a revealed row', () => {
+    const world: WorldMap = {
+      ...map, lines: ['a', 'b', 'c'], entities: [],
+      regions: [{ id: 'edit-forge', title: 'Hidden', rows: { from: 1, to: 1 }, unlockedBy: 'key' }],
+    };
+    const result = stepMap(startMap(world, progress), 'G', progress);
+    expect(result.events).toEqual([]);
+    expect(result.state.engine.cursor).toEqual({ line: 2, col: 0 });
+  });
+  it('seals a full-width shaft against every hjkl walk and count but allows G', () => {
+    const shaft: WorldMap = {
+      lines: ['   ', '|||', '|||', ' D '], start: { line: 0, col: 1 }, walls: '|', regions: [],
+      entities: [{ id: 'shaft-door', kind: 'door', at: { line: 3, col: 1 } }],
+    };
+    // Exhaust all reachable cells and every walking command, including counts
+    // beyond the buffer height, to prove there is no route around the barrier.
+    const reachable = [startMap(shaft, progress)];
+    const visited = new Set(['0:1']);
+    const counts = ['', '1', '2', '3', '4', '8', '9', '99'];
+    for (const state of reachable) {
+      for (const count of counts) {
+        for (const motion of ['h', 'j', 'k', 'l']) {
+          const next = press(state, [...count, motion]);
+          expect(next.engine.cursor.line).toBe(0);
+          const id = `${next.engine.cursor.line}:${next.engine.cursor.col}`;
+          if (!visited.has(id)) {
+            visited.add(id);
+            reachable.push(next);
+          }
+        }
+      }
+    }
+    expect(visited).toEqual(new Set(['0:0', '0:1', '0:2']));
+    const jumped = stepMap(startMap(shaft, progress), 'G', progress);
+    expect(jumped.events).toEqual([]);
+    expect(jumped.state.engine.cursor).toEqual(shaft.entities[0]?.at);
+    expect(stepMap(jumped.state, '<CR>', progress).events).toEqual([
+      { type: 'open-door', entity: shaft.entities[0] },
+    ]);
   });
   it('uses real word movement to land on a note', () => {
     const result = stepMap(startMap(map, progress), 'w', progress);
@@ -216,6 +300,14 @@ describe('entities and interaction', () => {
   it('does not require the door skill itself to be learned', () => {
     const saved = { ...progress, learned: new Set(['motion.word', 'motion.hjkl']) };
     expect(stepMap(at({ line: 1, col: 8 }), '<CR>', saved).events[0]?.type).toBe('open-door');
+  });
+  it('opens a cleared door again on Enter so its room can be replayed', () => {
+    const saved = { ...progress, clearedDoors: new Set(['door']) };
+    const initial = at({ line: 1, col: 8 }, map, saved);
+    const result = stepMap(initial, '<CR>', saved);
+    expect(result.events).toEqual([{ type: 'open-door', entity: map.entities[2] }]);
+    expect(result.state).toBe(initial);
+    expect(stepMap(result.state, '<CR>', saved).events).toEqual(result.events);
   });
   it('does not bypass prerequisites on a cleared door', () => {
     const saved = { ...basic, clearedDoors: new Set(['door']) };

@@ -64,6 +64,32 @@ function interact(state: MapState, progress: MapProgress): MapEvent[] {
   }
 }
 
+function collisionAt(state: MapState, at: Position): MapEvent | undefined {
+  const cell = state.map.lines[at.line]?.[at.col];
+  return cell !== undefined && state.map.walls.includes(cell)
+    ? { type: 'bump' } : isHidden(state, at.line) ? { type: 'fog' } : undefined;
+}
+
+function walkingCollision(state: MapState, target: Position): MapEvent | undefined {
+  const start = state.engine.cursor;
+  const lineStep = Math.sign(target.line - start.line);
+  const colStep = Math.sign(target.col - start.col);
+  // Walk the straight path; the engine remains responsible for the destination,
+  // including Vim's column clamping on shorter lines.
+  if (lineStep !== 0) {
+    for (let line = start.line + lineStep; line !== target.line; line += lineStep) {
+      const blocked = collisionAt(state, { line, col: start.col });
+      if (blocked !== undefined) return blocked;
+    }
+  } else if (colStep !== 0) {
+    for (let col = start.col + colStep; col !== target.col; col += colStep) {
+      const blocked = collisionAt(state, { line: start.line, col });
+      if (blocked !== undefined) return blocked;
+    }
+  }
+  return collisionAt(state, target);
+}
+
 export const stepMap: StepMapFn = (state, key: Key, progress) => {
   if (key === '<CR>' && state.engine.mode === 'normal' && state.engine.pendingKeys.length === 0) {
     return { state, events: interact(state, progress) };
@@ -84,14 +110,14 @@ export const stepMap: StepMapFn = (state, key: Key, progress) => {
     };
   }
 
-  const moved = stepped.commands.some((command) => command.kind === 'motion');
+  const motion = stepped.commands.find((command) => command.kind === 'motion');
   let next: MapState = { ...state, engine: stepped.state };
-  if (!moved) return { state: next, events: [] };
+  if (motion === undefined) return { state: next, events: [] };
 
-  const { line, col } = next.engine.cursor;
-  const cell = state.map.lines[line]?.[col];
-  const blocked: MapEvent | undefined = cell !== undefined && state.map.walls.includes(cell)
-    ? { type: 'bump' } : isHidden(state, line) ? { type: 'fog' } : undefined;
+  const walking = ['h', 'j', 'k', 'l'].includes(motion.id);
+  const blocked = walking
+    ? walkingCollision(state, next.engine.cursor)
+    : collisionAt(state, next.engine.cursor);
   if (blocked !== undefined) {
     next = { ...next, engine: { ...next.engine, cursor: state.engine.cursor, desiredCol: state.engine.desiredCol } };
     return { state: next, events: [blocked] };
