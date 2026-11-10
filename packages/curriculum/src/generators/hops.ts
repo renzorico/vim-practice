@@ -1,11 +1,17 @@
-import type { Position } from '@escape/engine';
 import type { Difficulty, RoomGenerator } from '../phase3.js';
 import { makeGenerator, type RoomParts } from './build.js';
 import { int, pick, type Rng } from './rng.js';
 import { SHORT, VOCAB, frame, layoutWords, randomWords, repeatKey } from './text.js';
 
-/** A hop room: jump between words (w b e) or WORDs (W B E) to reach a capitalised target. */
-type HopKind = 'forward' | 'back' | 'end';
+/**
+ * A hop room: jump between words (w b e) or WORDs (W B E) to reach a capitalised target.
+ * 'down' is the difficulty 3 two-step room: j to the next line (earlier skill), then hop along it.
+ * Every target is at least 3 tokens away, and never in reach of a vertical shortcut.
+ */
+type HopKind = 'forward' | 'back' | 'end' | 'down';
+
+const MIN_HOPS = 3;
+const MAX_LINE_LENGTH = 58;
 
 interface HopKeys {
   readonly forward: string;
@@ -16,8 +22,8 @@ interface HopKeys {
 interface HopStyle {
   readonly keys: HopKeys;
   readonly noun: string;
-  /** Tokens per core line for each difficulty: [min, max]. */
-  readonly perLine: Readonly<Record<Difficulty, readonly [number, number]>>;
+  /** Tokens per core line: [min, max]. */
+  readonly perLine: readonly [number, number];
   readonly makeToken: (rng: Rng) => string;
   readonly makeFiller: (rng: Rng) => string;
   readonly intros: readonly string[];
@@ -25,90 +31,72 @@ interface HopStyle {
   readonly hints: (kind: HopKind, presses: number) => readonly string[];
 }
 
-const KEY_NAMES: Readonly<Record<HopKind, keyof HopKeys>> = { forward: 'forward', back: 'back', end: 'end' };
+const MIN_BUFFER_LINES: Readonly<Record<Difficulty, number>> = { 1: 3, 2: 5, 3: 4 };
 
 function chooseKind(rng: Rng, difficulty: Difficulty): HopKind {
   if (difficulty < 3) return 'forward';
-  return rng() < 0.5 ? 'back' : 'end';
+  const roll = rng();
+  return roll < 0.34 ? 'back' : roll < 0.67 ? 'end' : 'down';
 }
 
-/** Presses needed: w and b walk one token per press; e needs one extra press to finish the first word. */
-const pressesFor = (kind: HopKind, from: number, to: number): number =>
-  kind === 'end' ? to - from + 1 : Math.abs(to - from);
-
-function goalPosition(kind: HopKind, line: string, row: number, start: number): Position {
-  if (kind !== 'end') return { line: row, col: start };
-  const word = line.slice(start).split(' ')[0] ?? '';
-  return { line: row, col: start + word.length - 1 };
+/** A line of tokens that fits the 60-column limit once joined. */
+function tokenLine(style: HopStyle, rng: Rng): string[] {
+  for (;;) {
+    const tokens = Array.from({ length: int(rng, ...style.perLine) }, () => style.makeToken(rng));
+    if (tokens.join(' ').length <= MAX_LINE_LENGTH) return tokens;
+  }
 }
 
 function designHop(style: HopStyle, rng: Rng, difficulty: Difficulty): RoomParts {
   const kind = chooseKind(rng, difficulty);
-  const coreLines = difficulty === 1 ? 1 : 2;
-  const [minTokens, maxTokens] = style.perLine[difficulty];
-  const tokens = Array.from({ length: coreLines }, () =>
-    Array.from({ length: int(rng, minTokens, maxTokens) }, () => style.makeToken(rng)));
-  const flat = tokens.flat();
-  const lastIndex = flat.length - 1;
-  const minReach = style.keys.forward === 'w' ? 3 : 2;
+  const tokens = Array.from({ length: kind === 'down' ? 2 : 1 }, () => tokenLine(style, rng));
+  const targetLine = kind === 'down' ? 1 : 0;
+  const lineTokens = tokens[targetLine] ?? [];
+  const last = lineTokens.length - 1;
+  const cursorToken = kind === 'back' ? last : 0;
+  const deepest = difficulty === 2 ? Math.max(MIN_HOPS, last - 2) : MIN_HOPS;
+  const targetToken = kind === 'back' ? int(rng, 0, last - MIN_HOPS) : int(rng, deepest, last);
 
-  let cursorIndex = 0;
-  let targetIndex: number;
-  if (kind === 'back') {
-    cursorIndex = lastIndex;
-    targetIndex = int(rng, 0, lastIndex - minReach);
-  } else if (difficulty === 1) {
-    targetIndex = int(rng, minReach, lastIndex);
-  } else if (difficulty === 2) {
-    targetIndex = (tokens[0]?.length ?? 0) + int(rng, 0, 2);
-  } else {
-    targetIndex = int(rng, minReach, lastIndex);
-  }
-
-  let counter = 0;
-  const marked = tokens.map((row) => row.map((token) => (counter++ === targetIndex ? token.toUpperCase() : token)));
+  const marked = tokens.map((row, rowIndex) => row.map((token, index) =>
+    (rowIndex === targetLine && index === targetToken ? token.toUpperCase() : token)));
   const core = layoutWords(marked);
-  const placed = frame(rng, core.lines, 3, () => style.makeFiller(rng));
-  const locate = (index: number): { row: number; start: number } => {
-    let remaining = index;
-    for (const [row, starts] of core.starts.entries()) {
-      const start = starts[remaining];
-      if (start !== undefined) return { row: row + placed.offset, start };
-      remaining -= starts.length;
-    }
-    throw new Error(`hop index ${index} out of range`);
-  };
-  const cursor = locate(cursorIndex);
-  const target = locate(targetIndex);
-  const targetLine = placed.lines[target.row] ?? '';
-  const presses = pressesFor(kind, cursorIndex, targetIndex);
-  const keyName = KEY_NAMES[kind];
-  const goalWhere = kind === 'end' ? 'last' : 'first';
+  const placed = frame(rng, core.lines, MIN_BUFFER_LINES[difficulty], () => style.makeFiller(rng));
+  const targetRow = targetLine + placed.offset;
+  const targetStart = core.starts[targetLine]?.[targetToken] ?? 0;
+  const targetText = placed.lines[targetRow] ?? '';
+  const targetWord = targetText.slice(targetStart).split(' ')[0] ?? '';
+  const goalCol = kind === 'end' ? targetStart + targetWord.length - 1 : targetStart;
+
+  const { forward, back, end } = style.keys;
+  const presses = kind === 'back' ? last - targetToken : kind === 'end' ? targetToken + 1 : targetToken;
+  const hopKey = kind === 'back' ? back : kind === 'end' ? end : forward;
+  const intendedSolution = [...(kind === 'down' ? ['j'] : []), ...repeatKey(hopKey, presses)];
 
   return {
     type: 'reach',
     title: pick(rng, style.titles),
     intro: pick(rng, style.intros),
-    goalText: `Put the cursor on the ${goalWhere} character of the ${style.noun} written in CAPITALS.`,
+    goalText: `Put the cursor on the ${kind === 'end' ? 'last' : 'first'} character of the ${style.noun} written in CAPITALS.`,
     startLines: placed.lines,
-    startCursor: { line: cursor.row, col: cursor.start },
-    goals: [{ type: 'reach', target: goalPosition(kind, targetLine, target.row, target.start) }],
+    startCursor: { line: placed.offset, col: core.starts[0]?.[cursorToken] ?? 0 },
+    goals: [{ type: 'reach', target: { line: targetRow, col: goalCol } }],
     hints: style.hints(kind, presses),
-    intendedSolution: repeatKey(style.keys[keyName], presses),
+    intendedSolution,
   };
 }
 
 const wordHints = (kind: HopKind, presses: number): readonly string[] => [
-  'Walking with l takes dozens of keys. Jump a whole word at a time.',
+  kind === 'down' ? 'The target is on the next line. Go down first, then hop along it.'
+    : 'Walking with l takes dozens of keys. Jump a whole word at a time.',
   kind === 'back' ? 'b jumps back to the start of the previous word.'
     : kind === 'end' ? 'e jumps to the last letter of a word.' : 'w jumps to the start of the next word.',
-  `Press ${kind === 'back' ? 'b' : kind === 'end' ? 'e' : 'w'} ${presses} times.`,
+  kind === 'down' ? `Press j, then w ${presses} times.` : `Press ${kind === 'back' ? 'b' : kind === 'end' ? 'e' : 'w'} ${presses} times.`,
 ];
 
 const wordStyle: HopStyle = {
   keys: { forward: 'w', back: 'b', end: 'e' },
   noun: 'word',
-  perLine: { 1: [6, 8], 2: [5, 6], 3: [5, 6] },
+  perLine: [6, 8],
   makeToken: (rng) => pick(rng, VOCAB),
   makeFiller: (rng) => randomWords(rng, int(rng, 4, 7)).join(' '),
   intros: [
@@ -130,17 +118,18 @@ function makeCompoundToken(rng: Rng): string {
 
 const compoundFiller = (rng: Rng): string => Array.from({ length: int(rng, 3, 4) }, () => makeCompoundToken(rng)).join(' ');
 
-const WORD_HINTS = (kind: HopKind, presses: number): readonly string[] => [
-  'w stops at every dot and dash. A WORD ends only at a space.',
+const bigWordHints = (kind: HopKind, presses: number): readonly string[] => [
+  kind === 'down' ? 'The target is on the next line. Go down first, then hop along it.'
+    : 'w stops at every dot and dash. A WORD ends only at a space.',
   kind === 'back' ? 'B jumps back to the start of the previous WORD.'
     : kind === 'end' ? 'E jumps to the last character of a WORD.' : 'W jumps to the start of the next WORD.',
-  `Press ${kind === 'back' ? 'B' : kind === 'end' ? 'E' : 'W'} ${presses} times.`,
+  kind === 'down' ? `Press j, then W ${presses} times.` : `Press ${kind === 'back' ? 'B' : kind === 'end' ? 'E' : 'W'} ${presses} times.`,
 ];
 
 const bigWordStyle: HopStyle = {
   keys: { forward: 'W', back: 'B', end: 'E' },
   noun: 'WORD',
-  perLine: { 1: [3, 4], 2: [3, 4], 3: [3, 4] },
+  perLine: [4, 5],
   makeToken: makeCompoundToken,
   makeFiller: compoundFiller,
   intros: [
@@ -149,7 +138,7 @@ const bigWordStyle: HopStyle = {
     'A tangle of cable-names fills the sector. Jump to the one GC marked in capitals.',
   ],
   titles: ['Long strides', 'Hop the tangle', 'Whole tokens'],
-  hints: WORD_HINTS,
+  hints: bigWordHints,
 };
 
 export const wordGenerator: RoomGenerator = makeGenerator('motion.word', (rng, difficulty) => designHop(wordStyle, rng, difficulty));

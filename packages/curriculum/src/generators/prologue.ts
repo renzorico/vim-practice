@@ -35,27 +35,29 @@ export const quitGenerator: RoomGenerator = makeGenerator('ex.q', (rng, difficul
 }));
 
 const FORCE_INTROS: readonly string[] = [
-  'The Operator\'s note: if :q ever refuses, you can force the exit. Add a bang: :q!',
-  'This session is flagged "modified" and GC wants it gone. Quit and throw the changes away with :q!.',
-  'Some edits are not worth keeping. The Operator left a rule: discard and leave with :q!.',
+  'A stray edit left this buffer modified, so :q will refuse to close it. The Operator\'s fix: add a bang, :q!',
+  'GC wants this session gone, but your last edit is not worth keeping. Write it, then throw it away with :q!.',
+  'Some edits are not worth saving. Make the change, then discard it and leave with :q!.',
 ];
 
-export const forceQuitGenerator: RoomGenerator = makeGenerator('ex.q!', (rng, difficulty): RoomParts => ({
-  type: 'reach',
-  title: pick(rng, ['Leave without saving', 'Discard and go', 'The forced exit']),
-  intro: pick(rng, FORCE_INTROS),
-  goalText: 'Quit without saving, using :q! and Enter.',
-  startLines: bufferLines(rng, difficulty),
-  startCursor: { line: 0, col: 0 },
-  goals: [{ type: 'quit', mustSave: false }],
-  mustUse: ['ex.q!'],
-  hints: [
-    'This room wants the forced quit, not the plain one.',
-    ':q! is :q with a bang. The bang means "I do not care about unsaved changes".',
-    'Press : then q then ! then Enter.',
-  ],
-  intendedSolution: FORCE_QUIT_KEYS,
-}));
+export const forceQuitGenerator: RoomGenerator = makeGenerator('ex.q!', (rng, difficulty): RoomParts => {
+  const { lines, cursor, typed, result } = designInsertion(rng, difficulty);
+  return {
+    type: 'transform',
+    title: pick(rng, ['Leave without saving', 'Discard and go', 'The forced exit']),
+    intro: pick(rng, FORCE_INTROS),
+    goalText: `Insert "${typed}" at the cursor, then quit without saving using :q!.`,
+    startLines: lines,
+    startCursor: cursor,
+    goals: [{ type: 'transform', targetLines: result }, { type: 'quit', mustSave: false }],
+    hints: [
+      'Change the text first. Then :q will refuse, because the change is unsaved.',
+      ':q! is :q with a bang: quit and throw the unsaved changes away.',
+      `Press i, type: ${typed.trimEnd()} and a space, then Escape, then : q ! Enter.`,
+    ],
+    intendedSolution: ['i', ...typedKeys(typed), '<Esc>', ...FORCE_QUIT_KEYS],
+  };
+});
 
 interface Insertion {
   readonly lines: readonly string[];

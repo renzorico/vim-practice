@@ -78,6 +78,53 @@ describe('GENERATORS', () => {
   }
 });
 
+const MOTION_SKILLS = ['motion.word', 'motion.WORD', 'motion.line', 'motion.file', 'motion.count'] as const;
+
+/** Cost in keys of the cheapest winning path that uses only `commands`, or null when none costs at most `maxCost`. */
+function cheapestWin(level: Level, commands: readonly string[], maxCost: number): number | null {
+  type Run = ReturnType<typeof startLevel>;
+  const actions = commands.map((command) => [...command]);
+  const buckets: Map<string, Run>[] = Array.from({ length: maxCost + 1 }, () => new Map());
+  const seen = new Set<string>();
+  const start = startLevel(level);
+  buckets[0]?.set(JSON.stringify(start.state), start);
+  for (let cost = 0; cost <= maxCost; cost += 1) {
+    for (const [stateKey, run] of buckets[cost] ?? []) {
+      if (seen.has(stateKey)) continue;
+      seen.add(stateKey);
+      if (run.status === 'won') return cost;
+      if (run.status !== 'playing') continue;
+      for (const action of actions) {
+        const nextCost = cost + action.length;
+        if (nextCost > maxCost) continue;
+        const after = action.reduce(stepLevel, run);
+        buckets[nextCost]?.set(JSON.stringify(after.state), after);
+      }
+    }
+  }
+  return null;
+}
+
+
+describe('efficiency: earlier skills alone are never as short as the intended solution', () => {
+  for (const skillId of MOTION_SKILLS) {
+    const generator = GENERATORS[skillId];
+    const own = SKILLS.find((skill) => skill.id === skillId)?.commands ?? [];
+    for (const difficulty of DIFFICULTIES) {
+      it(`${skillId} difficulty ${difficulty}`, () => {
+        for (const seed of SEEDS) {
+          const room = generator?.generate(seed, difficulty);
+          if (room === undefined) throw new Error('missing generator');
+          const level = finalizeRoom(room, noSolver);
+          const earlier = (room.allowedCommands ?? []).filter((command) => !own.includes(command) && !command.startsWith(':'));
+          const cost = cheapestWin(level, earlier, room.intendedSolution.length);
+          expect(cost, `${room.id} intended ${room.intendedSolution.join('')} cursor ${JSON.stringify(room.startCursor)} goal ${JSON.stringify(room.goals)}\n${room.startLines.join('\n')}`).toBeNull();
+        }
+      });
+    }
+  }
+});
+
 describe('generated room design', () => {
   it('requires the skill prerequisites, transitively', () => {
     expect(GENERATORS['motion.count']?.generate(1, 1).requires).toEqual(['motion.hjkl', 'motion.word']);

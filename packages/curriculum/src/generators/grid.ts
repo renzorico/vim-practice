@@ -136,6 +136,8 @@ export const lineGenerator: RoomGenerator = makeGenerator('motion.line', (rng, d
 
 const FILE_LINES: Readonly<Record<Difficulty, readonly [number, number]>> = { 1: [6, 7], 2: [7, 8], 3: [8, 8] };
 
+const MIN_FILE_DISTANCE = 5;
+
 const FILE_INTROS: readonly string[] = [
   'The log is longer than the screen. The Operator marked one end with X. Do not scroll line by line.',
   'GC is erasing the file from the middle outwards. The X waits at the very top or the very bottom.',
@@ -150,7 +152,10 @@ export const fileGenerator: RoomGenerator = makeGenerator('motion.file', (rng, d
   const prefix = offset === 0 ? '' : `${wordLine(rng, 1, 1).slice(0, offset - 1).padEnd(offset - 1, 'a')} `;
   const lines = Array.from({ length: count }, (_, row) =>
     (row === targetRow ? `${prefix}X ${wordLine(rng, 2, 3)}` : wordLine(rng, 2, 3)));
-  const cursorRow = difficulty === 1 ? (toBottom ? 0 : count - 1) : int(rng, 2, count - 3);
+  // The cursor starts at least MIN_FILE_DISTANCE rows from the target, so walking with j or k is clearly slower.
+  const cursorRow = difficulty === 1
+    ? (toBottom ? 0 : count - 1)
+    : toBottom ? int(rng, 0, count - 1 - MIN_FILE_DISTANCE) : int(rng, MIN_FILE_DISTANCE, count - 1);
   const jump = toBottom ? ['G'] : ['g', 'g'];
   return {
     type: 'reach',

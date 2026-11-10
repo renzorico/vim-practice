@@ -2,12 +2,15 @@ import type { Position } from '@escape/engine';
 import { SKILLS, skillSlug } from '../catalog.js';
 import type { Difficulty, GeneratedRoom, RoomGenerator } from '../phase3.js';
 import type { Goal, LevelType, SkillId } from '../types.js';
+import { hasEarlierSkillShortcut, isAuditedSkill } from './audit.js';
 import { createRng, type Rng } from './rng.js';
+
+const MAX_REDRAWS = 60;
 
 /** Commands each skill adds to a room's toolkit. Narrower than the catalog on purpose (':wq' only, no ZZ or ':x'). */
 const TOOLKIT: Readonly<Record<SkillId, readonly string[]>> = {
   'ex.q': [':q'],
-  'ex.q!': [':q!'],
+  'ex.q!': [':q!', 'i'],
   'mode.insert': ['i'],
   'ex.wq': [':wq'],
   'motion.hjkl': ['h', 'j', 'k', 'l'],
@@ -77,7 +80,14 @@ export type Design = (rng: Rng, difficulty: Difficulty) => RoomParts;
 export function makeGenerator(skill: SkillId, design: Design): RoomGenerator {
   return {
     skill,
-    generate: (seed, difficulty) =>
-      assembleRoom(skill, difficulty, seed, design(createRng((seed + difficulty * 7919) >>> 0), difficulty)),
+    generate: (seed, difficulty) => {
+      const rng = createRng((seed + difficulty * 7919) >>> 0);
+      let room = assembleRoom(skill, difficulty, seed, design(rng, difficulty));
+      // Redraw (deterministically, from the same stream) while an earlier-skills path ties or beats the intended one.
+      for (let attempt = 0; attempt < MAX_REDRAWS && isAuditedSkill(skill) && hasEarlierSkillShortcut(room, skill); attempt += 1) {
+        room = assembleRoom(skill, difficulty, seed, design(rng, difficulty));
+      }
+      return room;
+    },
   };
 }
