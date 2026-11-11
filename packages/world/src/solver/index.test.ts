@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import { createWorldSim, FIXTURE_LEGEND, FIXTURE_STAGE, playKeys } from '@escape/world';
-import type { Stage, WorldOptions } from '../types.js';
+import type { Stage, WorldOptions, WorldSim, WorldState } from '../types.js';
 import { finalizeStage, solveStage, stageReplayIssue } from './index.js';
 
 const sim = createWorldSim(createEngine());
@@ -20,6 +20,68 @@ function replay(room: Stage, settings: WorldOptions = options) {
   expect(solution).not.toBeNull();
   if (solution === null) throw new Error('Expected a solution');
   return playKeys(sim, room, legend, settings, solution.keys).state;
+}
+
+/** Exhaustive tiny-room oracle: enumerate all supplied commands/counts, without saturation. */
+function bruteForce(room: Stage, settings: WorldOptions, maxTurns: number) {
+  const dimension = Math.max(room.map.length, ...room.map.map((row) => row.length));
+  const actions = settings.learnedCommands.flatMap((command) => [
+    [command],
+    ...(['0', '$'].includes(command) ? [] : Array.from({ length: dimension - 1 },
+      (_, index) => [...String(index + 2), command])),
+  ]);
+  let layer: { state: WorldState; keys: string[] }[] = [{ state: sim.init(room, legend, settings), keys: [] }];
+  for (let turn = 0; turn <= maxTurns; turn += 1) {
+    const winners = layer.filter(({ state }) => state.status === 'cleared')
+      .sort((left, right) => left.keys.length - right.keys.length);
+    const winner = winners[0];
+    if (winner !== undefined) return { turns: winner.state.turn, keyCount: winner.keys.length };
+    const next = new Map<string, { state: WorldState; keys: string[] }>();
+    for (const node of layer) {
+      for (const action of actions) {
+        let state = node.state;
+        let rejected = false;
+        for (const key of action) {
+          const result = sim.step(state, key, room, legend, settings);
+          state = result.state;
+          if (result.events.some((event) => event.type === 'bump' || event.type === 'engine-error')) rejected = true;
+        }
+        if (rejected || state.status === 'dead' || state.turn !== turn + 1) continue;
+        const keys = [...node.keys, ...action];
+        const id = JSON.stringify(state);
+        const previous = next.get(id);
+        if (previous === undefined || keys.length < previous.keys.length) next.set(id, { state, keys });
+      }
+    }
+    layer = [...next.values()];
+  }
+  return null;
+}
+
+function countingSim() {
+  let steps = 0;
+  const counted: WorldSim = new Proxy(sim, {
+    get(target, property, receiver): unknown {
+      if (property === 'step') return (...args: Parameters<WorldSim['step']>) => {
+        steps += 1;
+        return target.step(...args);
+      };
+      return Reflect.get(target, property, receiver);
+    },
+  });
+  return { sim: counted, steps: () => steps };
+}
+
+function largeRoom(): Stage {
+  return stage({ map: Array.from({ length: 12 }, () => ' '.repeat(39) + 'o'),
+    clear: [{ type: 'reach', area: area(11, 39) }],
+    entities: [
+      { id: 'chaser', kind: 'blot', sprite: 'blot', at: { line: 6, col: 20 },
+        behaviour: { type: 'chase' }, every: 2, damage: 1, solid: false },
+      { id: 'patroller', kind: 'blot', sprite: 'blot', at: { line: 9, col: 20 },
+        behaviour: { type: 'patrol', path: [{ line: 9, col: 21 }, { line: 9, col: 20 }] },
+        every: 1, damage: 1, solid: false },
+    ] });
 }
 
 describe('stage solver', () => {
@@ -165,6 +227,77 @@ describe('stage solver', () => {
       clear: [{ type: 'script-solved', script: script.id }] });
     expect(solve(room)).toBeNull();
     expect(solve(room, { ...options, flags: { readable: true } })?.turns).toBe(0);
+  });
+  it('keeps the cheaper duplicate even when generated later', () => {
+    const room = stage({ map: ['  o'], clear: [{ type: 'reach', area: area(0, 2) }] });
+    expect(solve(room, { learnedCommands: ['l', 'w'], flags: {} })?.keys).toEqual(['w']);
+  });
+  it.each(['f', 'F', 't', 'T'])('restricts %s targets to the current row after moving vertically', (command) => {
+    const rows = new Set<number>();
+    const inspecting: WorldSim = { ...sim, step(state, key, room, tiles, settings) {
+      if (state.engine.pendingKeys.at(-1) === command) {
+        expect(state.engine.lines[state.engine.cursor.line]).toContain(key);
+        rows.add(state.engine.cursor.line);
+      }
+      return sim.step(state, key, room, tiles, settings);
+    } };
+    const room = stage({ map: ['o   ', ' D  '], clear: [{ type: 'flag', flag: 'unobtainable' }] });
+    expect(solveStage(inspecting, room, legend, { learnedCommands: ['j', 'k', command], flags: {} },
+      { maxExpanded: 10, maxTurns: 2 })).toBeNull();
+    expect([...rows].sort()).toEqual([0, 1]);
+  });
+  it('opens and solves an enter-trigger script on the route', () => {
+    const script = FIXTURE_STAGE.scripts[0];
+    if (script === undefined) throw new Error('Fixture script missing');
+    const room = stage({ scripts: [{ ...script, effects: [] }], allowedCommands: ['l'],
+      triggers: [{ id: 'read', on: 'enter', area: area(0, 2), once: true, opensScript: script.id }],
+      clear: [{ type: 'reach', area: area(0, 4) }, { type: 'script-solved', script: script.id }] });
+    const solution = solve(room);
+    if (solution === null) throw new Error('Expected enter-script solution');
+    const result = playKeys(sim, room, legend, options, solution.keys);
+    expect(result.state.status).toBe('cleared');
+    expect(result.events.some((event) => event.type === 'script-solved')).toBe(true);
+    expect(solution.turns).toBe(2);
+  });
+  it('takes a longer route when only one heart remains', () => {
+    const settings: WorldOptions = { learnedCommands: ['h', 'j', 'k', 'l'], flags: {} };
+    const room = stage({ map: ['^ D', '  ~', '   '], start: { line: 1, col: 0 }, hearts: 1,
+      clear: [{ type: 'reach', area: area(0, 2) }] });
+    const solution = solve(room, settings);
+    expect(solution?.turns).toBe(3);
+    expect(solve({ ...room, hearts: 2 }, settings)?.turns).toBe(2);
+    expect({ turns: solution?.turns, keyCount: solution?.keys.length }).toEqual(bruteForce(room, settings, 3));
+    expect(replay(room, settings).hearts).toBe(1);
+  });
+  it.each(['chase', 'patrol'] as const)('matches brute force when %s timing controls the route', (type) => {
+    const settings: WorldOptions = { learnedCommands: ['0', '$'], flags: {} };
+    const room = stage({ map: ['  D', '   '], hearts: 1,
+      clear: [{ type: 'reach', area: area(0, 2) }],
+      entities: [{ id: 'guard', kind: 'blot', sprite: 'blot', at: { line: 0, col: 2 },
+        behaviour: type === 'chase' ? { type } : { type, path: [{ line: 1, col: 2 }, { line: 0, col: 2 }] },
+        every: 2, damage: 0, solid: true }] });
+    const solution = solve(room, settings);
+    expect(solution?.turns).toBe(3);
+    expect({ turns: solution?.turns, keyCount: solution?.keys.length }).toEqual(bruteForce(room, settings, 4));
+    expect(solve({ ...room, entities: room.entities.map((entity) => ({ ...entity, every: 1 })) }, settings)?.turns).toBe(2);
+  });
+  it('bounds simulation work per expansion on a 12x40 map', () => {
+    const counted = countingSim();
+    const settings: WorldOptions = { learnedCommands: ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'f'], flags: {} };
+    const solution = solveStage(counted.sim, largeRoom(), legend, settings, { maxExpanded: 100, maxTurns: 2 });
+    expect(solution).not.toBeNull();
+    if (solution === null) throw new Error('Expected large-room solution');
+    // <=40 horizontal/find destinations, <=12 vertical/word destinations, plus one
+    // saturation probe per sequence and shared digit prefixes: 650 calls leaves headroom.
+    expect(counted.steps() / solution.expanded).toBeLessThan(650);
+  });
+  it('bounds work on an unsolvable 12x40 variant', () => {
+    const counted = countingSim();
+    const settings: WorldOptions = { learnedCommands: ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'f'], flags: {} };
+    const room = largeRoom();
+    const unsolvable = { ...room, clear: [...room.clear, { type: 'flag' as const, flag: 'unobtainable' }] };
+    expect(solveStage(counted.sim, unsolvable, legend, settings, { maxExpanded: 40, maxTurns: 2 })).toBeNull();
+    expect(counted.steps()).toBeLessThan(40 * 650);
   });
   it('keeps input stage and options immutable', () => {
     const room = stage();

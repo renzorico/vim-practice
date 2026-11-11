@@ -1,6 +1,6 @@
 import { parseKeys } from '@escape/engine';
 import type { Key } from '@escape/engine';
-import { playKeys } from '@escape/world';
+import { playKeys } from '../sim/index.js';
 import type { Legend, Stage, WorldOptions, WorldSim, WorldState, Trigger } from '../types.js';
 
 export interface StageSolution {
@@ -70,30 +70,39 @@ class Frontier {
   }
 }
 
-/** Vocabulary expansion only: the supplied simulation owns all Vim and world behaviour. */
-function fieldActions(state: WorldState, commands: readonly string[]): readonly (readonly Key[])[] {
-  const characters = [...new Set(state.engine.lines.flatMap((line) => line.split('')))].sort();
-  // Counts beyond the buffer dimensions cannot reach another destination. Include line
-  // counts for gg/G and $ as well as character/word/find counts; multi-digit counts are keys.
+const SATURATING = new Set([
+  'h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#',
+  'f', 'F', 't', 'T',
+]);
+
+/** Generate counts lazily; feedback is the simulated identity, or null for a rejection. */
+function* fieldActions(
+  state: WorldState, commands: readonly string[],
+): Generator<readonly Key[], void, string | null> {
+  const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map((line) => line.length));
   const totalCells = state.engine.lines.reduce((total, line) => total + line.length, 0);
-  const actions: Key[][] = [];
   for (const command of [...new Set(commands)].sort()) {
     if (command === ':w') {
-      actions.push([':', 'w', '<CR>']);
+      yield [':', 'w', '<CR>'];
       continue;
     }
     if (!MOTIONS.has(command)) continue;
     const sequences = FINDS.has(command) ? characters.map((char) => [command, char]) : [parseKeys(command)];
     for (const sequence of sequences) {
-      actions.push([...sequence]);
+      let previous = yield sequence;
       if (['0', '^'].includes(command)) continue;
       const maxCount = command === '%' ? 100
         : ['w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#'].includes(command) ? totalCells : dimension;
-      for (let count = command === 'G' || command === '%' ? 1 : 2; count <= maxCount; count += 1) actions.push([...String(count), ...sequence]);
+      for (let count = command === 'G' || command === '%' ? 1 : 2; count <= maxCount; count += 1) {
+        const current = yield [...String(count), ...sequence];
+        // Absolute line/percentage counts must keep scanning: adjacent counts can round
+        // to the same destination before a later count reaches a new one.
+        if (SATURATING.has(command) && (current === null || current === previous)) break;
+        previous = current;
+      }
     }
   }
-  return actions;
 }
 
 /** Mirror only the contract's interaction reach; the sim chooses and fires the trigger. */
@@ -150,7 +159,6 @@ export function solveStage(
   const root: Node = { state: initial, keys: [], identity: identity(initial, period), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
-  const actionsCache = new WeakMap<readonly string[], readonly (readonly Key[])[]>();
   let expanded = 0;
   for (let node = frontier.pop(); node !== undefined; node = frontier.pop()) {
     if (best.get(node.identity) !== node) continue;
@@ -158,19 +166,26 @@ export function solveStage(
     if (node.state.status === 'cleared') return { keys: node.keys, turns: node.state.turn, expanded };
     if (expanded >= maxExpanded) return null;
     expanded += 1;
-    let actions: readonly (readonly Key[])[];
+    let actions: Generator<readonly Key[], void, string | null>;
     if (node.state.script !== null) {
       const script = stage.scripts.find((entry) => entry.id === node.state.script?.id);
       // Solved scripts are read-only. Closing one is the only useful action.
-      actions = script === undefined ? [] : [node.state.solvedScripts[script.id] === undefined
-        ? script.solution : [':', 'q', '<CR>']];
+      actions = (function* () {
+        if (script !== undefined) yield node.state.solvedScripts[script.id] === undefined
+          ? script.solution : [':', 'q', '<CR>'];
+      })();
     } else {
-      actions = actionsCache.get(node.state.engine.lines) ?? fieldActions(node.state, commands);
-      actionsCache.set(node.state.engine.lines, actions);
-      if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) actions = [...actions, ['<CR>']];
+      actions = (function* () {
+        yield* fieldActions(node.state, commands);
+        if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) yield ['<CR>'];
+      })();
     }
     const prefixes = new Map<Key, WorldState>();
-    for (const action of actions) {
+    const successors = new Map<string, Node>();
+    let feedback: string | null = null;
+    for (let trial = actions.next(); !trial.done; trial = actions.next(feedback)) {
+      const action = trial.value;
+      feedback = null;
       let state = node.state;
       const keys: Key[] = [];
       let rejected = false;
@@ -189,11 +204,16 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
+      if (!rejected) feedback = identity(state, period);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: identity(state, period), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period), order: order++ };
+      const sibling = successors.get(next.identity);
+      if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
+    }
+    for (const next of successors.values()) {
       const previous = best.get(next.identity);
       if (previous !== undefined && compare(previous, next) <= 0) continue;
       best.set(next.identity, next);
