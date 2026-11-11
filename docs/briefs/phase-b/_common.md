@@ -1,0 +1,11 @@
+## Common rules for every Phase B task
+- Read first: `AGENTS.md`, `docs/MASTERPLAN.md` (sections 2 and 4), `packages/world/src/types.ts` and `packages/story/src/types.ts` (your contracts), `packages/world/src/fixtures.ts` (the shared example), `packages/engine/src/types.ts`.
+- Never edit a contract (`types.ts` in engine, curriculum, world, story), `fixtures.ts`, any `index.ts` outside your folder, any `package.json` you do not own, root config or CI. If a contract blocks you or contradicts itself, stop and say exactly what is missing. That is a good outcome, not a failure.
+- Edit only the files your task owns. Tests sit next to the code as `*.test.ts` (Vitest).
+- Logic in `packages/` is pure: no DOM, no `Date.now()`, no `Math.random()`. TypeScript strict, no `any`, no casts to silence errors.
+- Vim behaviour comes only from `createEngine()` in `@escape/engine`. Never re-implement a motion, an operator or undo.
+- Other Phase B modules are being built in parallel. Depend on their TYPE from the contract and take the implementation as a parameter. Never import another task's implementation.
+- No new dependency unless your brief names it.
+- If a command is blocked, use a legitimate alternative. Stop and report only if the only way forward is to get around a guard.
+- Done = `npm run typecheck` and `npx vitest run` both pass. Do not commit: the dispatcher commits and opens the PR.
+- Final report, max 12 lines: files, what works, test count, how to try it, anything you could not do, every judgement call you made about the contract.

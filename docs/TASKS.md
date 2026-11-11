@@ -44,6 +44,23 @@ Rules:
 | P3-G | Integration + skip test + deploy | integration | orchestrator | codex | | merged |
 | P3-H | Playtest | | renzo | | | **next** |
 
+### Phase B: vertical slice (see docs/MASTERPLAN.md section 6, briefs in docs/briefs/phase-b/)
+
+Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its playtest.
+
+| ID | Task | Owns files | Runner | Reviewer | Branch | Status |
+|---|---|---|---|---|---|---|
+| B-0 | Contracts: world, story; shared fixture | `packages/world/src/types.ts`, `packages/story/src/types.ts`, `packages/world/src/fixtures.ts` | fable | codex (3 rounds) | design/v2-contracts | merged |
+| B-A | World simulation (rules 1-8) | `packages/world/src/sim/**` | codex | claude-sonnet | | todo |
+| B-B | Phaser tile renderer | `apps/game/src/scene/**`, `apps/game/package.json` | codex | claude-sonnet | | todo |
+| B-C | Story engine, dialogue box, HUD | `packages/story/src/engine/**`, `packages/story/src/schema.ts`, `apps/game/src/story-ui/**` | claude-sonnet | codex | | todo |
+| B-D | Stage solver (turns, enemies) | `packages/world/src/solver/**` | codex | claude-sonnet | | todo, after B-A |
+| B-E | Map and content linters | `packages/world/src/schema.ts`, `tools/maps/**` | claude-haiku | codex | | todo |
+| B-F | Stage maps, scripts and quests for the slice (0-1 to 1-5) | `packages/world/content/**`, `packages/story/content/**` | fable | renzo | | todo, after B-A and B-E |
+| B-G | NPC lines, signs, hint wording for the slice | `packages/story/content/drafts/**` | ollama | claude-sonnet | | todo, after B-F |
+| B-H | Integration, CC0 art pack, preview deploy | integration | codex | claude-sonnet, then fable | | todo, after all |
+| B-I | Playtest: 15 minutes, "do I want more?" | | renzo | | | gate |
+
 ## Backlog (minor review findings, not blocking merge)
 
 | From | Item | Suggested owner |
