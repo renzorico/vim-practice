@@ -71,3 +71,15 @@ it('starts removal after the preceding entity move span', () => {
   expect(steps[0]?.end).toBeGreaterThan(0);
   expect(steps[1]?.start).toBe(steps[0]?.end);
 });
+
+it('reserves visible hit and bump spans among dense movement hints', () => {
+  const steps = animationSteps([
+    { ...walk, to: { line: 2, col: 101 } },
+    { type: 'player-hit', by: 'tile', hearts: 1 },
+    { type: 'bump', at: to, reason: 'wall' },
+  ]);
+  for (const step of steps.filter(step => step.type === 'hit' || step.type === 'bump')) {
+    expect(step.durationMs).toBeCloseTo(60);
+  }
+  expect(steps.reduce((sum, step) => sum + step.durationMs, 0)).toBeLessThanOrEqual(PLAYBACK_BUDGET_MS);
+});

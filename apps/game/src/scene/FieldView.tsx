@@ -43,5 +43,5 @@ export function FieldView(props: FieldFrame): JSX.Element {
   useEffect(() => { scene.current?.present(props); });
 
   return <div ref={host} role="img" aria-label={`${props.stage.title}. ${props.stage.goalText}`}
-    style={{ position: 'relative', width: '100%', height: '100%', minWidth: 0, minHeight: 0, overflow: 'hidden' }} />;
+    style={{ position: 'relative', width: '100%', height: '100%', minWidth: 0, minHeight: 'min(360px, 60svh)', overflow: 'hidden' }} />;
 }

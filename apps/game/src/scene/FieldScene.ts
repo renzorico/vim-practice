@@ -75,7 +75,8 @@ export class FieldScene extends Phaser.Scene {
   }
 
   present(frame: FieldFrame): void {
-    const sameFrame = this.previousState === frame.state && this.previousEvents === frame.events;
+    const sameFrame = this.previousState === frame.state && this.previousEvents === frame.events
+      && this.frame.legend === frame.legend && this.frame.stage === frame.stage;
     if (sameFrame) {
       // Presentation options can change without interrupting the active clock.
       if (this.frame.showSource !== frame.showSource) this.setSourceVisible(frame.showSource);
@@ -119,10 +120,8 @@ export class FieldScene extends Phaser.Scene {
 
   private positionCamera(): void {
     if (!this.player) return;
-    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, {
-      col: this.player.x / TILE_SIZE - 0.5,
-      line: this.player.y / TILE_SIZE - 0.5,
-    }, TILE_SCALE);
+    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale,
+      this.frame.state.engine.cursor, TILE_SCALE);
     this.cameras.main.centerOn(target.x, target.y);
   }
 

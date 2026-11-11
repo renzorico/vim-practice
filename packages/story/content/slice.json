@@ -1,0 +1,23 @@
+{
+  "worlds": [{ "id": "lowlands", "order": 1, "name": "Lowlands", "stages": ["1-1"], "castle": null, "statue": null }],
+  "openingStage": "1-1",
+  "openingQuests": ["lowlands.warning"],
+  "quests": [{
+    "id": "lowlands.warning", "world": "lowlands", "kind": "main", "title": "The Elder's warning",
+    "steps": [{ "id": "leave", "objective": "Reach the gate at the end of the road.", "completeWhen": { "type": "stage-cleared", "stage": "1-1" }, "then": [{ "type": "dialogue", "dialogue": "1-1.cleared" }] }]
+  }],
+  "reactions": [
+    { "id": "1-1.blot-near", "when": { "type": "trigger", "trigger": "1-1.blot-near" }, "once": true, "then": [{ "type": "dialogue", "dialogue": "1-1.blot" }] },
+    { "id": "1-1.save-stone", "when": { "type": "trigger", "trigger": "1-1.save-stone" }, "once": true, "then": [{ "type": "dialogue", "dialogue": "1-1.stone" }] }
+  ],
+  "dialogues": [
+    { "id": "1-1.intro", "lines": [
+      { "speaker": "elder", "text": "The rows are vanishing, Tilde.\nTake the road. Warn the Lighthouse." },
+      { "speaker": "elder", "text": "`h` `j` `k` `l`. Left, down, up, right.\nOne key, one step." }
+    ], "then": [] },
+    { "id": "1-1.blot", "lines": [{ "speaker": "sign", "text": "A Blot. It moves only when you move.\nIt hurts only if you share its tile." }], "then": [] },
+    { "id": "1-1.stone", "lines": [{ "speaker": "scribe", "text": "A Save Stone. I left these for you.\nSoon you will learn what they are for." }], "then": [{ "type": "world", "effects": [{ "type": "heal", "hearts": 1 }] }] },
+    { "id": "1-1.cleared", "lines": [{ "speaker": "system", "text": "The gate opens. Beyond it, more road." }], "then": [] }
+  ],
+  "cutscenes": []
+}

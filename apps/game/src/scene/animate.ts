@@ -45,10 +45,17 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
     }
   }
   const total = reducedMotion ? 0 : Math.min(PLAYBACK_BUDGET_MS, hints.length * CELL_DURATION_MS);
-  return hints.map((hint, index) => ({
-    ...hint,
-    durationMs: total * (index + 1) / hints.length - total * index / hints.length,
-    start: index / hints.length,
-    end: (index + 1) / hints.length,
-  }));
+  // Reserve half the shared clock for impact feedback. Dense movement hints must
+  // never reduce a hit or bump to less than a rendered frame.
+  const impacts = hints.filter(hint => hint.type === 'hit' || hint.type === 'bump').length;
+  const ordinary = hints.length - impacts;
+  const impactShare = ordinary === 0 ? 1 : Math.max(0.5, impacts / hints.length);
+  let elapsed = 0;
+  return hints.map((hint, index) => {
+    const share = impacts === 0 ? 1 / hints.length
+      : hint.type === 'hit' || hint.type === 'bump' ? impactShare / impacts : (1 - impactShare) / ordinary;
+    const start = elapsed;
+    elapsed = index === hints.length - 1 ? 1 : Math.min(1, elapsed + share);
+    return { ...hint, durationMs: total * elapsed - total * start, start, end: elapsed };
+  });
 }

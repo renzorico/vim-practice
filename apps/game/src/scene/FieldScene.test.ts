@@ -154,3 +154,21 @@ it('keeps ghosts visible through movement and fades after the move span', () => 
   config.targets.value = 0.75; config.onUpdate();
   expect(ghost?.alpha).toBeCloseTo(0.5); expect(ghost?.x).toBe(216);
 });
+
+it('anchors the camera to the final player cell during movement playback', () => {
+  const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
+  const camera = fake.centerOn.mock.calls.at(-1);
+  const config = fake.tween.mock.calls[0]?.[0];
+  config.targets.value = 0.1; config.onUpdate();
+  expect(fake.centerOn.mock.calls.at(-1)).toEqual(camera);
+  config.targets.value = 0.8; config.onUpdate();
+  expect(fake.centerOn.mock.calls.at(-1)).toEqual(camera);
+});
+
+it('refreshes cell textures when only the legend changes', () => {
+  const scene = new FieldScene(frame, false); scene.create();
+  const grass = fake.images.find(image => image.texture === 'field:grass');
+  scene.present({ ...frame, legend: { ...frame.legend, tiles: frame.legend.tiles.map(tile =>
+    tile.sprite === 'grass' ? { ...tile, sprite: 'stone' } : tile) } });
+  expect(grass?.setTexture).toHaveBeenCalledWith('field:stone');
+});
