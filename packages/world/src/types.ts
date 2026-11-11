@@ -379,7 +379,9 @@ export interface WorldOptions {
  *    `d`): moving a selection gives enemies their turns like any other move. A complete command
  *    is then checked (rules 2, 3): if it passes it is committed and one turn ends; if not, the
  *    world returns to `pending` (event 'bump') and no turn is spent. A key that returns to rest
- *    with no CommandRecord (an engine error, a lone <Esc>) also restores `pending`, no turn spent.
+ *    with no CommandRecord spends no turn either: on an engine error `pending` is restored;
+ *    with no error the engine's new state is kept, because it is only a mode change (<Esc> out
+ *    of visual mode, switching between `v` and `V`).
  * 2. WALK vs JUMP. A cell exists if its row exists and its column is inside that row. The player
  *    may only end a command on an existing, walkable cell with no solid entity (else bump: 'edge',
  *    'wall' or 'solid-entity'). `h j k l` (with or without a count) walk: every cell on the way
