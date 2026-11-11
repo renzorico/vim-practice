@@ -6,7 +6,7 @@ Rule: the cheapest model that can do the job. If it fails twice, find out why be
 ## How they connect
 
 ```
-                 Design lead (Claude Fable) + dispatcher (Claude Sonnet), you approve
+                 Design lead (Claude Opus) + dispatcher (Claude Sonnet), you approve
                  writes briefs + docs/TASKS.md, merges, logs BITACORA
                                      |
             tools/agents/dispatch.sh <task> <runner> <brief>
@@ -28,9 +28,11 @@ Why this works:
 
 ## The roster (masterplan v2, from 2026-11-11)
 
+From 2026-11-11 (afternoon) Renzo retired Fable from this project: Opus is the design lead. Vendors in use: Claude Opus, Claude Sonnet, Claude Haiku, GPT via Codex, Ollama.
+
 | Role | Model | Runs as | Does | Never does |
 |---|---|---|---|---|
-| **Design lead** | Claude Fable | Main Claude Code session | Masterplan, story bible, world and boss design, hand-made key stages, contracts, briefs, final review per world | Module implementation |
+| **Design lead** | Claude Opus | Main Claude Code session | Masterplan, story bible, world and boss design, hand-made key stages, contracts, briefs, final review per world | Module implementation |
 | **Dispatcher** | Claude Sonnet | Claude Code session | Runs `dispatch.sh`, keeps `TASKS.md`, commits builder output, merges green PRs, writes BITACORA | Edits contracts |
 | **Main builder** | GPT via Codex CLI (Plus) | `dispatch.sh <id> codex` | World simulation, renderer, solver, tools | Edits `types.ts` or files it does not own |
 | **Second builder** | Claude Sonnet | `dispatch.sh <id> claude-sonnet` | Story engine, UI, game feel | Same as above |

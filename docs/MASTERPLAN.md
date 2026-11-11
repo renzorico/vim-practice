@@ -1,6 +1,6 @@
 # UNSAVED (working title, was ESCAPE): masterplan v2
 
-Status: **approved by Renzo, 2026-11-11.** Written by Fable. Contracts merged in PR #28.
+Status: **approved by Renzo, 2026-11-11.** Written by the design lead. Contracts merged in PR #28.
 This replaces `PLAN.md`, `STORY.md`, `GAME-DESIGN.md` and `VISUAL-DESIGN.md`, now in `docs/archive/`.
 
 Priorities, in order (Renzo): **1 playability, 2 Vim learning, 3 story, 4 visuals.** When two goals conflict, the lower number wins.
@@ -13,7 +13,7 @@ Priorities, in order (Renzo): **1 playability, 2 Vim learning, 3 story, 4 visual
 | Structure | Notes + isolated challenge rooms | 6 worlds of connected stages, quests, a boss castle per world |
 | Story | Cursor escapes a mainframe | A full arc with a playable twist (section 3) |
 | Pressure | Stars against par | The world moves when you do (section 2.1) |
-| Planning | Claude Opus | Fable |
+| Planning | Claude Opus | Opus |
 
 **Kept, unchanged:** the Vim engine (verified against Neovim), the solver, the mastery model, the fail flow, saves, CI, the dispatcher, cross-vendor review. The tile world is still a real Vim buffer underneath, so nothing in `packages/engine` is thrown away. This is a new renderer and a new game layer, not a rewrite.
 
@@ -161,7 +161,7 @@ tools/               map linter, solver gate, dialogue linter, Ollama drafter.
 
 | Role | Model | Does |
 |---|---|---|
-| **Design lead** | **Fable** | This plan, story bible, world and boss design, hand-made key stages, contracts, briefs, final review per world |
+| **Design lead** | **Opus** | This plan, story bible, world and boss design, hand-made key stages, contracts, briefs, final review per world |
 | **Dispatcher** | Claude Sonnet | Runs `dispatch.sh`, keeps `TASKS.md`, merges green PRs, writes BITACORA |
 | **Main builder** | **Codex (GPT)** | `packages/world`, renderer, solver extension, tools |
 | **Second builder + reviewer** | Claude Sonnet | Quest and dialogue system, UI, game feel; reviews every Codex PR. Codex reviews every Sonnet PR. |
@@ -176,10 +176,10 @@ Ollama's limits are known (Phase 2 pilot: 2 of 6 drafts valid). It never plans a
 
 | Phase | Goal | Time (part-time) | Gate |
 |---|---|---|---|
-| **A Design lock** | Renzo approves sections 1-5; Fable freezes `world` and `story` contracts | 1-2 days | Approval |
+| **A Design lock** | Renzo approves sections 1-5; Opus freezes `world` and `story` contracts | 1-2 days | Approval |
 | **B Vertical slice** | The Margin + stages 1-1 to 1-3 + the Lamplighter castle, placeholder art, sound, saves | 1 week | **Renzo plays 15 minutes and wants more.** If not, redesign before any content. |
 | **C Systems** | Quests, script panel, world map, fail flow, Unwrite storms, Source view | 1 week | Slice replays in CI; deep audit |
-| **D Worlds 2-6** | One world per pass: Fable designs, Codex and Sonnet build, Ollama fills, Renzo plays | 5 weeks | Playtest per world |
+| **D Worlds 2-6** | One world per pass: Opus designs, Codex and Sonnet build, Ollama fills, Renzo plays | 5 weeks | Playtest per world |
 | **E Finale and polish** | The Last Page, both endings, art pass, audio, onboarding, a11y | 2 weeks | Deep audit + full playthrough |
 
 Total: about 10 weeks part-time. Phase B is the only one that matters right now.
@@ -187,15 +187,15 @@ Total: about 10 weeks part-time. Phase B is the only one that matters right now.
 ### Phase B tasks
 | ID | Task | Owner | Reviewer |
 |---|---|---|---|
-| B-0 | `packages/world` and `packages/story` type contracts | Fable | Codex |
+| B-0 | `packages/world` and `packages/story` type contracts | Opus | Codex |
 | B-A | `stepWorld`: turn rule, entities, collisions, hearts, `:w` checkpoints | Codex | Sonnet |
 | B-B | Phaser scene: buffer + legend to tilemap, camera, movement tweens | Codex | Sonnet |
 | B-C | Dialogue and quest state machine, dialogue box, HUD | Sonnet | Codex |
 | B-D | Solver counts turns and enemy moves | Codex | Sonnet |
 | B-E | Map and dialogue linters, edge-case tests | Haiku | Codex |
-| B-F | Stage maps and scripts for the slice | Fable (hand-made) | Renzo |
+| B-F | Stage maps and scripts for the slice | Opus (hand-made) | Renzo |
 | B-G | NPC lines, signs, hint wording for the slice | Ollama | Sonnet |
-| B-H | Integration, deploy to a preview URL | Codex | Sonnet, then Fable |
+| B-H | Integration, deploy to a preview URL | Codex | Sonnet, then Opus |
 
 ## 7. Risks
 1. **The turn rule may feel slow.** It is untested. Phase B exists to find out in a week, not in ten.

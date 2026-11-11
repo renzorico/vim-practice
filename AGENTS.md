@@ -12,7 +12,7 @@ npm workspaces, TypeScript strict, Vitest. Later: Vite + React + Zustand in apps
 - `npm test`
 
 ## Rules for every agent
-1. Contracts are frozen: `packages/engine/src/types.ts`, `packages/curriculum/src/types.ts`, `packages/world/src/types.ts`, `packages/story/src/types.ts`. Only the design lead (Fable) edits them.
+1. Contracts are frozen: `packages/engine/src/types.ts`, `packages/curriculum/src/types.ts`, `packages/world/src/types.ts`, `packages/story/src/types.ts`. Only the design lead (Opus) edits them.
 2. The engine, world and story logic are pure (no DOM, timers or randomness) so a playthrough can be replayed from keys alone and compared with Neovim. Only `apps/game` touches the DOM, time or sound.
 3. One agent = one worktree = one module. Do not touch files outside your brief.
 4. A branch merges only when CI (`.github/workflows/ci.yml`: typecheck, tests, golden tests; level replay from Phase 2) is green.
