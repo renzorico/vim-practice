@@ -7,5 +7,5 @@
     "types": ["node"],
     "rootDir": ".."
   },
-  "include": ["*.ts", "levels/**/*.ts"]
+  "include": ["*.ts", "levels/**/*.ts", "maps/**/*.ts"]
 }
