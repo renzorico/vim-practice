@@ -1,4 +1,4 @@
-import type { Stage } from '@escape/world';
+import type { Stage, WorldEffect } from '@escape/world';
 import { knownEntityIds } from './entities';
 import { cellChar } from './grid';
 import { errorIssue, warningIssue, type LintIssue } from './issue';
@@ -96,20 +96,26 @@ export function checkSetRowsRange(stage: Stage): LintIssue[] {
 /**
  * Effects that name something in the stage: remove-entity names a known entity, move-player lands on
  * an existing cell of the original map, delete-row names a row of the map.
+ * A move-player that follows a set-rows or delete-row in the same script is not checked: the map
+ * it lands on is no longer the original one, and the linter does not replay effects.
  */
+function reshapedBefore(effects: readonly WorldEffect[], index: number): boolean {
+  return effects.slice(0, index).some((effect) => effect.type === 'set-rows' || effect.type === 'delete-row');
+}
+
 export function checkEffectReferences(stage: Stage): LintIssue[] {
   const entities = knownEntityIds(stage);
   return stage.scripts.flatMap((script) =>
-    script.effects.flatMap((effect): LintIssue[] => {
+    script.effects.flatMap((effect, index): LintIssue[] => {
       switch (effect.type) {
         case 'remove-entity':
           return entities.has(effect.entity)
             ? []
             : [errorIssue('missing-entity', `Script "${script.id}" removes entity "${effect.entity}", which does not exist.`)];
         case 'move-player':
-          return cellChar(stage, effect.to) === undefined
-            ? [errorIssue('effect-cell', `Script "${script.id}" moves the player to line ${effect.to.line}, column ${effect.to.col}, which is outside the map.`)]
-            : [];
+          return reshapedBefore(script.effects, index) || cellChar(stage, effect.to) !== undefined
+            ? []
+            : [errorIssue('effect-cell', `Script "${script.id}" moves the player to line ${effect.to.line}, column ${effect.to.col}, which is outside the map.`)];
         case 'delete-row':
           return effect.line < stage.map.length
             ? []

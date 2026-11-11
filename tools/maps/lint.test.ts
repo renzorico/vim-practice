@@ -384,6 +384,14 @@ describe('lintStage: spawn and remove-entity effects', () => {
     expectErrorRule(lintStage(stageWithEffects([{ type: 'move-player', to: { line: 9, col: 0 } }]), FIXTURE_LEGEND), 'effect-cell');
   });
 
+  it('does not check move-player after an effect that reshapes the map', () => {
+    const widened = stageWithEffects([
+      { type: 'set-rows', fromLine: 0, lines: [' '.repeat(20)] },
+      { type: 'move-player', to: { line: 0, col: 19 } },
+    ]);
+    expect(lintStage(widened, FIXTURE_LEGEND)).toEqual([]);
+  });
+
   it('accepts move-player to any existing cell, walkable or not', () => {
     expect(lintStage(stageWithEffects([{ type: 'move-player', to: { line: 0, col: 2 } }]), FIXTURE_LEGEND)).toEqual([]);
   });

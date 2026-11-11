@@ -93,7 +93,11 @@ export function checkStartAndEntities(stage: Stage, legend: Legend): LintIssue[]
   ];
 }
 
-/** Ids must be unique within each list: entities (stage and spawned), triggers and scripts. */
+/**
+ * Ids must be unique within each list: entities (stage and spawned), triggers and scripts.
+ * Authoring policy, stricter than the contract: an entity id is never reused, even after a
+ * remove-entity, so a trigger or a story line that names an entity always means one thing.
+ */
 export function checkUniqueIds(stage: Stage): LintIssue[] {
   const entityIds = [...stage.entities, ...spawnedEntities(stage)].map((entity) => entity.id);
   return [
