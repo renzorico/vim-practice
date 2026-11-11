@@ -1,0 +1,21 @@
+/* Story UI. Colours and fonts come from ../ui/tokens.css only. */
+.dialogue { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(640px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px 20px; color: var(--text); font-family: var(--font-ui); z-index: 20; }
+.dialogue__name { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--you); margin-bottom: 6px; }
+.dialogue--dot .dialogue__name { color: var(--friend); }
+.dialogue--unwriter .dialogue__name { color: var(--danger); }
+.dialogue--sign .dialogue__name, .dialogue--system .dialogue__name { color: var(--text-muted); }
+.dialogue__text { margin: 0; font-size: 16px; line-height: 1.5; white-space: pre-wrap; max-width: 48ch; }
+.dialogue__hint { margin-top: 10px; font-size: 12px; color: var(--text-muted); text-align: right; }
+
+.objective-hud { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 16px; color: var(--text); font-family: var(--font-ui); font-size: 14px; }
+.objective-hud__stats { display: flex; justify-content: space-between; gap: 24px; font-family: var(--font-mono); margin-bottom: 8px; }
+.objective-hud__hearts { color: var(--danger); letter-spacing: 0.1em; }
+.objective-hud__turn { color: var(--text-muted); }
+.objective-hud__list { margin: 0; padding-left: 18px; color: var(--text-soft); }
+.objective-hud__main { color: var(--goal); }
+
+.cutscene { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; background: var(--bg); color: var(--text); font-family: var(--font-ui); z-index: 30; padding: 24px; }
+.cutscene__title { font-family: var(--font-mono); font-weight: 600; font-size: 32px; color: var(--you); text-align: center; margin: 0; }
+.cutscene__line { max-width: 560px; }
+.cutscene__image { width: min(480px, 80vw); aspect-ratio: 16 / 9; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
+.cutscene__terminal { font-family: var(--font-mono); font-size: 15px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); margin: 0; max-width: 90vw; overflow-x: auto; }
