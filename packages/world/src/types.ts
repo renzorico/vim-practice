@@ -164,7 +164,7 @@ export interface TriggerBase {
  * `:q` or `:q!` closes it (`:q` is refused while modified, as in Vim). The script is solved when,
  * after a completed command, all its goals hold and every `mustUse` skill appears in
  * OpenScript.commands. `effects` are applied to the field at that moment, as one batch.
- * Reopening a solved script shows its solved text and can change nothing.
+ * Reopening a solved script shows the text it was solved with (WorldState.solvedScripts) and can change nothing.
  */
 export interface Script {
   readonly id: ScriptId;
@@ -192,8 +192,9 @@ export interface Script {
  *
  * Effects are applied in batches (one solved script, one `apply` call). A batch is atomic: all of
  * it is applied, entities are remapped (rule 3), and only then are death and clear checked.
- * After a batch from a script or from `apply`, a checkpoint is stored (rule 5), so nothing the
- * story has already reacted to can be lost by dying.
+ * A batch that contains anything other than 'set-flag' then stores a checkpoint (rule 5), so a
+ * rebuilt bridge or a quest reward cannot be lost by dying. A batch of only 'set-flag' effects
+ * stores none: syncing a story flag must never work as a free save.
  */
 export type WorldEffect =
   /** Emits 'flag-set', which is how packages/story (the owner of flags) hears about it. */
@@ -299,7 +300,7 @@ export interface WorldState {
   /** The field buffer. Its cursor is the player's position. */
   readonly engine: EngineState;
   readonly script: OpenScript | null;
-  /** Non-null while a field command is half-typed or an insert is open. */
+  /** Non-null while a field command is half-typed or an insert or command line is open (rule 1). */
   readonly pending: PendingCommand | null;
   readonly entities: readonly Entity[];
   readonly hearts: number;
@@ -307,10 +308,11 @@ export interface WorldState {
   readonly turn: number;
   readonly status: WorldStatus;
   readonly flags: Readonly<Record<FlagId, boolean>>;
-  readonly solvedScripts: readonly ScriptId[];
+  /** Each solved script with its buffer at the moment it was solved, so it can be shown again. */
+  readonly solvedScripts: Readonly<Record<ScriptId, readonly string[]>>;
   /** Triggers with `once` that have already fired. */
   readonly firedTriggers: readonly TriggerId[];
-  /** State at the last `:w` or effect batch; set by `init` to the stage start. Death returns here. */
+  /** State at the last `:w` or checkpointing effect batch; set by `init` to the stage start. Death returns here. */
   readonly checkpoint: Checkpoint;
 }
 
@@ -369,14 +371,15 @@ export interface WorldOptions {
 /**
  * The rules `step` must follow. They are the game design, so they live in the contract.
  *
- * 1. TURN. The field is IDLE when the engine is in normal mode with no pendingKeys and no
- *    changeInProgress. A field command starts at the first key typed while idle (the world stores
- *    `pending`) and is COMPLETE at the first key after which the field is idle again and the
- *    engine has emitted at least one CommandRecord since the start. So `5j`, `dw`, `ihello<Esc>`,
- *    `vjd` and `:w<CR>` are one command each. A complete command is then checked (rules 2, 3):
- *    if it passes it is committed and one turn ends; if not, the world returns to `pending`
- *    (event 'bump') and no turn is spent. A key that returns to idle with no CommandRecord
- *    (an engine error, a lone <Esc>) also restores `pending` and spends no turn.
+ * 1. TURN. The field is AT REST when the engine is in normal mode or a visual mode, with no
+ *    pendingKeys and no changeInProgress. A field command starts at the first key typed while at
+ *    rest (the world stores `pending`) and is COMPLETE at the first key after which the field is
+ *    at rest again and the engine has emitted at least one CommandRecord since the start.
+ *    So `5j`, `dw`, `ihello<Esc>` and `:w<CR>` are one command each, and `vjd` is three (`v`, `j`,
+ *    `d`): moving a selection gives enemies their turns like any other move. A complete command
+ *    is then checked (rules 2, 3): if it passes it is committed and one turn ends; if not, the
+ *    world returns to `pending` (event 'bump') and no turn is spent. A key that returns to rest
+ *    with no CommandRecord (an engine error, a lone <Esc>) also restores `pending`, no turn spent.
  * 2. WALK vs JUMP. A cell exists if its row exists and its column is inside that row. The player
  *    may only end a command on an existing, walkable cell with no solid entity (else bump: 'edge',
  *    'wall' or 'solid-entity'). `h j k l` (with or without a count) walk: every cell on the way
@@ -384,16 +387,19 @@ export interface WorldOptions {
  *    landing test applies after an edit, an undo or a redo, wherever the engine leaves the cursor.
  * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled. After ANY
  *    change to the field buffer, whatever caused it (edit, undo, redo, effect, entity), entities
- *    are remapped from the difference between the old and new lines:
- *      a. Rows: strip the common leading and trailing rows. Entities in removed rows are removed.
- *         Entities below the changed rows shift by the change in row count.
- *      b. If exactly one row changed and the row count did not: strip the common prefix and suffix
- *         of that row. Entities right of the changed span shift by its change in length. Entities
- *         inside the span stay if their column is still inside the new span, else are removed.
- *      c. If several rows changed and the row count did not, apply (b) to each changed row.
- *      d. Finally, any entity now on a cell that does not exist or is not walkable is removed.
- *    Removal by remapping is how the player fights (cause 'deleted-tile'). Undo never brings an
- *    entity back. The player's cell is always the engine cursor.
+ *    are remapped by one rule that also covers split and joined rows. Join the old lines with
+ *    '\n' into one text, and the new lines likewise. Take the longest common prefix of the two
+ *    texts, then the longest common suffix of what remains: what lies between is the changed
+ *    span (old span, new span). For each entity, by its offset in the old text:
+ *      a. before the span: the offset is kept;
+ *      b. after the span: the offset shifts by (new span length - old span length);
+ *      c. inside the span: the offset is kept if it is still inside the new span, else the entity
+ *         is removed.
+ *    Turn the offset back into a line and column of the new text. An entity that lands on a
+ *    '\n', or on a cell that is not walkable, is removed. Fixed tiles are tracked by the same
+ *    mapping: one that falls under (c)-removal, or whose character differs afterwards, was
+ *    deleted or replaced. Removal by remapping is how the player fights (cause 'deleted-tile').
+ *    Undo never brings an entity back. The player's cell is always the engine cursor.
  * 4. ENTITIES. When a turn ends: `turn` goes up by one (the first turn is 1). Entities act in
  *    WorldState.entities order, each once if `turn % every == 0`. Then every entity with
  *    damage > 0 on the player's cell or 4-adjacent deals it once, whether or not it acted. Then
@@ -407,13 +413,17 @@ export interface WorldOptions {
  *    Buffer changes made by effects and entities are on the undo stack too.
  * 7. SCRIPTS. While a script is open, keys go to its engine and rules 1-6 do not apply.
  * 8. END. Death and clear are checked at the end of every turn and after every effect batch,
- *    death first. Once the status is 'dead' or 'cleared', `step` and `apply` change nothing and
- *    emit nothing; only `restore` (from 'dead') or a new `init` continues.
+ *    death first. 'stage-cleared' is emitted once. Once 'dead', `step` and `apply` change nothing
+ *    and emit nothing until `restore` or a new `init`. Once 'cleared', `step` changes nothing, but
+ *    `apply` still works, so the story's answer to the clear (rewards, flags) is not lost.
  */
 export interface WorldSim {
   init(stage: Stage, legend: Legend, options: WorldOptions): WorldState;
   step(state: WorldState, key: Key, stage: Stage, legend: Legend, options: WorldOptions): WorldStepResult;
-  /** Apply effects from the story layer (a quest reward, a cutscene). Costs no turn. */
+  /**
+   * Apply effects from the story layer (a quest reward, a cutscene). Costs no turn.
+   * The app sends everything one StoryStepResult asks of the world in ONE call, so it is one batch.
+   */
   apply(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend): WorldStepResult;
   /** After death or on request: back to the last checkpoint, with status 'playing'. Flags, solved scripts and fired triggers are kept. */
   restore(state: WorldState): WorldStepResult;
