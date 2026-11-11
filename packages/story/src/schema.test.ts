@@ -185,6 +185,22 @@ describe('validateContent', () => {
     });
     expect(validateContent(chain, { worldFlags: [] }).filter((error) => error.includes('can never complete'))).toEqual([]);
   });
+  it('reports a reaction that waits for a flag its own unless forbids, and gives it no setters', () => {
+    const impossible = patch({
+      reactions: [{ ...content.reactions[0]!, when: { type: 'flag', flag: 'x', value: true }, unless: 'x',
+        then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],
+    });
+    const errors = validateContent(impossible, { worldFlags: ['x'] });
+    expect(errors).toContain('Reaction "save-stone-bark" can never fire: it waits for a flag to be set that unless forbids.');
+    expect(errors.some((error) => error.includes('can never complete'))).toBe(true);
+  });
+  it('reports a reaction that waits for a flag to be unset while onlyIf requires it', () => {
+    const impossible = patch({
+      reactions: [{ ...content.reactions[0]!, when: { type: 'flag', flag: 'x', value: false }, onlyIf: 'x' }],
+    });
+    expect(validateContent(impossible, { worldFlags: ['x'] }))
+      .toContain('Reaction "save-stone-bark" can never fire: it waits for a flag to be unset that onlyIf requires.');
+  });
   it('reports a reaction whose onlyIf and unless use the same flag, and gives it no setters', () => {
     const impossible = patch({
       reactions: [{ ...content.reactions[0]!, onlyIf: 'x', unless: 'x', then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],

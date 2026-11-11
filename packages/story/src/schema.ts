@@ -192,9 +192,22 @@ function lineErrors(where: string, line: Line): string[] {
   return [`${where} takes ${rows} rows. The limit is ${MAX_LINE_ROWS} rows of ${MAX_LINE_CHARS} characters.`];
 }
 
-/** A reaction whose `onlyIf` and `unless` name the same flag can never fire. */
-function contradictoryGate(reaction: Reaction): boolean {
-  return reaction.onlyIf !== undefined && reaction.onlyIf === reaction.unless;
+/**
+ * Why a reaction can never fire, or null. Its predicate is `when` AND `onlyIf` AND NOT `unless`,
+ * so it is impossible when two of the three ask opposite things of one flag.
+ */
+function contradictoryGate(reaction: Reaction): string | null {
+  if (reaction.onlyIf !== undefined && reaction.onlyIf === reaction.unless) {
+    return 'onlyIf and unless use the same flag';
+  }
+  if (reaction.when.type !== 'flag') return null;
+  if (reaction.when.value && reaction.unless === reaction.when.flag) {
+    return 'it waits for a flag to be set that unless forbids';
+  }
+  if (!reaction.when.value && reaction.onlyIf === reaction.when.flag) {
+    return 'it waits for a flag to be unset that onlyIf requires';
+  }
+  return null;
 }
 
 /**
@@ -246,7 +259,7 @@ function blockedSteps(content: StoryContent, worldFlags: readonly string[]): Map
       }
     }
     for (const reaction of content.reactions) {
-      if (fired.has(reaction.id) || !conditionOk(reaction.when) || contradictoryGate(reaction)) continue;
+      if (fired.has(reaction.id) || !conditionOk(reaction.when) || contradictoryGate(reaction) !== null) continue;
       if (reaction.onlyIf !== undefined && !flags.has(reaction.onlyIf)) continue;
       fired.add(reaction.id);
       run(reaction.then);
@@ -339,9 +352,8 @@ export function validateContent(content: StoryContent, known: KnownIds = {}): st
 
   for (const reaction of content.reactions) {
     checkCondition(`Reaction "${reaction.id}"`, reaction.when);
-    if (contradictoryGate(reaction)) {
-      errors.push(`Reaction "${reaction.id}" can never fire: onlyIf and unless use the same flag.`);
-    }
+    const contradiction = contradictoryGate(reaction);
+    if (contradiction !== null) errors.push(`Reaction "${reaction.id}" can never fire: ${contradiction}.`);
   }
 
   const startable = new Set(content.openingQuests);
