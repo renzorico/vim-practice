@@ -4,6 +4,7 @@ import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
 import { animationSteps, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { tileGrid } from './tiles.js';
+import { bufferSize, cameraTarget } from './camera.js';
 
 export interface FieldFrame {
   readonly state: WorldState;
@@ -46,12 +47,12 @@ export class FieldScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
     this.cameras.main.setZoom(TILE_SCALE).setRoundPixels(true);
-    this.scale.on(Phaser.Scale.Events.RESIZE, this.positionLabel, this);
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeView, this);
     this.ready = true;
     this.present(this.frame);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.ready = false;
-      this.scale.off(Phaser.Scale.Events.RESIZE, this.positionLabel, this);
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeView, this);
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -109,6 +110,20 @@ export class FieldScene extends Phaser.Scene {
       (this.scale.width - this.scale.width / TILE_SCALE) / 2 + 8 / TILE_SCALE,
       (this.scale.height - this.scale.height / TILE_SCALE) / 2 + 8 / TILE_SCALE,
     );
+  }
+
+  private resizeView(): void {
+    this.positionLabel();
+    this.positionCamera();
+  }
+
+  private positionCamera(): void {
+    if (!this.player) return;
+    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, {
+      col: this.player.x / TILE_SIZE - 0.5,
+      line: this.player.y / TILE_SIZE - 0.5,
+    }, TILE_SCALE);
+    this.cameras.main.centerOn(target.x, target.y);
   }
 
   private setSourceVisible(visible: boolean): void {
@@ -186,13 +201,13 @@ export class FieldScene extends Phaser.Scene {
     if (!this.player) {
       this.player = this.add.image(0, 0, this.texture('player')).setDepth(1);
       this.actors?.add(this.player);
-      this.cameras.main.startFollow(this.player, true, 1, 1);
     }
     this.player.setPosition(center(this.frame.state.engine.cursor.col), center(this.frame.state.engine.cursor.line))
       .setAlpha(1).clearTint();
     for (const image of this.entities.values()) image.destroy();
     this.entities.clear();
     for (const entity of this.frame.state.entities) this.addEntity(entity.id, entity.def.sprite, entity.at);
+    this.positionCamera();
   }
 
   private clearRowEffects(): void {
@@ -236,6 +251,7 @@ export class FieldScene extends Phaser.Scene {
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }
+      this.positionCamera();
     };
     this.tweens.add({
       targets: clock, value: 1, duration,

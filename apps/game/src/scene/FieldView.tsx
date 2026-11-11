@@ -20,9 +20,11 @@ export function FieldView(props: FieldFrame): JSX.Element {
       pixelArt: true, roundPixels: true, antialias: false,
       input: { keyboard: false, mouse: false, touch: false, gamepad: false },
       audio: { noAudio: true },
-      scale: { mode: Phaser.Scale.RESIZE, width: host.current.clientWidth, height: host.current.clientHeight },
+      scale: { mode: Phaser.Scale.NONE, width: host.current.clientWidth, height: host.current.clientHeight },
       scene: field,
     });
+    // Keep the canvas's intrinsic size out of its host's layout measurements.
+    Object.assign(game.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
     const changeMotion = (): void => field.setReducedMotion(media.matches);
     media.addEventListener('change', changeMotion);
     const resize = new ResizeObserver(() => {
@@ -41,5 +43,5 @@ export function FieldView(props: FieldFrame): JSX.Element {
   useEffect(() => { scene.current?.present(props); });
 
   return <div ref={host} role="img" aria-label={`${props.stage.title}. ${props.stage.goalText}`}
-    style={{ width: '100%', height: '100%', minHeight: 240, overflow: 'hidden' }} />;
+    style={{ position: 'relative', width: '100%', height: '100%', minWidth: 0, minHeight: 0, overflow: 'hidden' }} />;
 }

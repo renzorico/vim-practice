@@ -18,7 +18,7 @@ const fake = vi.hoisted(() => {
   });
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
-    scale: { width: 900, height: 600 }, on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
+    scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
   Scenes: { Events: { SHUTDOWN: 'shutdown' } }, Scale: { Events: { RESIZE: 'resize' } },
@@ -37,7 +37,7 @@ vi.mock('phaser', () => ({ default: {
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: (key: string) => fake.textures.has(key),
       createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: vi.fn(), fillText: vi.fn() }, refresh: vi.fn() }; } };
-    cameras = { main: { setZoom() { return this; }, setRoundPixels() { return this; }, startFollow: vi.fn() } };
+    cameras = { main: { setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
@@ -51,9 +51,19 @@ const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
 ] };
 
 beforeEach(() => {
-  vi.clearAllMocks(); fake.scale.width = 900; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear();
+  vi.clearAllMocks(); fake.scale.width = 900; fake.scale.height = 600; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear();
 });
 describe('FieldScene without canvas', () => {
+  it('centres the fixture and recomputes camera bounds after resize and buffer edits', () => {
+    const scene = new FieldScene(frame, false); scene.create();
+    expect(fake.centerOn).toHaveBeenLastCalledWith(128, 32);
+    const resize = fake.on.mock.calls[0]?.[1];
+    fake.scale.width = 300;
+    if (typeof resize === 'function') resize.call(scene);
+    expect(fake.centerOn).toHaveBeenLastCalledWith(50, 32);
+    scene.present({ ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines: ['short'] } } });
+    expect(fake.centerOn).toHaveBeenLastCalledWith(40, 8);
+  });
   it('leaves identical frames completely untouched during playback', () => {
     const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
     const kills = fake.killAll.mock.calls.length; const images = fake.images.length;
