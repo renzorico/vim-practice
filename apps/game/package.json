@@ -12,11 +12,13 @@
   "dependencies": {
     "@escape/curriculum": "*",
     "@escape/engine": "*",
+    "@escape/story": "*",
+    "@escape/world": "*",
     "phaser": "3.90.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "zustand": "5.0.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "5.0.2"
   },
   "devDependencies": {
     "@types/react": "18.3.12",
