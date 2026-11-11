@@ -185,6 +185,14 @@ describe('validateContent', () => {
     });
     expect(validateContent(chain, { worldFlags: [] }).filter((error) => error.includes('can never complete'))).toEqual([]);
   });
+  it('reports a reaction whose onlyIf and unless use the same flag, and gives it no setters', () => {
+    const impossible = patch({
+      reactions: [{ ...content.reactions[0]!, onlyIf: 'x', unless: 'x', then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],
+    });
+    const errors = validateContent(impossible, { worldFlags: ['x'] });
+    expect(errors).toContain('Reaction "save-stone-bark" can never fire: onlyIf and unless use the same flag.');
+    expect(errors.some((error) => error.includes('can never complete'))).toBe(true);
+  });
   it('a reaction gated on an unset flag adds no setters', () => {
     const gated = patch({
       reactions: [{ ...content.reactions[0]!, onlyIf: 'never', then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],

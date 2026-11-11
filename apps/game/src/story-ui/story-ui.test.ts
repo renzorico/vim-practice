@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advanceSequence, isAdvanceKey, nextIndex, speakerName, startSequence } from './advance';
+import { advanceSequence, isAdvanceKey, nextIndex, speakerName, startSequence, syncSequence } from './advance';
 import { heartsText, turnText } from './hud';
 
 describe('isAdvanceKey', () => {
@@ -46,6 +46,20 @@ describe('advanceSequence latch', () => {
   });
   it('a one-item sequence finishes on the first press', () => {
     expect(advanceSequence(startSequence(lines), lines, 1).finish).toBe(true);
+  });
+});
+
+describe('syncSequence', () => {
+  const lines = ['a'];
+  it('resets the latch when the content becomes null, so the same array can play again', () => {
+    const finished = advanceSequence(startSequence(lines), lines, 1).sequence;
+    expect(advanceSequence(finished, lines, 1).finish).toBe(false);
+    const closed = syncSequence(finished, null);
+    expect(advanceSequence(closed, lines, 1).finish).toBe(true);
+  });
+  it('keeps the latch while the content stays the same non-null value', () => {
+    const finished = advanceSequence(startSequence(lines), lines, 1).sequence;
+    expect(syncSequence(finished, lines)).toBe(finished);
   });
 });
 

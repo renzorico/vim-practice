@@ -6,7 +6,7 @@
  * are kept in step with types.ts by tests that parse a full fixture.
  */
 import { z } from 'zod';
-import type { Line, StoryCondition, StoryContent, StoryEffect } from './types';
+import type { Line, Reaction, StoryCondition, StoryContent, StoryEffect } from './types';
 
 export const MAX_LINE_CHARS = 48;
 export const MAX_LINE_ROWS = 2;
@@ -192,6 +192,11 @@ function lineErrors(where: string, line: Line): string[] {
   return [`${where} takes ${rows} rows. The limit is ${MAX_LINE_ROWS} rows of ${MAX_LINE_CHARS} characters.`];
 }
 
+/** A reaction whose `onlyIf` and `unless` name the same flag can never fire. */
+function contradictoryGate(reaction: Reaction): boolean {
+  return reaction.onlyIf !== undefined && reaction.onlyIf === reaction.unless;
+}
+
 /**
  * Fixpoint over what can happen, starting from the opening quests. A step is completable when its
  * condition can hold: a flag condition needs that flag to be set by the world or by an effect that
@@ -241,7 +246,7 @@ function blockedSteps(content: StoryContent, worldFlags: readonly string[]): Map
       }
     }
     for (const reaction of content.reactions) {
-      if (fired.has(reaction.id) || !conditionOk(reaction.when)) continue;
+      if (fired.has(reaction.id) || !conditionOk(reaction.when) || contradictoryGate(reaction)) continue;
       if (reaction.onlyIf !== undefined && !flags.has(reaction.onlyIf)) continue;
       fired.add(reaction.id);
       run(reaction.then);
@@ -257,7 +262,11 @@ function blockedSteps(content: StoryContent, worldFlags: readonly string[]): Map
   return blocked;
 }
 
-/** Returns plain-words errors. An empty list means the content is sound. */
+/**
+ * Returns plain-words errors. An empty list means the content is sound. Reachability is a
+ * conservative approximation: it may miss reactions that never fire because they watch a flag's
+ * starting value.
+ */
 export function validateContent(content: StoryContent, known: KnownIds = {}): string[] {
   const errors: string[] = [];
   const dialogueIds = new Set(content.dialogues.map((d) => d.id));
@@ -328,7 +337,12 @@ export function validateContent(content: StoryContent, known: KnownIds = {}): st
     }
   }
 
-  for (const reaction of content.reactions) checkCondition(`Reaction "${reaction.id}"`, reaction.when);
+  for (const reaction of content.reactions) {
+    checkCondition(`Reaction "${reaction.id}"`, reaction.when);
+    if (contradictoryGate(reaction)) {
+      errors.push(`Reaction "${reaction.id}" can never fire: onlyIf and unless use the same flag.`);
+    }
+  }
 
   const startable = new Set(content.openingQuests);
   for (const { effects } of located) {

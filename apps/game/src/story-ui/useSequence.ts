@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { advanceSequence, startSequence, type Sequence } from './advance';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { advanceSequence, startSequence, syncSequence, type Sequence } from './advance';
 import { useAdvanceKeys } from './useAdvanceKeys';
 
 interface SequenceView {
@@ -16,6 +16,13 @@ export function useSequence<T>(items: readonly T[] | null, onFinish: () => void)
   const open = items !== null && length > 0;
   const latch = useRef<Sequence>(startSequence(items));
   const [shown, setShown] = useState<Sequence>(latch.current);
+
+  useEffect(() => {
+    const synced = syncSequence(latch.current, items);
+    if (synced === latch.current) return;
+    latch.current = synced;
+    setShown(synced);
+  }, [items]);
 
   const advance = useCallback(() => {
     const step = advanceSequence(latch.current, items, length);

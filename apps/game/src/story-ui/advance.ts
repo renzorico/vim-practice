@@ -32,6 +32,15 @@ export function startSequence(source: unknown): Sequence {
   return { source, index: 0, finished: false };
 }
 
+/**
+ * Call whenever the content prop changes. Null means closed: the latch resets, so the same array
+ * shown again later is a new presentation. A non-null value keeps the latch.
+ */
+export function syncSequence(current: Sequence, source: unknown): Sequence {
+  if (source !== null) return current;
+  return current.source === null ? current : startSequence(null);
+}
+
 export interface SequenceStep {
   readonly sequence: Sequence;
   /** True exactly once per content: when the last item is dismissed. */

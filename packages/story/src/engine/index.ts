@@ -5,8 +5,9 @@
  *   - Events are processed one at a time, in order. One event moves each quest and each
  *     event-reaction at most once, so it never completes two event-steps.
  *   - Every single state change (each effect, each flag-set event, a learned skill) is reconciled at
- *     once, nested, bounded by MAX_PASSES rounds per call. So a step's `then` can complete the next
- *     step in the same call and no intermediate flag value is lost.
+ *     once, nested, bounded by MAX_PASSES rounds per top-level event or effect (beyond it: throw,
+ *     naming the quest or reaction). Each round snapshots what the state satisfies before running
+ *     any `then`, so no intermediate flag value is lost, even to a `then` that undoes it.
  *   - Quest steps are level-triggered on state: a flag that is already true completes the step.
  *   - Reactions with a state condition and `once: true` are level-triggered. With `once: false` they
  *     fire when their full predicate (`when` AND `onlyIf` AND NOT `unless`) turns true. The last
@@ -27,14 +28,17 @@ import type {
   StoryStepResult,
 } from '../types';
 
-/** Upper bound on reconcile rounds per public call, so malformed content cannot loop forever. */
+/** Upper bound on reconcile rounds per top-level event or effect. Beyond it the content has a loop and we throw. */
 export const MAX_PASSES = 256;
 
 interface Work {
   state: StoryState;
   readonly out: StoryEffect[];
   readonly content: StoryContent;
+  /** Reconcile rounds used by the current top-level event or effect. */
   rounds: number;
+  /** Id of the quest or reaction being run, for the loop error. */
+  current: string;
   /** Quests and event-reactions already moved by the event being processed. */
   consumed: Set<string>;
   /** Last value of each state-watching reaction's full predicate. */
@@ -117,26 +121,6 @@ function isStateCondition(condition: StoryCondition): boolean {
   return condition.type === 'flag' || condition.type === 'skill-learned';
 }
 
-function advanceQuest(work: Work, quest: Quest, event: WorldEvent | null): void {
-  const progress = work.state.quests[quest.id];
-  if (progress === undefined || progress.done) return;
-  const step = quest.steps[progress.step];
-  if (step === undefined) {
-    work.state = { ...work.state, quests: { ...work.state.quests, [quest.id]: { step: quest.steps.length, done: true } } };
-    return;
-  }
-  const key = `q:${quest.id}`;
-  const byEvent = eventMatches(event, step.completeWhen) && !work.consumed.has(key);
-  if (!stateHolds(work.state, step.completeWhen) && !byEvent) return;
-  if (byEvent) work.consumed.add(key);
-  const next = progress.step + 1;
-  const quests = { ...work.state.quests, [quest.id]: { step: next, done: next >= quest.steps.length } };
-  work.state = { ...work.state, quests };
-  applyAll(work, step.then);
-  // The step change itself is a state change: the next step may already hold.
-  reconcile(work, null);
-}
-
 /** The reaction's gate: `onlyIf` set, `unless` not set. */
 function gateOpen(state: StoryState, reaction: Reaction): boolean {
   if (reaction.onlyIf !== undefined && state.flags[reaction.onlyIf] !== true) return false;
@@ -144,33 +128,91 @@ function gateOpen(state: StoryState, reaction: Reaction): boolean {
   return true;
 }
 
-function fireReaction(work: Work, reaction: Reaction): void {
-  if (reaction.once) work.state = { ...work.state, firedReactions: addUnique(work.state.firedReactions, reaction.id) };
+interface QuestJob {
+  readonly quest: Quest;
+  readonly index: number;
+}
+
+/** Snapshot phase for quests: which current steps the state (or the event) satisfies right now. */
+function questJobs(work: Work, event: WorldEvent | null): QuestJob[] {
+  const jobs: QuestJob[] = [];
+  for (const quest of work.content.quests) {
+    const progress = work.state.quests[quest.id];
+    if (progress === undefined || progress.done) continue;
+    const step = quest.steps[progress.step];
+    if (step === undefined) {
+      work.state = { ...work.state, quests: { ...work.state.quests, [quest.id]: { step: quest.steps.length, done: true } } };
+      continue;
+    }
+    const key = `q:${quest.id}`;
+    const byEvent = eventMatches(event, step.completeWhen) && !work.consumed.has(key);
+    if (!stateHolds(work.state, step.completeWhen) && !byEvent) continue;
+    if (byEvent) work.consumed.add(key);
+    jobs.push({ quest, index: progress.step });
+  }
+  return jobs;
+}
+
+/** Snapshot phase for reactions: which ones fire for the state (and event) right now. */
+function reactionJobs(work: Work, event: WorldEvent | null): Reaction[] {
+  const jobs: Reaction[] = [];
+  for (const reaction of work.content.reactions) {
+    const { when } = reaction;
+    if (reaction.once && work.state.firedReactions.includes(reaction.id)) continue;
+    if (isStateCondition(when)) {
+      const holds = stateHolds(work.state, when) && gateOpen(work.state, reaction);
+      const wasHolding = work.lastHeld.get(reaction.id) ?? false;
+      work.lastHeld.set(reaction.id, holds);
+      if (holds && (reaction.once || !wasHolding)) jobs.push(reaction);
+      continue;
+    }
+    const key = `r:${reaction.id}`;
+    if (!eventMatches(event, when) || work.consumed.has(key) || !gateOpen(work.state, reaction)) continue;
+    work.consumed.add(key);
+    jobs.push(reaction);
+  }
+  return jobs;
+}
+
+function runQuestJob(work: Work, job: QuestJob): void {
+  const progress = work.state.quests[job.quest.id];
+  const step = job.quest.steps[job.index];
+  if (progress === undefined || progress.step !== job.index || step === undefined) return;
+  work.current = job.quest.id;
+  const next = job.index + 1;
+  const quests = { ...work.state.quests, [job.quest.id]: { step: next, done: next >= job.quest.steps.length } };
+  work.state = { ...work.state, quests };
+  applyAll(work, step.then);
+  // The step change itself is a state change: the next step may already hold.
+  reconcile(work, null);
+}
+
+function runReactionJob(work: Work, reaction: Reaction): void {
+  if (reaction.once) {
+    if (work.state.firedReactions.includes(reaction.id)) return;
+    work.state = { ...work.state, firedReactions: addUnique(work.state.firedReactions, reaction.id) };
+  }
+  work.current = reaction.id;
   applyAll(work, reaction.then);
 }
 
-function checkReaction(work: Work, reaction: Reaction, event: WorldEvent | null): void {
-  const { when } = reaction;
-  if (reaction.once && work.state.firedReactions.includes(reaction.id)) return;
-  if (isStateCondition(when)) {
-    const holds = stateHolds(work.state, when) && gateOpen(work.state, reaction);
-    const wasHolding = work.lastHeld.get(reaction.id) ?? false;
-    work.lastHeld.set(reaction.id, holds);
-    if (holds && (reaction.once || !wasHolding)) fireReaction(work, reaction);
-    return;
-  }
-  const key = `r:${reaction.id}`;
-  if (!eventMatches(event, when) || work.consumed.has(key) || !gateOpen(work.state, reaction)) return;
-  work.consumed.add(key);
-  fireReaction(work, reaction);
-}
-
-/** Checks every quest and reaction against the current state (and `event`, if any). Nested calls come from effects. */
+/**
+ * One round, after one state change. First a snapshot of everything the state satisfies, then the
+ * `then` effects: quests in content order, then reactions in content order. Whatever was true in
+ * the snapshot fires, even if an earlier `then` changes the state again. Effects that change the
+ * state start nested rounds. A chain that never ends is an authoring loop and throws.
+ */
 function reconcile(work: Work, event: WorldEvent | null): void {
-  if (work.rounds >= MAX_PASSES) return;
+  if (work.rounds >= MAX_PASSES) {
+    throw new Error(
+      `Story content loops without end near "${work.current}". Quests and reactions keep changing the state for each other; break the cycle.`,
+    );
+  }
   work.rounds += 1;
-  for (const quest of work.content.quests) advanceQuest(work, quest, event);
-  for (const reaction of work.content.reactions) checkReaction(work, reaction, event);
+  const quests = questJobs(work, event);
+  const reactions = reactionJobs(work, event);
+  for (const job of quests) runQuestJob(work, job);
+  for (const reaction of reactions) runReactionJob(work, reaction);
 }
 
 function makeWork(state: StoryState, content: StoryContent): Work {
@@ -178,7 +220,7 @@ function makeWork(state: StoryState, content: StoryContent): Work {
   for (const reaction of content.reactions) {
     if (isStateCondition(reaction.when)) lastHeld.set(reaction.id, stateHolds(state, reaction.when) && gateOpen(state, reaction));
   }
-  return { state, out: [], content, rounds: 0, consumed: new Set(), lastHeld };
+  return { state, out: [], content, rounds: 0, current: '(start)', consumed: new Set(), lastHeld };
 }
 
 function absorbEvent(state: StoryState, event: WorldEvent): StoryState {
@@ -212,6 +254,7 @@ function onEvents(state: StoryState, events: readonly WorldEvent[], content: Sto
   const work = makeWork(state, content);
   for (const event of events) {
     work.consumed = new Set();
+    work.rounds = 0;
     work.state = absorbEvent(work.state, event);
     reconcile(work, event);
   }
@@ -220,7 +263,11 @@ function onEvents(state: StoryState, events: readonly WorldEvent[], content: Sto
 
 function apply(state: StoryState, effects: readonly StoryEffect[], content: StoryContent): StoryStepResult {
   const work = makeWork(state, content);
-  applyAll(work, effects);
+  for (const effect of effects) {
+    work.rounds = 0;
+    applyAll(work, [effect]);
+  }
+  work.rounds = 0;
   reconcile(work, null);
   return { state: work.state, effects: work.out };
 }

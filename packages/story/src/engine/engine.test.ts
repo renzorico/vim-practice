@@ -420,9 +420,56 @@ describe('review fixes', () => {
         { id: 'c', when: { type: 'flag', flag: 'f', value: false }, onlyIf: 'on', once: false, then: [{ type: 'set-flag', flag: 'f', value: true }] },
       ],
     });
-    const result = engine.onEvents(engine.init(loop), [{ type: 'trigger-fired', trigger: 't' }], loop);
-    expect(result.effects.length).toBeGreaterThan(2);
-    expect(result.effects.length).toBeLessThanOrEqual(MAX_PASSES * 2);
+    expect(() => engine.onEvents(engine.init(loop), [{ type: 'trigger-fired', trigger: 't' }], loop)).toThrow(/loops without end near "(b|c)"/);
+  });
+});
+
+describe('round 2 fixes', () => {
+  const dialogueEffect = { type: 'dialogue' as const, dialogue: 'd-save' };
+  const count = (effects: readonly { readonly type: string }[]): number => effects.filter((effect) => effect.type === 'dialogue').length;
+
+  it('a reaction sees an intermediate flag value that a quest then undoes', () => {
+    const undo: StoryContent = withContent({
+      quests: [
+        {
+          id: 'q',
+          world: 'lowlands',
+          title: 'q',
+          kind: 'main',
+          steps: [{ id: 'a', objective: 'a', completeWhen: { type: 'flag', flag: 'f', value: true }, then: [{ type: 'set-flag', flag: 'f', value: false }] }],
+        },
+      ],
+      openingQuests: ['q'],
+      reactions: [{ id: 'r', when: { type: 'flag', flag: 'f', value: true }, once: false, then: [dialogueEffect] }],
+    });
+    const result = engine.apply(engine.init(undo), [{ type: 'set-flag', flag: 'f', value: true }], undo);
+    expect(count(result.effects)).toBe(1);
+    expect(result.state.quests['q']).toEqual({ step: 1, done: true });
+    expect(result.state.flags['f']).toBe(false);
+  });
+  it('many independent events are all handled', () => {
+    const event: WorldEvent = { type: 'trigger-fired', trigger: 'at-save-stone' };
+    const repeat: StoryContent = withContent({ reactions: [{ ...content.reactions[0]!, once: false }] });
+    const events = Array.from({ length: MAX_PASSES + 44 }, () => event);
+    expect(count(engine.onEvents(engine.init(repeat), events, repeat).effects)).toBe(events.length);
+  });
+  it('many independent effects in one apply are all handled', () => {
+    const flips = Array.from({ length: MAX_PASSES + 44 }, (_, index) => ({ type: 'set-flag' as const, flag: 'f', value: index % 2 === 0 }));
+    const watch: StoryContent = withContent({
+      reactions: [{ id: 'r', when: { type: 'flag', flag: 'f', value: true }, once: false, then: [dialogueEffect] }],
+    });
+    expect(count(engine.apply(engine.init(watch), flips, watch).effects)).toBe(flips.length / 2);
+  });
+  it('names the quest when a quest loop runs away', () => {
+    const loop: StoryContent = withContent({
+      quests: [],
+      openingQuests: [],
+      reactions: [
+        { id: 'ping', when: { type: 'flag', flag: 'f', value: true }, once: false, then: [{ type: 'set-flag', flag: 'f', value: false }] },
+        { id: 'pong', when: { type: 'flag', flag: 'f', value: false }, onlyIf: 'go', once: false, then: [{ type: 'set-flag', flag: 'f', value: true }] },
+      ],
+    });
+    expect(() => engine.apply(engine.init(loop), [{ type: 'set-flag', flag: 'go', value: true }], loop)).toThrow(/"(ping|pong)"/);
   });
 });
 
