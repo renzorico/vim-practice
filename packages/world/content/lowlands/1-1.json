@@ -1,0 +1,119 @@
+{
+  "id": "1-1",
+  "world": "lowlands",
+  "type": "field",
+  "title": "The Road Out",
+  "goalText": "Follow the road to the gate. The Blot moves when you move.",
+  "map": [
+    "TTTTTTTTTTTT",
+    "T   T     DT",
+    "T T T TTTTTT",
+    "T T   T    T",
+    "T TTTTT TT T",
+    "T      S   T",
+    "TTTTTTTTTTTT"
+  ],
+  "legend": "lowlands",
+  "start": {
+    "line": 5,
+    "col": 9
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "blot-road",
+      "kind": "blot",
+      "sprite": "blot",
+      "at": {
+        "line": 3,
+        "col": 9
+      },
+      "behaviour": {
+        "type": "chase"
+      },
+      "every": 2,
+      "damage": 1,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "1-1.save-stone",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 7
+        },
+        "to": {
+          "line": 5,
+          "col": 7
+        }
+      }
+    },
+    {
+      "id": "1-1.first-corner",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 1
+        },
+        "to": {
+          "line": 1,
+          "col": 1
+        }
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "reach",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 10
+        },
+        "to": {
+          "line": 1,
+          "col": 10
+        }
+      }
+    }
+  ],
+  "teaches": [
+    "motion.hjkl"
+  ],
+  "requires": [],
+  "parTurns": 7,
+  "solution": [
+    "8",
+    "h",
+    "4",
+    "k",
+    "2",
+    "l",
+    "2",
+    "j",
+    "2",
+    "l",
+    "2",
+    "k",
+    "5",
+    "l"
+  ],
+  "hints": [
+    "`h` left, `j` down, `k` up, `l` right. One key, one step.",
+    "Go left along the bottom road, then up the first gap.",
+    "The Blot only moves on every second step you take. Keep walking."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l"
+  ]
+}
