@@ -36,7 +36,13 @@ export interface Dialogue {
   readonly then: readonly StoryEffect[];
 }
 
-/** What the story reacts to. Each maps to one WorldEvent or to story state. */
+/**
+ * What the story reacts to.
+ *   - trigger, stage-cleared, script-solved: matched against the WorldEvent of the same name.
+ *   - flag: true when StoryState.flags has that value; re-checked on every 'flag-set' event and
+ *     every 'set-flag' effect.
+ *   - skill-learned: true when the skill is in StoryState.learnedSkills; re-checked by `learn`.
+ */
 export type StoryCondition =
   | { readonly type: 'trigger'; readonly trigger: TriggerId }
   | { readonly type: 'stage-cleared'; readonly stage: StageId }
@@ -48,7 +54,7 @@ export type StoryEffect =
   | { readonly type: 'dialogue'; readonly dialogue: DialogueId }
   | { readonly type: 'cutscene'; readonly cutscene: CutsceneId }
   | { readonly type: 'set-flag'; readonly flag: FlagId; readonly value: boolean }
-  /** Opens the lesson card and practice for a skill (teach, then test). */
+  /** Opens the lesson card and practice for a skill (teach, then test). The app calls `learn` when the player finishes it. */
   | { readonly type: 'teach'; readonly skill: SkillId }
   | { readonly type: 'start-quest'; readonly quest: QuestId }
   | { readonly type: 'unlock-stage'; readonly stage: StageId }
@@ -134,9 +140,15 @@ export interface QuestProgress {
   readonly done: boolean;
 }
 
-/** The part of a save file the story owns. Plain JSON. */
+/**
+ * The part of a save file the story owns. Plain JSON.
+ * Story progress never rewinds: dying in a stage restores the world checkpoint only. The world
+ * contract keeps this consistent by never rewinding flags, solved scripts or fired triggers.
+ */
 export interface StoryState {
+  /** The one true flag store. WorldState.flags is a copy, synced through 'set-flag' effects and 'flag-set' events. */
   readonly flags: Readonly<Record<FlagId, boolean>>;
+  readonly learnedSkills: readonly SkillId[];
   readonly quests: Readonly<Record<QuestId, QuestProgress>>;
   readonly unlockedStages: readonly StageId[];
   readonly clearedStages: readonly StageId[];
@@ -150,7 +162,8 @@ export interface StoryStepResult {
   /**
    * Effects the app must present, in order: dialogue, cutscene, teach, world, ending.
    * State-only effects (set-flag, start-quest, unlock-stage, light-statue) are already applied to `state`
-   * and are still listed, so the UI can announce them.
+   * and are still listed, so the UI can announce them. For every 'set-flag' the app must also send
+   * the same flag to the world (WorldSim.apply), unless it came from a 'flag-set' event.
    */
   readonly effects: readonly StoryEffect[];
 }
@@ -160,8 +173,10 @@ export interface StoryEngine {
   init(content: StoryContent): StoryState;
   /** Feed the events of one world step. Advances quests, fires reactions. */
   onEvents(state: StoryState, events: readonly WorldEvent[], content: StoryContent): StoryStepResult;
-  /** Apply effects that come from a dismissed dialogue or cutscene (`then`), or a learned skill. */
+  /** Apply effects that come from a dismissed dialogue or cutscene (`then`). */
   apply(state: StoryState, effects: readonly StoryEffect[], content: StoryContent): StoryStepResult;
+  /** The player finished the lesson and practice for a skill. Records it and advances anything waiting on it. */
+  learn(state: StoryState, skill: SkillId, content: StoryContent): StoryStepResult;
   /** The current objective of every active quest, main first, for the HUD. */
   objectives(state: StoryState, content: StoryContent): readonly string[];
 }

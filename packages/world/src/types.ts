@@ -50,8 +50,10 @@ export interface TileDef {
   /** Can the player or an entity stand here? */
   readonly walkable: boolean;
   /**
-   * A command whose result would delete, replace or shift a fixed tile is cancelled as a whole
-   * (event 'bump', reason 'fixed'). Stage borders and Save Stones are fixed.
+   * A command whose result would delete or replace a fixed tile is cancelled as a whole
+   * (event 'bump', reason 'fixed'). A fixed tile may still be shifted along its row or moved up
+   * or down by an edit elsewhere. Save Stones and quest objects are fixed. Maps have no border
+   * tiles: the edge of the world is the edge of the buffer (see rule 2).
    */
   readonly fixed: boolean;
   /** Standing here at the end of a turn costs this many hearts (spikes, ink pools). Default 0. */
@@ -98,7 +100,7 @@ export interface EntitySpawn {
   readonly behaviour: Behaviour;
   /** Acts every N turns. 1 = every turn. A slow enemy (2) is the gentlest way to teach the turn rule. */
   readonly every: number;
-  /** Hearts taken when it ends its action on the player's cell or 4-adjacent to it. 0 for NPCs. */
+  /** Hearts taken at the end of every turn it is on the player's cell or 4-adjacent to it, whether or not it acted that turn. 0 for NPCs. */
   readonly damage: number;
   /** Blocks the player's movement (NPCs, props). Blots do not block: walking into one is a hit. */
   readonly solid: boolean;
@@ -107,8 +109,14 @@ export interface EntitySpawn {
   readonly spawnUnless?: FlagId;
 }
 
+/**
+ * A live entity. It carries its full definition, so entities spawned at runtime by an effect
+ * survive the next step. Entities act in the order of WorldState.entities: stage entities first,
+ * in Stage.entities order, then runtime spawns in the order they were spawned.
+ */
 export interface Entity {
   readonly id: EntityId;
+  readonly def: EntitySpawn;
   readonly at: Position;
   /** Index into a patrol or unwrite path. 0 for other behaviours. */
   readonly pathIndex: number;
@@ -128,14 +136,20 @@ export interface Area {
  * A place that reports something to the story layer. The world does not know what a quest is:
  * it fires the trigger and packages/story decides what follows.
  *   - enter:    fires when a turn ends with the player inside `area`.
- *   - interact: fires when the player presses <CR> in normal mode inside `area`, or 4-adjacent
- *               to the entity `entity`. Costs no turn.
+ *   - interact: fires when the player presses <CR> in normal mode within reach of `target`.
+ *               Costs no turn. Where no interact trigger is in reach, <CR> is Vim's own motion.
+ *               If several are in reach, the first in Stage.triggers order fires.
  */
-export interface Trigger {
+export type InteractTarget =
+  | { readonly type: 'area'; readonly area: Area }
+  /** 4-adjacent to this entity. A removed entity's triggers never fire. */
+  | { readonly type: 'entity'; readonly entity: EntityId };
+
+export type Trigger = TriggerBase &
+  ({ readonly on: 'enter'; readonly area: Area } | { readonly on: 'interact'; readonly target: InteractTarget });
+
+export interface TriggerBase {
   readonly id: TriggerId;
-  readonly on: 'enter' | 'interact';
-  readonly area?: Area;
-  readonly entity?: EntityId;
   /** Fire at most once per stage attempt. */
   readonly once: boolean;
   readonly onlyIf?: FlagId;
@@ -147,8 +161,10 @@ export interface Trigger {
 /**
  * The script layer: an in-world text (sign, contract, spell) edited with real Vim.
  * While a script is open the field is paused: script keys cost no turns and entities do not act.
- * `:q` or `:q!` closes it (`:q` is refused while modified, as in Vim). The script is solved when
- * its goals hold; `effects` are applied to the field at that moment.
+ * `:q` or `:q!` closes it (`:q` is refused while modified, as in Vim). The script is solved when,
+ * after a completed command, all its goals hold and every `mustUse` skill appears in
+ * OpenScript.commands. `effects` are applied to the field at that moment, as one batch.
+ * Reopening a solved script shows its solved text and can change nothing.
  */
 export interface Script {
   readonly id: ScriptId;
@@ -173,8 +189,14 @@ export interface Script {
  * A change made to the world from outside the player's keys: by a solved script, an entity or the story.
  * Buffer effects are pushed onto the engine undo stack as snapshots, so `u` restores them
  * (this is how the player brings back rows the Unwriter takes).
+ *
+ * Effects are applied in batches (one solved script, one `apply` call). A batch is atomic: all of
+ * it is applied, entities are remapped (rule 3), and only then are death and clear checked.
+ * After a batch from a script or from `apply`, a checkpoint is stored (rule 5), so nothing the
+ * story has already reacted to can be lost by dying.
  */
 export type WorldEffect =
+  /** Emits 'flag-set', which is how packages/story (the owner of flags) hears about it. */
   | { readonly type: 'set-flag'; readonly flag: FlagId; readonly value: boolean }
   /** Replace whole rows of the field, e.g. a rebuilt bridge. Row count must stay the same. */
   | { readonly type: 'set-rows'; readonly fromLine: number; readonly lines: readonly string[] }
@@ -202,12 +224,20 @@ export type StageType = 'field' | 'castle' | 'text';
 export interface Stage {
   readonly id: StageId;
   readonly world: WorldId;
-  /** 'text' = the pure-text stage that ends each world: no entities, one script-like buffer. */
+  /**
+   * 'text' = the pure-text stage that ends each world. It has no entities, `autoScript` is
+   * required, and `clear` is exactly one 'script-solved' condition for that script.
+   */
   readonly type: StageType;
+  /** Opened by `init`. Closing it unsolved leaves the stage. Required for 'text', absent otherwise. */
+  readonly autoScript?: ScriptId;
   readonly title: string;
   /** The goal in plain words, always on screen: "Reach the Lighthouse door." */
   readonly goalText: string;
-  /** The field buffer. Every row has the same length (map linter rule) so rows line up as a grid. */
+  /**
+   * The field buffer. Rows may differ in length and edits make them ragged: a cell past the end
+   * of its row does not exist. The map linter requires at least one row and no empty rows.
+   */
   readonly map: readonly string[];
   readonly legend: string;
   readonly start: Position;
@@ -237,16 +267,40 @@ export interface OpenScript {
   readonly id: ScriptId;
   readonly engine: EngineState;
   readonly keys: number;
+  /** Every command completed in this script since it was opened. `mustUse` is checked against it. */
+  readonly commands: readonly CommandRecord[];
 }
 
-/** Everything `:w` stores and death restores. A checkpoint never holds another checkpoint. */
-export type Checkpoint = Omit<WorldState, 'checkpoint'>;
+/**
+ * The field as it was before the first key of the command now in progress (rule 1).
+ * If the finished command breaks rule 2 or 3, the world goes back to this and no turn is spent.
+ */
+export interface PendingCommand {
+  readonly engine: EngineState;
+  readonly entities: readonly Entity[];
+  /** Commands the engine has emitted since the first key. */
+  readonly commands: readonly CommandRecord[];
+}
+
+/**
+ * What `:w` stores and death restores: the field, the entities, hearts and the turn count.
+ * Flags, solved scripts and fired triggers are NOT in it. They only ever move forward within an
+ * attempt, because the story layer has already reacted to them and story progress never rewinds.
+ */
+export interface Checkpoint {
+  readonly engine: EngineState;
+  readonly entities: readonly Entity[];
+  readonly hearts: number;
+  readonly turn: number;
+}
 
 export interface WorldState {
   readonly stage: StageId;
   /** The field buffer. Its cursor is the player's position. */
   readonly engine: EngineState;
   readonly script: OpenScript | null;
+  /** Non-null while a field command is half-typed or an insert is open. */
+  readonly pending: PendingCommand | null;
   readonly entities: readonly Entity[];
   readonly hearts: number;
   /** Turns taken in this attempt. */
@@ -256,8 +310,8 @@ export interface WorldState {
   readonly solvedScripts: readonly ScriptId[];
   /** Triggers with `once` that have already fired. */
   readonly firedTriggers: readonly TriggerId[];
-  /** State at the last `:w`, or at stage start. Death returns here: unsaved progress is lost. */
-  readonly checkpoint: Checkpoint | null;
+  /** State at the last `:w` or effect batch; set by `init` to the stage start. Death returns here. */
+  readonly checkpoint: Checkpoint;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -271,12 +325,19 @@ export type WorldEvent =
   | { readonly type: 'command'; readonly command: CommandRecord; readonly in: 'field' | 'script' }
   | { readonly type: 'engine-error'; readonly error: EngineError }
   | { readonly type: 'player-moved'; readonly from: Position; readonly to: Position; readonly style: 'walk' | 'jump' }
-  /** The command was cancelled and cost no turn. */
+  /** The command was cancelled, the field went back to how it was before its first key, and no turn was spent. */
   | { readonly type: 'bump'; readonly reason: BumpReason; readonly at: Position }
-  /** The field buffer changed. `fromLine` and `toLine` are the first and last changed row after the edit. */
-  | { readonly type: 'rows-changed'; readonly fromLine: number; readonly toLine: number; readonly by: 'player' | 'effect' | 'entity' }
+  /**
+   * The field buffer changed. A hint for animation only: `fromLine`..`toLine` are the rows that
+   * differ, in pre-edit numbering, and `lineDelta` is the change in row count. The renderer always
+   * rebuilds tiles from WorldState.engine.lines after a step; events only say what to animate.
+   * During an open insert these are emitted per key and are provisional until the command commits.
+   */
+  | { readonly type: 'rows-changed'; readonly fromLine: number; readonly toLine: number; readonly lineDelta: number; readonly by: 'player' | 'effect' | 'entity' }
   | { readonly type: 'entity-moved'; readonly entity: EntityId; readonly from: Position; readonly to: Position }
+  | { readonly type: 'entity-spawned'; readonly entity: EntityId; readonly at: Position }
   | { readonly type: 'entity-removed'; readonly entity: EntityId; readonly cause: 'deleted-tile' | 'effect' }
+  | { readonly type: 'flag-set'; readonly flag: FlagId; readonly value: boolean }
   | { readonly type: 'player-hit'; readonly by: EntityId | 'tile'; readonly hearts: number }
   | { readonly type: 'player-died' }
   | { readonly type: 'turn-ended'; readonly turn: number }
@@ -286,7 +347,7 @@ export type WorldEvent =
   | { readonly type: 'script-closed'; readonly script: ScriptId; readonly solved: boolean }
   | { readonly type: 'checkpoint-saved' }
   | { readonly type: 'checkpoint-restored' }
-  | { readonly type: 'stage-cleared'; readonly turns: number };
+  | { readonly type: 'stage-cleared'; readonly stage: StageId; readonly turns: number };
 
 export interface WorldStepResult {
   readonly state: WorldState;
@@ -308,34 +369,52 @@ export interface WorldOptions {
 /**
  * The rules `step` must follow. They are the game design, so they live in the contract.
  *
- * 1. TURN. A key that completes an engine command on the field ends one turn, whatever the command
- *    was (`5j`, `w`, `dd`, `u`, `:w`). Keys that leave a command pending (`d`, `2`, `:`, `f`) and
- *    keys typed in insert mode end no turn; the insert ends one turn at <Esc>.
- *    A cancelled command (bump, engine error) costs no turn.
- * 2. WALK vs JUMP. `h j k l` (with or without a count) walk: every cell on the way must be walkable
- *    and free of solid entities, or the whole command is cancelled. Every other motion jumps: only
- *    the landing cell is checked. A motion never ends on a non-walkable tile.
- * 3. EDITS. An edit that would delete, replace or shift a `fixed` tile is cancelled. Entities ride
- *    with their tile: after an edit on a row, entities right of the change shift by the length
- *    difference; after a linewise delete or put, entities on lower rows shift by the row difference.
- *    An entity whose tile was deleted is removed (this is how the player fights). The player's
- *    cell follows the engine cursor.
- * 4. ENTITIES. After the player's turn, entities act in the order of Stage.entities, each once if
- *    `turn % every == 0`. Then damage: any entity with damage > 0 on the player's cell or
- *    4-adjacent deals it once. Then tile damage. Hearts at 0: status 'dead'.
- * 5. SAVE. `:w` (also `:wq`, `:x`, `ZZ`) works anywhere, costs a turn and stores a checkpoint.
- *    `restore` returns to it. Quitting the field (`:q`) is the game's "leave stage", decided by the app.
+ * 1. TURN. The field is IDLE when the engine is in normal mode with no pendingKeys and no
+ *    changeInProgress. A field command starts at the first key typed while idle (the world stores
+ *    `pending`) and is COMPLETE at the first key after which the field is idle again and the
+ *    engine has emitted at least one CommandRecord since the start. So `5j`, `dw`, `ihello<Esc>`,
+ *    `vjd` and `:w<CR>` are one command each. A complete command is then checked (rules 2, 3):
+ *    if it passes it is committed and one turn ends; if not, the world returns to `pending`
+ *    (event 'bump') and no turn is spent. A key that returns to idle with no CommandRecord
+ *    (an engine error, a lone <Esc>) also restores `pending` and spends no turn.
+ * 2. WALK vs JUMP. A cell exists if its row exists and its column is inside that row. The player
+ *    may only end a command on an existing, walkable cell with no solid entity (else bump: 'edge',
+ *    'wall' or 'solid-entity'). `h j k l` (with or without a count) walk: every cell on the way
+ *    must pass the same test. Every other motion jumps: only the landing cell is tested. The same
+ *    landing test applies after an edit, an undo or a redo, wherever the engine leaves the cursor.
+ * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled. After ANY
+ *    change to the field buffer, whatever caused it (edit, undo, redo, effect, entity), entities
+ *    are remapped from the difference between the old and new lines:
+ *      a. Rows: strip the common leading and trailing rows. Entities in removed rows are removed.
+ *         Entities below the changed rows shift by the change in row count.
+ *      b. If exactly one row changed and the row count did not: strip the common prefix and suffix
+ *         of that row. Entities right of the changed span shift by its change in length. Entities
+ *         inside the span stay if their column is still inside the new span, else are removed.
+ *      c. If several rows changed and the row count did not, apply (b) to each changed row.
+ *      d. Finally, any entity now on a cell that does not exist or is not walkable is removed.
+ *    Removal by remapping is how the player fights (cause 'deleted-tile'). Undo never brings an
+ *    entity back. The player's cell is always the engine cursor.
+ * 4. ENTITIES. When a turn ends: `turn` goes up by one (the first turn is 1). Entities act in
+ *    WorldState.entities order, each once if `turn % every == 0`. Then every entity with
+ *    damage > 0 on the player's cell or 4-adjacent deals it once, whether or not it acted. Then
+ *    tile damage. Hearts at 0: status 'dead'.
+ * 5. SAVE. `:w` (also `:wq`, `:x`, `ZZ`) works anywhere and costs a turn. The checkpoint is stored
+ *    at the very end of that turn, after rule 4, and only if the status is still 'playing': a save
+ *    that kills you saves nothing. `restore` returns to the checkpoint. The engine's quitRequested
+ *    (`:q`, `:wq`, ...) is left set for the app, which treats it as "leave stage".
  * 6. UNDO. `u` and `<C-r>` change the buffer exactly as Vim does and cost a turn. They do not
- *    rewind entities, hearts or turns. Buffer changes made by effects and entities are on the undo
- *    stack too.
- * 7. SCRIPTS. While a script is open, keys go to its engine and rule 1 does not apply.
- * 8. CLEAR. Checked at the end of every turn and after every effect. First 'dead', then 'cleared'.
+ *    bring back hearts, turns or removed entities; living entities are remapped by rule 3.
+ *    Buffer changes made by effects and entities are on the undo stack too.
+ * 7. SCRIPTS. While a script is open, keys go to its engine and rules 1-6 do not apply.
+ * 8. END. Death and clear are checked at the end of every turn and after every effect batch,
+ *    death first. Once the status is 'dead' or 'cleared', `step` and `apply` change nothing and
+ *    emit nothing; only `restore` (from 'dead') or a new `init` continues.
  */
 export interface WorldSim {
   init(stage: Stage, legend: Legend, options: WorldOptions): WorldState;
   step(state: WorldState, key: Key, stage: Stage, legend: Legend, options: WorldOptions): WorldStepResult;
   /** Apply effects from the story layer (a quest reward, a cutscene). Costs no turn. */
   apply(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend): WorldStepResult;
-  /** After death or on request: back to the last checkpoint, with status 'playing'. */
+  /** After death or on request: back to the last checkpoint, with status 'playing'. Flags, solved scripts and fired triggers are kept. */
   restore(state: WorldState): WorldStepResult;
 }
