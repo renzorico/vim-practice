@@ -215,6 +215,24 @@ describe('lintStage: start, entities and waypoints', () => {
   });
 });
 
+describe('lintStage: unwrite paths', () => {
+  it('accepts an unwrite waypoint on a tile that is not walkable, since only its line matters', () => {
+    const stage = baseStage({
+      entities: [entity({ behaviour: { type: 'unwrite', path: [{ line: 1, col: 0 }] } })],
+      triggers: [],
+    });
+    expect(lintStage(stage, FIXTURE_LEGEND)).toEqual([]);
+  });
+
+  it('rejects an unwrite waypoint whose line is not a row of the map', () => {
+    const stage = baseStage({
+      entities: [entity({ behaviour: { type: 'unwrite', path: [{ line: 9, col: 0 }] } })],
+      triggers: [],
+    });
+    expectErrorRule(lintStage(stage, FIXTURE_LEGEND), 'waypoint-cell');
+  });
+});
+
 describe('lintStage: unique ids', () => {
   it('rejects two entities with the same id', () => {
     const stage = baseStage({ entities: [entity({ id: 'dup' }), entity({ id: 'dup', at: { line: 2, col: 0 } })] });
@@ -315,6 +333,67 @@ describe('lintStage: text and field stages', () => {
     const other: Script = { ...FIXTURE_SCRIPT, id: 'other' };
     const clear = [{ type: 'script-solved' as const, script: 'other' }];
     expectErrorRule(lintStage(textStage({ clear, scripts: [FIXTURE_SCRIPT, other] }), FIXTURE_LEGEND), 'text-clear');
+  });
+
+  it('rejects a text stage with an extra clear condition beside its script-solved one', () => {
+    const clear = [
+      { type: 'script-solved' as const, script: TEST_SCRIPT_ID },
+      { type: 'flag' as const, flag: 'never-set' },
+    ];
+    expectErrorRule(lintStage(textStage({ clear }), FIXTURE_LEGEND), 'text-clear');
+  });
+});
+
+describe('lintStage: spawn and remove-entity effects', () => {
+  const SPAWNED = entity({ id: 'born', at: { line: 2, col: 1 } });
+
+  function stageWithEffects(effects: Script['effects']): Stage {
+    return baseStage({ scripts: [{ ...FIXTURE_SCRIPT, effects }] });
+  }
+
+  it('resolves an interact trigger that targets an entity spawned by an effect', () => {
+    const triggers: Trigger[] = [{ id: 'probe', on: 'interact', target: { type: 'entity', entity: 'born' }, once: false }];
+    const stage = stageWithEffects([{ type: 'spawn', entity: SPAWNED }]);
+    expect(errorRules(lintStage({ ...stage, triggers }, FIXTURE_LEGEND))).not.toContain('missing-entity');
+  });
+
+  it('accepts remove-entity naming a stage entity or a spawned one', () => {
+    const stage = stageWithEffects([
+      { type: 'spawn', entity: SPAWNED },
+      { type: 'remove-entity', entity: 'born' },
+      { type: 'remove-entity', entity: 'sign-1' },
+    ]);
+    expect(lintStage(stage, FIXTURE_LEGEND)).toEqual([]);
+  });
+
+  it('rejects remove-entity naming an entity that never exists', () => {
+    expectErrorRule(lintStage(stageWithEffects([{ type: 'remove-entity', entity: 'ghost' }]), FIXTURE_LEGEND), 'missing-entity');
+  });
+
+  it('rejects a spawn whose id repeats a stage entity id', () => {
+    const stage = stageWithEffects([{ type: 'spawn', entity: entity({ id: 'blot-1', at: { line: 2, col: 1 } }) }]);
+    expectErrorRule(lintStage(stage, FIXTURE_LEGEND), 'duplicate-id');
+  });
+
+  it('rejects two spawns with the same id', () => {
+    const stage = stageWithEffects([{ type: 'spawn', entity: SPAWNED }, { type: 'spawn', entity: SPAWNED }]);
+    expectErrorRule(lintStage(stage, FIXTURE_LEGEND), 'duplicate-id');
+  });
+
+  it('rejects move-player to a cell outside the map', () => {
+    expectErrorRule(lintStage(stageWithEffects([{ type: 'move-player', to: { line: 9, col: 0 } }]), FIXTURE_LEGEND), 'effect-cell');
+  });
+
+  it('accepts move-player to any existing cell, walkable or not', () => {
+    expect(lintStage(stageWithEffects([{ type: 'move-player', to: { line: 0, col: 2 } }]), FIXTURE_LEGEND)).toEqual([]);
+  });
+
+  it('rejects delete-row past the last row', () => {
+    expectErrorRule(lintStage(stageWithEffects([{ type: 'delete-row', line: 4 }]), FIXTURE_LEGEND), 'effect-row');
+  });
+
+  it('accepts delete-row on an existing row', () => {
+    expect(lintStage(stageWithEffects([{ type: 'delete-row', line: 3 }]), FIXTURE_LEGEND)).toEqual([]);
   });
 });
 

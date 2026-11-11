@@ -2,7 +2,7 @@ import { ZodError } from 'zod';
 import type { Legend, Stage } from '@escape/world';
 import { parseLegend, parseStage } from '../../packages/world/src/schema.js';
 import { errorIssue, type LintIssue } from './issue';
-import { lintStage } from './lint';
+import { lintLegend, lintStageAgainst } from './lint';
 
 /** Legend files end with this suffix; every other `.json` file in the folder is a stage. */
 export const LEGEND_SUFFIX = '.legend.json';
@@ -62,7 +62,10 @@ interface LegendEntry {
   readonly issues: readonly LintIssue[];
 }
 
-/** Parses every legend file. The first legend with an id wins; a later one with the same id is an error. */
+/**
+ * Parses and checks every legend file, each on its own, whether or not a stage uses it. The first
+ * legend with an id wins; a later one with the same id is an error.
+ */
 function parseLegends(files: readonly SourceFile[]): { entries: LegendEntry[]; byId: Map<string, Legend> } {
   const byId = new Map<string, Legend>();
   const entries = files.filter((file) => isLegendFile(file.name)).map((file): LegendEntry => {
@@ -75,7 +78,7 @@ function parseLegends(files: readonly SourceFile[]): { entries: LegendEntry[]; b
       return { file: file.name, issues: [issue] };
     }
     byId.set(result.value.id, result.value);
-    return { file: file.name, issues: [] };
+    return { file: file.name, issues: lintLegend(result.value) };
   });
   return { entries, byId };
 }
@@ -90,7 +93,7 @@ function lintStageFile(file: SourceFile, legends: ReadonlyMap<string, Legend>): 
   if (legend === undefined) {
     return [errorIssue('legend-missing', `No legend file defines legend "${stage.legend}" for stage "${stage.id}".`)];
   }
-  return lintStage(stage, legend);
+  return lintStageAgainst(stage, legend);
 }
 
 /**

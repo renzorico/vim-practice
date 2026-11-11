@@ -1,4 +1,6 @@
 import type { Stage } from '@escape/world';
+import { knownEntityIds } from './entities';
+import { cellChar } from './grid';
 import { errorIssue, warningIssue, type LintIssue } from './issue';
 
 /** Fixture stages keep placeholder par and solution until the solver fills them (MASTERPLAN phase B). */
@@ -8,18 +10,14 @@ function scriptIds(stage: Stage): ReadonlySet<string> {
   return new Set(stage.scripts.map((script) => script.id));
 }
 
-function entityIds(stage: Stage): ReadonlySet<string> {
-  return new Set(stage.entities.map((entity) => entity.id));
-}
-
 function missingScript(scripts: ReadonlySet<string>, scriptId: string, owner: string): LintIssue[] {
   return scripts.has(scriptId) ? [] : [errorIssue('missing-script', `${owner} refers to script "${scriptId}", which does not exist.`)];
 }
 
-/** Trigger references: opensScript must name a script, an interact target entity must exist. */
+/** Trigger references: opensScript must name a script, an interact target entity must exist (stage or spawned). */
 export function checkTriggerReferences(stage: Stage): LintIssue[] {
   const scripts = scriptIds(stage);
-  const entities = entityIds(stage);
+  const entities = knownEntityIds(stage);
   return stage.triggers.flatMap((trigger) => {
     const owner = `Trigger "${trigger.id}"`;
     const opens = trigger.opensScript === undefined ? [] : missingScript(scripts, trigger.opensScript, owner);
@@ -41,7 +39,7 @@ export function checkClearReferences(stage: Stage): LintIssue[] {
   );
 }
 
-/** Text stages: autoScript required, no entities, one script-solved clear for it. Other stages: no autoScript. */
+/** Text stages: autoScript required, no entities, and a clear of exactly one script-solved condition for it. Other stages: no autoScript. */
 export function checkAutoScript(stage: Stage): LintIssue[] {
   if (stage.type !== 'text') {
     if (stage.autoScript === undefined) {
@@ -55,19 +53,23 @@ export function checkAutoScript(stage: Stage): LintIssue[] {
   if (stage.autoScript === undefined) {
     return [errorIssue('auto-script-missing', `Text stage "${stage.id}" needs an autoScript.`)];
   }
-  const solved = stage.clear.filter((condition) => condition.type === 'script-solved');
-  const issues: LintIssue[] = [
+  return [
     ...missingScript(scriptIds(stage), stage.autoScript, 'The autoScript'),
     ...(stage.entities.length > 0 ? [errorIssue('text-entities', `Text stage "${stage.id}" must have no entities.`)] : []),
+    ...textClearIssues(stage, stage.autoScript),
   ];
-  if (solved.length !== 1) {
-    issues.push(errorIssue('text-clear', `Text stage "${stage.id}" needs exactly one script-solved clear condition, found ${solved.length}.`));
-    return issues;
+}
+
+/** The clear of a text stage is exactly one condition: script-solved for its autoScript. */
+function textClearIssues(stage: Stage, autoScript: string): LintIssue[] {
+  const [only] = stage.clear;
+  if (stage.clear.length !== 1 || only === undefined) {
+    return [errorIssue('text-clear', `Text stage "${stage.id}" needs exactly one clear condition, found ${stage.clear.length}.`)];
   }
-  if (solved[0]?.type === 'script-solved' && solved[0].script !== stage.autoScript) {
-    issues.push(errorIssue('text-clear', `The script-solved clear condition of text stage "${stage.id}" must name its autoScript "${stage.autoScript}".`));
+  if (only.type !== 'script-solved' || only.script !== autoScript) {
+    return [errorIssue('text-clear', `The only clear condition of text stage "${stage.id}" must be script-solved for its autoScript "${autoScript}".`)];
   }
-  return issues;
+  return [];
 }
 
 /** set-rows effects replace whole rows, so the rows they touch must exist in the map. */
@@ -87,6 +89,37 @@ export function checkSetRowsRange(stage: Stage): LintIssue[] {
         ];
       }
       return [];
+    }),
+  );
+}
+
+/**
+ * Effects that name something in the stage: remove-entity names a known entity, move-player lands on
+ * an existing cell of the original map, delete-row names a row of the map.
+ */
+export function checkEffectReferences(stage: Stage): LintIssue[] {
+  const entities = knownEntityIds(stage);
+  return stage.scripts.flatMap((script) =>
+    script.effects.flatMap((effect): LintIssue[] => {
+      switch (effect.type) {
+        case 'remove-entity':
+          return entities.has(effect.entity)
+            ? []
+            : [errorIssue('missing-entity', `Script "${script.id}" removes entity "${effect.entity}", which does not exist.`)];
+        case 'move-player':
+          return cellChar(stage, effect.to) === undefined
+            ? [errorIssue('effect-cell', `Script "${script.id}" moves the player to line ${effect.to.line}, column ${effect.to.col}, which is outside the map.`)]
+            : [];
+        case 'delete-row':
+          return effect.line < stage.map.length
+            ? []
+            : [errorIssue('effect-row', `Script "${script.id}" deletes row ${effect.line}, but the map has rows 0 to ${stage.map.length - 1}.`)];
+        case 'set-flag':
+        case 'set-rows':
+        case 'spawn':
+        case 'heal':
+          return [];
+      }
     }),
   );
 }

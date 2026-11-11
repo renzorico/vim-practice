@@ -1,5 +1,6 @@
 import type { Position } from '@escape/engine';
 import type { Area, EntitySpawn, Legend, Stage } from '@escape/world';
+import { spawnedEntities } from './entities';
 import { areaProblem, cellChar, describeCell, tileAt } from './grid';
 import { errorIssue, type LintIssue } from './issue';
 
@@ -50,20 +51,37 @@ export function checkWalkableCell(
   return [];
 }
 
-/** The waypoints of a patrol or unwrite entity, or undefined for behaviours without a path. */
-function pathOf(entity: EntitySpawn): readonly Position[] | undefined {
-  const { behaviour } = entity;
-  return behaviour.type === 'patrol' || behaviour.type === 'unwrite' ? behaviour.path : undefined;
+/**
+ * A patrol waypoint must be a walkable cell. An unwrite waypoint only picks a row to delete, so only
+ * its line matters: the line must be a row of the map.
+ */
+function waypointIssues(
+  stage: Stage,
+  legend: Legend,
+  label: string,
+  behaviour: 'patrol' | 'unwrite',
+  waypoint: Position,
+): LintIssue[] {
+  if (behaviour === 'unwrite') {
+    return stage.map[waypoint.line] === undefined
+      ? [errorIssue('waypoint-cell', `${label} waypoint is on line ${waypoint.line}, which is not a row of the map.`)]
+      : [];
+  }
+  return checkWalkableCell(stage, legend, waypoint, 'waypoint-cell', `${label} waypoint`);
 }
 
 function entityIssues(stage: Stage, legend: Legend, entity: EntitySpawn): LintIssue[] {
   const label = `Entity "${entity.id}"`;
-  const path = pathOf(entity);
-  const emptyPath = path !== undefined && path.length === 0;
+  const start = checkWalkableCell(stage, legend, entity.at, 'entity-cell', `${label} starts`);
+  const { behaviour } = entity;
+  if (behaviour.type !== 'patrol' && behaviour.type !== 'unwrite') {
+    return start;
+  }
+  const emptyPath = behaviour.path.length === 0 ? [errorIssue('path-empty', `${label} has an empty path.`)] : [];
   return [
-    ...checkWalkableCell(stage, legend, entity.at, 'entity-cell', `${label} starts`),
-    ...(emptyPath ? [errorIssue('path-empty', `${label} has an empty path.`)] : []),
-    ...(path ?? []).flatMap((waypoint) => checkWalkableCell(stage, legend, waypoint, 'waypoint-cell', `${label} waypoint`)),
+    ...start,
+    ...emptyPath,
+    ...behaviour.path.flatMap((waypoint) => waypointIssues(stage, legend, label, behaviour.type, waypoint)),
   ];
 }
 
@@ -75,10 +93,11 @@ export function checkStartAndEntities(stage: Stage, legend: Legend): LintIssue[]
   ];
 }
 
-/** Ids must be unique within each list: entities, triggers and scripts. */
+/** Ids must be unique within each list: entities (stage and spawned), triggers and scripts. */
 export function checkUniqueIds(stage: Stage): LintIssue[] {
+  const entityIds = [...stage.entities, ...spawnedEntities(stage)].map((entity) => entity.id);
   return [
-    ...duplicateIdIssues('Entity', stage.entities.map((entity) => entity.id)),
+    ...duplicateIdIssues('Entity', entityIds),
     ...duplicateIdIssues('Trigger', stage.triggers.map((trigger) => trigger.id)),
     ...duplicateIdIssues('Script', stage.scripts.map((script) => script.id)),
   ];

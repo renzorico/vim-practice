@@ -64,6 +64,26 @@ describe('lintSources', () => {
     expect(reportFor(reports, STAGE_FILE).issues.map((issue) => issue.rule)).toEqual(['placeholder']);
   });
 
+  it('fails a legend that no stage uses, so a broken legend cannot pass silently', () => {
+    const duplicated = { ...FIXTURE_LEGEND, tiles: [...FIXTURE_LEGEND.tiles, { ...FIXTURE_LEGEND.tiles[2]!, label: 'twin' }] };
+    const reports = lintSources([sourceOf(LEGEND_FILE, duplicated)]);
+    expect(reportFor(reports, LEGEND_FILE).issues.map((issue) => issue.rule)).toContain('legend-duplicate-char');
+    expect(countBySeverity(reports).errors).toBeGreaterThan(0);
+  });
+
+  it('reports a legend problem once, not once per stage that uses the legend', () => {
+    const duplicated = { ...FIXTURE_LEGEND, tiles: [...FIXTURE_LEGEND.tiles, { ...FIXTURE_LEGEND.tiles[2]!, label: 'twin' }] };
+    const reports = lintSources([
+      sourceOf(LEGEND_FILE, duplicated),
+      sourceOf('a.json', { ...FIXTURE_STAGE, id: 'a-1' }),
+      sourceOf('b.json', { ...FIXTURE_STAGE, id: 'b-1' }),
+    ]);
+    const legendRuleCount = reports
+      .flatMap((report) => report.issues)
+      .filter((issue) => issue.rule === 'legend-duplicate-char').length;
+    expect(legendRuleCount).toBe(1);
+  });
+
   it('gives every file a report, even when it is clean', () => {
     const reports = lintSources([sourceOf(LEGEND_FILE, FIXTURE_LEGEND), sourceOf(STAGE_FILE, FIXTURE_STAGE)]);
     expect(reports.map((report) => report.file)).toEqual([LEGEND_FILE, STAGE_FILE]);

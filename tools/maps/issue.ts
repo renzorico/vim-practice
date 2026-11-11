@@ -24,6 +24,8 @@ export type LintRule =
   | 'text-entities'
   | 'text-clear'
   | 'set-rows-range'
+  | 'effect-cell'
+  | 'effect-row'
   | 'par'
   | 'solution'
   | 'placeholder'

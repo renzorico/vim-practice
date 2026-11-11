@@ -20,16 +20,31 @@ type Normalised<T> = T extends readonly (infer Item)[]
         ? { [K in keyof T]: Normalised<Exclude<T[K], undefined>> }
         : T;
 
+/** Discriminant of a union member: its `type` or `on` literal, tagged into the path so variants stay apart. */
+type Tag<T> = T extends { readonly type: infer Kind extends string }
+  ? `<${Kind}>`
+  : T extends { readonly on: infer Kind extends string }
+    ? `<${Kind}>`
+    : '';
+
+/** '?' when the key may be absent, so an optional field and a required one never compare equal. */
+type OptionalMark<T, K extends keyof T> = {} extends Pick<T, K> ? '?' : '';
+
 /**
- * Every key path in a type, e.g. '.tiles[].damage'. Optional and required keys both count, so an
- * extra or missing optional key shows up here even though mutual assignability ignores it.
+ * Every key path in a type, e.g. '.tiles[].damage' or '.behaviour<patrol>.path'. Each union variant
+ * is tagged with its discriminant and optional keys carry '?'. Used on the schema's input type,
+ * which is the JSON shape the contract describes (transforms only strip absent keys).
  */
 type KeyPaths<T, Prefix extends string = ''> = T extends readonly (infer Item)[]
   ? KeyPaths<Item, `${Prefix}[]`>
   : T extends (...args: never[]) => unknown
     ? never
     : T extends object
-      ? { [K in keyof T & string]-?: `${Prefix}.${K}` | KeyPaths<Exclude<T[K], undefined>, `${Prefix}.${K}`> }[keyof T & string]
+      ? {
+          [K in keyof T & string]-?:
+            | `${Prefix}${Tag<T>}.${K}${OptionalMark<T, K>}`
+            | KeyPaths<Exclude<T[K], undefined>, `${Prefix}${Tag<T>}.${K}`>;
+        }[keyof T & string]
       : never;
 
 type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
@@ -37,13 +52,16 @@ type Expect<Check extends true> = Check;
 
 type And<A extends boolean, B extends boolean> = A extends true ? B : false;
 
-type SameShape<Schema, Contract> = And<
-  Equals<Normalised<Schema>, Normalised<Contract>>,
-  Equals<KeyPaths<Schema>, KeyPaths<Contract>>
+/** Same value types (checked on the output) and same key paths, optionality and variants (checked on the input). */
+type SameContract<Output, Input, Contract> = And<
+  Equals<Normalised<Output>, Normalised<Contract>>,
+  Equals<KeyPaths<Input>, KeyPaths<Contract>>
 >;
 
-export type LegendMatchesContract = Expect<SameShape<z.output<typeof LegendSchema>, Legend>>;
-export type StageMatchesContract = Expect<SameShape<z.output<typeof StageSchema>, Stage>>;
+type SameShape<Schema, Contract> = SameContract<Schema, Schema, Contract>;
+
+export type LegendMatchesContract = Expect<SameContract<z.output<typeof LegendSchema>, z.input<typeof LegendSchema>, Legend>>;
+export type StageMatchesContract = Expect<SameContract<z.output<typeof StageSchema>, z.input<typeof StageSchema>, Stage>>;
 
 // The checker itself must reject a retyped field, a missing field and an extra optional field,
 // or the checks above prove nothing.
@@ -53,6 +71,11 @@ export type CheckerRejectsRetype = Expect<SameShape<{ a: number }, { a: string }
 export type CheckerRejectsMissing = Expect<SameShape<{ a: number }, { a: number; b: number }>>;
 // @ts-expect-error an extra optional field is a drift
 export type CheckerRejectsExtraOptional = Expect<SameShape<{ a: number; extra?: string }, { a: number }>>;
+// Discriminated unions: a change inside one variant must count even when another variant has the same key.
+// @ts-expect-error an optional field added to one union variant is a drift, though variant b already has x
+export type CheckerRejectsVariantOptional = Expect<SameShape<{ type: 'a'; x?: number } | { type: 'b'; x: number }, { type: 'a' } | { type: 'b'; x: number }>>;
+// @ts-expect-error a required field made optional in one union variant is a drift, though variant b already has x
+export type CheckerRejectsVariantOptionality = Expect<SameShape<{ type: 'a'; x: number } | { type: 'b'; x: number }, { type: 'a'; x?: number } | { type: 'b'; x: number }>>;
 
 // ---------------------------------------------------------------------------------------------
 // Runtime checks

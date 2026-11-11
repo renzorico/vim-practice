@@ -2,6 +2,7 @@ import type { Legend, Stage } from '@escape/world';
 import {
   checkAutoScript,
   checkClearReferences,
+  checkEffectReferences,
   checkParAndSolution,
   checkSetRowsRange,
   checkTriggerReferences,
@@ -19,14 +20,15 @@ function legendMismatch(stage: Stage, legend: Legend): LintIssue[] {
   return [errorIssue('legend-mismatch', `Stage "${stage.id}" uses legend "${stage.legend}", but it was linted with legend "${legend.id}".`)];
 }
 
-/**
- * Lints one stage against the legend it names. Returns every finding; the caller decides what fails.
- * The rules live in legend-rules.ts, map-rules.ts and content-rules.ts.
- */
-export function lintStage(stage: Stage, legend: Legend): LintIssue[] {
+/** Legend convention rules, reported once per legend. Lint a legend on its own with this. */
+export function lintLegend(legend: Legend): LintIssue[] {
+  return checkLegend(legend);
+}
+
+/** Every stage rule, given the legend the stage names. Does not repeat the legend's own rules. */
+export function lintStageAgainst(stage: Stage, legend: Legend): LintIssue[] {
   return [
     ...legendMismatch(stage, legend),
-    ...checkLegend(legend),
     ...checkRows(stage),
     ...checkCharacters(stage, legend),
     ...checkStartAndEntities(stage, legend),
@@ -36,6 +38,16 @@ export function lintStage(stage: Stage, legend: Legend): LintIssue[] {
     ...checkClearReferences(stage),
     ...checkAutoScript(stage),
     ...checkSetRowsRange(stage),
+    ...checkEffectReferences(stage),
     ...checkParAndSolution(stage),
   ];
+}
+
+/**
+ * Lints one stage against the legend it names: the legend's own rules, then the stage's. Returns
+ * every finding; the caller decides what fails. Folder linting uses lintLegend once per legend
+ * and lintStageAgainst per stage, so a legend problem is not repeated for every stage.
+ */
+export function lintStage(stage: Stage, legend: Legend): LintIssue[] {
+  return [...lintLegend(legend), ...lintStageAgainst(stage, legend)];
 }
