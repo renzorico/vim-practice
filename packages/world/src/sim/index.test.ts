@@ -7,7 +7,7 @@ import { createWorldSim, playKeys } from './index.js';
 
 const engine = createEngine();
 const sim = createWorldSim(engine);
-const options: WorldOptions = { learnedCommands: ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'gg', 'G', 'f', 't', 'd', 'dd', 'y', 'yy', 'x', 'r', 'p', 'J', 'i', 'a', 'o', 'v', 'V', 'u', '<C-r>', ':w', ':wq', ':q', ':q!', ':x', 'ZZ'], flags: {} };
+const options: WorldOptions = { learnedCommands: ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'gg', 'G', 'f', 't', 'c', 'X', 'd', 'dd', 'y', 'yy', 'x', 'r', 'p', 'J', 'i', 'a', 'o', 'v', 'V', 'u', '<C-r>', ':w', ':wq', ':q', ':q!', ':x', 'ZZ'], flags: {} };
 function stage(overrides: Partial<Stage> = {}): Stage { return { ...FIXTURE_STAGE, ...overrides }; }
 function run(keys: string | readonly Key[], value = FIXTURE_STAGE) {
   return playKeys(sim, value, legend, options, typeof keys === 'string' ? parseKeys(keys) : keys);
@@ -31,27 +31,28 @@ const flat = (overrides: Partial<Stage> = {}) => stage({ map: Array.from({ lengt
 
 describe('turns and rollback', () => {
   it.each([['5j', 1], ['jjjjj', 5], ['dw', 1], ['ihello<Esc>', 1], [':w<CR>', 1], ['vjd', 3], ['d', 0], ['<Esc>', 0]])('%s spends %i turns', (keys, turns) => {
-    const value = flat({ map: Array.from({ length: 7 }, () => 'ooo ooo         ') });
+    const value = ['5j', 'jjjjj', 'vjd'].includes(keys)
+      ? flat({ map: Array.from({ length: 7 }, () => 'ooo ooo         ') }) : FIXTURE_STAGE;
     expect(run(keys, value).state.turn).toBe(turns);
   });
   it('keeps visual Escape mode change without a turn', () => {
-    const result = run('v<Esc>', flat());
+    const result = run('v<Esc>');
     expect(result.state.turn).toBe(1);
     expect(result.state.engine.mode).toBe('normal');
   });
   it('keeps visual mode toggles without a turn', () => {
-    const result = run('vV', flat());
+    const result = run('vV');
     expect(result.state.turn).toBe(1);
     expect(result.state.engine.mode).toBe('visual-line');
   });
   it('restores the original pending state after an engine error', () => {
-    const result = run('d?', flat());
-    expect(result.state.engine).toEqual(engine.init(flat().map, flat().start));
+    const result = run('d?');
+    expect(result.state.engine).toEqual(engine.init(FIXTURE_STAGE.map, FIXTURE_STAGE.start));
     expect(result.state.pending).toBeNull();
     expect(result.events.some((event) => event.type === 'engine-error')).toBe(true);
   });
   it('stores the pre-command state while typing a count', () => {
-    const result = run('5', flat());
+    const result = run('5');
     expect(result.state.pending?.engine.pendingKeys).toEqual([]);
     expect(result.state.engine.pendingKeys).toEqual(['5']);
   });
@@ -66,7 +67,7 @@ describe('turns and rollback', () => {
     const result = run('dd', value);
     expect(result.state.engine).toEqual(sim.init(value, legend, options).engine);
     expect(result.state.turn).toBe(0);
-    expect(result.events).toContainEqual({ type: 'bump', reason: 'fixed', at: result.state.engine.cursor });
+    expect(result.events).toEqual([{ type: 'bump', reason: 'fixed', at: result.state.engine.cursor }]);
   });
   it('intersects learned and stage commands', () => {
     const value = stage({ allowedCommands: ['h'] });
@@ -78,7 +79,7 @@ describe('movement on the fixture', () => {
   it('bumps into a tree and rolls back a counted walk', () => {
     const result = run('3l', stage({ start: { line: 0, col: 0 } }));
     expect(result.state.engine.cursor).toEqual({ line: 0, col: 0 });
-    expect(result.events).toContainEqual({ type: 'bump', reason: 'wall', at: { line: 0, col: 2 } });
+    expect(result.events).toEqual([{ type: 'bump', reason: 'wall', at: { line: 0, col: 2 } }]);
   });
   it.each(['h', 'k'])('bumps at the buffer edge for %s', (key) => {
     const result = run(key, stage({ start: { line: 0, col: 0 } }));
@@ -90,7 +91,7 @@ describe('movement on the fixture', () => {
     expect(result.state.engine.cursor.line).toBe(0);
     expect(result.state.turn).toBe(1);
   });
-  it('rejects a jump landing on water', () => {
+  it('rejects a walk landing on water', () => {
     const result = run('k');
     expect(result.state.turn).toBe(0);
     expect(result.state.engine.cursor).toEqual(FIXTURE_STAGE.start);
@@ -130,7 +131,7 @@ describe('buffer edits and undo', () => {
     expect(run('xu<C-r>', value).state.engine.lines).toEqual(run('x', value).state.engine.lines);
   });
   it('removes an entity on a deleted tile and never resurrects it on undo', () => {
-    const value = stage({ start: { line: 3, col: 1 }, entities: [blot({ line: 3, col: 7 }, { behaviour: { type: 'still' }, damage: 0 })] });
+    const value = stage({ start: { line: 3, col: 1 }, entities: [blot({ line: 3, col: 1 }, { behaviour: { type: 'still' }, damage: 0 })] });
     const result = run('2xu', value);
     expect(result.state.entities).toHaveLength(0);
   });
@@ -275,7 +276,7 @@ describe('saves, triggers, scripts and ending', () => {
   });
   it('reopens a solved script read-only with its solved text', () => {
     const value = stage({ start: { line: 2, col: 4 } });
-    const solved = run('<CR>fnie<Esc>:q!<CR><CR>x', value);
+    const solved = run('<CR>fnie<Esc><CR>x', value);
     expect(solved.state.script?.engine.lines).toEqual(['The bridge is broken.']);
     expect(solved.state.script?.engine.modified).toBe(false);
     expect(solved.events.filter((event) => event.type === 'script-solved')).toHaveLength(1);
@@ -331,14 +332,14 @@ describe('saves, triggers, scripts and ending', () => {
 });
 
 describe('atomic batches and ending conditions', () => {
-  it('remaps once against the final batch buffer and adds one undo snapshot', () => {
+  it('remaps each buffer effect and shares one undo snapshot', () => {
     const initial = sim.init(FIXTURE_STAGE, legend, options);
     const result = sim.apply(initial, [
       { type: 'set-rows', fromLine: 3, lines: ['                '] },
       { type: 'set-rows', fromLine: 3, lines: [FIXTURE_STAGE.map[3] ?? ''] },
     ], FIXTURE_STAGE, legend);
     expect(result.state.entities).toEqual(initial.entities);
-    expect(result.state.engine.undoStack).toEqual([]);
+    expect(result.state.engine.undoStack).toHaveLength(1);
     expect(result.events.filter((event) => event.type === 'checkpoint-saved')).toHaveLength(1);
   });
   it('multiple buffer effects undo as one batch with the original cursor', () => {
@@ -369,7 +370,7 @@ describe('atomic batches and ending conditions', () => {
       { type: 'set-flag', flag: 'done', value: true }, { type: 'heal', hearts: 1 },
     ], value, legend);
     expect(result.state.status).toBe('cleared');
-    expect(result.state.checkpoint.hearts).toBe(4);
+    expect(result.state.checkpoint.hearts).toBe(3);
     expect(result.events.some((event) => event.type === 'checkpoint-saved')).toBe(true);
   });
   it.each([':w<CR>', ':wq<CR>', ':x<CR>', 'ZZ'])('%s saves at end of its turn', (keys) => {
@@ -401,5 +402,158 @@ describe('atomic batches and ending conditions', () => {
     keysFrom(initial, 'io<Esc>u', value);
     sim.apply(initial, [{ type: 'set-flag', flag: 'new', value: true }, { type: 'delete-row', line: 3 }], value, legend);
     expect(JSON.stringify({ value, initial, options })).toBe(original);
+  });
+});
+
+
+describe('revised contract regressions', () => {
+  const still = (col: number, id = `entity-${col}`, line = 0) => blot({ line, col },
+    { id, behaviour: { type: 'still' }, damage: 0 });
+
+  it('cancelled fixed deletion emits only bump, keeping the entity alive', () => {
+    const value = stage({ map: ['    S  o '], start: { line: 0, col: 0 }, entities: [still(7)] });
+    const result = run('dd', value);
+    expect(result.events).toEqual([{ type: 'bump', reason: 'fixed', at: { line: 0, col: 0 } }]);
+    expect(result.state.entities).toEqual(sim.init(value, legend, options).entities);
+  });
+  it('cancelled river walk emits only bump', () => {
+    const value = stage({ start: { line: 0, col: 0 } });
+    expect(run('j', value).events).toEqual([{ type: 'bump', reason: 'wall', at: { line: 1, col: 0 } }]);
+  });
+  it('open inserts emit only provisional rows and defer all entity remapping', () => {
+    const result = run('io');
+    expect(result.events.map((event) => event.type)).toEqual(['rows-changed']);
+    expect(result.state.entities).toEqual(sim.init(FIXTURE_STAGE, legend, options).entities);
+    expect(keysFrom(result.state, '<Esc>').events.filter((event) => event.type === 'command')).toHaveLength(1);
+  });
+  it('retyping the same cell in a change preserves its entity', () => {
+    const value = stage({ map: ['o o'], start: { line: 0, col: 1 }, entities: [still(1)] });
+    const result = run(['c', 'l', ' ', '<Esc>'], value);
+    expect(result.state.entities).toEqual(sim.init(value, legend, options).entities);
+    expect(result.events.filter((event) => event.type === 'entity-removed')).toEqual([]);
+    expect(result.state.turn).toBe(1);
+  });
+  it.each([{ key: 'x', col: 2, removed: 2, survivor: 4, to: 3 },
+    { key: 'x', col: 5, removed: 5, survivor: 2, to: 2 },
+    // Known limit: X inside equal tiles is placed at the cursor, not to its left.
+    { key: 'X', col: 2, removed: 2, survivor: 1, to: 1 }])(
+    '$key in a run at $col anchors removal at the cursor', ({ key, col, removed, survivor, to }) => {
+      const value = stage({ map: ['oooooo'], start: { line: 0, col }, entities: [still(removed), still(survivor)] });
+      const result = run(key, value);
+      expect(result.state.entities.map((entity) => ({ id: entity.id, at: entity.at })))
+        .toEqual([{ id: `entity-${survivor}`, at: { line: 0, col: to } }]);
+      expect(result.events.filter((event) => event.type === 'entity-removed'))
+        .toEqual([{ type: 'entity-removed', entity: `entity-${removed}`, cause: 'deleted-tile' }]);
+    });
+  it('dd on identical rows removes only middle-row entities', () => {
+    const value = stage({ map: ['ooo', 'ooo', 'ooo'], start: { line: 1, col: 0 },
+      entities: [still(1, 'top', 0), still(1, 'middle', 1), still(1, 'bottom', 2)] });
+    expect(run('dd', value).state.entities.map((entity) => ({ id: entity.id, at: entity.at }))).toEqual([
+      { id: 'top', at: { line: 0, col: 1 } }, { id: 'bottom', at: { line: 1, col: 1 } },
+    ]);
+  });
+  it('unwrite above the player preserves their tile and maps marks and visual anchor', () => {
+    const value = stage({ entities: [blot({ line: 3, col: 14 }, { every: 1, damage: 0,
+      behaviour: { type: 'unwrite', path: [{ line: 0, col: 0 }] } })] });
+    const initial = sim.init(value, legend, options);
+    const state = { ...initial, engine: { ...initial.engine, marks: { a: { line: 2, col: 3 }, b: { line: 0, col: 0 } } } };
+    const result = keysFrom(state, 'v', value);
+    expect(result.state.engine.cursor).toEqual({ line: 1, col: 0 });
+    expect(result.state.engine.marks).toEqual({ a: { line: 1, col: 3 } });
+    expect(result.state.engine.visualAnchor).toEqual({ line: 1, col: 0 });
+    expect(result.state.hearts).toBe(3);
+  });
+  it('unwrite of the player row displaces, hits, and ends deleted visual selection', () => {
+    const value = stage({ entities: [blot({ line: 3, col: 14 }, { every: 1, damage: 0,
+      behaviour: { type: 'unwrite', path: [{ line: 2, col: 0 }] } })] });
+    const result = run('v', value);
+    expect(result.state.engine.cursor).toEqual({ line: 2, col: 1 });
+    expect(result.state.engine.mode).toBe('normal');
+    expect(result.state.engine.visualAnchor).toBeNull();
+    expect(result.state.hearts).toBe(2);
+    expect(result.events.filter((event) => event.type === 'player-hit' || event.type === 'player-moved')).toEqual([
+      { type: 'player-hit', by: 'tile', hearts: 2 },
+      { type: 'player-moved', from: { line: 2, col: 0 }, to: { line: 2, col: 1 }, style: 'jump' },
+    ]);
+  });
+  it('a displaced player with no walkable cell left dies where they stood', () => {
+    const value = stage({ map: ['o'], start: { line: 0, col: 0 }, entities: [], triggers: [], scripts: [],
+      clear: [{ type: 'flag', flag: 'never' }] });
+    const result = sim.apply(sim.init(value, legend, options), [{ type: 'set-rows', fromLine: 0, lines: ['~'] }], value, legend);
+    expect(result.state.status).toBe('dead');
+    expect(result.state.hearts).toBe(0);
+    expect(result.state.engine.cursor).toEqual({ line: 0, col: 0 });
+    expect(result.events.filter((event) => event.type === 'player-moved')).toEqual([]);
+    expect(result.events.some((event) => event.type === 'player-died')).toBe(true);
+  });
+  it.each([{ line: 1, col: 0 }, { line: 3, col: 4 }, { line: 99, col: 0 }, { line: 2, col: 99 }])(
+    'ignores invalid move-player to $line:$col', (to) => {
+      const initial = sim.init(FIXTURE_STAGE, legend, options);
+      const result = sim.apply(initial, [{ type: 'move-player', to }], FIXTURE_STAGE, legend);
+      expect(result.state.engine.cursor).toEqual(initial.engine.cursor);
+      expect(result.events.filter((event) => event.type === 'player-moved')).toEqual([]);
+    });
+  it('valid move-player emits a jump', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const to = { line: 0, col: 0 };
+    expect(sim.apply(initial, [{ type: 'move-player', to }], FIXTURE_STAGE, legend).events).toEqual([
+      { type: 'player-moved', from: initial.engine.cursor, to, style: 'jump' }, { type: 'checkpoint-saved' },
+    ]);
+  });
+  it('fixture effects emit rows before flag', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const effects = FIXTURE_STAGE.scripts[0]?.effects ?? [];
+    expect(sim.apply(initial, effects, FIXTURE_STAGE, legend).events.map((event) => event.type))
+      .toEqual(['rows-changed', 'flag-set', 'checkpoint-saved']);
+  });
+  it('effects see preceding spawns and remap before subsequent effects', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const result = sim.apply(initial, [
+      { type: 'spawn', entity: still(3, 'new', 2) }, { type: 'delete-row', line: 0 },
+      { type: 'move-player', to: { line: 1, col: 5 } }, { type: 'delete-row', line: 0 },
+    ], FIXTURE_STAGE, legend);
+    expect(result.state.entities.find((entity) => entity.id === 'new')?.at).toEqual({ line: 0, col: 3 });
+    expect(result.state.engine.cursor).toEqual({ line: 0, col: 5 });
+    expect(result.state.engine.undoStack).toHaveLength(1);
+  });
+  it.each(['playing', 'dead'] as const)('restore works from %s', (status) => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const changed = { ...run('l').state, status };
+    expect(sim.restore(changed).state.engine).toEqual(initial.engine);
+    expect(sim.restore(changed).state.status).toBe('playing');
+  });
+  it('restore does nothing once cleared', () => {
+    const initial = { ...sim.init(FIXTURE_STAGE, legend, options), status: 'cleared' as const };
+    expect(sim.restore(initial)).toEqual({ state: initial, events: [] });
+  });
+  it('solving emits solved, effects, then automatic close', () => {
+    const value = stage({ start: { line: 2, col: 4 } });
+    const result = run('<CR>fnie<Esc>', value);
+    expect(result.state.script).toBeNull();
+    expect(result.events.filter((event) => ['script-solved', 'rows-changed', 'flag-set', 'script-closed'].includes(event.type)))
+      .toEqual([{ type: 'script-solved', script: 'river-spell', keys: 5 },
+        { type: 'rows-changed', fromLine: 1, toLine: 1, lineDelta: 0, by: 'effect' },
+        { type: 'flag-set', flag: 'fixture.bridge-mended', value: true },
+        { type: 'script-closed', script: 'river-spell', solved: true }]);
+  });
+  it('solved scripts allow motions, reject edits and close with :q', () => {
+    const value = stage({ start: { line: 2, col: 4 } });
+    const solved = run('<CR>fnie<Esc>', value).state;
+    const reopened = keysFrom({ ...solved, script: null }, '<CR>l', value);
+    expect(reopened.state.script?.engine.cursor).toEqual({ line: 0, col: 1 });
+    const edited = keysFrom(reopened.state, 'ix<Esc>rxddu<C-r>:s/o/x/<CR>', value);
+    expect(edited.state.script?.engine.lines).toEqual(['The bridge is broken.']);
+    expect(keysFrom(edited.state, ':q<CR>', value).state.script).toBeNull();
+  });
+  it('heal is capped at stage maximum', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    expect(sim.apply({ ...initial, hearts: 1 }, [{ type: 'heal', hearts: 99 }], FIXTURE_STAGE, legend).state.hearts).toBe(3);
+  });
+  it('real jump landing on water emits only bump', () => {
+    expect(run('1G', stage({ start: { line: 0, col: 0 } })).state.turn).toBe(1);
+    expect(run('2G').events).toEqual([{ type: 'bump', reason: 'wall', at: { line: 1, col: 0 } }]);
+  });
+  it('diagonal to the sign does not open it', () => {
+    expect(run('<CR>', stage({ start: { line: 2, col: 3 } })).state.script).toBeNull();
   });
 });

@@ -3,7 +3,7 @@ import type { Legend, Stage, WorldEvent, WorldOptions, WorldSim, WorldState, Wor
 import { applyBatch, changeBuffer, checkpoint, finish } from './effects.js';
 import { actEntities } from './entities.js';
 import { distance, inside, isWalk, validateMovement } from './movement.js';
-import { fixedChanged } from './remap.js';
+import { changedSpan, fixedChanged, offsetAt } from './remap.js';
 import { eligible, fire, inReach, openScript, stepScript } from './scripts.js';
 import { atRest } from './turn.js';
 
@@ -38,10 +38,17 @@ export function createWorldSim(engine: Engine): WorldSim {
         events.push({ type: 'engine-error', error: result.error });
         return { state: { ...state, engine: pending.engine, entities: pending.entities, pending: null }, events };
       }
-      for (const command of result.commands) events.push({ type: 'command', command, in: 'field' });
-      let next = changeBuffer(state, result.state.lines, legend, events, 'player', result.state);
-      if (!atRest(result.state)) return { state: { ...next, pending: { ...pending, commands } }, events };
-      next = { ...next, pending: null };
+      if (!atRest(result.state)) {
+        if (state.engine.lines.join('\n') !== result.state.lines.join('\n')) {
+          const span = changedSpan(state.engine.lines, result.state.lines, offsetAt(pending.engine.lines, pending.engine.cursor));
+          events.push({ type: 'rows-changed',
+            fromLine: state.engine.lines.join('\n').slice(0, span.start).split('\n').length - 1,
+            toLine: state.engine.lines.join('\n').slice(0, span.oldEnd).split('\n').length - 1,
+            lineDelta: result.state.lines.length - state.engine.lines.length, by: 'player' });
+        }
+        return { state: { ...state, engine: result.state, pending: { ...pending, commands } }, events };
+      }
+      let next: WorldState = { ...state, engine: result.state, pending: null };
       if (commands.length === 0) {
         // The engine emits no record for a walk at the edge. Announce that failed
         // attempt without manufacturing a Vim command or spending a turn (rule 1).
@@ -50,13 +57,20 @@ export function createWorldSim(engine: Engine): WorldSim {
         }
         return { state: next, events };
       }
-      const bump = fixedChanged(pending.engine.lines, result.state.lines, legend)
+      const anchor = offsetAt(pending.engine.lines, pending.engine.cursor);
+      const commitEvents: WorldEvent[] = [];
+      const candidate = changeBuffer({ ...next, engine: pending.engine, entities: pending.entities }, result.state.lines,
+        legend, commitEvents, 'player', result.state, anchor);
+      const bump = fixedChanged(pending.engine.lines, result.state.lines, legend, anchor)
         ? { reason: 'fixed' as const, at: result.state.cursor }
-        : validateMovement(pending.engine, result.state, commands, next.entities, legend);
+        : validateMovement(pending.engine, result.state, commands, candidate.entities, legend);
       if (bump !== null) {
         events.push({ type: 'bump', ...bump });
         return { state: { ...state, engine: pending.engine, entities: pending.entities, pending: null }, events };
       }
+      for (const command of commands) events.push({ type: 'command', command, in: 'field' });
+      next = candidate;
+      events.push(...commitEvents);
       if (distance(pending.engine.cursor, next.engine.cursor) > 0) events.push({ type: 'player-moved', from: pending.engine.cursor,
         to: next.engine.cursor, style: commands.some(isWalk) ? 'walk' : 'jump' });
       next = actEntities({ ...next, turn: state.turn + 1 }, legend, events);
@@ -77,6 +91,7 @@ export function createWorldSim(engine: Engine): WorldSim {
       return { state: state.status === 'dead' ? state : applyBatch(state, effects, stage, legend, events), events };
     },
     restore(state) {
+      if (state.status === 'cleared') return { state, events: [] };
       return { state: { ...state, ...state.checkpoint, status: 'playing', pending: null, script: null },
         events: [{ type: 'checkpoint-restored' }] };
     },

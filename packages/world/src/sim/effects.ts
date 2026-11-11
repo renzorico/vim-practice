@@ -1,22 +1,57 @@
-import type { EngineState } from '@escape/engine';
+import type { EngineState, Position } from '@escape/engine';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldState } from '../types.js';
-import { inside } from './movement.js';
-import { changedSpan, remapEntities } from './remap.js';
+import { blocked, distance, inside } from './movement.js';
+import { changedSpan, offsetAt, positionAt, remapEntities } from './remap.js';
 
 export function changeBuffer(state: WorldState, lines: readonly string[], legend: Legend, events: WorldEvent[],
-  by: 'player' | 'effect' | 'entity', engine?: EngineState): WorldState {
+  by: 'player' | 'effect' | 'entity', engine?: EngineState, anchor = offsetAt(state.engine.lines, state.engine.cursor)): WorldState {
   const before = state.engine;
   if (before.lines.join('\n') === lines.join('\n')) return engine === undefined ? state : { ...state, engine };
-  const span = changedSpan(before.lines, lines);
+  const span = changedSpan(before.lines, lines, anchor);
   const fromLine = before.lines.join('\n').slice(0, span.start).split('\n').length - 1;
   const toLine = before.lines.join('\n').slice(0, span.oldEnd).split('\n').length - 1;
   events.push({ type: 'rows-changed', fromLine, toLine, lineDelta: lines.length - before.lines.length, by });
-  const line = Math.min(before.cursor.line, lines.length - 1);
-  const cursor = { line, col: Math.min(before.cursor.col, Math.max(0, (lines[line]?.length ?? 0) - 1)) };
+  const entities = remapEntities(before.lines, lines, state.entities, legend, events, anchor);
+  if (engine !== undefined) return { ...state, engine, entities };
+  const mapPosition = (at: Position): Position | null => {
+    const offset = span.map(offsetAt(before.lines, at));
+    return offset === null ? null : positionAt(lines, offset);
+  };
+  const marks: Record<string, Position> = {};
+  for (const [name, at] of Object.entries(before.marks)) {
+    const mapped = mapPosition(at);
+    if (mapped !== null) marks[name] = mapped;
+  }
+  const visualAnchor = before.visualAnchor === null ? null : mapPosition(before.visualAnchor);
+  let cursor = mapPosition(before.cursor);
+  const displaced = cursor === null || blocked(lines, cursor, entities, legend) !== null;
+  const from = cursor ?? before.cursor;
+  if (displaced) {
+    // Iterating in reading order implements the line/column tie break.
+    let nearest: Position | null = null;
+    for (let line = 0; line < lines.length; line += 1) {
+      for (let col = 0; col < (lines[line]?.length ?? 0); col += 1) {
+        const candidate = { line, col };
+        if (blocked(lines, candidate, entities, legend) === null
+          && (nearest === null || distance(from, candidate) < distance(from, nearest))) nearest = candidate;
+      }
+    }
+    cursor = nearest;
+  }
+  // Rule 3, THE PLAYER: with no legal cell anywhere, the player dies where they stood.
+  const stranded = cursor === null;
+  cursor ??= before.cursor;
   const changeSeq = Math.max(before.changeSeq, before.savedSeq) + 1;
-  const next = engine ?? { ...before, lines, cursor, desiredCol: cursor.col, changeSeq, modified: changeSeq !== before.savedSeq,
+  const next: EngineState = { ...before, lines, cursor, marks, visualAnchor,
+    mode: before.mode.startsWith('visual') && visualAnchor === null ? 'normal' : before.mode,
+    desiredCol: cursor.col, changeSeq, modified: changeSeq !== before.savedSeq,
     undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq }], redoStack: [] };
-  return { ...state, engine: next, entities: remapEntities(before.lines, lines, state.entities, legend, events) };
+  const hearts = stranded ? 0 : displaced ? Math.max(0, state.hearts - 1) : state.hearts;
+  if (displaced) {
+    events.push({ type: 'player-hit', by: 'tile', hearts });
+    if (!stranded) events.push({ type: 'player-moved', from, to: cursor, style: 'jump' });
+  }
+  return { ...state, engine: next, entities, hearts };
 }
 
 export function finish(state: WorldState, stage: Stage, events: WorldEvent[]): WorldState {
@@ -48,7 +83,7 @@ export function checkpoint(state: WorldState, events: WorldEvent[]): WorldState 
 export function applyBatch(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend,
   events: WorldEvent[]): WorldState {
   let next = state;
-  let lines = state.engine.lines;
+  let bufferChanged = false;
   for (const effect of effects) {
     switch (effect.type) {
       case 'set-flag':
@@ -56,14 +91,20 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
         events.push({ type: 'flag-set', flag: effect.flag, value: effect.value });
         break;
       case 'set-rows': {
-        const updated = [...lines];
+        const updated = [...next.engine.lines];
         updated.splice(effect.fromLine, effect.lines.length, ...effect.lines);
-        lines = updated;
+        const changed = changeBuffer(next, updated, legend, events, 'effect', undefined,
+          offsetAt(next.engine.lines, { line: effect.fromLine, col: 0 }));
+        bufferChanged ||= changed.engine !== next.engine;
+        next = changed;
         break;
       }
       case 'delete-row': {
-        const updated = lines.filter((_, index) => index !== effect.line);
-        lines = updated.length === 0 ? [''] : updated;
+        const updated = next.engine.lines.filter((_, index) => index !== effect.line);
+        const changed = changeBuffer(next, updated.length === 0 ? [''] : updated, legend, events, 'effect', undefined,
+          offsetAt(next.engine.lines, { line: effect.line, col: 0 }));
+        bufferChanged ||= changed.engine !== next.engine;
+        next = changed;
         break;
       }
       case 'spawn':
@@ -74,14 +115,21 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
         if (next.entities.some((entity) => entity.id === effect.entity)) events.push({ type: 'entity-removed', entity: effect.entity, cause: 'effect' });
         next = { ...next, entities: next.entities.filter((entity) => entity.id !== effect.entity) };
         break;
-      case 'heal': next = { ...next, hearts: next.hearts + effect.hearts }; break;
-      case 'move-player': break; // Applied after buffer remapping, in final-buffer coordinates.
+      case 'heal': next = { ...next, hearts: Math.min(stage.hearts, next.hearts + effect.hearts) }; break;
+      case 'move-player':
+        if (blocked(next.engine.lines, effect.to, next.entities, legend) === null) {
+          events.push({ type: 'player-moved', from: next.engine.cursor, to: effect.to, style: 'jump' });
+          next = { ...next, engine: { ...next.engine, cursor: effect.to, desiredCol: effect.to.col } };
+        }
+        break;
     }
   }
-  next = changeBuffer(next, lines, legend, events, 'effect');
-  // An explicit teleport is expressed in the resulting buffer's coordinates.
-  const teleport = effects.filter((effect) => effect.type === 'move-player').at(-1);
-  if (teleport !== undefined) next = { ...next, engine: { ...next.engine, cursor: teleport.to, desiredCol: teleport.to.col } };
+  if (bufferChanged) {
+    const before = state.engine;
+    const changeSeq = Math.max(before.changeSeq, before.savedSeq) + 1;
+    next = { ...next, engine: { ...next.engine, changeSeq, modified: changeSeq !== before.savedSeq,
+      undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq }], redoStack: [] } };
+  }
   next = finish(next, stage, events);
   return effects.some((effect) => effect.type !== 'set-flag') ? checkpoint(next, events) : next;
 }

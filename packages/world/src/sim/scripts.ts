@@ -38,11 +38,18 @@ export function stepScript(state: WorldState, key: Key, stage: Stage, legend: Le
   const script = stage.scripts.find((entry) => entry.id === opened.id);
   if (script === undefined) return state;
   const solved = state.solvedScripts[script.id] !== undefined;
-  // Solved parchment is immutable; only allow the Vim quit command line and Escape.
-  if (solved && opened.engine.mode !== 'command-line' && key !== ':' && key !== '<Esc>') return state;
-  if (solved && opened.engine.mode === 'command-line' && !['q', '!', '<CR>', '<Esc>', '<BS>'].includes(key)) return state;
-  const result = script.allowedCommands === undefined ? engine.step(opened.engine, key)
+  const result = script.allowedCommands === undefined || solved ? engine.step(opened.engine, key)
     : engine.step(opened.engine, key, { allowedCommands: script.allowedCommands });
+  // Let the engine parse motions and prefixes. Reject entry to editing modes,
+  // completed edits (including no-op edits), and any buffer mutation.
+  if (solved && (result.state.mode === 'insert' || result.state.mode === 'operator-pending'
+    || result.state.changeInProgress !== null
+    || result.state.lines.join('\n') !== opened.engine.lines.join('\n')
+    || result.commands.some((command) => ['edit', 'operator', 'undo', 'repeat'].includes(command.kind))
+    || result.commands.some((command) => command.kind === 'ex' && ![':q', ':q!'].includes(command.id)))) {
+    return { ...state, script: { ...opened, engine: { ...opened.engine, pendingKeys: [], commandLine: '',
+      mode: opened.engine.mode === 'command-line' ? 'normal' : opened.engine.mode } } };
+  }
   const commands = [...opened.commands, ...result.commands];
   for (const command of result.commands) events.push({ type: 'command', command, in: 'script' });
   if (result.error !== null) events.push({ type: 'engine-error', error: result.error });
@@ -54,6 +61,8 @@ export function stepScript(state: WorldState, key: Key, stage: Stage, legend: Le
     next = { ...next, solvedScripts: { ...next.solvedScripts, [script.id]: result.state.lines } };
     events.push({ type: 'script-solved', script: script.id, keys: opened.keys + 1 });
     next = applyBatch(next, script.effects, stage, legend, events);
+    events.push({ type: 'script-closed', script: script.id, solved: true });
+    return { ...next, script: null };
   }
   if (result.state.quitRequested) {
     events.push({ type: 'script-closed', script: script.id, solved: next.solvedScripts[script.id] !== undefined });
