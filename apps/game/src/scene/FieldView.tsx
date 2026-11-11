@@ -37,7 +37,7 @@ export function FieldView(props: FieldFrame): JSX.Element {
     };
   }, []);
 
-  // Run after every parent render: even a partial command finishes the prior animation.
+  // New snapshots finish playback; repeated snapshots leave the shared clock running.
   useEffect(() => { scene.current?.present(props); });
 
   return <div ref={host} role="img" aria-label={`${props.stage.title}. ${props.stage.goalText}`}

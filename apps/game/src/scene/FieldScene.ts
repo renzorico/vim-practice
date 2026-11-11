@@ -25,7 +25,10 @@ export class FieldScene extends Phaser.Scene {
   private label: Phaser.GameObjects.Text | undefined;
   private player: Phaser.GameObjects.Image | undefined;
   private entities = new Map<string, Phaser.GameObjects.Image>();
-  private queue: AnimationStep[] = [];
+  private cells = new Map<string, {
+    char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
+    line: number;
+  }>();
   private previousState: WorldState | undefined;
   private previousEvents: readonly WorldEvent[] | undefined;
 
@@ -37,17 +40,21 @@ export class FieldScene extends Phaser.Scene {
 
   create(): void {
     this.tiles = this.add.container(0, 0);
-    this.actors = this.add.container(0, 0).setDepth(1);
-    this.source = this.add.container(0, 0).setDepth(2);
+    this.actors = this.add.container(0, 0).setDepth(2);
+    this.source = this.add.container(0, 0).setDepth(1);
     this.label = this.add.text(8, 8, '', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
     this.cameras.main.setZoom(TILE_SCALE).setRoundPixels(true);
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.positionLabel, this);
     this.ready = true;
     this.present(this.frame);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.ready = false;
-      this.queue = [];
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.positionLabel, this);
+      this.cells.clear();
+      this.previousState = undefined;
+      this.previousEvents = undefined;
       this.tweens.killAll();
       this.entities.clear();
     });
@@ -61,48 +68,99 @@ export class FieldScene extends Phaser.Scene {
   /** Called for every key, including unfinished commands: nothing can queue behind typing. */
   finish(): void {
     if (!this.ready) return;
-    this.queue = [];
     this.tweens.killAll();
     this.syncActors();
-    this.tiles?.setAlpha(1);
+    this.clearRowEffects();
   }
 
   present(frame: FieldFrame): void {
+    const sameFrame = this.previousState === frame.state && this.previousEvents === frame.events;
+    if (sameFrame) {
+      // Presentation options can change without interrupting the active clock.
+      if (this.frame.showSource !== frame.showSource) this.setSourceVisible(frame.showSource);
+      this.frame = frame;
+      return;
+    }
     this.finish();
     this.frame = frame;
     if (!this.ready) return;
-    this.tiles?.removeAll(true);
-    this.source?.removeAll(true);
-    const grid = tileGrid(frame.state.engine.lines, frame.legend);
-    grid.forEach((row, line) => row.forEach((sprite, col) => {
-      this.tiles?.add(this.add.image(center(col), center(line), this.texture(sprite)));
-      if (frame.showSource) {
-        this.source?.add(this.add.text(center(col), center(line), frame.state.engine.lines[line]?.charAt(col) ?? '', {
-          fontFamily: 'monospace', fontSize: '12px', color: '#ffffff', backgroundColor: '#182523',
-        }).setOrigin(0.5));
+    this.syncCells();
+    this.setSourceVisible(frame.showSource);
+    this.positionLabel();
+    this.syncActors();
+    const previous = this.previousState;
+    this.previousState = frame.state;
+    this.previousEvents = frame.events;
+    if (previous?.stage !== frame.state.stage) return;
+    const positions = new Map(previous.entities.map(entity => [entity.id, entity.at]));
+    for (const event of frame.events) {
+      if (event.type === 'entity-moved') positions.set(event.entity, event.to);
+      if (event.type === 'entity-removed' && !this.entities.has(event.entity)) {
+        const old = previous.entities.find(entity => entity.id === event.entity);
+        const at = positions.get(event.entity);
+        if (old && at) this.addEntity(old.id, old.def.sprite, at);
       }
-    }));
-    this.label?.setText(frame.showSource ? BUFFER_NAME : '').setVisible(frame.showSource);
-    // Fixed-scroll text still receives camera zoom: compensate so it stays in the viewport corner.
+    }
+    this.play(animationSteps(frame.events, this.reducedMotion, frame.state.pending !== null));
+  }
+
+  private positionLabel(): void {
     this.label?.setScale(1 / TILE_SCALE).setPosition(
       (this.scale.width - this.scale.width / TILE_SCALE) / 2 + 8 / TILE_SCALE,
       (this.scale.height - this.scale.height / TILE_SCALE) / 2 + 8 / TILE_SCALE,
     );
-    this.syncActors();
-    const previous = this.previousState;
-    const sameFrame = previous === frame.state && this.previousEvents === frame.events;
-    this.previousState = frame.state;
-    this.previousEvents = frame.events;
-    if (sameFrame || previous?.stage !== frame.state.stage) return;
-    // Removed entities are retained as temporary ghosts solely for their removal animation.
-    for (const event of frame.events) {
-      if (event.type === 'entity-removed' && !this.entities.has(event.entity)) {
-        const old = previous.entities.find(entity => entity.id === event.entity);
-        if (old) this.addEntity(old.id, old.def.sprite, old.at);
-      }
+  }
+
+  private setSourceVisible(visible: boolean): void {
+    this.source?.setVisible(visible);
+    this.label?.setText(visible ? BUFFER_NAME : '').setVisible(visible);
+  }
+
+  private glyphTexture(char: string): string {
+    const key = `glyph:${char.charCodeAt(0)}`;
+    if (!this.textures.exists(key)) {
+      const texture = this.textures.createCanvas(key, TILE_SIZE, TILE_SIZE);
+      if (!texture) throw new Error('Could not create source glyph texture');
+      const context = texture.context;
+      context.font = '12px monospace';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.strokeStyle = '#182523';
+      context.lineWidth = 2;
+      context.strokeText(char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.fillStyle = '#ffffff';
+      context.fillText(char, TILE_SIZE / 2, TILE_SIZE / 2);
+      texture.refresh();
     }
-    this.queue = animationSteps(frame.events, this.reducedMotion);
-    this.playNext();
+    return key;
+  }
+
+  private syncCells(): void {
+    const live = new Set<string>();
+    tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
+      const key = `${line}:${col}`;
+      const char = this.frame.state.engine.lines[line]?.charAt(col) ?? ' ';
+      live.add(key);
+      const cell = this.cells.get(key);
+      if (cell) {
+        if (cell.sprite !== sprite) cell.tile.setTexture(this.texture(sprite));
+        if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char));
+        cell.sprite = sprite;
+        cell.char = char;
+      } else {
+        const tile = this.add.image(center(col), center(line), this.texture(sprite));
+        const glyph = this.add.image(center(col), center(line), this.glyphTexture(char));
+        this.tiles?.add(tile);
+        this.source?.add(glyph);
+        this.cells.set(key, { char, sprite, tile, glyph, line });
+      }
+    }));
+    for (const [key, cell] of this.cells) {
+      if (live.has(key)) continue;
+      cell.tile.destroy();
+      cell.glyph.destroy();
+      this.cells.delete(key);
+    }
   }
 
   private texture(sprite: string): string {
@@ -137,49 +195,52 @@ export class FieldScene extends Phaser.Scene {
     for (const entity of this.frame.state.entities) this.addEntity(entity.id, entity.def.sprite, entity.at);
   }
 
-  private playNext(): void {
-    while (this.queue.length > 0) {
-      const step = this.queue.shift();
-      if (!step) break;
-      const target = 'entity' in step ? this.entities.get(step.entity) : this.player;
-      if (!target) continue;
-      if (step.durationMs === 0) continue;
-      if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
-        target.setPosition(center(step.from.col), center(step.from.line));
-        const progress = { value: 0 };
-        this.tweens.add({
-          targets: progress, value: 1, duration: step.durationMs,
-          onUpdate: () => {
-            const arc = step.type === 'jump' ? Math.sin(Math.PI * progress.value) * TILE_SIZE : 0;
-            target.setPosition(
-              center(step.from.col + (step.to.col - step.from.col) * progress.value),
-              center(step.from.line + (step.to.line - step.from.line) * progress.value) - arc,
-            );
-          }, onComplete: () => this.playNext(),
-        });
-      } else {
-        const startX = target.x;
-        if (step.type === 'hit') target.setTintFill(0xffffff);
-        if (step.type === 'entity-spawn') target.setAlpha(0);
-        if (step.type === 'rows') this.tiles?.setAlpha(0.55);
-        const progress = { value: 0 };
-        this.tweens.add({
-          targets: progress, value: 1, duration: step.durationMs,
-          onUpdate: () => {
-            if (step.type === 'bump') target.x = startX + Math.sin(progress.value * Math.PI * 4) * 2;
-            if (step.type === 'entity-remove') target.setAlpha(1 - progress.value);
-            if (step.type === 'entity-spawn') target.setAlpha(progress.value);
-          },
-          onComplete: () => {
-            target.x = startX;
-            target.clearTint();
-            this.tiles?.setAlpha(1);
-            this.playNext();
-          },
-        });
+  private clearRowEffects(): void {
+    for (const cell of this.cells.values()) cell.tile.clearTint();
+  }
+
+  /** One shared clock avoids a frame of scheduling overhead for every hint. */
+  private play(steps: readonly AnimationStep[]): void {
+    const duration = steps.reduce((sum, step) => sum + step.durationMs, 0);
+    if (duration === 0) { this.syncActors(); return; }
+    const clock = { value: 0 };
+    const render = (): void => {
+      this.clearRowEffects();
+      for (const step of steps) {
+        if (clock.value < step.start) continue;
+        const fraction = Math.min(1, (clock.value - step.start) / (step.end - step.start));
+        // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
+        const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
+        if (step.type === 'rows') {
+          if (fraction < 1) {
+            for (const cell of this.cells.values()) {
+              if (cell.line >= step.fromLine && cell.line <= step.toLine) cell.tile.setTintFill(0xffffff);
+            }
+          }
+          continue;
+        }
+        const target = 'entity' in step ? this.entities.get(step.entity) : this.player;
+        if (!target) continue;
+        if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
+          const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE : 0;
+          target.setPosition(
+            center(step.from.col + (step.to.col - step.from.col) * progress),
+            center(step.from.line + (step.to.line - step.from.line) * progress) - arc,
+          );
+        } else if (step.type === 'entity-remove') target.setAlpha(1 - progress);
+        else if (step.type === 'entity-spawn') target.setAlpha(progress);
+        else if (step.type === 'hit') {
+          if (progress < 1) target.setTintFill(0xffffff);
+          else target.clearTint();
+        } else if (step.type === 'bump') {
+          target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
+        }
       }
-      return;
-    }
-    this.syncActors();
+    };
+    this.tweens.add({
+      targets: clock, value: 1, duration,
+      onUpdate: render,
+      onComplete: () => { this.clearRowEffects(); this.syncActors(); },
+    });
   }
 }

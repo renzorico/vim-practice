@@ -37,6 +37,37 @@ describe('animationSteps', () => {
     expect(steps.reduce((sum, step) => sum + step.durationMs, 0)).toBeLessThan(250);
   });
   it('does not mutate events', () => {
-    expect(animationSteps(Object.freeze([Object.freeze(walk)]))).toHaveLength(3);
+    const events = [structuredClone(walk)];
+    const copy = structuredClone(events);
+    animationSteps(events);
+    expect(events).toEqual(copy);
   });
+});
+
+it('allocates forty hints inside one normalized 240 ms clock', () => {
+  const steps = animationSteps([{ ...walk, to: { line: 2, col: 41 } }]);
+  expect(steps).toHaveLength(40);
+  expect(steps.reduce((sum, step) => sum + step.durationMs, 0)).toBe(240);
+  for (const step of steps) {
+    expect(step.start).toBeGreaterThanOrEqual(0);
+    expect(step.end).toBeLessThanOrEqual(1);
+    expect(step.end).toBeGreaterThan(step.start);
+  }
+  expect(steps.at(-1)?.end).toBe(1);
+});
+it('makes more than 240 reduced-motion hints instant', () => {
+  const steps = animationSteps([{ ...walk, to: { line: 2, col: 1001 } }], true);
+  expect(steps).toHaveLength(1000);
+  expect(steps.every(step => step.durationMs === 0)).toBe(true);
+});
+it('omits row effects during pending insert', () => {
+  expect(animationSteps([{ type: 'rows-changed', fromLine: 1, toLine: 3, lineDelta: 0, by: 'player' }], false, true)).toEqual([]);
+});
+it('starts removal after the preceding entity move span', () => {
+  const steps = animationSteps([
+    { type: 'entity-moved', entity: 'blot', from, to },
+    { type: 'entity-removed', entity: 'blot', cause: 'effect' },
+  ]);
+  expect(steps[0]?.end).toBeGreaterThan(0);
+  expect(steps[1]?.start).toBe(steps[0]?.end);
 });

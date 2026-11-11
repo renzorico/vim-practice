@@ -12,10 +12,10 @@ type AnimationHint =
   | { readonly type: 'entity-remove' | 'entity-spawn'; readonly entity: string }
   | { readonly type: 'rows'; readonly fromLine: number; readonly toLine: number; readonly lineDelta: number };
 
-export type AnimationStep = AnimationHint & { readonly durationMs: number };
+export type AnimationStep = AnimationHint & { readonly durationMs: number; readonly start: number; readonly end: number };
 
 /** This describes presentation only; endpoints and walk/jump semantics come from WorldSim. */
-export function animationSteps(events: readonly WorldEvent[], reducedMotion = false): AnimationStep[] {
+export function animationSteps(events: readonly WorldEvent[], reducedMotion = false, pending = false): AnimationStep[] {
   const hints: AnimationHint[] = [];
   for (const event of events) {
     switch (event.type) {
@@ -41,11 +41,14 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
       case 'entity-moved': hints.push({ type: 'entity-move', entity: event.entity, from: event.from, to: event.to }); break;
       case 'entity-removed': hints.push({ type: 'entity-remove', entity: event.entity }); break;
       case 'entity-spawned': hints.push({ type: 'entity-spawn', entity: event.entity }); break;
-      case 'rows-changed': hints.push({ type: 'rows', fromLine: event.fromLine, toLine: event.toLine, lineDelta: event.lineDelta }); break;
+      case 'rows-changed': if (!pending) hints.push({ type: 'rows', fromLine: event.fromLine, toLine: event.toLine, lineDelta: event.lineDelta }); break;
     }
   }
-  // Floor to whole milliseconds so floating-point addition cannot exceed the budget.
-  const durationMs = reducedMotion || hints.length === 0 ? 0
-    : Math.min(CELL_DURATION_MS, Math.floor(PLAYBACK_BUDGET_MS / hints.length));
-  return hints.map(hint => ({ ...hint, durationMs }));
+  const total = reducedMotion ? 0 : Math.min(PLAYBACK_BUDGET_MS, hints.length * CELL_DURATION_MS);
+  return hints.map((hint, index) => ({
+    ...hint,
+    durationMs: total * (index + 1) / hints.length - total * index / hints.length,
+    start: index / hints.length,
+    end: (index + 1) / hints.length,
+  }));
 }
