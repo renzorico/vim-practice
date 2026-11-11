@@ -1,0 +1,16 @@
+:root { color-scheme: dark; background: #182523; color: #ffe8b2; font-family: system-ui, sans-serif; }
+body { margin: 0; }
+.field-demo { height: 100svh; display: flex; flex-direction: column; }
+.field-demo header, .field-demo footer { padding: 16px 24px; }
+.field-demo header, .field-demo footer { flex-shrink: 0; }
+.field-demo h1 { font-size: 1.5rem; margin: 0 0 8px; }
+.field-demo p { margin: 0; max-width: 70ch; line-height: 1.5; }
+.field-demo__viewport { flex: 1; min-height: 0; min-width: 0; }
+.field-demo canvas { display: block; image-rendering: pixelated; }
+.field-demo footer { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.field-demo footer p { flex-basis: 100%; }
+.field-demo button { background: #ffe8b2; color: #182523; border: 0; padding: 12px 20px; cursor: pointer; font: inherit; }
+.field-demo button:hover { background: #e9c86b; }
+.field-demo label { display: flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; }
+.field-demo :focus-visible { outline: 2px solid #e9c86b; outline-offset: 4px; }
+.field-demo ::selection { background: #e9c86b; color: #182523; }
