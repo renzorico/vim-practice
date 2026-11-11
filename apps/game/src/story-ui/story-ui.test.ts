@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isAdvanceKey, nextIndex, speakerName } from './advance';
+import { advanceSequence, isAdvanceKey, nextIndex, speakerName, startSequence } from './advance';
 import { heartsText, turnText } from './hud';
 
 describe('isAdvanceKey', () => {
@@ -21,6 +21,31 @@ describe('nextIndex', () => {
   });
   it('is done at once for one item', () => {
     expect(nextIndex(0, 1).done).toBe(true);
+  });
+});
+
+describe('advanceSequence latch', () => {
+  const lines = ['a', 'b'];
+  it('finishes exactly once, then ignores presses', () => {
+    let sequence = startSequence(lines);
+    const finishes: boolean[] = [];
+    for (let press = 0; press < 5; press += 1) {
+      const step = advanceSequence(sequence, lines, lines.length);
+      sequence = step.sequence;
+      finishes.push(step.finish);
+    }
+    expect(finishes).toEqual([false, true, false, false, false]);
+    expect(sequence.finished).toBe(true);
+  });
+  it('new content identity unlatches and starts over', () => {
+    const first = advanceSequence(advanceSequence(startSequence(lines), lines, 2).sequence, lines, 2).sequence;
+    const other = ['c', 'd'];
+    const step = advanceSequence(first, other, 2);
+    expect(step.finish).toBe(false);
+    expect(step.sequence).toEqual({ source: other, index: 1, finished: false });
+  });
+  it('a one-item sequence finishes on the first press', () => {
+    expect(advanceSequence(startSequence(lines), lines, 1).finish).toBe(true);
   });
 });
 

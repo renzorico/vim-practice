@@ -18,6 +18,34 @@ export function nextIndex(index: number, length: number): Progress {
   return next >= length ? { index: Math.max(length - 1, 0), done: true } : { index: next, done: false };
 }
 
+/**
+ * Position in one dialogue or cutscene, tied to the content it belongs to by identity.
+ * `finished` latches after the last item is dismissed, so `onFinish` cannot fire twice.
+ */
+export interface Sequence {
+  readonly source: unknown;
+  readonly index: number;
+  readonly finished: boolean;
+}
+
+export function startSequence(source: unknown): Sequence {
+  return { source, index: 0, finished: false };
+}
+
+export interface SequenceStep {
+  readonly sequence: Sequence;
+  /** True exactly once per content: when the last item is dismissed. */
+  readonly finish: boolean;
+}
+
+/** One advance key press. New content (a different `source`) starts over; a finished sequence ignores presses. */
+export function advanceSequence(current: Sequence, source: unknown, length: number): SequenceStep {
+  const sequence = current.source === source ? current : startSequence(source);
+  if (sequence.finished) return { sequence, finish: false };
+  const progress = nextIndex(sequence.index, length);
+  return { sequence: { source, index: progress.index, finished: progress.done }, finish: progress.done };
+}
+
 const SPEAKER_NAMES: Readonly<Record<Speaker, string>> = {
   scribe: 'The Scribe',
   dot: 'Dot',

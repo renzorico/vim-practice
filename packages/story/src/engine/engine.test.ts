@@ -345,6 +345,87 @@ describe('objectives', () => {
   });
 });
 
+describe('review fixes', () => {
+  const dialogueEffect = { type: 'dialogue' as const, dialogue: 'd-save' };
+
+  it('apply keeps an intermediate flag value (set true then false)', () => {
+    const atBridge = engine.onEvents(start(), [readSign], content).state;
+    const result = engine.apply(
+      atBridge,
+      [{ type: 'set-flag', flag: BRIDGE_FLAG, value: true }, { type: 'set-flag', flag: BRIDGE_FLAG, value: false }],
+      content,
+    );
+    expect(result.state.quests['river-crossing']).toEqual({ step: 2, done: false });
+    expect(result.state.flags[BRIDGE_FLAG]).toBe(false);
+  });
+  it('a step then that sets a flag true then false still completes a waiting quest', () => {
+    const flicker: StoryContent = withContent({
+      quests: [
+        {
+          id: 'q',
+          world: 'lowlands',
+          title: 'q',
+          kind: 'main',
+          steps: [
+            { id: 'a', objective: 'a', completeWhen: { type: 'trigger', trigger: 't' }, then: [{ type: 'set-flag', flag: 'f', value: true }, { type: 'set-flag', flag: 'f', value: false }] },
+            { id: 'b', objective: 'b', completeWhen: { type: 'flag', flag: 'f', value: true }, then: [] },
+          ],
+        },
+      ],
+      openingQuests: ['q'],
+    });
+    const result = engine.onEvents(engine.init(flicker), [{ type: 'trigger-fired', trigger: 't' }], flicker);
+    expect(result.state.quests['q']).toEqual({ step: 2, done: true });
+  });
+  it('one flag change fires a repeatable reaction once', () => {
+    const doubled: StoryContent = withContent({
+      quests: [
+        {
+          id: 'q',
+          world: 'lowlands',
+          title: 'q',
+          kind: 'main',
+          steps: [{ id: 'a', objective: 'a', completeWhen: { type: 'trigger', trigger: 't' }, then: [{ type: 'set-flag', flag: 'f', value: true }] }],
+        },
+      ],
+      openingQuests: ['q'],
+      reactions: [{ id: 'r', when: { type: 'flag', flag: 'f', value: true }, once: false, then: [dialogueEffect] }],
+    });
+    const result = engine.onEvents(engine.init(doubled), [{ type: 'trigger-fired', trigger: 't' }], doubled);
+    expect(result.effects.filter((effect) => effect.type === 'dialogue')).toHaveLength(1);
+  });
+  it('a repeatable reaction fires when its onlyIf gate opens after the flag', () => {
+    const gated: StoryContent = withContent({
+      reactions: [{ id: 'r', when: { type: 'flag', flag: 'f', value: true }, onlyIf: 'gate', once: false, then: [dialogueEffect] }],
+    });
+    const first = engine.apply(engine.init(gated), [{ type: 'set-flag', flag: 'f', value: true }], gated);
+    expect(first.effects.filter((effect) => effect.type === 'dialogue')).toHaveLength(0);
+    const second = engine.apply(first.state, [{ type: 'set-flag', flag: 'gate', value: true }], gated);
+    expect(second.effects.filter((effect) => effect.type === 'dialogue')).toHaveLength(1);
+  });
+  it('a repeatable reaction fires when its unless gate closes then reopens', () => {
+    const gated: StoryContent = withContent({
+      reactions: [{ id: 'r', when: { type: 'flag', flag: 'f', value: true }, unless: 'quiet', once: false, then: [dialogueEffect] }],
+    });
+    const quiet = engine.apply(engine.init(gated), [{ type: 'set-flag', flag: 'quiet', value: true }, { type: 'set-flag', flag: 'f', value: true }], gated);
+    expect(quiet.effects.filter((effect) => effect.type === 'dialogue')).toHaveLength(0);
+    const open = engine.apply(quiet.state, [{ type: 'set-flag', flag: 'quiet', value: false }], gated);
+    expect(open.effects.filter((effect) => effect.type === 'dialogue')).toHaveLength(1);
+  });
+  it('a looping pair of reactions stops', () => {
+    const loop: StoryContent = withContent({
+      reactions: [
+        { id: 'a', when: { type: 'trigger', trigger: 't' }, once: false, then: [{ type: 'set-flag', flag: 'on', value: true }] },
+        { id: 'b', when: { type: 'flag', flag: 'f', value: true }, once: false, then: [{ type: 'set-flag', flag: 'f', value: false }] },
+        { id: 'c', when: { type: 'flag', flag: 'f', value: false }, onlyIf: 'on', once: false, then: [{ type: 'set-flag', flag: 'f', value: true }] },
+      ],
+    });
+    const result = engine.onEvents(engine.init(loop), [{ type: 'trigger-fired', trigger: 't' }], loop);
+    expect(result.effects.length).toBeGreaterThan(2);
+    expect(result.effects.length).toBeLessThanOrEqual(MAX_PASSES * 2);
+  });
+});
+
 describe('determinism', () => {
   it('gives the same result for the same input', () => {
     const run = () => engine.onEvents(start(), [readSign, bridgeFlag, cleared], content);

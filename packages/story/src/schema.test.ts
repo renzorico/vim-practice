@@ -129,15 +129,67 @@ describe('validateContent', () => {
   });
   it('reports a flag step nothing sets, when world flags are known', () => {
     const errors = validateContent(content, { worldFlags: [] });
-    expect(errors).toEqual(['Quest "river-crossing" step "mend-bridge" can never complete: nothing sets the flag "fixture.bridge-mended".']);
+    expect(errors).toEqual(['Quest "river-crossing" step "mend-bridge" can never complete: nothing reachable sets the flag "fixture.bridge-mended".']);
   });
-  it('counts a story set-flag as a source for a flag step', () => {
+  it('counts a story set-flag reached through a reaction and a cutscene', () => {
+    const setter = patch({
+      reactions: [{ ...content.reactions[0]!, then: [{ type: 'cutscene', cutscene: 'c-intro' }] }],
+      cutscenes: [{ ...content.cutscenes[0]!, then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],
+    });
+    expect(validateContent(setter, { worldFlags: [] })).toEqual([]);
+  });
+  it('counts a flag set inside a world effect reached through a reaction', () => {
+    const setter = patch({
+      reactions: [{ ...content.reactions[0]!, then: [{ type: 'world', effects: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }] }],
+    });
+    expect(validateContent(setter, { worldFlags: [] })).toEqual([]);
+  });
+  it('does not count a setter nothing can reach (cutscene never played)', () => {
     const setter = patch({ cutscenes: [{ ...content.cutscenes[0]!, then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }] });
-    expect(validateContent(setter, { worldFlags: [] })).toEqual([]);
+    expect(validateContent(setter, { worldFlags: [] })).toHaveLength(1);
   });
-  it('counts a flag set inside a world effect', () => {
-    const setter = patch({ cutscenes: [{ ...content.cutscenes[0]!, then: [{ type: 'world', effects: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }] }] });
-    expect(validateContent(setter, { worldFlags: [] })).toEqual([]);
+  it('does not count a step that only sets the flag it waits for', () => {
+    const selfish = patch({
+      quests: [
+        {
+          id: 'q',
+          world: 'lowlands',
+          title: 'q',
+          kind: 'main',
+          steps: [{ id: 'a', objective: 'a', completeWhen: { type: 'flag', flag: 'f', value: true }, then: [{ type: 'set-flag', flag: 'f', value: true }] }],
+        },
+      ],
+      openingQuests: ['q'],
+      reactions: [],
+    });
+    const errors = validateContent(selfish, { worldFlags: [] }).filter((error) => error.includes('can never complete'));
+    expect(errors).toEqual(['Quest "q" step "a" can never complete: nothing reachable sets the flag "f".']);
+  });
+  it('follows a chain of reachable setters', () => {
+    const chain = patch({
+      quests: [
+        {
+          id: 'q',
+          world: 'lowlands',
+          title: 'q',
+          kind: 'main',
+          steps: [
+            { id: 'a', objective: 'a', completeWhen: { type: 'trigger', trigger: 't' }, then: [{ type: 'set-flag', flag: 'f', value: true }] },
+            { id: 'b', objective: 'b', completeWhen: { type: 'flag', flag: 'f', value: true }, then: [{ type: 'set-flag', flag: 'g', value: true }] },
+            { id: 'c', objective: 'c', completeWhen: { type: 'flag', flag: 'g', value: true }, then: [] },
+          ],
+        },
+      ],
+      openingQuests: ['q'],
+      reactions: [],
+    });
+    expect(validateContent(chain, { worldFlags: [] }).filter((error) => error.includes('can never complete'))).toEqual([]);
+  });
+  it('a reaction gated on an unset flag adds no setters', () => {
+    const gated = patch({
+      reactions: [{ ...content.reactions[0]!, onlyIf: 'never', then: [{ type: 'set-flag', flag: 'fixture.bridge-mended', value: true }] }],
+    });
+    expect(validateContent(gated, { worldFlags: [] })).toHaveLength(1);
   });
   it('accepts a line of two full rows', () => {
     expect(validateContent(patch({ dialogues: [...content.dialogues, dialogueWith(`${'a'.repeat(48)}\n${'b'.repeat(48)}`)] }))).toEqual([]);

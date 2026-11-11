@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
 import type { Beat } from '@escape/story';
-import { nextIndex, speakerName } from './advance';
-import { useAdvanceKeys } from './useAdvanceKeys';
+import { speakerName } from './advance';
+import { useSequence } from './useSequence';
 
 interface CutsceneProps {
   /** null or empty means closed: nothing renders and no key is captured. */
@@ -29,22 +28,9 @@ function BeatView({ beat }: { readonly beat: Beat }) {
 }
 
 export function Cutscene({ beats, onFinish }: CutsceneProps) {
-  const [index, setIndex] = useState(0);
-  const open = beats !== null && beats.length > 0;
-  const length = beats?.length ?? 0;
-
-  useEffect(() => setIndex(0), [beats]);
-
-  const advance = useCallback(() => {
-    const progress = nextIndex(index, length);
-    if (progress.done) onFinish();
-    else setIndex(progress.index);
-  }, [index, length, onFinish]);
-
-  useAdvanceKeys(open, advance);
-
-  const beat = beats?.[index];
-  if (!open || beat === undefined) return null;
+  const { item } = useSequence(beats, onFinish);
+  const beat = item === null ? undefined : beats?.[item];
+  if (beat === undefined) return null;
   return (
     <div className="cutscene" role="dialog" aria-live="polite">
       <BeatView beat={beat} />

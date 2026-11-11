@@ -192,6 +192,71 @@ function lineErrors(where: string, line: Line): string[] {
   return [`${where} takes ${rows} rows. The limit is ${MAX_LINE_ROWS} rows of ${MAX_LINE_CHARS} characters.`];
 }
 
+/**
+ * Fixpoint over what can happen, starting from the opening quests. A step is completable when its
+ * condition can hold: a flag condition needs that flag to be set by the world or by an effect that
+ * is itself reachable; triggers, stage clears, scripts and skills count as reachable. Returns, per
+ * reached quest, the id of the flag step that blocks it.
+ */
+function blockedSteps(content: StoryContent, worldFlags: readonly string[]): Map<string, string> {
+  const flags = new Set<string>(worldFlags);
+  const progress = new Map<string, number>(content.openingQuests.map((id) => [id, 0]));
+  const fired = new Set<string>();
+  const emitted = new Set<string>();
+
+  const conditionOk = (condition: StoryCondition): boolean =>
+    condition.type !== 'flag' || !condition.value || flags.has(condition.flag);
+
+  const run = (effects: readonly StoryEffect[]): void => {
+    for (const effect of effects) {
+      if (effect.type === 'set-flag' && effect.value) flags.add(effect.flag);
+      if (effect.type === 'start-quest' && !progress.has(effect.quest)) progress.set(effect.quest, 0);
+      if (effect.type === 'world') {
+        for (const inner of effect.effects) {
+          if (inner.type === 'set-flag' && inner.value) flags.add(inner.flag);
+        }
+      }
+      if (effect.type === 'dialogue' && !emitted.has(`d:${effect.dialogue}`)) {
+        emitted.add(`d:${effect.dialogue}`);
+        run(content.dialogues.find((d) => d.id === effect.dialogue)?.then ?? []);
+      }
+      if (effect.type === 'cutscene' && !emitted.has(`c:${effect.cutscene}`)) {
+        emitted.add(`c:${effect.cutscene}`);
+        run(content.cutscenes.find((c) => c.id === effect.cutscene)?.then ?? []);
+      }
+    }
+  };
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const quest of content.quests) {
+      let index = progress.get(quest.id);
+      if (index === undefined) continue;
+      for (let step = quest.steps[index]; step !== undefined && conditionOk(step.completeWhen); step = quest.steps[index]) {
+        run(step.then);
+        index += 1;
+        progress.set(quest.id, index);
+        changed = true;
+      }
+    }
+    for (const reaction of content.reactions) {
+      if (fired.has(reaction.id) || !conditionOk(reaction.when)) continue;
+      if (reaction.onlyIf !== undefined && !flags.has(reaction.onlyIf)) continue;
+      fired.add(reaction.id);
+      run(reaction.then);
+      changed = true;
+    }
+  }
+
+  const blocked = new Map<string, string>();
+  for (const quest of content.quests) {
+    const step = quest.steps[progress.get(quest.id) ?? quest.steps.length];
+    if (step !== undefined) blocked.set(quest.id, step.id);
+  }
+  return blocked;
+}
+
 /** Returns plain-words errors. An empty list means the content is sound. */
 export function validateContent(content: StoryContent, known: KnownIds = {}): string[] {
   const errors: string[] = [];
@@ -266,18 +331,12 @@ export function validateContent(content: StoryContent, known: KnownIds = {}): st
   for (const reaction of content.reactions) checkCondition(`Reaction "${reaction.id}"`, reaction.when);
 
   const startable = new Set(content.openingQuests);
-  const settable = new Set<string>(known.worldFlags ?? []);
   for (const { effects } of located) {
     for (const effect of effects) {
       if (effect.type === 'start-quest') startable.add(effect.quest);
-      if (effect.type === 'set-flag' && effect.value) settable.add(effect.flag);
-      if (effect.type === 'world') {
-        for (const inner of effect.effects) {
-          if (inner.type === 'set-flag' && inner.value) settable.add(inner.flag);
-        }
-      }
     }
   }
+  const blocked = known.worldFlags === undefined ? new Map<string, string>() : blockedSteps(content, known.worldFlags);
   for (const quest of content.quests) {
     if (!startable.has(quest.id)) {
       errors.push(`Quest "${quest.id}" never starts: it is not an opening quest and nothing starts it.`);
@@ -289,8 +348,8 @@ export function validateContent(content: StoryContent, known: KnownIds = {}): st
       const where = `Quest "${quest.id}" step "${step.id}"`;
       checkCondition(where, step.completeWhen);
       const need = step.completeWhen;
-      if (need.type === 'flag' && need.value && known.worldFlags !== undefined && !settable.has(need.flag)) {
-        errors.push(`${where} can never complete: nothing sets the flag "${need.flag}".`);
+      if (need.type === 'flag' && blocked.get(quest.id) === step.id) {
+        errors.push(`${where} can never complete: nothing reachable sets the flag "${need.flag}".`);
       }
     }
   }
