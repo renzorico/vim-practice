@@ -104,7 +104,7 @@ export interface EntitySpawn {
   readonly damage: number;
   /** Blocks the player's movement (NPCs, props). Blots do not block: walking into one is a hit. */
   readonly solid: boolean;
-  /** Only exists while this flag is set (or unset, with `spawnUnless`). */
+  /** Spawned only if this flag is set (or, with `spawnUnless`, not set). Checked once, by `init`; a later flag change neither spawns nor removes it. */
   readonly spawnIf?: FlagId;
   readonly spawnUnless?: FlagId;
 }
@@ -161,10 +161,13 @@ export interface TriggerBase {
 /**
  * The script layer: an in-world text (sign, contract, spell) edited with real Vim.
  * While a script is open the field is paused: script keys cost no turns and entities do not act.
- * `:q` or `:q!` closes it (`:q` is refused while modified, as in Vim). The script is solved when,
- * after a completed command, all its goals hold and every `mustUse` skill appears in
- * OpenScript.commands. `effects` are applied to the field at that moment, as one batch.
- * Reopening a solved script shows the text it was solved with (WorldState.solvedScripts) and can change nothing.
+ * `:q` or `:q!` closes it unsolved (`:q` is refused while modified, as in Vim). The script is
+ * solved when, after a completed command, all its goals hold and every `mustUse` skill appears in
+ * OpenScript.commands. At that moment, in this order: 'script-solved', `effects` applied to the
+ * field as one batch, then the script closes by itself ('script-closed', solved: true). The player
+ * never has to type `:q!` out of a solved script.
+ * Reopening a solved script shows the text it was solved with (WorldState.solvedScripts), read
+ * only: motions work so it can be read, every edit is refused, and `:q` closes it.
  */
 export interface Script {
   readonly id: ScriptId;
@@ -190,8 +193,10 @@ export interface Script {
  * Buffer effects are pushed onto the engine undo stack as snapshots, so `u` restores them
  * (this is how the player brings back rows the Unwriter takes).
  *
- * Effects are applied in batches (one solved script, one `apply` call). A batch is atomic: all of
- * it is applied, entities are remapped (rule 3), and only then are death and clear checked.
+ * Effects are applied in batches (one solved script, one `apply` call), in the order listed, and
+ * their events come out in that order. All buffer effects of one batch share one undo snapshot.
+ * A batch is atomic: all of it is applied, with positions remapped after each buffer effect
+ * (rule 3), and only then are death and clear checked.
  * A batch that contains anything other than 'set-flag' then stores a checkpoint (rule 5), so a
  * rebuilt bridge or a quest reward cannot be lost by dying. A batch of only 'set-flag' effects
  * stores none: syncing a story flag must never work as a free save.
@@ -204,7 +209,12 @@ export type WorldEffect =
   | { readonly type: 'delete-row'; readonly line: number }
   | { readonly type: 'spawn'; readonly entity: EntitySpawn }
   | { readonly type: 'remove-entity'; readonly entity: EntityId }
+  /** Hearts never go above Stage.hearts. */
   | { readonly type: 'heal'; readonly hearts: number }
+  /**
+   * `to` is a cell of the field as it is when this effect runs. It must exist, be walkable and hold no
+   * solid entity, or the effect is ignored. Emits 'player-moved' with style 'jump'.
+   */
   | { readonly type: 'move-player'; readonly to: Position };
 
 // ---------------------------------------------------------------------------------------------
@@ -323,11 +333,18 @@ export interface WorldState {
 export type BumpReason = 'wall' | 'solid-entity' | 'fixed' | 'edge';
 
 export type WorldEvent =
-  /** A Vim command finished on the field or in a script. Mastery and skills read these. */
+  /**
+   * A Vim command finished on the field or in a script. Mastery and skills read these.
+   * On the field it is emitted only when the world command commits (rule 1), never for a cancelled one,
+   * so `i` is reported at <Esc> together with the rest of that insert.
+   */
   | { readonly type: 'command'; readonly command: CommandRecord; readonly in: 'field' | 'script' }
   | { readonly type: 'engine-error'; readonly error: EngineError }
   | { readonly type: 'player-moved'; readonly from: Position; readonly to: Position; readonly style: 'walk' | 'jump' }
-  /** The command was cancelled, the field went back to how it was before its first key, and no turn was spent. */
+  /**
+   * The command was cancelled, the field went back to how it was before its first key, and no turn was
+   * spent. It is the ONLY event of a cancelled command: nothing the command provisionally did is reported.
+   */
   | { readonly type: 'bump'; readonly reason: BumpReason; readonly at: Position }
   /**
    * The field buffer changed. A hint for animation only: `fromLine`..`toLine` are the rows that
@@ -377,8 +394,12 @@ export interface WorldOptions {
  *    at rest again and the engine has emitted at least one CommandRecord since the start.
  *    So `5j`, `dw`, `ihello<Esc>` and `:w<CR>` are one command each, and `vjd` is three (`v`, `j`,
  *    `d`): moving a selection gives enemies their turns like any other move. A complete command
- *    is then checked (rules 2, 3): if it passes it is committed and one turn ends; if not, the
- *    world returns to `pending` (event 'bump') and no turn is spent. A key that returns to rest
+ *    is then checked (rules 2, 3) as a whole, by comparing the field with `pending`: if it passes
+ *    it is committed and one turn ends; if not, the world returns to `pending` and no turn is
+ *    spent. Entities are NOT remapped key by key while a command is open, only at commit, so
+ *    `cl` followed by retyping the same character changes nothing. While a command is open the
+ *    only events are provisional 'rows-changed' hints; a cancelled command then reports 'bump'
+ *    and nothing else, and a committed one reports its 'command', movement and entity events. A key that returns to rest
  *    with no CommandRecord spends no turn either: on an engine error `pending` is restored;
  *    with no error the engine's new state is kept, because it is only a mode change (<Esc> out
  *    of visual mode, switching between `v` and `V`).
@@ -388,11 +409,15 @@ export interface WorldOptions {
  *    must pass the same test. Every other motion jumps: only the landing cell is tested. The same
  *    landing test applies after an edit, an undo or a redo, wherever the engine leaves the cursor.
  * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled. After ANY
- *    change to the field buffer, whatever caused it (edit, undo, redo, effect, entity), entities
- *    are remapped by one rule that also covers split and joined rows. Join the old lines with
- *    '\n' into one text, and the new lines likewise. Take the longest common prefix of the two
- *    texts, then the longest common suffix of what remains: what lies between is the changed
- *    span (old span, new span). For each entity, by its offset in the old text:
+ *    change to the field buffer, whatever caused it (a committed command, undo, redo, effect,
+ *    entity), positions are remapped by one rule that also covers split and joined rows. Join
+ *    the old lines with '\n' into one text, and the new lines likewise. The changed span is what
+ *    lies between a common prefix and a common suffix of the two texts, with the spans as short
+ *    as possible. When equal neighbouring characters allow several placements of that span (a
+ *    deleted tile inside a run of the same tile), take the placement whose start is nearest to
+ *    the ANCHOR, the earlier one on a tie. The anchor is the cursor's offset in the old text
+ *    before the command; for an effect or entity change, the offset where that change starts.
+ *    For each entity, by its offset in the old text:
  *      a. before the span: the offset is kept;
  *      b. after the span: the offset shifts by (new span length - old span length);
  *      c. inside the span: the offset is kept if it is still inside the new span, else the entity
@@ -401,7 +426,18 @@ export interface WorldOptions {
  *    '\n', or on a cell that is not walkable, is removed. Fixed tiles are tracked by the same
  *    mapping: one that falls under (c)-removal, or whose character differs afterwards, was
  *    deleted or replaced. Removal by remapping is how the player fights (cause 'deleted-tile').
- *    Undo never brings an entity back. The player's cell is always the engine cursor.
+ *    Undo never brings an entity back.
+ *    Known limit: a backward delete (`X`, `dh`, `db`) inside a run of equal tiles is placed at
+ *    the cursor, not left of it, because the text alone cannot tell the two apart. Until the
+ *    engine reports edit ranges, stages avoid enemies standing in such runs next to the player.
+ *    THE PLAYER. After a committed command the player's cell is the engine cursor. After a
+ *    buffer change by an effect or an entity, the cursor, the marks and the visual anchor are
+ *    mapped by the same rule. A mark whose cell is gone is dropped. If the visual anchor's cell
+ *    is gone, visual mode ends. If the player's cell is gone, or is no longer walkable, or holds
+ *    a solid entity, the player is DISPLACED: moved to the nearest existing walkable cell free
+ *    of solid entities (Manhattan distance; ties: lower line, then lower column) and hit for 1
+ *    heart ('player-hit' by 'tile', then 'player-moved' with style 'jump').
+ *    If no such cell exists anywhere, the player dies (hearts 0, status 'dead').
  * 4. ENTITIES. When a turn ends: `turn` goes up by one (the first turn is 1). Entities act in
  *    WorldState.entities order, each once if `turn % every == 0`. Then every entity with
  *    damage > 0 on the player's cell or 4-adjacent deals it once, whether or not it acted. Then
@@ -427,6 +463,9 @@ export interface WorldSim {
    * The app sends everything one StoryStepResult asks of the world in ONE call, so it is one batch.
    */
   apply(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend): WorldStepResult;
-  /** After death or on request: back to the last checkpoint, with status 'playing'. Flags, solved scripts and fired triggers are kept. */
+  /**
+   * Back to the last checkpoint, with status 'playing'. Works from 'dead' and from 'playing' (the
+   * player asks to retry); does nothing once 'cleared'. Flags, solved scripts and fired triggers are kept.
+   */
   restore(state: WorldState): WorldStepResult;
 }
