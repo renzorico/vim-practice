@@ -437,6 +437,7 @@ export interface WorldOptions {
  *    a solid entity, the player is DISPLACED: moved to the nearest existing walkable cell free
  *    of solid entities (Manhattan distance; ties: lower line, then lower column) and hit for 1
  *    heart ('player-hit' by 'tile', then 'player-moved' with style 'jump').
+ *    If no such cell exists anywhere, the player dies (hearts 0, status 'dead').
  * 4. ENTITIES. When a turn ends: `turn` goes up by one (the first turn is 1). Entities act in
  *    WorldState.entities order, each once if `turn % every == 0`. Then every entity with
  *    damage > 0 on the player's cell or 4-adjacent deals it once, whether or not it acted. Then
