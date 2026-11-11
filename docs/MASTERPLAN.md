@@ -1,7 +1,7 @@
 # UNSAVED (working title, was ESCAPE): masterplan v2
 
-Status: **draft for Renzo's approval, 2026-11-11.** Written by Fable. No code until sections 1-5 are approved.
-On approval this replaces `PLAN.md`, `STORY.md`, `GAME-DESIGN.md` and `VISUAL-DESIGN.md` (they move to `docs/archive/`).
+Status: **approved by Renzo, 2026-11-11.** Written by Fable. Contracts merged in PR #28.
+This replaces `PLAN.md`, `STORY.md`, `GAME-DESIGN.md` and `VISUAL-DESIGN.md`, now in `docs/archive/`.
 
 Priorities, in order (Renzo): **1 playability, 2 Vim learning, 3 story, 4 visuals.** When two goals conflict, the lower number wins.
 

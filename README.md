@@ -21,6 +21,6 @@ npm run play                  # terminal playground for the raw engine
 None required. Optional for tools: `OLLAMA_HOST`.
 
 ## Docs
-- docs/PLAN.md: scope, design, phases
+- docs/MASTERPLAN.md: scope, design, story, phases (v2)
 - docs/MODEL-ROUTING.md: which model does what
 - docs/BITACORA.md: log of every decision and change

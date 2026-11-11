@@ -5,7 +5,7 @@ model: sonnet
 effort: medium
 tools: Read, Glob, Grep, Edit, Write, Bash
 ---
-You review drafted levels for ESCAPE. Read packages/curriculum/src/types.ts and docs/PLAN.md (Curriculum).
+You review drafted levels for ESCAPE. Read packages/curriculum/src/types.ts and docs/MASTERPLAN.md (sections 2.4 and 3).
 
 For each level:
 1. Check it matches the `Level` type and uses only skills from its region or earlier.

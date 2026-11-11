@@ -282,6 +282,33 @@ Tags: `#contracts` `#fanout` `#routing` `#gates` `#eval`
 
 ---
 
+## 2026-11-11: Second playtest verdict and masterplan v2 ("UNSAVED")
+Phase: 3 → B | Agent(s): Renzo (decision), design lead (Fable), Codex/GPT (contract review, 3 rounds) | PR: #28
+Tags: `#contracts` `#routing` `#eval`
+
+**What:** Renzo rejected the Phase 3 ASCII game: he wants a 2D game with a character, quests and a story with a twist, not a styled text buffer. New plan in `docs/MASTERPLAN.md`: a top-down tile world where every tile is a character of a real Vim buffer and **one Vim command is one turn**; six worlds with a castle each; a story whose twist is Vim's own E325 swap-file prompt. Two new frozen contracts: `packages/world/src/types.ts` and `packages/story/src/types.ts`. Old design docs moved to `docs/archive/`.
+
+**Why:**
+- *The world stays a buffer.* That keeps the Neovim-verified engine, the solver, mastery, saves and CI. The pivot is a new renderer and game layer, not a rewrite.
+- *Turns instead of stars.* Enemies move once per finished command, so `5j` beating `jjjjj` is felt, not scored. It is also deterministic, so the solver and CI replay still work.
+- *Rules live in the contract.* The eight rules of a turn are a doc comment on `WorldSim`, because they are the design and four builders must agree on them.
+- *Planning moved to Fable; a Sonnet session dispatches.* Renzo asked for the strongest model on design and cheaper ones on execution.
+
+**What the review caught:** Codex reviewed the contracts three times: 15 findings, then 5, then 1. The serious ones: runtime-spawned entities lost their definition after one step; fixed border tiles made `dd` and `x` impossible; a multi-key insert had no rollback; dying rewound the world but not the story; a visual-mode selection froze enemies; syncing a story flag worked as a free save. Fixing them changed the design, not only the types (no border tiles, ragged rows, commands as transactions, story progress never rewinds).
+
+**Usage of the three vendors so far (Renzo asked):** Codex built 7 modules and reviewed every Claude branch. Ollama wrote 6 level drafts in Phase 2 (2 valid) and nothing in Phase 3. From Phase B it gets scoped content only: NPC lines, signs, hints, stage variants.
+
+**Result:** Contracts merged, typecheck and 1260 tests green. Nothing new is playable yet. Next: Phase B, a one-week vertical slice, gated on Renzo playing it.
+
+**Cost:** not measured for this step.
+
+**Lessons:**
+- **The ASCII world was a logged decision, and it was still wrong.** A decision made from a description is weaker than one made from playing. The slice exists so the next one is made by playing.
+- **Reviewing a contract is cheaper than reviewing four implementations of it.** 21 findings cost three short review runs and no code.
+- **A reviewer's first verdict is not the last.** Round 2 found problems the round 1 fixes created.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
