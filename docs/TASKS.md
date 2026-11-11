@@ -51,15 +51,21 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | ID | Task | Owns files | Runner | Reviewer | Branch | Status |
 |---|---|---|---|---|---|---|
 | B-0 | Contracts: world, story; shared fixture | `packages/world/src/types.ts`, `packages/story/src/types.ts`, `packages/world/src/fixtures.ts` | fable | codex (3 rounds) | design/v2-contracts | merged |
-| B-A | World simulation (rules 1-8) | `packages/world/src/sim/**` | codex | claude-sonnet | | todo |
-| B-B | Phaser tile renderer | `apps/game/src/scene/**`, `apps/game/package.json` | codex | claude-sonnet | | todo |
-| B-C | Story engine, dialogue box, HUD | `packages/story/src/engine/**`, `packages/story/src/schema.ts`, `apps/game/src/story-ui/**` | claude-sonnet | codex | | todo |
-| B-D | Stage solver (turns, enemies) | `packages/world/src/solver/**` | codex | claude-sonnet | | todo, after B-A |
-| B-E | Map and content linters | `packages/world/src/schema.ts`, `tools/maps/**` | claude-haiku | codex | | todo |
+| B-A | World simulation (rules 1-8) | `packages/world/src/sim/**` | codex | claude-sonnet (2 rounds) | task/B-A | merged |
+| B-B | Phaser tile renderer | `apps/game/src/scene/**`, `apps/game/package.json` | codex | claude-sonnet (2 rounds) + browser check | task/B-B | merged |
+| B-C | Story engine, dialogue box, HUD | `packages/story/src/engine/**`, `packages/story/src/schema.ts`, `apps/game/src/story-ui/**` | claude-sonnet | codex (3 rounds) | task/B-C-story | merged |
+| B-D | Stage solver (turns, enemies) | `packages/world/src/solver/**` | codex | claude-sonnet | | **next** |
+| B-E | Map and content linters | `packages/world/src/schema.ts`, `tools/maps/**` | claude-haiku | codex (2 rounds) | task/B-E-linters | merged |
 | B-F | Stage maps, scripts and quests for the slice (0-1 to 1-5) | `packages/world/content/**`, `packages/story/content/**` | fable | renzo | | todo, after B-A and B-E |
 | B-G | NPC lines, signs, hint wording for the slice | `packages/story/content/drafts/**` | ollama | claude-sonnet | | todo, after B-F |
 | B-H | Integration, CC0 art pack, preview deploy | integration | codex | claude-sonnet, then fable | | todo, after all |
 | B-I | Playtest: 15 minutes, "do I want more?" | | renzo | | | gate |
+
+### Phase C (queued)
+
+| ID | Task | Owns files | Runner | Reviewer | Branch | Status |
+|---|---|---|---|---|---|---|
+| C-1 | Engine reports exact edit ranges; simulation maps positions from them instead of the cursor anchor (world contract rule 3, known limit). **Blocks every World 2 stage.** | `packages/engine/src/**`, `packages/world/src/sim/remap.ts` | codex | claude-sonnet | | todo |
 
 ## Backlog (minor review findings, not blocking merge)
 
@@ -73,5 +79,11 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | P1-B/P1-C | `''`, `` `` `` jump-back marks; `cw` as `ce`; o_v linewise promotion for `d}`; `"1` for `%` `(` `{` deletes | P1-F wiring |
 | P1-D review | Better watchdog error, pending-command tests, edge-case samples, reject raw `\n` in keys | Phase 2 |
 
+| B-B review 2 | Camera follows the jump arc and bump shake on maps larger than the view, cancelling them on screen | B-H |
+| B-B review 2 | Hit flash, bump shake and fades vanish when one step has more than 14 animation hints | B-H |
+| B-B review 2 | `FieldView` collapses to 0 px in a parent with no definite height; identical-frame check ignores a changed legend | B-H |
+| B-C review 2 | `validateContent` reachability is an approximation: a non-once reaction watching a flag's starting value counts as reachable | later |
+| B-C | No typed `parseContent` for story JSON (zod inference vs `exactOptionalPropertyTypes`) | B-F |
+| B-E | Spawned entities' start cells are not checked for walkability; flag references are not linted | B-F |
 | P3 review | Old `escape.save.v1` Phase 2 saves are not migrated: the redesign replaced every level, so there is nothing meaningful to carry over (decision, not a bug) | orchestrator |
 | P3 browser | Lesson card sits small top-left with no header; map glyph colours for N could be warmer | P3-H polish |

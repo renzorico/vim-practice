@@ -84,6 +84,7 @@ export type EntityKind = 'blot' | 'npc' | 'keeper' | 'dot' | 'unwriter' | 'prop'
  *   - patrol: next waypoint in `path`, looping. Blocked: wait.
  *   - follow: like chase, but stops when adjacent and never deals damage (Dot).
  *   - unwrite: deletes the buffer row at `path[n]`'s line each time it acts (the Unwriter, finale).
+ *              If it stands on that row it removes itself, like any entity on a deleted tile.
  */
 export type Behaviour =
   | { readonly type: 'still' }
@@ -213,7 +214,8 @@ export type WorldEffect =
   | { readonly type: 'heal'; readonly hearts: number }
   /**
    * `to` is a cell of the field as it is when this effect runs. It must exist, be walkable and hold no
-   * solid entity, or the effect is ignored. Emits 'player-moved' with style 'jump'.
+   * solid entity, or the effect is ignored (no event; the rest of the batch still applies).
+   * Emits 'player-moved' with style 'jump'.
    */
   | { readonly type: 'move-player'; readonly to: Position };
 
@@ -427,9 +429,13 @@ export interface WorldOptions {
  *    mapping: one that falls under (c)-removal, or whose character differs afterwards, was
  *    deleted or replaced. Removal by remapping is how the player fights (cause 'deleted-tile').
  *    Undo never brings an entity back.
- *    Known limit: a backward delete (`X`, `dh`, `db`) inside a run of equal tiles is placed at
- *    the cursor, not left of it, because the text alone cannot tell the two apart. Until the
- *    engine reports edit ranges, stages avoid enemies standing in such runs next to the player.
+ *    KNOWN LIMIT (task C-1). Text and cursor alone cannot say exactly which of several equal
+ *    tiles an edit touched. The anchor is right for edits that start at the cursor (`x`, `i`,
+ *    `dw`, `dd` from column 0) and wrong, inside a run of equal tiles, for undo and redo, for
+ *    linewise edits made off column 0, for `a`, `A` and charwise `p`, and for backward deletes
+ *    (`X`, `dh`, `db`). Task C-1 replaces the anchor with exact edit ranges reported by the
+ *    engine. Until C-1 lands, no stage lets the player edit the field: World 0 and World 1 use
+ *    motions on the field and edits only inside scripts.
  *    THE PLAYER. After a committed command the player's cell is the engine cursor. After a
  *    buffer change by an effect or an entity, the cursor, the marks and the visual anchor are
  *    mapped by the same rule. A mark whose cell is gone is dropped. If the visual anchor's cell
