@@ -1,4 +1,4 @@
 {
   "files": [],
-  "references": [{ "path": "packages/engine" }, { "path": "packages/curriculum" }]
+  "references": [{ "path": "packages/engine" }, { "path": "packages/curriculum" }, { "path": "packages/world" }, { "path": "packages/story" }]
 }
