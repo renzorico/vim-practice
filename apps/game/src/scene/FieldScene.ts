@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Position } from '@escape/engine';
 import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
+import { SPRITES } from './sprites/index.js';
 import { animationSteps, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { tileGrid } from './tiles.js';
@@ -30,6 +31,9 @@ export class FieldScene extends Phaser.Scene {
     char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
     line: number;
   }>();
+  private prompts: Phaser.GameObjects.Container | undefined;
+  private facing = new Map<string, boolean>();
+  private idleFrame = 0;
   private previousState: WorldState | undefined;
   private previousEvents: readonly WorldEvent[] | undefined;
 
@@ -40,9 +44,22 @@ export class FieldScene extends Phaser.Scene {
   }
 
   create(): void {
+    for (const [name, art] of Object.entries(SPRITES)) art.frames.forEach((_, frame) => this.texture(name, frame));
+    this.time.addEvent({ delay: 500, loop: true, callback: () => {
+      if (this.reducedMotion) return;
+      this.idleFrame = (this.idleFrame + 1) % 2;
+      this.player?.setTexture(this.texture('player', this.idleFrame));
+      for (const entity of this.frame.state.entities) {
+        this.entities.get(entity.id)?.setTexture(this.texture(entity.def.sprite, this.idleFrame));
+      }
+      for (const cell of this.cells.values()) {
+        if (cell.sprite === 'water') cell.tile.setTexture(this.texture('water', this.idleFrame));
+      }
+    } });
     this.tiles = this.add.container(0, 0);
     this.actors = this.add.container(0, 0).setDepth(2);
     this.source = this.add.container(0, 0).setDepth(1);
+    this.prompts = this.add.container(0, 0).setDepth(4);
     this.label = this.add.text(8, 8, '', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
@@ -63,7 +80,11 @@ export class FieldScene extends Phaser.Scene {
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value;
-    if (value) this.finish();
+    if (value) {
+      this.idleFrame = 0;
+      this.finish();
+      for (const cell of this.cells.values()) if (cell.sprite === 'water') cell.tile.setTexture(this.texture('water'));
+    }
   }
 
   /** Called for every key, including unfinished commands: nothing can queue behind typing. */
@@ -86,6 +107,12 @@ export class FieldScene extends Phaser.Scene {
     this.finish();
     this.frame = frame;
     if (!this.ready) return;
+    for (const event of frame.events) {
+      if (event.type === 'player-moved' || event.type === 'entity-moved') {
+        const id = event.type === 'player-moved' ? 'player' : event.entity;
+        if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
+      }
+    }
     this.syncCells();
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
@@ -154,15 +181,17 @@ export class FieldScene extends Phaser.Scene {
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
       const key = `${line}:${col}`;
       const char = this.frame.state.engine.lines[line]?.charAt(col) ?? ' ';
+      if (char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
+      const variant = sprite === 'grass' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
-        if (cell.sprite !== sprite) cell.tile.setTexture(this.texture(sprite));
+        if (cell.sprite !== sprite) cell.tile.setTexture(this.texture(sprite, variant));
         if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char));
         cell.sprite = sprite;
         cell.char = char;
       } else {
-        const tile = this.add.image(center(col), center(line), this.texture(sprite));
+        const tile = this.add.image(center(col), center(line), this.texture(sprite, variant));
         const glyph = this.add.image(center(col), center(line), this.glyphTexture(char));
         this.tiles?.add(tile);
         this.source?.add(glyph);
@@ -177,13 +206,23 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
-  private texture(sprite: string): string {
-    const key = `field:${sprite}`;
+  private texture(sprite: string, frame = 0): string {
+    const art = SPRITES[sprite];
+    const pixels = art?.frames[frame % art.frames.length];
+    const variant = pixels ? frame % (art?.frames.length ?? 1) : 0;
+    const key = `field:${sprite}${variant === 0 ? '' : `:${variant}`}`;
     if (!this.textures.exists(key)) {
       const graphics = this.make.graphics({ x: 0, y: 0 });
-      const color = spriteColor(sprite);
-      graphics.fillStyle(edgeColor(color)).fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-      graphics.fillStyle(color).fillRect(1, 1, TILE_SIZE - 2, TILE_SIZE - 2);
+      if (art && pixels) {
+        pixels.forEach((row, y) => [...row].forEach((pixel, x) => {
+          const color = art.palette[pixel];
+          if (color && color !== 'transparent') graphics.fillStyle(Number.parseInt(color.slice(1), 16)).fillRect(x, y, 1, 1);
+        }));
+      } else {
+        const color = spriteColor(sprite);
+        graphics.fillStyle(edgeColor(color)).fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+        graphics.fillStyle(color).fillRect(1, 1, TILE_SIZE - 2, TILE_SIZE - 2);
+      }
       graphics.generateTexture(key, TILE_SIZE, TILE_SIZE);
       graphics.destroy();
     }
@@ -191,7 +230,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private addEntity(id: string, sprite: string, at: Position): void {
-    const image = this.add.image(center(at.col), center(at.line), this.texture(sprite));
+    const image = this.add.image(center(at.col), center(at.line), this.texture(sprite, this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
     this.actors?.add(image);
     this.entities.set(id, image);
   }
@@ -201,11 +240,26 @@ export class FieldScene extends Phaser.Scene {
       this.player = this.add.image(0, 0, this.texture('player')).setDepth(1);
       this.actors?.add(this.player);
     }
+    this.player.setTexture(this.texture('player', this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get('player') ?? false);
     this.player.setPosition(center(this.frame.state.engine.cursor.col), center(this.frame.state.engine.cursor.line))
       .setAlpha(1).clearTint();
     for (const image of this.entities.values()) image.destroy();
     this.entities.clear();
     for (const entity of this.frame.state.entities) this.addEntity(entity.id, entity.def.sprite, entity.at);
+    this.prompts?.removeAll(true);
+    for (const entity of this.frame.state.entities) {
+      const at = this.frame.state.engine.cursor;
+      const canTalk = this.frame.stage.triggers.some(trigger => trigger.on === 'interact'
+        && trigger.target.type === 'entity' && trigger.target.entity === entity.id
+        && (!trigger.once || !this.frame.state.firedTriggers.includes(trigger.id))
+        && (trigger.onlyIf === undefined || this.frame.state.flags[trigger.onlyIf] === true)
+        && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
+      if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
+        this.prompts?.add(this.add.text(center(entity.at.col), center(entity.at.line) - 13, 'Enter: talk', {
+          fontFamily: 'monospace', fontSize: '7px', color: '#f6efd4', backgroundColor: '#20252b', padding: { x: 2, y: 1 },
+        }).setOrigin(0.5, 1));
+      }
+    }
     this.positionCamera();
   }
 
@@ -215,7 +269,7 @@ export class FieldScene extends Phaser.Scene {
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = steps.reduce((sum, step) => sum + step.durationMs, 0);
+    const duration = steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0);
     if (duration === 0) { this.syncActors(); return; }
     const clock = { value: 0 };
     const render = (): void => {

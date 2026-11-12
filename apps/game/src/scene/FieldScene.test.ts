@@ -11,6 +11,7 @@ const fake = vi.hoisted(() => {
     setVisible(value: boolean) { this.visible = value; return this; },
     setTexture: vi.fn(function (this: { texture: string }, value: string) { this.texture = value; return this; }),
     setText(value: string) { this.text = value; return this; },
+    setFlipX: vi.fn().mockReturnThis(),
     setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
     setOrigin: vi.fn().mockReturnThis(), setTintFill: vi.fn().mockReturnThis(), clearTint: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(), removeAll: vi.fn(), destroy: vi.fn(),
@@ -41,6 +42,7 @@ vi.mock('phaser', () => ({ default: {
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
+    time = { addEvent: vi.fn() };
   },
 } }));
 import { FieldScene } from './FieldScene.js';
@@ -74,7 +76,7 @@ describe('FieldScene without canvas', () => {
   it('uses one clock for a forty-cell walk', () => {
     const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
     expect(fake.tween).toHaveBeenCalledTimes(1);
-    expect(fake.tween.mock.calls[0]?.[0]).toMatchObject({ duration: 240 });
+    expect(fake.tween.mock.calls[0]?.[0]).toMatchObject({ duration: 90 });
   });
   it('places actors over transparent glyph images and caches glyph textures', () => {
     const scene = new FieldScene(frame, false); scene.create();
@@ -149,9 +151,9 @@ it('keeps ghosts visible through movement and fades after the move span', () => 
   ] });
   const ghost = fake.images.filter(image => image.texture === 'field:blot').at(-1);
   const config = fake.tween.mock.calls[0]?.[0];
-  config.targets.value = 0.25; config.onUpdate();
+  config.targets.value = 0.325; config.onUpdate();
   expect(ghost?.alpha).toBe(1); expect(ghost?.x).toBe(224);
-  config.targets.value = 0.75; config.onUpdate();
+  config.targets.value = 0.825; config.onUpdate();
   expect(ghost?.alpha).toBeCloseTo(0.5); expect(ghost?.x).toBe(216);
 });
 

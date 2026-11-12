@@ -1,0 +1,203 @@
+{
+  "id": "margin",
+  "world": "margin",
+  "type": "field",
+  "title": "The Margin",
+  "goalText": "Cross the road to the east gate.",
+  "map": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "T    HHHH        T            T        T",
+    "T    HHHH    S   T    ~~~~             T",
+    "T                T T  ~~~~             T",
+    "T                T                 T   T",
+    "T         HHH    T                     T",
+    "T         HHH    T                     T",
+    "T                ......................D",
+    "T                T                     T",
+    "T  HHH      O    T   T                 T",
+    "T  HHH           T               ~~~~  T",
+    "T                T         T     ~~~~  T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "legend": "margin",
+  "start": {
+    "line": 7,
+    "col": 2
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "elder",
+      "kind": "npc",
+      "sprite": "elder",
+      "at": {
+        "line": 3,
+        "col": 6
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "mira",
+      "kind": "npc",
+      "sprite": "mira",
+      "at": {
+        "line": 10,
+        "col": 12
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "pell",
+      "kind": "npc",
+      "sprite": "pell",
+      "at": {
+        "line": 8,
+        "col": 8
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "bram",
+      "kind": "npc",
+      "sprite": "bram",
+      "at": {
+        "line": 7,
+        "col": 17
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "margin.talk-elder",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "elder"
+      },
+      "once": false
+    },
+    {
+      "id": "margin.talk-mira",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "mira"
+      },
+      "once": false
+    },
+    {
+      "id": "margin.talk-pell",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "pell"
+      },
+      "once": false
+    },
+    {
+      "id": "margin.talk-bram",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "bram"
+      },
+      "once": false
+    },
+    {
+      "id": "margin.road",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 7,
+          "col": 18
+        },
+        "to": {
+          "line": 7,
+          "col": 20
+        }
+      },
+      "once": true
+    },
+    {
+      "id": "margin.stone",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 2,
+          "col": 13
+        },
+        "to": {
+          "line": 2,
+          "col": 13
+        }
+      },
+      "once": true
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "reach",
+      "area": {
+        "from": {
+          "line": 7,
+          "col": 39
+        },
+        "to": {
+          "line": 7,
+          "col": 39
+        }
+      }
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l"
+  ],
+  "parTurns": 6,
+  "solution": [
+    "3",
+    "k",
+    "4",
+    "l",
+    "<CR>",
+    "6",
+    "j",
+    "5",
+    "l",
+    "<CR>",
+    "3",
+    "k",
+    "2",
+    "8",
+    "l"
+  ],
+  "hints": [
+    "Mira's trick: a number before l.\n30l crosses the road in one move."
+  ]
+}

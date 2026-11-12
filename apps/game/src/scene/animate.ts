@@ -1,8 +1,8 @@
 import type { Position } from '@escape/engine';
 import type { WorldEvent } from '@escape/world';
 
-export const PLAYBACK_BUDGET_MS = 240;
-const CELL_DURATION_MS = 45;
+export const PLAYBACK_BUDGET_MS = 90;
+const WALK_DURATION_MS = 60;
 
 type AnimationHint =
   | { readonly type: 'walk' | 'jump'; readonly from: Position; readonly to: Position }
@@ -20,20 +20,8 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
   for (const event of events) {
     switch (event.type) {
       case 'player-moved': {
-        if (event.style === 'jump') {
-          hints.push({ type: 'jump', from: event.from, to: event.to });
-          break;
-        }
-        const distance = Math.max(Math.abs(event.to.line - event.from.line), Math.abs(event.to.col - event.from.col));
-        let from = event.from;
-        for (let cell = 1; cell <= distance; cell += 1) {
-          const to = {
-            line: event.from.line + Math.sign(event.to.line - event.from.line) * Math.min(cell, Math.abs(event.to.line - event.from.line)),
-            col: event.from.col + Math.sign(event.to.col - event.from.col) * Math.min(cell, Math.abs(event.to.col - event.from.col)),
-          };
-          hints.push({ type: 'walk', from, to });
-          from = to;
-        }
+        const distance = Math.abs(event.to.line - event.from.line) + Math.abs(event.to.col - event.from.col);
+        if (distance > 0) hints.push({ type: event.style === 'jump' || distance > 1 ? 'jump' : 'walk', from: event.from, to: event.to });
         break;
       }
       case 'bump': hints.push({ type: 'bump', at: event.at }); break;
@@ -44,18 +32,13 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
       case 'rows-changed': if (!pending) hints.push({ type: 'rows', fromLine: event.fromLine, toLine: event.toLine, lineDelta: event.lineDelta }); break;
     }
   }
-  const total = reducedMotion ? 0 : Math.min(PLAYBACK_BUDGET_MS, hints.length * CELL_DURATION_MS);
-  // Reserve half the shared clock for impact feedback. Dense movement hints must
-  // never reduce a hit or bump to less than a rendered frame.
-  const impacts = hints.filter(hint => hint.type === 'hit' || hint.type === 'bump').length;
-  const ordinary = hints.length - impacts;
-  const impactShare = ordinary === 0 ? 1 : Math.max(0.5, impacts / hints.length);
-  let elapsed = 0;
-  return hints.map((hint, index) => {
-    const share = impacts === 0 ? 1 / hints.length
-      : hint.type === 'hit' || hint.type === 'bump' ? impactShare / impacts : (1 - impactShare) / ordinary;
-    const start = elapsed;
-    elapsed = index === hints.length - 1 ? 1 : Math.min(1, elapsed + share);
-    return { ...hint, durationMs: total * elapsed - total * start, start, end: elapsed };
+  const total = reducedMotion || hints.length === 0 ? 0
+    : hints.some(hint => hint.type === 'jump') ? PLAYBACK_BUDGET_MS : WALK_DURATION_MS;
+  // Actors share the same clock. Removal follows its own actor's movement.
+  return hints.map(hint => {
+    const delayed = hint.type === 'entity-remove' && hints.some(other => other.type === 'entity-move' && other.entity === hint.entity);
+    const start = delayed ? 0.65 : 0;
+    const end = hint.type === 'entity-move' && hints.some(other => other.type === 'entity-remove' && other.entity === hint.entity) ? 0.65 : 1;
+    return { ...hint, durationMs: total * (end - start), start, end };
   });
 }

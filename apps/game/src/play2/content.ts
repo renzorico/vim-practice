@@ -1,9 +1,9 @@
 import { SKILL_IDS } from '@escape/curriculum';
 import { contentSchema, validateContent, type StoryContent } from '@escape/story';
 import { parseLegend, parseStage } from '@escape/world';
-import stageJson from '../../../../packages/world/content/lowlands/1-1.json';
-import legendJson from '../../../../packages/world/content/lowlands/lowlands.legend.json';
-import storyJson from '../../../../packages/story/content/slice.json';
+import stageJson from '../../../../packages/world/content/margin/margin.json';
+import legendJson from '../../../../packages/world/content/margin/margin.legend.json';
+import storyJson from '../../../../packages/story/content/margin.json';
 
 export const stage = parseStage(stageJson);
 export const legend = parseLegend(legendJson);
@@ -23,4 +23,4 @@ for (const reaction of content.reactions) {
     errors.push(`Reaction "${reaction.id}": unknown trigger "${reaction.when.trigger}".`);
   }
 }
-if (errors.length > 0) throw new Error(`Invalid slice story:\n${errors.join('\n')}`);
+if (errors.length > 0) throw new Error(`Invalid Margin story:\n${errors.join('\n')}`);

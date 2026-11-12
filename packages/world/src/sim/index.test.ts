@@ -198,7 +198,8 @@ describe('entity actions and damage', () => {
     expect(result.state.entities[0]?.at).toEqual({ line: 1, col: 1 });
     expect(result.state.hearts).toBe(3);
     const second = run('00', value);
-    expect(second.state.entities[0]?.at).toEqual({ line: 1, col: 0 });
+    expect(second.state.entities).toEqual([]);
+    expect(second.events).toContainEqual({ type: 'entity-removed', entity: value.entities[0]?.id, cause: 'hit' });
     expect(second.state.hearts).toBe(2);
   });
   it('walking away from a chaser of the same speed is never a hit', () => {

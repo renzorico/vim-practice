@@ -1,0 +1,484 @@
+{
+  "worlds": [
+    {
+      "id": "margin",
+      "order": 0,
+      "name": "The Margin",
+      "stages": [
+        "margin"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "openingStage": "margin",
+  "openingQuests": [
+    "margin.warning"
+  ],
+  "quests": [
+    {
+      "id": "margin.warning",
+      "world": "margin",
+      "title": "The road east",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "meet-elder",
+          "objective": "Talk to the Elder. Stand next to him, press Enter.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "margin.met-elder",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "see-mira",
+          "objective": "Find Mira at the well.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "margin.knows-counts",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "cross",
+          "objective": "Cross the road to the east gate.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "margin"
+          },
+          "then": [
+            {
+              "type": "dialogue",
+              "dialogue": "margin.end"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "margin.elder-first",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-elder"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.elder"
+        }
+      ],
+      "unless": "margin.met-elder"
+    },
+    {
+      "id": "margin.elder-repeat",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-elder"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.elder-again"
+        }
+      ],
+      "onlyIf": "margin.met-elder"
+    },
+    {
+      "id": "margin.mira-early",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-mira"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.mira-early"
+        }
+      ],
+      "unless": "margin.met-elder"
+    },
+    {
+      "id": "margin.mira-teach",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-mira"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.mira"
+        }
+      ],
+      "onlyIf": "margin.met-elder",
+      "unless": "margin.knows-counts"
+    },
+    {
+      "id": "margin.mira-repeat",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-mira"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.mira-again"
+        }
+      ],
+      "onlyIf": "margin.knows-counts"
+    },
+    {
+      "id": "margin.pell",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-pell"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.pell"
+        }
+      ]
+    },
+    {
+      "id": "margin.bram",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.talk-bram"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.bram"
+        }
+      ],
+      "unless": "margin.knows-counts"
+    },
+    {
+      "id": "margin.road",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.road"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.road"
+        }
+      ]
+    },
+    {
+      "id": "margin.stone",
+      "when": {
+        "type": "trigger",
+        "trigger": "margin.stone"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "margin.stone"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "margin.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "You wake in the Margin, at the edge of\nthe world. Someone is calling your name."
+        },
+        {
+          "speaker": "elder",
+          "text": "Tilde! Over here!\nWalk with h j k l: left, down, up, right."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.elder",
+      "lines": [
+        {
+          "speaker": "elder",
+          "text": "The Unwriter came again last night.\nThe north field is gone. Row by row."
+        },
+        {
+          "speaker": "elder",
+          "text": "Someone must warn the Lighthouse.\nThe road east is the only way there."
+        },
+        {
+          "speaker": "elder",
+          "text": "But the road is crawling with Blots.\nMira at the well knows a trick. Go."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "margin.met-elder",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "margin.elder-again",
+      "lines": [
+        {
+          "speaker": "elder",
+          "text": "Mira is at the well, south of here."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.mira-early",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Morning, Tilde. The Elder was looking\nfor you. Better see him first.",
+          "name": "Mira"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.mira",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Blots move when you move. Every step\nyou take, they take one too.",
+          "name": "Mira"
+        },
+        {
+          "speaker": "npc",
+          "text": "So take fewer steps. Don't press l\nthirty times. Type 30l: one move.",
+          "name": "Mira"
+        },
+        {
+          "speaker": "npc",
+          "text": "A number before a key repeats it.\n5j, 3h, 30l. Bram will let you pass.",
+          "name": "Mira"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "margin.knows-counts",
+          "value": true
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "bram"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "margin.mira-again",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "A number, then the key. 30l.\nThe Blots won't even blink.",
+          "name": "Mira"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.pell",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "My brother left before the Last Saving.\nWe never said his name again.",
+          "name": "Pell"
+        },
+        {
+          "speaker": "npc",
+          "text": "Out there, unsaved things just... fade.\nMind the road, child.",
+          "name": "Pell"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.bram",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Road's closed. Blots everywhere.\nOne step at a time, they'd swarm you.",
+          "name": "Bram"
+        },
+        {
+          "speaker": "npc",
+          "text": "Ask Mira. She crossed it once.",
+          "name": "Bram"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.road",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Ink bubbles up from the fields.\nBlots! Remember Mira: one big move."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "margin.blot-1",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 4,
+                  "col": 23
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "margin.blot-2",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 10,
+                  "col": 26
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "margin.blot-3",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 4,
+                  "col": 30
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "margin.blot-4",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 10,
+                  "col": 32
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "margin.blot-5",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 36
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "margin.stone",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "A Save Stone. I left these for you.\nSoon you will learn what they are for."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "heal",
+              "hearts": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "margin.end",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "You made it past the Blots.\nThe road east is open."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "margin.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Mira's trick: a number before l.\n30l crosses the road in one move."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": []
+}

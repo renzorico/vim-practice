@@ -5,6 +5,7 @@ import type { Legend, Stage, WorldEffect, WorldEvent, WorldSim, WorldState } fro
 type PresentationEffect = Extract<StoryEffect, { type: 'dialogue' | 'cutscene' | 'teach' | 'ending' }>;
 export type Presentation = PresentationEffect & { readonly index: number };
 export interface Session {
+  readonly keys: number;
   readonly world: WorldState;
   readonly story: StoryState;
   readonly queue: readonly Presentation[];
@@ -20,8 +21,8 @@ export interface SessionDependencies {
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 const MAX_EFFECT_ROUNDS = 32;
 
-export function resultData(session: Session, stage: Stage) {
-  return { turns: session.world.turn, hearts: session.world.hearts, parTurns: stage.parTurns };
+export function resultData(session: Session) {
+  return { keys: session.keys, turns: session.world.turn, hearts: session.world.hearts };
 }
 
 /** The only bridge between the two pure engines. No Vim behaviour lives here. */
@@ -70,7 +71,7 @@ export function createSession({ sim, storyEngine, stage, legend, content }: Sess
     const story = storyEngine.init(content);
     const intro = `${stage.id}.intro`;
     const session: Session = {
-      world: sim.init(stage, legend, options(story)), story, lastEvents: [],
+      keys: 0, world: sim.init(stage, legend, options(story)), story, lastEvents: [],
       queue: showIntro && content.dialogues.some(dialogue => dialogue.id === intro)
         ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
     };
@@ -112,9 +113,9 @@ export function createSession({ sim, storyEngine, stage, legend, content }: Sess
     if (session.queue.length > 0) {
       return key === '<CR>' || key === '<Space>' || key === ' ' ? advance(session) : session;
     }
-    if (session.world.status === 'cleared') return key === '<CR>' ? init(false) : session;
+    if (session.world.status === 'cleared') return key === '<CR>' ? init() : session;
     const stepped = sim.step(session.world, key, stage, legend, options(session.story));
-    return settle({ ...session, world: stepped.state, lastEvents: stepped.events },
+    return settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
       storyEngine.onEvents(session.story, stepped.events, content));
   }
   return { init, reduce };

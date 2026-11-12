@@ -11,6 +11,7 @@ interface PlayScreenProps {
   readonly stage: Stage;
   readonly legend: Legend;
   readonly content: StoryContent;
+  readonly objectives: readonly string[];
   readonly showSource: boolean;
   readonly onAdvance: () => void;
 }
@@ -23,18 +24,18 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ session, stage, legend, content, showSource, onAdvance }: PlayScreenProps) {
+export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance }: PlayScreenProps) {
   const { world } = session;
   const presentation = session.queue[0];
   const dialogue = presentation?.type === 'dialogue'
     ? content.dialogues.find(item => item.id === presentation.dialogue) : undefined;
   const cutscene = presentation?.type === 'cutscene'
     ? content.cutscenes.find(item => item.id === presentation.cutscene) : undefined;
-  const result = resultData(session, stage);
+  const result = resultData(session);
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.id} · {stage.title}</h1>
-      <ObjectiveHud objectives={[stage.goalText]} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
+      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field"><FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} /></div>
@@ -44,7 +45,7 @@ export function PlayScreen({ session, stage, legend, content, showSource, onAdva
       <span>Hold <kbd>Tab</kbd> for Source</span>
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
-      <h2>You were unwritten</h2><p>Your last checkpoint is waiting.</p>
+      <h2>You were unwritten.</h2><p>{deathHint(content)}</p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : <>
       {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
@@ -58,11 +59,15 @@ export function PlayScreen({ session, stage, legend, content, showSource, onAdva
         <h2>{presentation.ending}</h2><button onClick={onAdvance}>Continue</button>
       </section>}
       {world.status === 'cleared' && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
-        <h2>The Road Out, cleared</h2>
-        <p>You took {result.turns} turns. The best possible is {result.parTurns}.</p>
+        <h2>The road east is open.</h2><p>To be continued.</p>
+        <p>{result.keys} keys typed.</p>
         <p>{result.hearts} of {stage.hearts} hearts left.</p>
-        <button onClick={onAdvance}>Enter to play again</button>
+        <button onClick={onAdvance}>Enter to return to title</button>
       </section>}
     </>}
   </main>;
+}
+
+export function deathHint(content: StoryContent): string {
+  return content.dialogues.find(dialogue => dialogue.id === 'margin.death-hint')?.lines[0]?.text ?? '';
 }

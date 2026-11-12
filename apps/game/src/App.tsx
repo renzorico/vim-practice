@@ -10,7 +10,8 @@ import './ui/tokens.css';
 import './story-ui/story-ui.css';
 import './play2/play.css';
 
-const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), stage, legend, content });
+const storyEngine = createStoryEngine();
+const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content });
 const ignoreHint = (): void => {};
 export function App() {
   const [started, setStarted] = useState(false);
@@ -19,9 +20,10 @@ export function App() {
   const onKey = useCallback((key: Key) => {
     if (!started) { setStarted(true); return; }
     if (key === '<Tab>') { setShowSource(true); return; }
+    if (session.world.status === 'cleared' && session.queue.length === 0 && key === '<CR>') setStarted(false);
     dispatch(key);
-  }, [started]);
-  const advance = useCallback(() => dispatch('<CR>'), []);
+  }, [started, session.world.status, session.queue.length]);
+  const advance = useCallback(() => onKey('<CR>'), [onKey]);
   const start = useCallback(() => setStarted(true), []);
   useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true });
   useEffect(() => {
@@ -54,5 +56,5 @@ export function App() {
   if (!started) return <main className="play-title">
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p><button onClick={start}>Press any key</button>
   </main>;
-  return <PlayScreen session={session} stage={stage} legend={legend} content={content} showSource={showSource} onAdvance={advance} />;
+  return <PlayScreen session={session} stage={stage} legend={legend} content={content} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} onAdvance={advance} />;
 }

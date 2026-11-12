@@ -1,3 +1,4 @@
+import { Portrait } from '../scene/sprites/Portrait.js';
 import type { Line } from '@escape/story';
 import { speakerName } from './advance';
 import { useSequence } from './useSequence';
@@ -28,6 +29,7 @@ function DialogueLine({ line, onAdvance }: { readonly line: Line | undefined; re
   const name = speakerName(line);
   return (
     <div className={`dialogue dialogue--${line.speaker}`} role="dialog" aria-live="polite">
+      <Portrait sprite={line.speaker === 'npc' ? (line.name ?? '').toLowerCase() : line.speaker} />
       {name !== '' && <div className="dialogue__name">{name}</div>}
       <p className="dialogue__text">{line.text}</p>
       {onAdvance ? <button type="button" className="dialogue__hint" onClick={onAdvance}>
