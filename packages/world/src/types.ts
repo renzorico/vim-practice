@@ -360,7 +360,7 @@ export type WorldEvent =
   | { readonly type: 'rows-changed'; readonly fromLine: number; readonly toLine: number; readonly lineDelta: number; readonly by: 'player' | 'effect' | 'entity' }
   | { readonly type: 'entity-moved'; readonly entity: EntityId; readonly from: Position; readonly to: Position }
   | { readonly type: 'entity-spawned'; readonly entity: EntityId; readonly at: Position }
-  | { readonly type: 'entity-removed'; readonly entity: EntityId; readonly cause: 'deleted-tile' | 'effect' }
+  | { readonly type: 'entity-removed'; readonly entity: EntityId; readonly cause: 'deleted-tile' | 'effect' | 'hit' }
   | { readonly type: 'flag-set'; readonly flag: FlagId; readonly value: boolean }
   | { readonly type: 'player-hit'; readonly by: EntityId | 'tile'; readonly hearts: number }
   | { readonly type: 'player-died' }
@@ -449,7 +449,9 @@ export interface WorldOptions {
  *    If no such cell exists anywhere, the player dies (hearts 0, status 'dead').
  * 4. ENTITIES. When a turn ends: `turn` goes up by one (the first turn is 1). Entities act in
  *    WorldState.entities order, each once if `turn % every == 0`. Then CONTACT: every entity with
- *    damage > 0 that is on the player's cell deals it once, whether or not it acted. Being next
+ *    damage > 0 that is on the player's cell deals it once, whether or not it acted. An entity of
+ *    kind 'blot' that dealt damage then bursts: it is removed ('entity-removed', cause 'hit'), so
+ *    one Blot costs at most one heart. Being next
  *    to an enemy costs nothing, so a chaser only hurts a player who stops, bumps or walks into
  *    it; moving away every turn is always enough against one chaser of the same speed. Then
  *    tile damage. Hearts at 0: status 'dead'.
