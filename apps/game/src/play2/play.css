@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; width: 100%; min-height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-ui); }
+::selection { background: var(--you); color: var(--bg); }
+button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); padding: 12px 20px; cursor: pointer; }
+button:hover { background: var(--surface-raised); }
+button:focus-visible { outline: 2px solid var(--you); outline-offset: 4px; }
+kbd { font-family: var(--font-mono); color: var(--you); }
+.play-title, .play-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+.play-title { min-height: 100svh; }
+.play-title h1 { font: 600 clamp(48px, 12vw, 96px)/1 var(--font-mono); color: var(--you); margin: 0 0 24px; letter-spacing: -0.03em; }
+.play-title p { margin: 0 0 48px; color: var(--text-soft); }
+.play-screen { height: 100svh; display: flex; flex-direction: column; }
+.play-header { padding: 16px 24px 0; }
+.play-header h1 { margin: 0 0 12px; font-size: 20px; font-weight: 500; }
+.play-header .objective-hud { border: 0; border-radius: 0; background: transparent; padding: 0; }
+.play-header .objective-hud__list { list-style: none; padding: 0; }
+.play-field { flex: 1; min-height: 0; position: relative; }
+.play-field > div { min-height: 0 !important; }
+.play-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; color: var(--text-soft); font-size: 13px; }
+.play-controls output { min-width: 4ch; font-family: var(--font-mono); color: var(--you); }
+.play-panel { position: fixed; inset: 0; z-index: 30; background: var(--bg); }
+.play-panel h2 { font-size: clamp(28px, 5vw, 48px); margin: 0 0 24px; }
+.play-panel p { margin: 0 0 16px; max-width: 48ch; line-height: 1.5; }
+.play-panel button { margin-top: 24px; }
+.dialogue__hint { display: block; margin-left: auto; background: transparent; border: 0; padding: 8px 0; }
+@media (max-width: 540px) {
+  .play-header { padding: 12px 16px 0; }
+  .play-controls { padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
+  .play-controls span:first-child { flex-basis: 100%; }
+  .dialogue { bottom: 12px; padding: 12px 16px; }
+}
+.play-panel p { white-space: pre-line; }

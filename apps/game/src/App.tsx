@@ -1,128 +1,60 @@
-import { useCallback } from 'react';
-import type { Key } from '@escape/engine';
-import { canShowSolution, canSkip, visibleLines } from '@escape/curriculum';
-import type { Level } from '@escape/curriculum';
+import { useCallback, useEffect, useReducer, useState } from 'react';
+import { createEngine, type Key } from '@escape/engine';
+import { createWorldSim } from '@escape/world';
+import { createStoryEngine } from '@escape/story';
 import { useKeyCapture } from './input/useKeyCapture.js';
-import { LESSONS, WORLD } from './play/content.js';
-import { failures, movesFor, objectiveFor, type Game, type Room } from './play/game.js';
-import { useGame } from './play/useGame.js';
-import { ChallengeRoom } from './ui/ChallengeRoom.js';
-import { LessonCard } from './ui/LessonCard.js';
-import { MapScreen } from './ui/MapScreen.js';
-import { SolutionReplay } from './ui/SolutionReplay.js';
-import { TitleScreen } from './ui/TitleScreen.js';
+import { content, legend, stage } from './play2/content.js';
+import { createSession } from './play2/session.js';
+import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
-import './ui/ui.css';
+import './story-ui/story-ui.css';
+import './play2/play.css';
 
-const POWER_PER_DOOR = 5;
-const SPEAKER_PREFIX = { operator: 'Operator: ', gc: 'GC: ', echo: 'ECHO: ' } as const;
-
-function targetOf(level: Level) {
-  const reach = level.goals.find((goal) => goal.type === 'reach');
-  return reach?.type === 'reach' ? reach.target : undefined;
-}
-
-function targetLinesOf(level: Level) {
-  const transform = level.goals.find((goal) => goal.type === 'transform');
-  return transform?.type === 'transform' ? transform.targetLines : undefined;
-}
-
-function keycapsOf(skills: readonly string[] | undefined): string[] | undefined {
-  return skills?.map((skill) => LESSONS.get(skill)?.keycap ?? skill);
-}
-
-function RoomView({ room, game }: { room: Room; game: Game }) {
-  const lesson = LESSONS.get(room.skill);
-  if (lesson === undefined) return <p>Missing lesson for {room.skill}.</p>;
-  const { session, level, run } = room;
-
-  if (session.phase === 'lesson') {
-    return <div className="ui room-lesson"><LessonCard lesson={lesson} onContinue={game.continueLesson} /></div>;
-  }
-  if (session.phase === 'solution') {
-    return (
-      <div className="ui">
-        <SolutionReplay startLines={level.startLines} startCursor={level.startCursor} solution={level.solution}
-          onNewRoom={game.newRoomAfterSolution} />
-      </div>
-    );
-  }
-  if (session.phase === 'won' || session.phase === 'skipped') {
-    const won = session.phase === 'won';
-    return (
-      <div className="ui room-result">
-        <h1>{won ? 'Room cleared' : 'Room skipped'}</h1>
-        {won && <p>{run.keystrokes} keys, best possible {level.par}. {'*'.repeat(run.stars)}</p>}
-        {!won && <p>GC marked {lesson.keycap} as weak. It will come back in a corrupted sector.</p>}
-        <button type="button" className="ui-btn ui-btn--primary" onClick={game.leaveRoom}>Back to the map (Enter)</button>
-      </div>
-    );
-  }
-
-  const failed = failures(session);
-  const helpAvailable = session.phase === 'challenge' && (canShowSolution(session) || canSkip(session))
-    && failed > room.bannerDismissedAt;
-  const hintsShown = session.phase === 'practice' ? room.practiceHints : session.hintsShown;
-  const mustUseKeys = keycapsOf(level.mustUse);
-  const targetLines = targetLinesOf(level);
-  const target = targetOf(level);
-  // exactOptionalPropertyTypes: optional props are passed only when they have a value.
-  const optional = {
-    ...(mustUseKeys === undefined ? {} : { mustUseKeys }),
-    ...(targetLines === undefined ? {} : { targetLines }),
-    ...(target === undefined ? {} : { target }),
-  };
-  return (
-    <ChallengeRoom
-      lesson={lesson}
-      roomNumber={session.variant + 1}
-      title={room.skipTest ? `Prove it: ${level.title}` : session.phase === 'practice' ? `Practice ${room.practiceWins + 1} of 2: ${level.title}` : level.title}
-      goalText={level.goalText ?? level.intro}
-      {...optional}
-      lastError={run.lastError?.message ?? null}
-      state={run.state}
-      keysUsed={run.keystrokes}
-      par={level.par}
-      attempts={failed}
-      allowedKeys={level.allowedCommands ?? []}
-      hint={hintsShown > 0 ? level.hints[Math.min(hintsShown, level.hints.length) - 1] ?? null : null}
-      canShowSolution={helpAvailable && canShowSolution(session)}
-      canSkip={helpAvailable && canSkip(session)}
-      onHint={game.hint}
-      onShowSolution={game.showSolution}
-      onKeepTrying={game.keepTrying}
-      onSkip={game.skip}
-      onLeave={game.leaveRoom}
-      assist={!room.skipTest}
-    />
-  );
-}
-
+const storyEngine = createStoryEngine();
+const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content });
+const ignoreHint = (): void => {};
 export function App() {
-  const game = useGame((state) => state);
-  const onKey = useCallback((key: Key) => game.pressKey(key), [game]);
-  const mode = game.room?.run.state.mode;
-  useKeyCapture({ onKey, onHint: game.hint, captureTab: mode === 'insert' || mode === 'command-line' });
-
-  if (game.screen === 'title') return <TitleScreen onStart={game.start} onSkipTest={game.startSkipTest} />;
-  if (game.screen === 'room' && game.room !== null) return <RoomView room={game.room} game={game} />;
-
-  const keysTotal = WORLD.entities.filter((entity) => entity.kind === 'key').length;
-  const region = WORLD.regions.find((candidate) =>
-    game.map.engine.cursor.line >= candidate.rows.from && game.map.engine.cursor.line <= candidate.rows.to);
-  return (
-    <MapScreen
-      location={region?.title ?? 'ATLAS'}
-      keysCollected={game.progress.collectedKeys.length}
-      keysTotal={keysTotal}
-      power={100 - POWER_PER_DOOR * game.progress.clearedDoors.length}
-      maxPower={100}
-      lines={visibleLines(game.map)}
-      cursor={game.map.engine.cursor}
-      markers={WORLD.entities.map((entity) => ({ at: entity.at, kind: entity.kind }))}
-      objective={objectiveFor(game.progress)}
-      moves={movesFor(game.progress)}
-      log={game.log.map((line) => ({ speaker: line.speaker, text: `${SPEAKER_PREFIX[line.speaker]}${line.text}` }))}
-    />
-  );
+  const [started, setStarted] = useState(false);
+  const [showSource, setShowSource] = useState(false);
+  const [session, dispatch] = useReducer(controller.reduce, undefined, () => controller.init());
+  const onKey = useCallback((key: Key) => {
+    if (!started) { setStarted(true); return; }
+    if (key === '<Tab>') { setShowSource(true); return; }
+    if (session.world.status === 'cleared' && session.queue.length === 0 && key === '<CR>') setStarted(false);
+    dispatch(key);
+  }, [started, session.world.status, session.queue.length]);
+  const advance = useCallback(() => onKey('<CR>'), [onKey]);
+  const start = useCallback(() => setStarted(true), []);
+  useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true });
+  useEffect(() => {
+    const wake = (event: KeyboardEvent): void => {
+      if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey
+        || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) return;
+      if (!started || session.world.status === 'dead') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!started) setStarted(true);
+        else dispatch(event.key);
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setShowSource(true);
+      }
+    };
+    window.addEventListener('keydown', wake, true);
+    return () => window.removeEventListener('keydown', wake, true);
+  }, [started, session.world.status]);
+  useEffect(() => {
+    const release = (event: KeyboardEvent): void => {
+      if (event.key === 'Tab') { event.preventDefault(); setShowSource(false); }
+    };
+    const blur = (): void => setShowSource(false);
+    window.addEventListener('keyup', release);
+    window.addEventListener('blur', blur);
+    return () => { window.removeEventListener('keyup', release); window.removeEventListener('blur', blur); };
+  }, []);
+  if (!started) return <main className="play-title">
+    <h1>UNSAVED</h1><p>A game that teaches Vim.</p><button onClick={start}>Press any key</button>
+  </main>;
+  return <PlayScreen session={session} stage={stage} legend={legend} content={content} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} onAdvance={advance} />;
 }

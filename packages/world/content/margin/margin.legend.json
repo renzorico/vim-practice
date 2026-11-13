@@ -1,0 +1,77 @@
+{
+  "id": "margin",
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "grass",
+      "walkable": true,
+      "fixed": false,
+      "label": "grass"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "road",
+      "walkable": true,
+      "fixed": false,
+      "label": "road"
+    },
+    {
+      "char": "T",
+      "kind": "object",
+      "sprite": "tree",
+      "walkable": false,
+      "fixed": false,
+      "label": "tree"
+    },
+    {
+      "char": "H",
+      "kind": "object",
+      "sprite": "house-wall",
+      "walkable": false,
+      "fixed": false,
+      "label": "house"
+    },
+    {
+      "char": "O",
+      "kind": "object",
+      "sprite": "well",
+      "walkable": false,
+      "fixed": false,
+      "label": "well"
+    },
+    {
+      "char": "S",
+      "kind": "object",
+      "sprite": "save-stone",
+      "walkable": true,
+      "fixed": true,
+      "label": "Save Stone"
+    },
+    {
+      "char": "D",
+      "kind": "object",
+      "sprite": "gate",
+      "walkable": true,
+      "fixed": true,
+      "label": "gate"
+    },
+    {
+      "char": "~",
+      "kind": "barrier",
+      "sprite": "water",
+      "walkable": false,
+      "fixed": false,
+      "label": "water"
+    }
+  ],
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "unknown",
+    "walkable": false,
+    "fixed": false,
+    "label": "unknown"
+  }
+}

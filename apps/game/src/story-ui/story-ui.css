@@ -19,3 +19,5 @@
 .cutscene__line { max-width: 560px; }
 .cutscene__image { width: min(480px, 80vw); aspect-ratio: 16 / 9; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
 .cutscene__terminal { font-family: var(--font-mono); font-size: 15px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); margin: 0; max-width: 90vw; overflow-x: auto; }
+.dialogue > svg { float: left; margin: 0 16px 8px 0; }
+.dialogue::after { content: ''; display: block; clear: both; }

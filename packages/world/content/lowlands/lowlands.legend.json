@@ -1,0 +1,70 @@
+{
+  "id": "lowlands",
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "grass",
+      "walkable": true,
+      "fixed": false,
+      "label": "grass"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "stone",
+      "walkable": true,
+      "fixed": false,
+      "label": "stepping stone"
+    },
+    {
+      "char": "T",
+      "kind": "object",
+      "sprite": "tree",
+      "walkable": false,
+      "fixed": false,
+      "label": "tree"
+    },
+    {
+      "char": "S",
+      "kind": "object",
+      "sprite": "save-stone",
+      "walkable": true,
+      "fixed": true,
+      "label": "Save Stone"
+    },
+    {
+      "char": "D",
+      "kind": "object",
+      "sprite": "door",
+      "walkable": true,
+      "fixed": true,
+      "label": "gate"
+    },
+    {
+      "char": "~",
+      "kind": "barrier",
+      "sprite": "water",
+      "walkable": false,
+      "fixed": false,
+      "label": "water"
+    },
+    {
+      "char": "^",
+      "kind": "barrier",
+      "sprite": "thorns",
+      "walkable": true,
+      "fixed": false,
+      "label": "thorns",
+      "damage": 1
+    }
+  ],
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "unknown",
+    "walkable": false,
+    "fixed": false,
+    "label": "unknown"
+  }
+}

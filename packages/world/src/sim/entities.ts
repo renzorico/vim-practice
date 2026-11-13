@@ -42,9 +42,13 @@ export function actEntities(state: WorldState, legend: Legend, events: WorldEven
     next = { ...next, entities: next.entities.map((entry) => entry.id === id ? moved : entry) };
   }
   for (const entity of next.entities) {
-    if (entity.def.behaviour.type !== 'follow' && entity.def.damage > 0 && distance(entity.at, next.engine.cursor) <= 1) {
+    if (entity.def.behaviour.type !== 'follow' && entity.def.damage > 0 && distance(entity.at, next.engine.cursor) === 0) {
       next = { ...next, hearts: Math.max(0, next.hearts - entity.def.damage) };
       events.push({ type: 'player-hit', by: entity.id, hearts: next.hearts });
+      if (entity.def.kind === 'blot') {
+        next = { ...next, entities: next.entities.filter(entry => entry.id !== entity.id) };
+        events.push({ type: 'entity-removed', entity: entity.id, cause: 'hit' });
+      }
     }
   }
   const damage = tile(legend, next.engine.lines[next.engine.cursor.line]?.[next.engine.cursor.col]).damage ?? 0;

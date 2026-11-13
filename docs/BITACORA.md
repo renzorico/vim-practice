@@ -309,6 +309,28 @@ Tags: `#contracts` `#routing` `#eval`
 
 ---
 
+## 2026-11-12: Third playtest, stage 1-1 rejected; "the first five minutes"
+Phase: B | Agent(s): Renzo (playtester, decisions), Orchestrator (Opus) | Branch: design/first-five
+Tags: `#eval`
+
+**What:** Renzo played stage 1-1, the first playable build of masterplan v2. Verdict: boring, no open world, no characters, "best possible: 2" is false, motion slow and buggy, the point of the game is not visible.
+
+**Root causes (orchestrator's):**
+1. Mario's *storyline* was asked for; its *level structure* was copied. Closed stages, no world.
+2. Art was ranked last, so characters were left out. Characters are playability and story, not decoration.
+3. The solver used counts (`4k`) that nothing taught, the same mistake as Phase 2 with `$`. It was spotted ("counts cannot be locked per stage") and shipped anyway.
+4. 240 ms of animation per step.
+5. With only `h j k l` the game is arrow keys with extra steps: nothing shows why Vim is better.
+6. Process: engine and tools were built for two days before anyone felt the game. The playtest gate came too late again.
+
+**Decisions (Renzo):** contact-only damage (2026-11-11); turn-based stays, made instant; Fable retired, Opus leads design.
+
+**Plan:** stop building systems. Build only the first five minutes, playable: one open map (the Margin), five characters, Blots, and one Vim idea that visibly wins (`20l` crosses a Blot-filled road that single steps cannot). Proven in the simulation before the brief was written: single steps die by turn 8, `20l` clears with full hearts. Rule added: a Blot bursts after one hit. Renzo plays it before anything else is built.
+
+**Lesson:** a pipeline of correct parts is not a game. Build the smallest thing a player can feel, first, and let the playtest decide what the systems must do.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

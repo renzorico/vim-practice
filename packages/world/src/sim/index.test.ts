@@ -182,9 +182,29 @@ describe('entity actions and damage', () => {
     const value = flat({ map: ['                ', '  T             ', '                '], entities: [blot({ line: 2, col: 2 }, { every: 1 })] });
     expect(run('l', value).state.entities[0]?.at).toEqual({ line: 2, col: 1 });
   });
-  it('adjacent Blot damages on a turn when it does not act', () => {
+  it('a Blot next to the player deals no damage', () => {
     const value = stage({ entities: [blot({ line: 2, col: 2 })] });
-    expect(run('l', value).state.hearts).toBe(2);
+    expect(run('l', value).state.hearts).toBe(3);
+  });
+  it('walking onto a Blot is a hit, also on a turn when it does not act', () => {
+    const value = stage({ entities: [blot({ line: 2, col: 2 }, { every: 99 })] });
+    const result = run('ll', value);
+    expect(result.state.engine.cursor).toEqual({ line: 2, col: 2 });
+    expect(result.state.hearts).toBe(2);
+  });
+  it('a chasing Blot steps onto a player who does not move away, and hits', () => {
+    const value = flat({ start: { line: 1, col: 0 }, entities: [blot({ line: 1, col: 2 }, { every: 1 })] });
+    const result = run('0', value);
+    expect(result.state.entities[0]?.at).toEqual({ line: 1, col: 1 });
+    expect(result.state.hearts).toBe(3);
+    const second = run('00', value);
+    expect(second.state.entities).toEqual([]);
+    expect(second.events).toContainEqual({ type: 'entity-removed', entity: value.entities[0]?.id, cause: 'hit' });
+    expect(second.state.hearts).toBe(2);
+  });
+  it('walking away from a chaser of the same speed is never a hit', () => {
+    const value = flat({ start: { line: 1, col: 3 }, entities: [blot({ line: 1, col: 2 }, { every: 1 })] });
+    expect(run('lllll', value).state.hearts).toBe(3);
   });
   it('standing on thorns damages each turn', () => {
     const value = stage({ start: { line: 0, col: 10 }, entities: [] });
