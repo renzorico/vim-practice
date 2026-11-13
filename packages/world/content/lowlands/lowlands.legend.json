@@ -57,6 +57,38 @@
       "fixed": false,
       "label": "thorns",
       "damage": 1
+    },
+    {
+      "char": "\t",
+      "kind": "ground",
+      "sprite": "blank",
+      "walkable": false,
+      "fixed": false,
+      "label": "unwritten ground"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "road",
+      "walkable": true,
+      "fixed": false,
+      "label": "road"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "jetty",
+      "walkable": true,
+      "fixed": false,
+      "label": "jetty plank"
+    },
+    {
+      "char": "L",
+      "kind": "object",
+      "sprite": "lighthouse-door",
+      "walkable": true,
+      "fixed": true,
+      "label": "Lighthouse door"
     }
   ],
   "fallback": {

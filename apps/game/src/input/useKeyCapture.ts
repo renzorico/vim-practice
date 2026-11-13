@@ -6,6 +6,7 @@ import { mapKeyEvent } from './keys.js';
 const HINT_KEY = 'F1';
 
 interface KeyCaptureHandlers {
+  readonly enabled?: boolean;
   readonly onKey: (key: Key) => void;
   /** Called for F1, the keyboard shortcut for the hint (since '?' is a Vim search). */
   readonly onHint: () => void;
@@ -14,10 +15,15 @@ interface KeyCaptureHandlers {
 }
 
 /** Captures window keydown events, maps them to Vim notation and forwards them. */
-export function useKeyCapture({ onKey, onHint, captureTab }: KeyCaptureHandlers): void {
+export function useKeyCapture({ onKey, onHint, captureTab, enabled = true }: KeyCaptureHandlers): void {
   useEffect(() => {
+    if (!enabled) return;
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.isComposing) return;
+      if (event.repeat && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        return;
+      }
       const target = event.target instanceof HTMLElement ? event.target : null;
       if (shouldLeaveToBrowser(event.key, target, captureTab)) return;
       if (event.key === HINT_KEY && !event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -31,5 +37,5 @@ export function useKeyCapture({ onKey, onHint, captureTab }: KeyCaptureHandlers)
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onKey, onHint, captureTab]);
+  }, [onKey, onHint, captureTab, enabled]);
 }

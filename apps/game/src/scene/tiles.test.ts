@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
-import { tileGrid } from './tiles.js';
+import { blankEdges, tileGrid } from './tiles.js';
 
 describe('tileGrid', () => {
   it('maps ground', () => expect(tileGrid([' '], FIXTURE_LEGEND)).toEqual([['grass']]));
@@ -20,4 +20,11 @@ describe('tileGrid', () => {
     expect(grid[0]?.[15]).toBe('door');
     expect(grid[2]?.[7]).toBe('save-stone');
   });
+});
+
+it('edges blank paper only against written cells, never missing cells', () => {
+  expect(blankEdges(['\t\t\t', '\t\t\t', '\t\t\t'], 1, 1)).toBe(0);
+  expect(blankEdges([' o ', 'o\to', ' o '], 1, 1)).toBe(15);
+  expect(blankEdges(['\t'], 0, 0)).toBe(0);
+  expect(blankEdges(['\t.'], 0, 0)).toBe(2);
 });

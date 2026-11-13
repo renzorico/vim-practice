@@ -1,0 +1,304 @@
+{
+  "worlds": [
+    {
+      "id": "lowlands",
+      "order": 1,
+      "name": "Lowlands",
+      "stages": [
+        "lowlands"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "quests": [
+    {
+      "id": "lowlands.lighthouse",
+      "world": "lowlands",
+      "title": "The Lighthouse",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "meet-wren",
+          "objective": "Find a way across the blank field.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "lowlands.knows-w",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "cross",
+          "objective": "Leap from stone to stone with w.",
+          "completeWhen": {
+            "type": "trigger",
+            "trigger": "lowlands.far-side"
+          },
+          "then": []
+        },
+        {
+          "id": "lighthouse",
+          "objective": "Reach the Lighthouse at the end of the jetty.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "lowlands"
+          },
+          "then": [
+            {
+              "type": "dialogue",
+              "dialogue": "lowlands.end"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "openingStage": "lowlands",
+  "openingQuests": [
+    "lowlands.lighthouse"
+  ],
+  "cutscenes": [],
+  "dialogues": [
+    {
+      "id": "lowlands.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "East of the Margin, the Lowlands.\nOr what the Unwriter left of them."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "lowlands.wren",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Wait! Don't step in that. It's blank.\nWhere the Unwriter walks, land goes blank.",
+          "name": "Wren"
+        },
+        {
+          "speaker": "npc",
+          "text": "You can't walk on blank. But you can\nleap it. w jumps to the next word.",
+          "name": "Wren"
+        },
+        {
+          "speaker": "npc",
+          "text": "Each stone is a word. w: next stone.\nb: back one. The blank is skipped.",
+          "name": "Wren"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.knows-w",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "lowlands.wren-again",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "w forward, b back. Stone to stone.",
+          "name": "Wren"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "lowlands.gull",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "The tide's not coming in tonight.\nIt's not going out either.",
+          "name": "Gull"
+        },
+        {
+          "speaker": "npc",
+          "text": "Maybe it's not the world that's broken.\nMaybe it's just not written yet.",
+          "name": "Gull"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "lowlands.note",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "I left a note for you, whoever you are.\n$ jumps to the end of the line."
+        },
+        {
+          "speaker": "scribe",
+          "text": "The jetty is one long line. One key.\nAnd 0 jumps back to the start of it."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.knows-dollar",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "lowlands.jetty",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Blots crawl up the jetty from the sea.\nThe door is at the end of the line."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.knows-dollar",
+          "value": true
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "lowlands.blot-1",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 7,
+                  "col": 50
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "lowlands.blot-2",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 7,
+                  "col": 53
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lowlands.end",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The Lighthouse. Its lamp is dark.\nSomething is moving inside."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "lowlands.wren-edge",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.edge"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.wren"
+        }
+      ],
+      "unless": "lowlands.knows-w"
+    },
+    {
+      "id": "lowlands.wren-first",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.talk-wren"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.wren"
+        }
+      ],
+      "unless": "lowlands.knows-w"
+    },
+    {
+      "id": "lowlands.wren-repeat",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.talk-wren"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.wren-again"
+        }
+      ],
+      "onlyIf": "lowlands.knows-w"
+    },
+    {
+      "id": "lowlands.gull",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.talk-gull"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.gull"
+        }
+      ]
+    },
+    {
+      "id": "lowlands.note",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.talk-note"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.note"
+        }
+      ]
+    },
+    {
+      "id": "lowlands.jetty",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.jetty"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.jetty"
+        }
+      ]
+    }
+  ]
+}

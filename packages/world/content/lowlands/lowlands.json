@@ -1,0 +1,177 @@
+{
+  "id": "lowlands",
+  "world": "lowlands",
+  "type": "field",
+  "title": "Lowlands",
+  "goalText": "Reach the Lighthouse at the end of the jetty.",
+  "map": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T   T        \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T        T   \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t    T       T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    ".............oo\t\t\to\t\t\too\t\to            .===============L",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T  T         \t\t\t\t\t\t\t\t\t\t\t\t\t\t       T    T",
+    "T         T  \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "legend": "lowlands",
+  "start": {
+    "line": 7,
+    "col": 1
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "wren",
+      "kind": "npc",
+      "sprite": "wren",
+      "at": {
+        "line": 6,
+        "col": 11
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "gull",
+      "kind": "npc",
+      "sprite": "gull",
+      "at": {
+        "line": 6,
+        "col": 37
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "scribe-note",
+      "kind": "prop",
+      "sprite": "note",
+      "at": {
+        "line": 8,
+        "col": 38
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "lowlands.edge",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 10
+        },
+        "to": {
+          "line": 8,
+          "col": 12
+        }
+      },
+      "once": true
+    },
+    {
+      "id": "lowlands.talk-wren",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "wren"
+      },
+      "once": false
+    },
+    {
+      "id": "lowlands.talk-gull",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "gull"
+      },
+      "once": false
+    },
+    {
+      "id": "lowlands.talk-note",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "scribe-note"
+      },
+      "once": false
+    },
+    {
+      "id": "lowlands.far-side",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 27
+        },
+        "to": {
+          "line": 13,
+          "col": 38
+        }
+      },
+      "once": true
+    },
+    {
+      "id": "lowlands.jetty",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 7,
+          "col": 39
+        },
+        "to": {
+          "line": 7,
+          "col": 39
+        }
+      },
+      "once": true
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "reach",
+      "area": {
+        "from": {
+          "line": 7,
+          "col": 55
+        },
+        "to": {
+          "line": 7,
+          "col": 55
+        }
+      }
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 1,
+  "solution": [
+    "$"
+  ],
+  "hints": [
+    "Each stone is a word. w leaps over blank.",
+    "The jetty is one line. $ reaches its end."
+  ]
+}

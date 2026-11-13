@@ -1,3 +1,4 @@
+import { WREN, GULL, NOTE, STONE, JETTY, LIGHTHOUSE_DOOR, BLANK } from './lowlands.js';
 import { PLAYER } from './player.js';
 import { ELDER } from './elder.js';
 import { MIRA } from './mira.js';
@@ -15,6 +16,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  wren: WREN, gull: GULL, note: NOTE, stone: STONE, jetty: JETTY,
+  'lighthouse-door': LIGHTHOUSE_DOOR, blank: BLANK,
   'player': PLAYER,
   'elder': ELDER,
   'mira': MIRA,

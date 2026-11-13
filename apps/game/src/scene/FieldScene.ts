@@ -4,7 +4,7 @@ import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
 import { SPRITES } from './sprites/index.js';
 import { animationSteps, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
-import { tileGrid } from './tiles.js';
+import { blankEdges, tileGrid } from './tiles.js';
 import { bufferSize, cameraTarget } from './camera.js';
 
 export interface FieldFrame {
@@ -20,6 +20,7 @@ const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
   private ready = false;
+  private animating = false;
   private reducedMotion: boolean;
   private tiles: Phaser.GameObjects.Container | undefined;
   private actors: Phaser.GameObjects.Container | undefined;
@@ -29,7 +30,7 @@ export class FieldScene extends Phaser.Scene {
   private entities = new Map<string, Phaser.GameObjects.Image>();
   private cells = new Map<string, {
     char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
-    line: number;
+    line: number; variant: number;
   }>();
   private prompts: Phaser.GameObjects.Container | undefined;
   private facing = new Map<string, boolean>();
@@ -89,7 +90,8 @@ export class FieldScene extends Phaser.Scene {
 
   /** Called for every key, including unfinished commands: nothing can queue behind typing. */
   finish(): void {
-    if (!this.ready) return;
+    if (!this.ready || !this.animating) return;
+    this.animating = false;
     this.tweens.killAll();
     this.syncActors();
     this.clearRowEffects();
@@ -168,9 +170,9 @@ export class FieldScene extends Phaser.Scene {
       context.textBaseline = 'middle';
       context.strokeStyle = '#182523';
       context.lineWidth = 2;
-      context.strokeText(char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.strokeText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
       context.fillStyle = '#ffffff';
-      context.fillText(char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.fillText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
       texture.refresh();
     }
     return key;
@@ -182,12 +184,14 @@ export class FieldScene extends Phaser.Scene {
       const key = `${line}:${col}`;
       const char = this.frame.state.engine.lines[line]?.charAt(col) ?? ' ';
       if (char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
-      const variant = sprite === 'grass' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+      const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
+        : sprite === 'grass' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
-        if (cell.sprite !== sprite) cell.tile.setTexture(this.texture(sprite, variant));
+        if (cell.sprite !== sprite || cell.variant !== variant) cell.tile.setTexture(this.texture(sprite, variant));
         if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char));
+        cell.variant = variant;
         cell.sprite = sprite;
         cell.char = char;
       } else {
@@ -195,7 +199,7 @@ export class FieldScene extends Phaser.Scene {
         const glyph = this.add.image(center(col), center(line), this.glyphTexture(char));
         this.tiles?.add(tile);
         this.source?.add(glyph);
-        this.cells.set(key, { char, sprite, tile, glyph, line });
+        this.cells.set(key, { char, sprite, tile, glyph, line, variant });
       }
     }));
     for (const [key, cell] of this.cells) {
@@ -270,7 +274,7 @@ export class FieldScene extends Phaser.Scene {
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
     const duration = steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0);
-    if (duration === 0) { this.syncActors(); return; }
+    if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
       this.clearRowEffects();
@@ -306,10 +310,11 @@ export class FieldScene extends Phaser.Scene {
       }
       this.positionCamera();
     };
+    this.animating = true;
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.clearRowEffects(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.syncActors(); },
     });
   }
 }

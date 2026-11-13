@@ -5,7 +5,7 @@ import { createEngine } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
-import { PlayScreen } from './PlayScreen.js';
+import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
 import { stage, legend, content } from './content.js';
 const storyEngine = createStoryEngine();
@@ -34,7 +34,6 @@ it('shows keys and hearts on clear, with no unteachable best score', () => {
     session: { ...session, keys: 42, world: { ...session.world, status: 'cleared' } },
     stage, legend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
-  expect(html).toContain('The road east is open.');
   expect(html).toContain('To be continued.');
   expect(html).toContain('42 keys typed.');
   expect(html).toContain('3 of 3 hearts left.');
@@ -48,4 +47,11 @@ it('renders Mira’s portrait from the same sprite grid as the field', () => {
   }));
   expect(html).toContain('<svg width="64" height="64"');
   expect(html).toContain('Mira');
+});
+
+it('reveals keycaps only as story flags are learned', () => {
+  expect(learnedKeycaps({})).toEqual(['h', 'j', 'k', 'l']);
+  expect(learnedKeycaps({ 'margin.knows-counts': true, 'lowlands.knows-w': true }))
+    .toEqual(['h', 'j', 'k', 'l', '3l', 'w', 'b']);
+  expect(learnedKeycaps({ 'lowlands.knows-dollar': true }).slice(-2)).toEqual(['$', '0']);
 });

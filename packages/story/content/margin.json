@@ -53,6 +53,10 @@
             {
               "type": "dialogue",
               "dialogue": "margin.end"
+            },
+            {
+              "type": "start-quest",
+              "quest": "lowlands.lighthouse"
             }
           ]
         }
@@ -464,7 +468,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "You made it past the Blots.\nThe road east is open."
+          "text": "You made it past the Blots.\nThe road leads east, into the Lowlands."
         }
       ],
       "then": []
