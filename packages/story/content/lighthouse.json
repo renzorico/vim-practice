@@ -5,6 +5,16 @@
   "openingQuests": [],
   "dialogues": [
     {
+      "id": "lighthouse.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
+        }
+      ],
+      "then": []
+    },
+    {
       "id": "lighthouse.intro",
       "lines": [
         {

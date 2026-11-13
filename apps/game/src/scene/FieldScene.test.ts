@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
+import { createWorldSim, playKeys, FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
 import { FIXTURE_INITIAL_STATE } from './fixtureFrames.js';
 
 const fake = vi.hoisted(() => {
@@ -47,7 +47,9 @@ vi.mock('phaser', () => ({ default: {
   },
 } }));
 import { FieldScene } from './FieldScene.js';
-import { lighthouse, lighthouseLegend } from '../play2/content.js';
+import { createEngine } from '@escape/engine';
+import { QUARRY_COMMANDS } from '../play2/session.js';
+import { quarry, quarryLegend, lighthouse, lighthouseLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
 const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
@@ -116,10 +118,10 @@ describe('FieldScene without canvas', () => {
   });
 });
 
-it('flashes only committed affected rows and restores them on completion', () => {
+it('flashes only effect-driven affected rows and restores them on completion', () => {
   const scene = new FieldScene(frame, false); scene.create();
   scene.present({ ...frame, state: { ...frame.state, turn: 1 }, events: [
-    { type: 'rows-changed', fromLine: 1, toLine: 1, lineDelta: 0, by: 'player' },
+    { type: 'rows-changed', fromLine: 1, toLine: 1, lineDelta: 0, by: 'effect' },
   ] });
   const config = fake.tween.mock.calls[0]?.[0];
   config.targets.value = 0.5;
@@ -248,4 +250,47 @@ it('swaps the lamp sprite when lighthouse.lit changes without a buffer edit', ()
     events: [{ type: 'flag-set', flag: 'lighthouse.lit', value: true }] });
   expect(lamp?.setTexture).toHaveBeenCalledWith('field:lamp-lit');
   expect(lamp?.destroy).not.toHaveBeenCalled();
+});
+
+it.each([
+  { command: 'x', approach: '13l', removed: 0 },
+  { command: '4x', approach: '13l', removed: 4 },
+  { command: '5r=', approach: '13l4x8l2j7l', removed: 5 },
+  { command: '5x', approach: '13l4x8l2j7l', removed: 5 },
+])('redraws $command immediately with one dust frame and no white flash', ({ command, approach, removed }) => {
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
+  const before = playKeys(sim, quarry, quarryLegend, options, [...approach]).state;
+  const initial = { state: before, events: [], stage: quarry, legend: quarryLegend, showSource: true };
+  const scene = new FieldScene(initial, false); scene.create();
+  let state = before;
+  for (const key of command) {
+    const result = sim.step(state, key, quarry, quarryLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const dust = fake.images.filter(image => image.texture === 'field:dust');
+  expect(dust).toHaveLength(removed);
+  for (const [offset, image] of dust.entries()) {
+    expect(image.x).toBe((before.engine.cursor.col + offset) * 16 + 8);
+    expect(image.y).toBe(before.engine.cursor.line * 16 + 8);
+  }
+  const row = state.engine.cursor.line;
+  const tiles = fake.images.filter(image => quarryLegend.tiles.some(tile => image.texture.startsWith(`field:${tile.sprite}`))
+    && image.depth === 0 && image.y === row * 16 + 8 && image.destroy.mock.calls.length === 0);
+  expect(tiles).toHaveLength(state.engine.lines[row]?.length ?? 0);
+  for (const [col, char] of [...state.engine.lines[row] ?? ''].entries()) {
+    const tile = tiles.find(image => image.x === col * 16 + 8);
+    const sprite = quarryLegend.tiles.find(tile => tile.char === char)?.sprite;
+    expect(tile?.texture).toMatch(new RegExp(`^field:${sprite}`));
+  }
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  expect(clock.duration).toBeLessThanOrEqual(90);
+  if (removed) {
+    clock.targets.value = 59 / clock.duration; clock.onUpdate();
+    for (const image of dust) expect(image.destroy).not.toHaveBeenCalled();
+    clock.targets.value = 60 / clock.duration; clock.onUpdate();
+    for (const image of dust) expect(image.destroy).toHaveBeenCalledOnce();
+  }
+  for (const tile of tiles) expect(tile.setTintFill).not.toHaveBeenCalled();
 });

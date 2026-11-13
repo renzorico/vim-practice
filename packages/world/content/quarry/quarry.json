@@ -233,8 +233,8 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 1,
-  "solution": [],
+  "parTurns": 4,
+  "solution": ["2", "6", "r", "=", "3", "j", "8", "r", "=", "8", "l"],
   "hints": [
     "Count the rubble, plus the stone under you. 4x.",
     "Count the river, plus your own stone. 5r= lays planks."

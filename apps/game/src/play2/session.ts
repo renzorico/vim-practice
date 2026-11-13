@@ -25,6 +25,10 @@ export interface SessionDependencies {
 }
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
+export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r'] as const;
+const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
+  margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS,
+};
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -39,7 +43,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return found;
   }
   function options(story: StoryState, current: Stage) {
-    return { learnedCommands: current.world === 'lowlands' ? LOWLANDS_COMMANDS : LEARNED_COMMANDS, flags: story.flags };
+    return { learnedCommands: WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
   }
   function transition(session: Session): Session {
     if (session.world.status !== 'cleared' || session.queue.length > 0) return session;

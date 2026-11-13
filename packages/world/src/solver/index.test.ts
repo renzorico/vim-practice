@@ -332,3 +332,49 @@ describe('finalization and replay gate', () => {
     expect(stageReplayIssue(sim, stage({ solution: ['$'], parTurns: 2 }), legend, options)).toBeNull();
   });
 });
+
+describe('field edit search', () => {
+  it('continues past rejected x landings to find the best 3x route', () => {
+    const room = stage({ map: [' TToD'], clear: [{ type: 'reach', area: area(0, 1) }], allowedCommands: ['x', 'l'] });
+    const settings = { learnedCommands: ['x', 'l'], flags: {} };
+    const solution = solve(room, settings);
+    expect(solution?.keys).toEqual(['3', 'x', 'l']);
+    expect(solution?.turns).toBe(2);
+    if (!solution) throw new Error('Missing edit solution');
+    expect(stageReplayIssue(sim, finalizeStage(room, solution), legend, settings)).toBeNull();
+  });
+  it('finds the best 4r= bridge', () => {
+    const tiles = { ...legend, fallback: { ...legend.fallback, walkable: true, fixed: true }, tiles: [
+      { char: '=', kind: 'barrier' as const, sprite: 'plank', walkable: true, fixed: false, label: 'plank' },
+      { char: '~', kind: 'barrier' as const, sprite: 'water', walkable: false, fixed: false, label: 'water' },
+      { char: '#', kind: 'barrier' as const, sprite: 'wall', walkable: false, fixed: true, label: 'wall' },
+    ] };
+    const room = stage({ map: ['=~~~#', '####D', '####D'],
+      clear: [{ type: 'reach', area: area(2, 4) }], allowedCommands: ['r', 'l', 'j'] });
+    // The final stone is reached only by moving down after laying planks.
+    const bridged = { ...room, map: ['=~~~D', '####D', '####D'] };
+    const settings = { learnedCommands: ['r', 'l', 'j'], flags: {} };
+    const best = solveStage(sim, bridged, tiles, settings, { maxTurns: 3 });
+    expect(best?.keys).toEqual(['4', 'r', '=', 'l', '2', 'j']);
+    expect(best?.turns).toBe(3);
+    if (!best) throw new Error('Missing bridge solution');
+    expect(stageReplayIssue(sim, finalizeStage(bridged, best), tiles, settings)).toBeNull();
+  });
+});
+
+it('keeps replacement counts across unchanged runs and only tries walkable tiles', () => {
+  const tiles = { ...legend, fallback: { ...legend.fallback, walkable: true, fixed: true },
+    tiles: [...legend.tiles.filter(tile => tile.char === '~'),
+    { char: '=', kind: 'barrier' as const, sprite: 'plank', walkable: true, fixed: false, label: 'plank' },
+  ] };
+  const inspecting: WorldSim = { ...sim, step(state, key, room, tiles, settings) {
+    if (state.engine.pendingKeys.at(-1) === 'r') {
+      expect(tiles.tiles.some(tile => tile.char === key && tile.walkable)).toBe(true);
+    }
+    return sim.step(state, key, room, tiles, settings);
+  } };
+  const room = stage({ map: ['===~D'], clear: [{ type: 'reach', area: area(0, 4) }], allowedCommands: ['r', 'l'] });
+  const solution = solveStage(inspecting, room, tiles, { learnedCommands: ['r', 'l'], flags: {} }, { maxTurns: 2 });
+  expect(solution?.keys).toEqual(['4', 'r', '=', 'l']);
+  expect(solution?.turns).toBe(2);
+});

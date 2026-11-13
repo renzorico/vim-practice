@@ -5,7 +5,7 @@ import { createEngine } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
-import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
+import { deathHint, learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
 import { stage, legend, content, lighthouse, lighthouseLegend } from './content.js';
 const storyEngine = createStoryEngine();
@@ -69,4 +69,11 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
   }));
   expect(talking).toContain('The Lamplighter');
   expect(talking).toContain('<svg width="64" height="64"');
+});
+
+it('reveals Quarry keycaps from flags and selects its authored death hint', () => {
+  expect(learnedKeycaps({ 'quarry.knows-x': true }).slice(-2)).toEqual(['x', '4x']);
+  expect(learnedKeycaps({ 'quarry.knows-r': true }).slice(-2)).toEqual(['r', '5r=']);
+  expect(deathHint(content, 'quarry-road')).toBe('Count the water, plus your own stone.\n5r= lays five planks in one move.');
+  expect(deathHint(content, 'unknown')).toBe(deathHint(content, 'margin'));
 });
