@@ -145,3 +145,17 @@ it('x on the ledge cannot shift the guards off the cage: the ledge ends at the c
     expect(result.state.flags['cut.dot-free'], route).not.toBe(true);
   }
 });
+
+it('x and r on the dirt bump: the cage never moves', () => {
+  const before = keys(start(), '2j');
+  for (const edit of ['4x', 'x', '3r.']) {
+    const bumped = keys(before, edit);
+    expect(bumped.world.engine.lines, edit).toEqual(cut.map);
+  }
+});
+it('accepted alternative: counted x over the ledge, then u, also frees Dot', () => {
+  const replay = sessionSolver(dependencies);
+  const result = playKeys(replay, cut, cutLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} }, parseKeys('3j27xu26l<CR>'));
+  expect(result.state.flags['cut.dot-free']).toBe(true);
+  expect(result.state.entities.filter(entity => entity.def.kind === 'blot')).toHaveLength(0);
+});

@@ -386,6 +386,18 @@ Tags: `#gates` `#eval` `#design`
 
 ---
 
+## 2026-11-13: The Cut (2-2): dd, u, and Dot
+Phase: C | Agent(s): Orchestrator (Opus, map, design calls, sim probes, browser playthrough), Codex/GPT (build, solver dd/undo), Claude Sonnet (review) | PR: C-3
+Tags: `#gates` `#design`
+
+**What:** One ledge over a long drop, Dot caged at its end, Blots crawling along the ledge. `dd` deletes the line you stand on and everything on it; `u` brings the ledge back, never the Blots. Dot joins ("...out?", then "Again. ...again."). The solver explores `dd`, `u` and `<C-r>`.
+
+**What the checks caught:** Four skips, three found by Codex's solver, one by Sonnet. Jumping past the Blots with a count and taking one hit (the Margin's own trick); `r` paving the drop; `x` sliding the ledge so the cage guards moved aside; `x` on the dirt shifting the cage off its spawn cell. Fixes: three Blots stacked on the only cell next to the cage, the drop and the dirt fixed, and the ledge ending exactly at the cage cell so any `x` removes that cell. `27x` then `u` was accepted: it is the same lesson.
+
+**Lesson:** In an edit world every non-fixed tile is a lever. Decide per stage which rows the player may edit, make everything else fixed, and put the goal on a cell that edits can only destroy, never move.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

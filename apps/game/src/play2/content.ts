@@ -27,7 +27,7 @@ export const lowlandsLegend = parseLegend(lowlandsLegendJson);
 // Quarry par is best known, not proven: the new gate-clear search (maxTurns: 4) hit its 500-expansion cap.
 export const quarry = parseStage(quarryJson);
 export const quarryLegend = parseLegend(quarryLegendJson);
-// Cut par 3 is best known: the focused x search found 3jx26l<CR>; the full-command search hit its 500-expansion cap.
+// Cut par 4 (3j dd u 26l <CR>) is best known: the full-command search hits its expansion cap. 3j27x u 26l <CR> ties it and is accepted.
 export const cut = parseStage(cutJson);
 export const cutLegend = parseLegend(cutLegendJson);
 export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }];

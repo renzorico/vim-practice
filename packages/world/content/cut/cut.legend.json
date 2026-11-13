@@ -14,7 +14,7 @@
       "kind": "ground",
       "sprite": "dirt",
       "walkable": true,
-      "fixed": false,
+      "fixed": true,
       "label": "dirt"
     },
     {
