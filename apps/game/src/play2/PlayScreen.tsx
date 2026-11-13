@@ -34,7 +34,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
   const result = resultData(session);
   return <main className="play-screen">
     <header className="play-header">
-      <h1>{stage.id} · {stage.title}</h1>
+      <h1>{stage.title}</h1>
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field"><FieldView state={world} events={session.lastEvents} stage={stage}
