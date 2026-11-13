@@ -82,6 +82,9 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | C-1 review | `applyTextEdits` should assert an open undo entry and bounds-check `start`/`removed` | codex |
 | C-1 review | `J` with leading spaces and `3rx` over a mixed run give exact but not minimal edits | codex |
 | C-1 review | World tests for insert sessions across keys (`a`/`i` with `<BS>`, `o`, `O`, `i<CR>`, `P`) and undo of them with Blots | haiku |
+| C-3 review | Solver identity serialises full undo/redo stacks; with `u` learned the default 200k-expansion solve runs out of memory. Hash a compact history key or bound nodes | codex |
+| C-3 review | `u` restore animation: restored row draws at once while rows below slide down over it; dust sits at the old row position | codex |
+| C-2/C-3 | Cells past a row's end draw as a pale strip even inside bedrock walls; consider drawing them as the surrounding wall's shadow | orchestrator |
 
 | B-B review 2 | Camera follows the jump arc and bump shake on maps larger than the view, cancelling them on screen | B-H |
 | B-B review 2 | Hit flash, bump shake and fades vanish when one step has more than 14 animation hints | B-H |

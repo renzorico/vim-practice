@@ -5,7 +5,8 @@
       "order": 2,
       "name": "The Quarry",
       "stages": [
-        "quarry-road"
+        "quarry-road",
+        "cut"
       ],
       "castle": null,
       "statue": null

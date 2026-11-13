@@ -378,3 +378,35 @@ it('keeps replacement counts across unchanged runs and only tries walkable tiles
   expect(solution?.keys).toEqual(['4', 'r', '=', 'l']);
   expect(solution?.turns).toBe(2);
 });
+
+it('requires dd then u to remove the guard and restore the only route', () => {
+  const settings = { learnedCommands: ['dd', 'u', 'l'], flags: {} };
+  const room = stage({ map: ['   ', ' ~~'], start: { line: 0, col: 0 }, hearts: 1,
+    entities: [{ id: 'guard', kind: 'blot', sprite: 'blot', at: { line: 0, col: 1 },
+      behaviour: { type: 'still' }, every: 1, damage: 1, solid: true }],
+    clear: [{ type: 'reach', area: area(0, 2) }, { type: 'no-entities', kind: 'blot' }] });
+  const solution = solveStage(sim, room, legend, settings, { maxTurns: 4, maxExpanded: 100 });
+  expect(solution?.keys).toEqual(['d', 'd', 'u', '2', 'l']);
+  expect(solution?.turns).toBe(3);
+  if (!solution) throw new Error('Missing undo solution');
+  expect(stageReplayIssue(sim, finalizeStage(room, solution), legend, settings)).toBeNull();
+  expect(solveStage(sim, room, legend, { ...settings, learnedCommands: ['dd', 'l'] }, { maxTurns: 4 })).toBeNull();
+});
+
+it('searches redo using the engine undo history', () => {
+  const settings = { learnedCommands: ['<C-r>'], flags: {} };
+  const room = stage({ map: ['   '],
+    entities: [{ id: 'guard', kind: 'blot', sprite: 'blot', at: { line: 0, col: 0 },
+      behaviour: { type: 'still' }, every: 1, damage: 0, solid: false }],
+    clear: [{ type: 'no-entities', kind: 'blot' }] });
+  const restoring: WorldSim = { ...sim, init(stage, legend, options) {
+    const initial = sim.init(stage, legend, options);
+    const engine = createEngine();
+    const changed = engine.step(initial.engine, 'x').state;
+    return { ...initial, engine: engine.step(changed, 'u').state };
+  } };
+  const solution = solveStage(restoring, room, legend, settings);
+  expect(solution?.keys).toEqual(['<C-r>']);
+  if (!solution) throw new Error('Missing redo solution');
+  expect(stageReplayIssue(restoring, finalizeStage(room, solution), legend, settings)).toBeNull();
+});

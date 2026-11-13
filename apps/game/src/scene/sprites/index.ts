@@ -1,3 +1,4 @@
+import { LEDGE, CHASM, DOT, DOT_CAGE } from './cut.js';
 import { DIRT, GRAVEL, BEDROCK, RUBBLE, RIVER, PLANK, TENT, ASH, KIT, CRACK, QUARRY_GATE, DUST } from './quarry.js';
 import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
 import { WREN, GULL, NOTE, STONE, JETTY, LIGHTHOUSE_DOOR, BLANK } from './lowlands.js';
@@ -18,6 +19,7 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  ledge: LEDGE, chasm: CHASM, dot: DOT, 'dot-cage': DOT_CAGE,
   dirt: DIRT, gravel: GRAVEL, bedrock: BEDROCK, rubble: RUBBLE, river: RIVER,
   plank: PLANK, tent: TENT, ash: ASH, kit: KIT, crack: CRACK, 'quarry-gate': QUARRY_GATE, dust: DUST,
   unknown: {
