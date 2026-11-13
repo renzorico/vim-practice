@@ -86,13 +86,17 @@ export type EntityKind = 'blot' | 'npc' | 'keeper' | 'dot' | 'unwriter' | 'prop'
  *   - follow: like chase, but stops when adjacent and never deals damage (Dot).
  *   - unwrite: deletes the buffer row at `path[n]`'s line each time it acts (the Unwriter, finale).
  *              If it stands on that row it removes itself, like any entity on a deleted tile.
+ *   - build:  inserts `rows[n]` as a new buffer row directly above its own row each time it acts
+ *             (the Mason). The entity, and everything from its row down, moves one row down.
+ *             After the last row it never builds again and stands still.
  */
 export type Behaviour =
   | { readonly type: 'still' }
   | { readonly type: 'chase' }
   | { readonly type: 'patrol'; readonly path: readonly Position[] }
   | { readonly type: 'follow' }
-  | { readonly type: 'unwrite'; readonly path: readonly Position[] };
+  | { readonly type: 'unwrite'; readonly path: readonly Position[] }
+  | { readonly type: 'build'; readonly rows: readonly string[] };
 
 export interface EntitySpawn {
   readonly id: EntityId;
@@ -123,7 +127,7 @@ export interface Entity {
   readonly id: EntityId;
   readonly def: EntitySpawn;
   readonly at: Position;
-  /** Index into a patrol or unwrite path. 0 for other behaviours. */
+  /** Index into a patrol or unwrite path, or the next row of a build. 0 for other behaviours. */
   readonly pathIndex: number;
 }
 
@@ -421,7 +425,8 @@ export interface WorldOptions {
  *    as `lines.join('\n')`). A command, undo or redo uses the engine's `StepResult.edits`. The
  *    world builds its own for effects and entities: 'set-rows' is one edit per row, removing
  *    the old row's characters and inserting the new row's; 'delete-row' removes the row and
- *    one adjacent '\n' (the one after it; for the last row, the one before it). Edits never
+ *    one adjacent '\n' (the one after it; for the last row, the one before it); 'build' inserts
+ *    its row and one '\n' at the start of the builder's row. Edits never
  *    come from comparing texts. Each position (an entity, the cursor, a mark, the visual
  *    anchor, a fixed tile) is carried through the edits in order. For one edit and an offset:
  *      a. before `start`: the offset is kept;

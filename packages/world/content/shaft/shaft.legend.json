@@ -1,0 +1,37 @@
+{
+  "id": "shaft",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "bedrock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "mortar",
+      "walkable": true,
+      "fixed": false,
+      "label": "fresh mortar"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "bedrock",
+      "walkable": false,
+      "fixed": true,
+      "label": "bedrock"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "scaffold",
+      "walkable": true,
+      "fixed": true,
+      "label": "scaffold"
+    }
+  ]
+}

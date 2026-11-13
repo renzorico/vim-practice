@@ -1,0 +1,116 @@
+{
+  "id": "shaft",
+  "world": "quarry",
+  "type": "field",
+  "title": "The Mason's Shaft",
+  "goalText": "Reach the Mason at the bottom of the shaft.",
+  "map": [
+    "#########",
+    "#.......#",
+    "#.......#",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    "####=####",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########"
+  ],
+  "legend": "shaft",
+  "start": {
+    "line": 1,
+    "col": 4
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "mason-idle",
+      "kind": "keeper",
+      "sprite": "mason",
+      "at": {
+        "line": 14,
+        "col": 4
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "shaft.lip",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 3,
+          "col": 0
+        },
+        "to": {
+          "line": 3,
+          "col": 8
+        }
+      }
+    },
+    {
+      "id": "shaft.down",
+      "once": false,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 4,
+          "col": 0
+        },
+        "to": {
+          "line": 26,
+          "col": 8
+        }
+      }
+    },
+    {
+      "id": "shaft.talk-mason",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "mason"
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "shaft.mason-cured"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 1,
+  "solution": [],
+  "hints": [
+    "Stay on your row. dd brings the shaft up to you.",
+    "3dd beats his one row a turn. . repeats it."
+  ]
+}
