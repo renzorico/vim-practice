@@ -6,8 +6,8 @@
   "goalText": "Reach the Mason at the bottom of the shaft.",
   "map": [
     "#########",
-    "#.......#",
-    "#.......#",
+    "#,,,,,,,#",
+    "#,,,,,,,#",
     ".........",
     ".........",
     ".........",
@@ -55,6 +55,21 @@
       "every": 1,
       "damage": 0,
       "solid": true
+    },
+    {
+      "id": "dot",
+      "kind": "dot",
+      "sprite": "dot",
+      "at": {
+        "line": 1,
+        "col": 5
+      },
+      "behaviour": {
+        "type": "follow"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
     }
   ],
   "triggers": [

@@ -408,6 +408,18 @@ Tags: `#playtest` `#bug`
 
 ---
 
+## 2026-11-13: The Mason's Shaft (2-3), World 2's castle
+Phase: C | Agent(s): Orchestrator (Opus, design, contract `build` and `move-player`, sim probes, browser playthrough), Codex/GPT (build), Claude Sonnet (review) | PR: C-4
+Tags: `#contract` `#design` `#gates`
+
+**What:** `dd` does not move you; it moves the world. The player stays on the lip while deleting rows pulls the shaft up; the Mason lays a row above himself every 2 turns; climbing down throws you back. `3dd` and `.` beat him; Dot teaches `.`. Cured, he shows the second carving, statue E lights, "End of World 2". New behaviour `build` in the contract.
+
+**What the checks caught:** Design: a counted `j` lands on the same cell as `dd`, so walls can never force `dd`; the trap on absolute rows uses what only `dd` does. Unlimited building made the last row unclosable; the Mason now builds 6 rows. Sonnet: `x` on the chamber floor deleted the throw-back target and `move-player` silently did nothing, so the shaft could be walked; the floor is fixed stone and `move-player` now falls back to the nearest free cell (contract amended). Playthrough: the shaft looked like the lip; repeatable throw-back areas now draw dark with a wet sheen.
+
+**Lesson:** Any effect that can silently do nothing is a skip waiting to happen. Effects should degrade to the nearest sensible result, and danger zones must be visible before they bite.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

@@ -33,6 +33,9 @@ vi.mock('phaser', () => ({ default: {
         const result = Object.assign(fake.object(), { style }); result.text = text; fake.texts.push(result); return result;
       },
       container: () => { const result = fake.object(); fake.containers.push(result); return result; },
+      rectangle: (x: number, y: number) => {
+        const result = fake.object().setPosition(x, y); result.texture = 'rectangle'; fake.images.push(result); return result;
+      },
     };
     make = { graphics: () => ({ fillStyle() { return this; }, fillRect() { return this; },
       generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }),
@@ -49,7 +52,7 @@ vi.mock('phaser', () => ({ default: {
 import { FieldScene } from './FieldScene.js';
 import { createEngine } from '@escape/engine';
 import { QUARRY_COMMANDS } from '../play2/session.js';
-import { quarry, quarryLegend, lighthouse, lighthouseLegend, cut, cutLegend } from '../play2/content.js';
+import { quarry, quarryLegend, lighthouse, lighthouseLegend, cut, cutLegend, shaft, shaftLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
 const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
@@ -400,4 +403,20 @@ it('keeps the deleted cage guards piled during their burst', () => {
   for (const guard of guards) expect(guard.alpha).toBeLessThan(1);
   clock.onComplete();
   for (const guard of guards) expect(guard.destroy).toHaveBeenCalled();
+});
+
+it('shades hazard cells, adds sheen only on existing walkable cells and marks the top edge', () => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(shaft, shaftLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
+  const scene = new FieldScene({ ...frame, stage: shaft, legend: shaftLegend, state,
+    hazards: [{ from: { line: 4, col: 0 }, to: { line: 26, col: 8 } }] }, true);
+  scene.create();
+  const sheen = fake.images.filter(image => image.texture === 'field:wet-sheen');
+  const edges = fake.images.filter(image => image.texture === 'field:wet-edge');
+  expect(sheen).toHaveLength(91);
+  expect(sheen.every(image => image.alpha === 0.6)).toBe(true);
+  expect(fake.images.filter(image => image.texture === 'rectangle')).toHaveLength(91);
+  expect(edges).toHaveLength(9);
+  expect(edges.every(image => image.y === 4 * 16 + 8)).toBe(true);
+  expect(sheen.every(image => image.y >= 4 * 16 + 8 && image.y <= 14 * 16 + 8)).toBe(true);
 });

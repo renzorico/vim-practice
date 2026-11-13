@@ -1,5 +1,6 @@
 import type { Beat } from '@escape/story';
 import type { Legend, Stage } from '@escape/world';
+import { throwbackAreas } from '../scene/hazards.js';
 import { FieldView } from '../scene/FieldView.js';
 import { DialogueBox } from '../story-ui/DialogueBox.js';
 import { ObjectiveHud } from '../story-ui/ObjectiveHud.js';
@@ -38,7 +39,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field"><FieldView state={world} events={session.lastEvents} stage={stage}
-      legend={legend} showSource={showSource} /></div>
+      legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} /></div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}

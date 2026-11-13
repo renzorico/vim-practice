@@ -32,6 +32,14 @@
       "walkable": true,
       "fixed": true,
       "label": "scaffold"
+    },
+    {
+      "char": ",",
+      "kind": "barrier",
+      "sprite": "stone-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "stone floor"
     }
   ]
 }

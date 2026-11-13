@@ -38,9 +38,9 @@ it('chains the Cut clear into the shaft with story and the main quest', () => {
 });
 it('spawns the builder and four Blots once and teaches the dot keycap', () => {
   const ready = lip();
-  expect(ready.world.entities.map(e => e.id)).toEqual(['mason', 'shaft.blot-0', 'shaft.blot-1', 'shaft.blot-2', 'shaft.blot-3']);
+  expect(ready.world.entities.map(e => e.id)).toEqual(['dot', 'mason', 'shaft.blot-0', 'shaft.blot-1', 'shaft.blot-2', 'shaft.blot-3']);
   expect(learnedKeycaps(ready.story.flags)).toContain('.');
-  expect(keys(ready, 'kj').world.entities).toHaveLength(5);
+  expect(keys(ready, 'kj').world.entities).toHaveLength(6);
   expect(ready.story.firedReactions.filter(id => id === 'shaft.lip')).toHaveLength(1);
 });
 it('throws back on every descent and explains wet mortar only once', () => {
@@ -75,7 +75,7 @@ it('a single dd landing on a Blot costs a heart, while 2dd swallows it', () => {
   const blot = ready.world.entities.find(e => e.def.kind === 'blot');
   if (!blot) throw new Error('Missing Blot');
   const arranged: Session = { ...ready, world: { ...ready.world, turn: 2,
-    entities: [ready.world.entities[0]!, { ...blot, at: { line: 4, col: 4 } }] } };
+    entities: [ready.world.entities.find(entity => entity.id === 'mason')!, { ...blot, at: { line: 4, col: 4 } }] } };
   expect(keys(arranged, 'dd').world.hearts).toBe(2);
   expect(keys(arranged, '2dd').world.hearts).toBe(3);
 });
@@ -122,7 +122,29 @@ it('searches all learned commands, focused edits, and routes without row deletio
     if (!commands.includes('dd')) expect(result).toBeNull();
   }
 }, 60_000);
-it.each(['12j<CR>', '20w<CR>', '20e<CR>', '20$<CR>', '2j9x<CR>', '2j9r=<CR>'])('cannot skip the shaft without deleting rows: %s', route => {
+it.each(['j3h6xjj3l10j<CR>', '12j<CR>', '20w<CR>', '20e<CR>', '20$<CR>', '2j9x<CR>', '2j9r=<CR>'])('cannot skip the shaft without deleting rows: %s', route => {
   const result = keys(start(), route);
   expect(result.story.flags['shaft.mason-cured']).not.toBe(true);
+});
+
+it('fixed chamber prevents shortening the throw-back target row', () => {
+  const before = keys(start(), 'j3h');
+  const after = keys(before, '6x');
+  expect(after.world.engine.lines).toEqual(shaft.map);
+  expect(after.world.turn).toBe(before.world.turn);
+  expect(after.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'fixed' }));
+});
+it('Dot follows without blocking a player landing', () => {
+  const ready = lip();
+  const dot = ready.world.entities.find(entity => entity.id === 'dot');
+  expect(dot).toMatchObject({ def: { solid: false, damage: 0, behaviour: { type: 'follow' } } });
+  expect(dot?.at).not.toEqual({ line: 1, col: 5 });
+  if (!dot) throw new Error('Missing Dot');
+  const together: Session = { ...ready, world: { ...ready.world, entities: [
+    ...ready.world.entities.filter(entity => entity.id !== 'dot'), { ...dot, at: { line: 4, col: 4 } },
+  ] } };
+  const landed = keys(together, 'dd');
+  expect(landed.world.engine.cursor).toEqual({ line: 3, col: 4 });
+  expect(landed.world.hearts).toBe(3);
+  expect(landed.lastEvents.some(event => event.type === 'bump')).toBe(false);
 });

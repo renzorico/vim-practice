@@ -30,3 +30,9 @@ export const MASON: PixelSprite = { palette: PALETTE, frames: [[
   '....kk..kk......',
   '...kkk..kkk.....',
 ]] };
+
+// Transparent highlights preserve the mortar beneath and mark its slippery diagonal grain.
+export const WET_SHEEN: PixelSprite = { palette: { ...PALETTE, m: '#8196a2' }, frames: [pixels((x, y) =>
+  (x + y) % 12 === 0 || (x + y) % 12 === 1 ? 'm' : '.') ] };
+export const WET_EDGE: PixelSprite = { palette: { ...PALETTE, m: '#bdcbd0' }, frames: [pixels((_, y) =>
+  y === 0 ? 'm' : y === 1 ? 'C' : '.') ] };

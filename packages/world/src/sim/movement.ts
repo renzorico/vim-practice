@@ -12,6 +12,20 @@ export function blocked(lines: readonly string[], at: Position, entities: readon
   return entities.some((entity) => entity.def.solid && distance(entity.at, at) === 0) ? 'solid-entity' : null;
 }
 
+/** Reading order resolves equal Manhattan distances by line, then column. */
+export function nearestFreeCell(lines: readonly string[], target: Position,
+  entities: readonly Entity[], legend: Legend): Position | null {
+  let nearest: Position | null = null;
+  for (let line = 0; line < lines.length; line += 1) {
+    for (let col = 0; col < (lines[line]?.length ?? 0); col += 1) {
+      const candidate = { line, col };
+      if (blocked(lines, candidate, entities, legend) === null
+        && (nearest === null || distance(target, candidate) < distance(target, nearest))) nearest = candidate;
+    }
+  }
+  return nearest;
+}
+
 export function isWalk(command: CommandRecord): boolean {
   return command.kind === 'motion' && ['h', 'j', 'k', 'l'].includes(command.id);
 }
