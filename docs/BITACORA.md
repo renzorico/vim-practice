@@ -398,6 +398,16 @@ Tags: `#gates` `#design`
 
 ---
 
+## 2026-11-13: Motion felt "weird, unpredictable and buggy" (camera fix)
+Phase: C | Agent(s): Orchestrator (Opus, diagnosis, fix, browser frame sampling), Codex/GPT (review) | PR: #45
+Tags: `#playtest` `#bug`
+
+**What:** Renzo's playtest. Root cause: the camera centred on the player's final cell on every frame while the sprite slid there, so each key lurched the whole map at once and the player glided in afterwards (a `30l` snapped the world 30 tiles). The camera now follows the player's ground position on the sprite's clock, and the first frame is drawn synchronously. Measured in the browser: one `l` now scrolls the map -1, -13, -27, -39, -49 px over 80 ms (a tile is 48 px).
+
+**Lesson:** A test pinned the wrong behaviour ("anchors the camera to the final player cell") from the first build, with no reason recorded. Tests that freeze presentation choices need a one-line why, or they protect bugs.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
