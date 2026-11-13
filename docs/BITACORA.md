@@ -374,6 +374,18 @@ Tags: `#contract` `#gates`
 
 ---
 
+## 2026-11-13: The Quarry Road (2-1), the first stage you edit
+Phase: C | Agent(s): Orchestrator (Opus, map, design calls, sim probes, browser playthrough), Codex/GPT (build, solver edits), Claude Sonnet (review), Ollama qwen3:14b (Ash and Kit lines) | PR: C-2
+Tags: `#gates` `#eval` `#design`
+
+**What:** World 2 begins. The player edits the field for the first time: `4x` eats the rubble in the only cut (the row slides in), `5r=` lays planks over the river. Foreman Ash, Kit, the Scribe's note and a crack that shows an emptier quarry (twist seed). The solver now explores counted `x` and `r`. New retry in every stage: `:e!` reverts to the last save, like Vim.
+
+**What the checks caught:** Before handoff, the solver found `6$` landing on the gate at a row's end and `e` leaping the rubble and the river (word motions only test the landing cell); the rubble became a letter word with blank ground after it and the exit a prop. Codex stopped on a 4-turn `26r=` route; accepted as legitimate (it only uses `r` where the lesson teaches `x`). Sonnet found the real problem: overcounting `x` on the only connecting row slides bedrock into the cut and seals the stage while the player lives. No map prevents that, so the game gained `:e!`. The absolute clear area could also be deleted; the clear now follows the gate entity.
+
+**Lesson:** Once players edit the world, every connecting row can be cut and every absolute area can vanish. Edit stages need a retry and clear conditions tied to things that move with the text, not to coordinates.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

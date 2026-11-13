@@ -7,8 +7,8 @@ describe('tileGrid', () => {
   it('maps objects', () => expect(tileGrid(['oTS'], FIXTURE_LEGEND)).toEqual([['stone', 'tree', 'save-stone']]));
   it('maps barriers', () => expect(tileGrid(['~^'], FIXTURE_LEGEND)).toEqual([['water', 'thorns']]));
   it('uses fallback for unknown characters', () => expect(tileGrid(['?z'], FIXTURE_LEGEND)).toEqual([['unknown', 'unknown']]));
-  it('preserves ragged row lengths', () => expect(tileGrid([' oo', 'o'], FIXTURE_LEGEND).map(row => row.length)).toEqual([3, 1]));
-  it('does not pad empty rows', () => expect(tileGrid(['', 'o'], FIXTURE_LEGEND)).toEqual([[], ['stone']]));
+  it('pads ragged rows with visual unwritten paper', () => expect(tileGrid([' oo', 'o'], FIXTURE_LEGEND)).toEqual([['grass', 'stone', 'stone'], ['stone', 'blank', 'blank']]));
+  it('draws empty rows as unwritten paper', () => expect(tileGrid(['', 'o'], FIXTURE_LEGEND)).toEqual([['blank'], ['stone']]));
   it('preserves trailing spaces', () => expect(tileGrid(['o  '], FIXTURE_LEGEND)).toEqual([['stone', 'grass', 'grass']]));
   it('accepts no rows', () => expect(tileGrid([], FIXTURE_LEGEND)).toEqual([]));
   it('uses UTF-16 columns like the engine', () => expect(tileGrid(['😀'], FIXTURE_LEGEND)[0]).toHaveLength(2));

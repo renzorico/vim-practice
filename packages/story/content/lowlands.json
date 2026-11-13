@@ -57,6 +57,16 @@
   "cutscenes": [],
   "dialogues": [
     {
+      "id": "lowlands.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "w leaps over blank.\n$ reaches the end of the jetty."
+        }
+      ],
+      "then": []
+    },
+    {
       "id": "lowlands.intro",
       "lines": [
         {

@@ -77,7 +77,7 @@ const SATURATING = new Set([
 
 /** Generate counts lazily; feedback is the simulated identity, or null for a rejection. */
 function* fieldActions(
-  state: WorldState, commands: readonly string[],
+  state: WorldState, commands: readonly string[], legend: Legend,
 ): Generator<readonly Key[], void, string | null> {
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map((line) => line.length));
@@ -85,6 +85,21 @@ function* fieldActions(
   for (const command of [...new Set(commands)].sort()) {
     if (command === ':w') {
       yield [':', 'w', '<CR>'];
+      continue;
+    }
+    if (command === 'x' || command === 'r') {
+      const length = state.engine.lines[state.engine.cursor.line]?.length ?? 0;
+      const sequences = command === 'x' ? [['x']] : legend.tiles.filter(tile => tile.walkable).map(tile => ['r', tile.char]);
+      for (const sequence of sequences) {
+        let previous: string | null = null;
+        for (let count = 1; count <= length; count += 1) {
+          const current = yield count === 1 ? sequence : [...String(count), ...sequence];
+          // A rejected landing can become walkable with a larger edit (x vs 4x).
+          // Replacement counts can match inside an unchanged run before reaching a barrier.
+          if (command === 'x' && current !== null && current === previous) break;
+          previous = current;
+        }
+      }
       continue;
     }
     if (!MOTIONS.has(command)) continue;
@@ -176,7 +191,7 @@ export function solveStage(
       })();
     } else {
       actions = (function* () {
-        yield* fieldActions(node.state, commands);
+        yield* fieldActions(node.state, commands, legend);
         if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) yield ['<CR>'];
       })();
     }

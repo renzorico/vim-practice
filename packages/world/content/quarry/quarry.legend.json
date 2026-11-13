@@ -1,0 +1,69 @@
+{
+  "id": "quarry",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "rock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "dirt",
+      "walkable": true,
+      "fixed": false,
+      "label": "dirt"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "gravel",
+      "walkable": true,
+      "fixed": false,
+      "label": "gravel road"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "bedrock",
+      "walkable": false,
+      "fixed": true,
+      "label": "bedrock"
+    },
+    {
+      "char": "~",
+      "kind": "barrier",
+      "sprite": "river",
+      "walkable": false,
+      "fixed": false,
+      "label": "river"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "plank",
+      "walkable": true,
+      "fixed": false,
+      "label": "plank"
+    },
+    {
+      "char": "H",
+      "kind": "object",
+      "sprite": "tent",
+      "walkable": false,
+      "fixed": false,
+      "label": "tent"
+    },
+    {
+      "char": "R",
+      "kind": "object",
+      "sprite": "rubble",
+      "walkable": false,
+      "fixed": false,
+      "label": "rubble"
+    }
+  ]
+}

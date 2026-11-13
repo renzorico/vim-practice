@@ -97,11 +97,11 @@ it('Continue starts at the stage entry with no Unwriter, then permits the climb 
   expect(continued.world.entities.some(entity => entity.id === 'unwriter')).toBe(false);
   expect(dismiss(keys(continued, climb)).world.entities.some(entity => entity.id === 'unwriter')).toBe(true);
 });
-it('the shortest solver route clears alive', () => {
+it('the shortest solver route enters the Quarry alive after the ending', () => {
   const ended = dismiss(keys(start(), lighthouse.solution));
-  expect(ended.world.status).toBe('cleared');
+  expect(ended.world.stage).toBe('quarry-road');
   expect(ended.world.hearts).toBe(3);
-  expect(ended.world.turn).toBe(lighthouse.parTurns);
+  expect(ended.story.flags['lighthouse.lit']).toBe(true);
 });
 
 it('completes the third quest step on the lit flag after the normal Lowlands route', () => {

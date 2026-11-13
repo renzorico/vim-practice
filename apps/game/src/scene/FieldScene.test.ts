@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
+import { createWorldSim, playKeys, FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
 import { FIXTURE_INITIAL_STATE } from './fixtureFrames.js';
 
 const fake = vi.hoisted(() => {
@@ -19,7 +19,7 @@ const fake = vi.hoisted(() => {
   });
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
-    strokeText: vi.fn(), fillText: vi.fn(),
+    strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
     scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
@@ -43,11 +43,13 @@ vi.mock('phaser', () => ({ default: {
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
-    time = { addEvent: vi.fn() };
+    time = { addEvent: fake.idle };
   },
 } }));
 import { FieldScene } from './FieldScene.js';
-import { lighthouse, lighthouseLegend } from '../play2/content.js';
+import { createEngine } from '@escape/engine';
+import { QUARRY_COMMANDS } from '../play2/session.js';
+import { quarry, quarryLegend, lighthouse, lighthouseLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
 const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
@@ -116,10 +118,10 @@ describe('FieldScene without canvas', () => {
   });
 });
 
-it('flashes only committed affected rows and restores them on completion', () => {
+it('flashes only effect-driven affected rows and restores them on completion', () => {
   const scene = new FieldScene(frame, false); scene.create();
   scene.present({ ...frame, state: { ...frame.state, turn: 1 }, events: [
-    { type: 'rows-changed', fromLine: 1, toLine: 1, lineDelta: 0, by: 'player' },
+    { type: 'rows-changed', fromLine: 1, toLine: 1, lineDelta: 0, by: 'effect' },
   ] });
   const config = fake.tween.mock.calls[0]?.[0];
   config.targets.value = 0.5;
@@ -248,4 +250,85 @@ it('swaps the lamp sprite when lighthouse.lit changes without a buffer edit', ()
     events: [{ type: 'flag-set', flag: 'lighthouse.lit', value: true }] });
   expect(lamp?.setTexture).toHaveBeenCalledWith('field:lamp-lit');
   expect(lamp?.destroy).not.toHaveBeenCalled();
+});
+
+it.each([
+  { command: 'x', approach: '13l', removed: 0 },
+  { command: '4x', approach: '13l', removed: 4 },
+  { command: '5r=', approach: '13l4x8l2j7l', removed: 5 },
+  { command: '5x', approach: '13l4x8l2j7l', removed: 5 },
+])('redraws $command immediately with one dust frame and no white flash', ({ command, approach, removed }) => {
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
+  const before = playKeys(sim, quarry, quarryLegend, options, [...approach]).state;
+  const initial = { state: before, events: [], stage: quarry, legend: quarryLegend, showSource: true };
+  const scene = new FieldScene(initial, false); scene.create();
+  let state = before;
+  for (const key of command) {
+    const result = sim.step(state, key, quarry, quarryLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const dust = fake.images.filter(image => image.texture === 'field:dust');
+  expect(dust).toHaveLength(removed);
+  for (const [offset, image] of dust.entries()) {
+    expect(image.x).toBe((before.engine.cursor.col + offset) * 16 + 8);
+    expect(image.y).toBe(before.engine.cursor.line * 16 + 8);
+  }
+  const row = state.engine.cursor.line;
+  const tiles = fake.images.filter(image => quarryLegend.tiles.some(tile => image.texture.startsWith(`field:${tile.sprite}`))
+    && image.depth === 0 && image.y === row * 16 + 8 && image.destroy.mock.calls.length === 0);
+  expect(tiles).toHaveLength(state.engine.lines[row]?.length ?? 0);
+  for (const [col, char] of [...state.engine.lines[row] ?? ''].entries()) {
+    const tile = tiles.find(image => image.x === col * 16 + 8);
+    const sprite = quarryLegend.tiles.find(tile => tile.char === char)?.sprite;
+    expect(tile?.texture).toMatch(new RegExp(`^field:${sprite}`));
+  }
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  expect(clock.duration).toBeLessThanOrEqual(90);
+  if (removed) {
+    clock.targets.value = 59 / clock.duration; clock.onUpdate();
+    for (const image of dust) expect(image.destroy).not.toHaveBeenCalled();
+    clock.targets.value = 60 / clock.duration; clock.onUpdate();
+    for (const image of dust) expect(image.destroy).toHaveBeenCalledOnce();
+  }
+  for (const tile of tiles) expect(tile.setTintFill).not.toHaveBeenCalled();
+});
+
+it('draws missing row ends as unwritten paper without source glyphs', () => {
+  const initial = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines: ['ooo', 'o'] } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  const paper = fake.images.find(image => image.x === 24 && image.y === 24 && image.texture.startsWith('field:blank'));
+  expect(paper).toBeDefined();
+  const source = fake.images.find(image => image.x === 24 && image.y === 24 && image.texture.startsWith('glyph:'));
+  expect(source?.visible).toBe(false);
+  expect(initial.state.engine.lines[1]).toHaveLength(1);
+});
+it('uses sequential edit offsets for dust, including edits across rows', () => {
+  const lines = ['abcd', 'efgh'];
+  const initial = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  scene.present({ ...initial, state: { ...initial.state, engine: { ...initial.state.engine,
+    lines: ['cd', 'gh'], undoStack: [{ lines, cursor: { line: 0, col: 0 }, seq: 0,
+      edits: [{ start: 0, removed: 2, inserted: '' }, { start: 3, removed: 2, inserted: '' }] }],
+  } }, events: [{ type: 'rows-changed', fromLine: 0, toLine: 1, lineDelta: 0, by: 'player' }] });
+  expect(fake.images.filter(image => image.texture === 'field:dust').map(image => [image.x, image.y]))
+    .toEqual([[8, 8], [24, 8], [8, 24], [24, 24]]);
+});
+it('re-creates river tiles at the current idle frame', () => {
+  const initial = { ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...frame.state, stage: quarry.id, engine: { ...frame.state.engine, lines: ['=~'] } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  fake.idle.mock.calls[0]?.[0].callback();
+  scene.present({ ...initial, state: { ...initial.state, engine: { ...initial.state.engine, lines: ['~~'] } } });
+  const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
+  expect(river).toBeDefined();
+});
+it('prompts Enter to go south beside the quarry gate', () => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
+  const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
+  scene.create();
+  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
 });

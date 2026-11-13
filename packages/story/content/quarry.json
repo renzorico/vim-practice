@@ -1,0 +1,349 @@
+{
+  "worlds": [
+    {
+      "id": "quarry",
+      "order": 2,
+      "name": "The Quarry",
+      "stages": [
+        "quarry-road"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "quests": [
+    {
+      "id": "quarry.road",
+      "world": "quarry",
+      "title": "The road south",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "cut",
+          "objective": "Clear the rubble from the cut.",
+          "completeWhen": {
+            "type": "trigger",
+            "trigger": "quarry.through"
+          },
+          "then": []
+        },
+        {
+          "id": "river",
+          "objective": "Cross the river.",
+          "completeWhen": {
+            "type": "trigger",
+            "trigger": "quarry.far"
+          },
+          "then": []
+        },
+        {
+          "id": "south",
+          "objective": "Find the road south.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "quarry-road"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "openingStage": "quarry-road",
+  "openingQuests": [],
+  "dialogues": [
+    {
+      "id": "quarry-road.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "South of the Lighthouse, the Quarry.\nThe road is buried in stone."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry.ash",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Road's buried. Half the cut came down\nwhen the Unwriter walked through.",
+          "name": "Foreman Ash"
+        },
+        {
+          "speaker": "npc",
+          "text": "We don't dig in the Quarry, child.\nWe delete. x eats the stone you stand on.",
+          "name": "Foreman Ash"
+        },
+        {
+          "speaker": "npc",
+          "text": "The row slides in to fill the gap.\nSo count the rubble, then your own stone.",
+          "name": "Foreman Ash"
+        },
+        {
+          "speaker": "npc",
+          "text": "Three rubble, plus yours: 4x.\nOne move, and the road's open.",
+          "name": "Foreman Ash"
+        },
+        {
+          "speaker": "npc",
+          "name": "Foreman Ash",
+          "text": "Cut too much? :e! puts the quarry back\nthe way it was. No shame in it."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "quarry.knows-x",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "quarry.ash-again",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Stone doesn't forget what it's been.\nBut it moves when you tell it to.",
+          "name": "Foreman Ash"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry.kit",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Ash says the Unwriter walked right\nthrough the cut. Didn't even stop.",
+          "name": "Kit"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry.kit-later",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "I heard the wall whisper once.\nWhat if we're already gone?",
+          "name": "Kit"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry.note",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "Water won't hold you. Planks will.\nr rewrites the stone under you."
+        },
+        {
+          "speaker": "scribe",
+          "text": "A number first, and r rewrites a run:\n5r= lays five planks, yours first."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "quarry.knows-r",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "quarry.through",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "A river. On the far bank, Blots.\nThere's a note pinned by the water."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry.crack",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Through a crack: the same quarry,\nemptier. No one walks this road now."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry-road.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Count the water, plus your own stone.\n5r= lays five planks in one move."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "quarry-road.end",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The road south is open.\nSomewhere below, someone is building."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "quarry.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "lighthouse"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "quarry.road"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "quarry-road"
+        }
+      ]
+    },
+    {
+      "id": "quarry.ash.quarry.cut",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.cut"
+      },
+      "once": false,
+      "unless": "quarry.knows-x",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.ash"
+        }
+      ]
+    },
+    {
+      "id": "quarry.ash.quarry.talk-ash",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-ash"
+      },
+      "once": false,
+      "unless": "quarry.knows-x",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.ash"
+        }
+      ]
+    },
+    {
+      "id": "quarry.ash-again.quarry.talk-ash",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-ash"
+      },
+      "once": false,
+      "onlyIf": "quarry.knows-x",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.ash-again"
+        }
+      ]
+    },
+    {
+      "id": "quarry.kit.quarry.talk-kit",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-kit"
+      },
+      "once": false,
+      "unless": "quarry.knows-x",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.kit"
+        }
+      ]
+    },
+    {
+      "id": "quarry.kit-later.quarry.talk-kit",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-kit"
+      },
+      "once": false,
+      "onlyIf": "quarry.knows-x",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.kit-later"
+        }
+      ]
+    },
+    {
+      "id": "quarry.note.quarry.talk-note",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-note"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.note"
+        }
+      ]
+    },
+    {
+      "id": "quarry.through.quarry.through",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.through"
+      },
+      "once": true,
+      "unless": "quarry.knows-r",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.through"
+        }
+      ]
+    },
+    {
+      "id": "quarry.crack.quarry.talk-crack",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-crack"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "quarry.crack"
+        }
+      ]
+    },
+    {
+      "id": "quarry.south",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-gate"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "quarry.south",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": []
+}

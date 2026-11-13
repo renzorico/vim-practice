@@ -1,3 +1,6 @@
+import quarryJson from '../../../../packages/world/content/quarry/quarry.json';
+import quarryLegendJson from '../../../../packages/world/content/quarry/quarry.legend.json';
+import quarryStoryJson from '../../../../packages/story/content/quarry.json';
 import { SKILL_IDS } from '@escape/curriculum';
 import { contentSchema, validateContent, type StoryContent } from '@escape/story';
 import { parseLegend, parseStage } from '@escape/world';
@@ -18,7 +21,10 @@ export const stage = parseStage(stageJson);
 export const legend = parseLegend(legendJson);
 export const lowlands = parseStage(lowlandsJson);
 export const lowlandsLegend = parseLegend(lowlandsLegendJson);
-export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }];
+// Quarry par is best known, not proven: the new gate-clear search (maxTurns: 4) hit its 500-expansion cap.
+export const quarry = parseStage(quarryJson);
+export const quarryLegend = parseLegend(quarryLegendJson);
+export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }];
 
 // Validate the original JSON, rather than assigning Zod's inferred optional `undefined`
 // properties to the stricter contract. Bundled JSON cannot contain undefined values.
@@ -27,11 +33,11 @@ function assertStoryJson(value: unknown): asserts value is StoryContent {
 }
 const bundledStory: unknown = {
   ...storyJson,
-  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds],
-  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes],
-  quests: [...storyJson.quests, ...lowlandsStoryJson.quests],
-  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues],
-  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions],
+  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds],
+  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes],
+  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests],
+  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues],
+  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions],
 };
 assertStoryJson(bundledStory);
 export const content = bundledStory;
