@@ -36,7 +36,8 @@ export type FlagId = string;
  *
  * IMPORTANT: Vim decides word boundaries from the character itself, and the legend cannot change that.
  * So legends follow one convention, and the map linter enforces it:
- *   - ground:  ' ' (space) only. Whitespace to Vim.
+ *   - ground:  ' ' (space) or '\t' (tab), the two blanks of Vim. Word motions skip them, so a
+ *              non-walkable tab ('unwritten ground') is a gap that only `w`, `b`, `e` can cross.
  *   - object:  letters, digits, '_'. Keyword characters: `w b e` hop between runs of them.
  *   - barrier: punctuation. A separate word class to Vim.
  */
