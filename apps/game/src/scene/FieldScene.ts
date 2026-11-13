@@ -17,6 +17,7 @@ export interface FieldFrame {
 }
 
 const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
+const PILE_OFFSET_PX = 3;
 
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
@@ -29,6 +30,7 @@ export class FieldScene extends Phaser.Scene {
   private label: Phaser.GameObjects.Text | undefined;
   private player: Phaser.GameObjects.Image | undefined;
   private entities = new Map<string, Phaser.GameObjects.Image>();
+  private pileOffsets = new Map<string, number>();
   private cells = new Map<string, {
     char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
     line: number; variant: number;
@@ -58,7 +60,7 @@ export class FieldScene extends Phaser.Scene {
         this.entities.get(entity.id)?.setTexture(this.texture(entity.def.sprite, this.idleFrame));
       }
       for (const cell of this.cells.values()) {
-        if ((cell.sprite === 'water' || cell.sprite === 'river')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
+        if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
       }
     } });
     this.tiles = this.add.container(0, 0);
@@ -90,7 +92,7 @@ export class FieldScene extends Phaser.Scene {
     if (value) {
       this.idleFrame = 0;
       this.finish();
-      for (const cell of this.cells.values()) if ((cell.sprite === 'water' || cell.sprite === 'river')) cell.tile.setTexture(this.texture(cell.sprite));
+      for (const cell of this.cells.values()) if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite));
     }
   }
 
@@ -156,6 +158,7 @@ export class FieldScene extends Phaser.Scene {
     if (this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
     if (!frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) return;
     // Exact engine edits identify even replacements/deletions inside equal tile runs.
+    if (frame.events.some(event => event.type === 'command' && event.command.kind === 'undo')) return;
     const snapshot = frame.state.engine.undoStack.at(-1);
     if (!snapshot) return;
     let text = snapshot.lines.join('\n');
@@ -243,7 +246,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
-        : (sprite === 'water' || sprite === 'river') ? (this.reducedMotion ? 0 : this.idleFrame)
+        : (sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
         : (sprite === 'grass' || sprite === 'dirt') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
@@ -295,7 +298,8 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private addEntity(id: string, sprite: string, at: Position): void {
-    const image = this.add.image(center(at.col), center(at.line), this.texture(sprite, this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
+    const offset = this.pileOffsets.get(id) ?? 0;
+    const image = this.add.image(center(at.col) - offset, center(at.line) - offset, this.texture(sprite, this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
     this.actors?.add(image);
     this.entities.set(id, image);
   }
@@ -310,6 +314,18 @@ export class FieldScene extends Phaser.Scene {
       .setAlpha(1).clearTint();
     for (const image of this.entities.values()) image.destroy();
     this.entities.clear();
+    const piles = new Map<string, number>();
+    // Keep removed actors' offsets until their burst has finished.
+    for (const entity of this.frame.state.entities) {
+      const cell = `${entity.at.line}:${entity.at.col}`;
+      const index = piles.get(cell) ?? 0;
+      this.pileOffsets.set(entity.id, index * PILE_OFFSET_PX);
+      piles.set(cell, index + 1);
+    }
+    for (const id of this.pileOffsets.keys()) {
+      if (!this.frame.state.entities.some(entity => entity.id === id)
+        && !this.frame.events.some(event => event.type === 'entity-removed' && event.entity === id)) this.pileOffsets.delete(id);
+    }
     for (const entity of this.frame.state.entities) this.addEntity(entity.id, entity.def.sprite, entity.at);
     this.prompts?.removeAll(true);
     for (const entity of this.frame.state.entities) {
@@ -338,7 +354,10 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private clearRowEffects(): void {
-    for (const cell of this.cells.values()) cell.tile.clearTint();
+    for (const cell of this.cells.values()) {
+      cell.tile.clearTint().setPosition(cell.tile.x, center(cell.line));
+      cell.glyph.setPosition(cell.glyph.x, center(cell.line));
+    }
   }
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
@@ -358,6 +377,16 @@ export class FieldScene extends Phaser.Scene {
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
         const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
+          if (step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
+            const firstShifted = step.fromLine + Math.max(0, step.lineDelta);
+            for (const cell of this.cells.values()) {
+              if (cell.line < firstShifted) continue;
+              const y = center(cell.line - step.lineDelta * (1 - fraction));
+              cell.tile.setPosition(cell.tile.x, y);
+              cell.glyph.setPosition(cell.glyph.x, y);
+            }
+            continue;
+          }
           if (this.unwriting.length > 0 && step.lineDelta < 0) continue;
           if (fraction < 1 && !this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
             for (const cell of this.cells.values()) {
@@ -370,11 +399,12 @@ export class FieldScene extends Phaser.Scene {
         if (!target) continue;
         if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
           const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE : 0;
+          const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
           target.setPosition(
-            center(step.from.col + (step.to.col - step.from.col) * progress),
-            center(step.from.line + (step.to.line - step.from.line) * progress) - arc,
+            center(step.from.col + (step.to.col - step.from.col) * progress) - offset,
+            center(step.from.line + (step.to.line - step.from.line) * progress) - arc - offset,
           );
-        } else if (step.type === 'entity-remove') target.setAlpha(1 - progress);
+        } else if (step.type === 'entity-remove') target.setAlpha(1 - progress).setScale(1 + progress * 0.4);
         else if (step.type === 'entity-spawn') target.setAlpha(progress);
         else if (step.type === 'hit') {
           if (progress < 1) target.setTintFill(0xffffff);

@@ -79,5 +79,7 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readon
     ...(flags['lowlands.knows-w'] ? ['w', 'b'] : []),
     ...(flags['lowlands.knows-dollar'] ? ['$', '0'] : []),
     ...(flags['quarry.knows-x'] ? ['x', '4x'] : []),
-    ...(flags['quarry.knows-r'] ? ['r', '5r='] : [])];
+    ...(flags['quarry.knows-r'] ? ['r', '5r='] : []),
+    ...(flags['cut.knows-dd'] ? ['dd'] : []),
+    ...(flags['cut.knows-u'] ? ['u'] : [])];
 }

@@ -1,0 +1,300 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "quarry.cut",
+      "world": "quarry",
+      "title": "A cry in the Cut",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "ledge",
+          "objective": "Get past the Blots on the ledge.",
+          "completeWhen": {
+            "type": "trigger",
+            "trigger": "cut.far"
+          },
+          "then": []
+        },
+        {
+          "id": "dot",
+          "objective": "Open the cage at the end of the ledge.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "cut.dot-free",
+            "value": true
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "cut.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Below the road, the Cut: one ledge\nover a long drop. Something is crying."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "cut.note",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "dd deletes the line you stand on,\nand everything on it."
+        },
+        {
+          "speaker": "scribe",
+          "text": "Cut too much? u undoes your last change.\nThe land comes back. What you cut does not."
+        },
+        {
+          "speaker": "scribe",
+          "text": "Three of them sit on the cage itself.\nYou cannot step through that. Delete it."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "cut.knows-dd",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "cut.knows-u",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "cut.ledge",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Blots pour onto the ledge.\nThey crawl toward you, along your line."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.blot-0",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 22
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.blot-1",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 24
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.blot-2",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 26
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.blot-3",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 28
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cut.dot",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "...out?",
+          "name": "???"
+        },
+        {
+          "speaker": "system",
+          "text": "You open the cage. A small ink dot\nhops out and looks up at you."
+        },
+        {
+          "speaker": "npc",
+          "text": "Again. ...again.",
+          "name": "Dot"
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "set-flag",
+              "flag": "cut.dot-free",
+              "value": true
+            },
+            {
+              "type": "remove-entity",
+              "entity": "dot-caged"
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "dot",
+                "kind": "npc",
+                "sprite": "dot",
+                "at": {
+                  "line": 4,
+                  "col": 29
+                },
+                "behaviour": {
+                  "type": "follow"
+                },
+                "every": 1,
+                "damage": 0,
+                "solid": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cut.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "dd from the ledge's west end deletes\nthe Blots' line. u brings the ledge back."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "cut.end",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Dot follows you down into the Quarry.\nBelow, the sound of stone on stone."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "cut.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "quarry-road"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "quarry.cut"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "cut"
+        }
+      ]
+    },
+    {
+      "id": "cut.note",
+      "when": {
+        "type": "trigger",
+        "trigger": "cut.talk-note"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "cut.note"
+        }
+      ]
+    },
+    {
+      "id": "cut.ledge",
+      "when": {
+        "type": "trigger",
+        "trigger": "cut.ledge"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "cut.ledge"
+        }
+      ]
+    },
+    {
+      "id": "cut.dot",
+      "when": {
+        "type": "trigger",
+        "trigger": "cut.talk-dot"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "cut.dot"
+        }
+      ],
+      "unless": "cut.dot-free"
+    }
+  ],
+  "cutscenes": [],
+  "openingStage": "cut",
+  "openingQuests": []
+}

@@ -25,7 +25,7 @@ export interface SessionDependencies {
 }
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
-export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r'] as const;
+export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>'] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS,
 };
@@ -113,6 +113,16 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return enter(entry(progress.stage), progress.story);
   }
 
+  function presentEnd(session: Session): Session {
+    const end = `${session.world.stage}.end`;
+    if (session.lastEvents.some(event => event.type === 'stage-cleared')
+      && content.dialogues.some(dialogue => dialogue.id === end)
+      && !session.queue.some(item => item.type === 'dialogue' && item.dialogue === end)) {
+      return { ...session, queue: [...session.queue, { type: 'dialogue', dialogue: end, index: 0 }] };
+    }
+    return session;
+  }
+
   function advance(session: Session): Session {
     const current = session.queue[0];
     if (!current) return session;
@@ -134,7 +144,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     }
     const next = { ...session, queue: session.queue.slice(1), lastEvents: [] };
     if (current.type === 'teach') return transition(settle(next, storyEngine.learn(next.story, current.skill, content)));
-    return transition(settle(next, storyEngine.apply(next.story, then, content)));
+    return transition(presentEnd(settle(next, storyEngine.apply(next.story, then, content))));
   }
 
   function reduce(session: Session, key: Key): Session {
@@ -163,14 +173,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
     const next = settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
       storyEngine.onEvents(session.story, stepped.events, content));
-    // Reaching a door always presents its ending, including routes that bypass an optional conversation.
-    const end = `${current.stage.id}.end`;
-    if (next.lastEvents.some(event => event.type === 'stage-cleared')
-      && content.dialogues.some(dialogue => dialogue.id === end)
-      && !next.queue.some(item => item.type === 'dialogue' && item.dialogue === end)) {
-      return { ...next, queue: [...next.queue, { type: 'dialogue', dialogue: end, index: 0 }] };
-    }
-    return transition(next);
+    return transition(presentEnd(next));
   }
   return { init, resume, reduce };
 }

@@ -38,7 +38,7 @@
       "kind": "barrier",
       "sprite": "chasm",
       "walkable": false,
-      "fixed": false,
+      "fixed": true,
       "label": "the drop"
     }
   ]

@@ -49,7 +49,7 @@ vi.mock('phaser', () => ({ default: {
 import { FieldScene } from './FieldScene.js';
 import { createEngine } from '@escape/engine';
 import { QUARRY_COMMANDS } from '../play2/session.js';
-import { quarry, quarryLegend, lighthouse, lighthouseLegend } from '../play2/content.js';
+import { quarry, quarryLegend, lighthouse, lighthouseLegend, cut, cutLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
 const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
@@ -331,4 +331,63 @@ it('prompts Enter to go south beside the quarry gate', () => {
     state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
   scene.create();
   expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
+});
+
+it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after the clock', command => {
+  const tiles = { ...FIXTURE_LEGEND, tiles: FIXTURE_LEGEND.tiles.map(tile => ({ ...tile, fixed: false })) };
+  const stage = { ...FIXTURE_STAGE, map: ['oooo', '    ', 'oooo'], start: { line: 0, col: 0 },
+    entities: [], triggers: [], scripts: [], clear: [{ type: 'flag' as const, flag: 'unreachable' }] };
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: ['dd', 'u'], flags: {} };
+  const deleted = playKeys(sim, stage, tiles, options, ['d', 'd']).state;
+  const before = command === 'dd' ? sim.init(stage, tiles, options) : deleted;
+  const scene = new FieldScene({ state: before, events: [], stage, legend: tiles, showSource: true }, false);
+  scene.create();
+  let state = before;
+  for (const key of command) {
+    const result = sim.step(state, key, stage, tiles, options);
+    state = result.state;
+    scene.present({ ...result, stage, legend: tiles, showSource: true });
+  }
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  expect(clock.duration).toBeLessThanOrEqual(90);
+  clock.targets.value = 0.5; clock.onUpdate();
+  const shifted = fake.images.filter(image => image.texture === 'field:stone' && image.destroy.mock.calls.length === 0);
+  expect(shifted.some(image => image.y % 16 !== 8)).toBe(true);
+  clock.onComplete();
+  const liveTiles = fake.images.filter(image => (image.texture === 'field:stone' || image.texture.startsWith('field:grass'))
+    && image.destroy.mock.calls.length === 0);
+  expect(liveTiles).toHaveLength(state.engine.lines.reduce((total, row) => total + row.length, 0));
+  for (const image of liveTiles) expect(image.y % 16).toBe(8);
+  if (command === 'dd') expect(fake.images.filter(image => image.texture === 'field:dust')).toHaveLength(4);
+  else expect(fake.images.filter(image => image.texture === 'field:dust')).toHaveLength(0);
+});
+
+it.each([true, false])('draws the three cage guards as a 3 px pile (reduced motion: %s)', reducedMotion => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(cut, cutLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
+  const initial = { state, events: [], stage: cut, legend: cutLegend, showSource: true };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  const guards = fake.images.filter(image => image.texture.startsWith('field:blot'));
+  expect(guards.map(image => [image.x, image.y])).toEqual([[472, 88], [469, 85], [466, 82]]);
+  // Once the top two disappear, the remaining entity returns to the cell centre.
+  scene.present({ ...initial, state: { ...state, entities: state.entities.filter(entity => !['guard-1', 'guard-2'].includes(entity.id)) } });
+  const remaining = fake.images.filter(image => image.texture.startsWith('field:blot') && image.destroy.mock.calls.length === 0);
+  expect(remaining.map(image => [image.x, image.y])).toEqual([[472, 88]]);
+});
+it('keeps the deleted cage guards piled during their burst', () => {
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
+  const before = playKeys(sim, cut, cutLegend, options, ['3', 'j']).state;
+  const initial = { state: before, events: [], stage: cut, legend: cutLegend, showSource: true };
+  const scene = new FieldScene(initial, false); scene.create();
+  const deleted = sim.step(sim.step(before, 'd', cut, cutLegend, options).state, 'd', cut, cutLegend, options);
+  scene.present({ ...initial, ...deleted });
+  const guards = fake.images.filter(image => image.texture.startsWith('field:blot') && image.destroy.mock.calls.length === 0);
+  expect(guards.map(image => [image.x, image.y])).toEqual([[472, 88], [469, 85], [466, 82]]);
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.5; clock.onUpdate();
+  for (const guard of guards) expect(guard.alpha).toBeLessThan(1);
+  clock.onComplete();
+  for (const guard of guards) expect(guard.destroy).toHaveBeenCalled();
 });

@@ -87,16 +87,20 @@ function* fieldActions(
       yield [':', 'w', '<CR>'];
       continue;
     }
-    if (command === 'x' || command === 'r') {
-      const length = state.engine.lines[state.engine.cursor.line]?.length ?? 0;
-      const sequences = command === 'x' ? [['x']] : legend.tiles.filter(tile => tile.walkable).map(tile => ['r', tile.char]);
+    if (command === 'u' || command === '<C-r>') {
+      yield [command];
+      continue;
+    }
+    if (command === 'x' || command === 'r' || command === 'dd') {
+      const length = command === 'dd' ? state.engine.lines.length : state.engine.lines[state.engine.cursor.line]?.length ?? 0;
+      const sequences = command === 'dd' ? [['d', 'd']] : command === 'x' ? [['x']] : legend.tiles.filter(tile => tile.walkable).map(tile => ['r', tile.char]);
       for (const sequence of sequences) {
         let previous: string | null = null;
         for (let count = 1; count <= length; count += 1) {
           const current = yield count === 1 ? sequence : [...String(count), ...sequence];
           // A rejected landing can become walkable with a larger edit (x vs 4x).
           // Replacement counts can match inside an unchanged run before reaching a barrier.
-          if (command === 'x' && current !== null && current === previous) break;
+          if (command !== 'r' && current !== null && current === previous) break;
           previous = current;
         }
       }
@@ -147,10 +151,10 @@ function periodFor(stage: Stage): number {
   return entities.reduce((period, entity) => period / gcd(period, entity.every) * entity.every, 1);
 }
 
-function identity(state: WorldState, period: number): string {
+function identity(state: WorldState, period: number, history: boolean): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, engine.cursor, engine.desiredCol, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    engine.lines, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % period,
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
@@ -168,10 +172,12 @@ export function solveStage(
   const commands = options.learnedCommands.filter((command) => stage.allowedCommands === undefined
     || stage.allowedCommands.includes(command));
   const period = periodFor(stage);
+  // Undo/redo futures depend on snapshots, even when current text and cursor match.
+  const history = commands.includes('u') || commands.includes('<C-r>');
   const initial = sim.init(stage, legend, options);
   const frontier = new Frontier();
   let order = 0;
-  const root: Node = { state: initial, keys: [], identity: identity(initial, period), order: order++ };
+  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
   let expanded = 0;
@@ -219,12 +225,12 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
-      if (!rejected) feedback = identity(state, period);
+      if (!rejected) feedback = identity(state, period, history);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history), order: order++ };
       const sibling = successors.get(next.identity);
       if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
     }
