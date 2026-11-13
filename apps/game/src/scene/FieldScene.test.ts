@@ -47,6 +47,7 @@ vi.mock('phaser', () => ({ default: {
   },
 } }));
 import { FieldScene } from './FieldScene.js';
+import { lighthouse, lighthouseLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
 const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
@@ -233,4 +234,18 @@ it('shows the dark bottom edge while the Unwriter is present and removes it when
   expect(edge?.visible).toBe(true);
   scene.present({ ...frame, state: { ...frame.state, entities: [] } });
   expect(edge?.visible).toBe(false);
+});
+
+it('swaps the lamp sprite when lighthouse.lit changes without a buffer edit', () => {
+  const initial = { ...frame, stage: lighthouse, legend: lighthouseLegend, state: {
+    ...frame.state, stage: lighthouse.id, flags: {}, entities: [],
+    engine: { ...frame.state.engine, lines: lighthouse.map, cursor: lighthouse.start },
+  } };
+  const scene = new FieldScene(initial, false); scene.create();
+  const lamp = fake.images.find(image => image.texture === 'field:lamp');
+  expect(lamp).toBeDefined();
+  scene.present({ ...initial, state: { ...initial.state, flags: { 'lighthouse.lit': true } },
+    events: [{ type: 'flag-set', flag: 'lighthouse.lit', value: true }] });
+  expect(lamp?.setTexture).toHaveBeenCalledWith('field:lamp-lit');
+  expect(lamp?.destroy).not.toHaveBeenCalled();
 });

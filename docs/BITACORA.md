@@ -350,6 +350,18 @@ Tags: `#eval` `#routing` `#hybrid`
 
 ---
 
+## 2026-11-13: The Lighthouse, World 1's boss
+Phase: B | Agent(s): Orchestrator (Opus, design, tower map, sim checks, browser playthrough), Codex/GPT (build, test updates), Claude Sonnet (review) | PR: #41
+Tags: `#gates` `#eval`
+
+**What:** The Unwriter's first appearance. Inside the Lighthouse it erases the tower from the bottom, one row per turn (the existing `unwrite` behaviour, no new rules), and the player outclimbs it with counts, `w` and `0`. At the top: the Lamplighter, the first clue ("The Scribe is in another buffer") and statue R. World 1 is now playable from New game to its end.
+
+**What the checks caught:** Sonnet found that `9h` then `10k` jumped over the single trigger cell that starts the erasure, so the boss could be skipped by accident. Same family as the Lowlands bugs: in a game where every motion can jump, a trigger must be a region the player cannot fly over, not a cell. The playthrough also showed the margin was thin (a slow learner reached the Lamplighter 2 turns before his row vanished); the hall gained 4 rows.
+
+**Lesson:** Design rule now: gates and triggers are regions sized for the longest jump the player can make at that point in the game; the solver and a "count skip" test check them.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

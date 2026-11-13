@@ -100,8 +100,24 @@
     "0",
     "$"
   ],
-  "parTurns": 0,
-  "solution": [],
+  "parTurns": 7,
+  "solution": [
+    "9",
+    "h",
+    "1",
+    "6",
+    "k",
+    "2",
+    "b",
+    "3",
+    "k",
+    "0",
+    "3",
+    "k",
+    "9",
+    "l",
+    "<CR>"
+  ],
   "hints": [
     "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
   ]

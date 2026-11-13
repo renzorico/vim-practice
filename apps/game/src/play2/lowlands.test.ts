@@ -118,7 +118,7 @@ it('advances the Lighthouse quest and enters the castle after its ending', () =>
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.end' });
   const ended = dismiss(session);
   expect(ended.world.stage).toBe('lighthouse');
-  expect(ended.world.engine.cursor).toEqual({ line: 21, col: 10 });
+  expect(ended.world.engine.cursor).toEqual({ line: 25, col: 10 });
   expect(controller.reduce(ended, 'l').queue).toEqual([]);
 });
 it('holds story world effects while dead and applies them immediately after restore', () => {
