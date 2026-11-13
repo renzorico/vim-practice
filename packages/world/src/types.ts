@@ -221,9 +221,11 @@ export type WorldEffect =
   /** Hearts never go above Stage.hearts. */
   | { readonly type: 'heal'; readonly hearts: number }
   /**
-   * `to` is a cell of the field as it is when this effect runs. It must exist, be walkable and hold no
-   * solid entity, or the effect is ignored (no event; the rest of the batch still applies).
-   * Emits 'player-moved' with style 'jump'.
+   * `to` is a cell of the field as it is when this effect runs. If it is missing, not walkable or holds a
+   * solid entity, the player goes to the nearest walkable cell free of solid entities instead (rule 3's
+   * displacement order: Manhattan distance, then lower line, then lower column), with no heart lost.
+   * A throw-back that silently did nothing let edits skip a stage (C-4 review). If no such cell exists,
+   * the effect is ignored. Emits 'player-moved' with style 'jump'.
    */
   | { readonly type: 'move-player'; readonly to: Position };
 
