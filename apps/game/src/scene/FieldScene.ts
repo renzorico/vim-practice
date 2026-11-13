@@ -3,7 +3,7 @@ import type { Position } from '@escape/engine';
 import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
 import { unwritingAlpha, unwritingPlan } from './unwrite.js';
 import { SPRITES } from './sprites/index.js';
-import { animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
+import { rowAnimationStart, animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { blankEdges, tileGrid } from './tiles.js';
 import { bufferSize, cameraTarget } from './camera.js';
@@ -381,11 +381,11 @@ export class FieldScene extends Phaser.Scene {
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
         const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
-          if (step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
-            const firstShifted = step.fromLine + Math.max(0, step.lineDelta);
+          if (step.lineDelta > 0 || step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
+            const rows = steps.filter(hint => hint.type === 'rows');
             for (const cell of this.cells.values()) {
-              if (cell.line < firstShifted) continue;
-              const y = center(cell.line - step.lineDelta * (1 - fraction));
+              const source = rowAnimationStart(cell.line, rows);
+              const y = center(source + (cell.line - source) * fraction);
               cell.tile.setPosition(cell.tile.x, y);
               cell.glyph.setPosition(cell.glyph.x, y);
             }

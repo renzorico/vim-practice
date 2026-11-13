@@ -1,7 +1,7 @@
 {
   "id": "shaft",
   "world": "quarry",
-  "type": "field",
+  "type": "castle",
   "title": "The Mason's Shaft",
   "goalText": "Reach the Mason at the bottom of the shaft.",
   "map": [
@@ -107,10 +107,18 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 1,
-  "solution": [],
+  "parTurns": 3,
+  "solution": [
+    "j",
+    "j",
+    "1",
+    "0",
+    "d",
+    "d",
+    "<CR>"
+  ],
   "hints": [
     "Stay on your row. dd brings the shaft up to you.",
-    "3dd beats his one row a turn. . repeats it."
+    "3dd once, then . repeats it."
   ]
 }

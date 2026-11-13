@@ -87,7 +87,7 @@ function* fieldActions(
       yield [':', 'w', '<CR>'];
       continue;
     }
-    if (command === 'u' || command === '<C-r>') {
+    if (command === 'u' || command === '<C-r>' || command === '.') {
       yield [command];
       continue;
     }
@@ -154,9 +154,9 @@ function periodFor(stage: Stage): number {
 function identity(state: WorldState, period: number, history: boolean): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
-    state.hearts, state.turn % period,
+    state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
     Object.keys(state.solvedScripts).sort().map((id) => [id, state.solvedScripts[id]]),
     [...state.firedTriggers].sort(), state.script?.id ?? null, state.status,

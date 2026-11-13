@@ -33,7 +33,7 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
     }
   }
   const total = reducedMotion || hints.length === 0 ? 0
-    : hints.some(hint => hint.type === 'jump') ? PLAYBACK_BUDGET_MS : WALK_DURATION_MS;
+    : hints.some(hint => hint.type === 'jump' || hint.type === 'rows' && hint.lineDelta > 0) ? PLAYBACK_BUDGET_MS : WALK_DURATION_MS;
   // Actors share the same clock. Removal follows its own actor's movement.
   return hints.map(hint => {
     const delayed = hint.type === 'entity-remove' && hints.some(other => other.type === 'entity-move' && other.entity === hint.entity);
@@ -41,4 +41,17 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
     const end = hint.type === 'entity-move' && hints.some(other => other.type === 'entity-remove' && other.entity === hint.entity) ? 0.65 : 1;
     return { ...hint, durationMs: total * (end - start), start, end };
   });
+}
+
+/** Reverse structural row shifts so simultaneous deletion/build animates from the old field. */
+export function rowAnimationStart(line: number, rows: readonly { readonly fromLine: number; readonly lineDelta: number }[]): number {
+  let source = line;
+  for (const row of [...rows].reverse()) {
+    if (row.lineDelta > 0 && source >= row.fromLine && source < row.fromLine + row.lineDelta) {
+      source = row.fromLine + row.lineDelta;
+    } else if (source >= row.fromLine + Math.max(0, row.lineDelta)) {
+      source -= row.lineDelta;
+    }
+  }
+  return source;
 }

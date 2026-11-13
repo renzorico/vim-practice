@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import type { Legend, Stage } from '@escape/world';
+import type { EntitySpawn, Legend, Stage } from '@escape/world';
 import { parseLegend, parseStage } from '../../packages/world/src/schema.js';
 import { errorIssue, type LintIssue } from './issue';
 import { lintLegend, lintStageAgainst } from './lint';
@@ -83,7 +83,7 @@ function parseLegends(files: readonly SourceFile[]): { entries: LegendEntry[]; b
   return { entries, byId };
 }
 
-function lintStageFile(file: SourceFile, legends: ReadonlyMap<string, Legend>): LintIssue[] {
+function lintStageFile(file: SourceFile, legends: ReadonlyMap<string, Legend>, storySpawns: Readonly<Record<string, readonly EntitySpawn[]>>): LintIssue[] {
   const result = parseSource(file.text, parseStage);
   if (!result.ok) {
     return [...result.issues];
@@ -93,19 +93,19 @@ function lintStageFile(file: SourceFile, legends: ReadonlyMap<string, Legend>): 
   if (legend === undefined) {
     return [errorIssue('legend-missing', `No legend file defines legend "${stage.legend}" for stage "${stage.id}".`)];
   }
-  return lintStageAgainst(stage, legend);
+  return lintStageAgainst(stage, legend, storySpawns[stage.id]);
 }
 
 /**
  * Lints a folder's worth of files. Legend files (`*.legend.json`) are matched to stages by id.
  * Every file gets a report, even when it has no issues.
  */
-export function lintSources(files: readonly SourceFile[]): FileReport[] {
+export function lintSources(files: readonly SourceFile[], storySpawns: Readonly<Record<string, readonly EntitySpawn[]>> = {}): FileReport[] {
   const { entries, byId } = parseLegends(files);
   const legendReports = entries.map((entry) => ({ file: entry.file, issues: entry.issues }));
   const stageReports = files
     .filter((file) => isStageFile(file.name))
-    .map((file) => ({ file: file.name, issues: lintStageFile(file, byId) }));
+    .map((file) => ({ file: file.name, issues: lintStageFile(file, byId, storySpawns) }));
   return [...legendReports, ...stageReports];
 }
 

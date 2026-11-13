@@ -74,6 +74,14 @@ function entityIssues(stage: Stage, legend: Legend, entity: EntitySpawn): LintIs
   const label = `Entity "${entity.id}"`;
   const start = checkWalkableCell(stage, legend, entity.at, 'entity-cell', `${label} starts`);
   const { behaviour } = entity;
+  if (behaviour.type === 'build') {
+    // Maps may be ragged: their width rule is simply that every row is nonempty.
+    return [...start, ...behaviour.rows.flatMap((row, index) => {
+      if (row.length === 0) return [errorIssue('row-empty', `${label} build row ${index} is empty.`)];
+      return [...row].flatMap(char => legend.tiles.some(tile => tile.char === char && tile.walkable)
+        ? [] : [errorIssue('entity-cell', `${label} build row ${index} has non-walkable or unknown character "${char}".`)]);
+    })];
+  }
   if (behaviour.type !== 'patrol' && behaviour.type !== 'unwrite') {
     return start;
   }

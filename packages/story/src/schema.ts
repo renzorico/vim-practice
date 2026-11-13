@@ -19,6 +19,7 @@ const behaviour = z.discriminatedUnion('type', [
   z.object({ type: z.literal('patrol'), path: z.array(position) }).strict(),
   z.object({ type: z.literal('follow') }).strict(),
   z.object({ type: z.literal('unwrite'), path: z.array(position) }).strict(),
+  z.object({ type: z.literal('build'), rows: z.array(z.string()) }).strict(),
 ]);
 
 const entitySpawn = z

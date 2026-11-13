@@ -81,5 +81,6 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readon
     ...(flags['quarry.knows-x'] ? ['x', '4x'] : []),
     ...(flags['quarry.knows-r'] ? ['r', '5r='] : []),
     ...(flags['cut.knows-dd'] ? ['dd'] : []),
-    ...(flags['cut.knows-u'] ? ['u'] : [])];
+    ...(flags['cut.knows-u'] ? ['u'] : []),
+    ...(flags['shaft.knows-dot'] ? ['.'] : [])];
 }

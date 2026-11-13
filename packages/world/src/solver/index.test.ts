@@ -410,3 +410,25 @@ it('searches redo using the engine undo history', () => {
   if (!solution) throw new Error('Missing redo solution');
   expect(stageReplayIssue(restoring, finalizeStage(room, solution), legend, settings)).toBeNull();
 });
+
+it('searches dot using a real saved last change', () => {
+  const room = stage({ map: ['oooo', 'oooo', 'oooo', 'Dooo'], start: { line: 0, col: 0 },
+    entities: [{ id: 'target', kind: 'blot', sprite: 'blot', at: { line: 3, col: 2 },
+      behaviour: { type: 'still' }, every: 1, solid: false, damage: 0 }],
+    clear: [{ type: 'no-entities', kind: 'blot' }] });
+  // Seed a real previous edit: the solver receives a loaded engine state with a repeatable dd.
+  const seeded: WorldSim = { ...sim,
+    step: (state, key, stage, legend, options) => sim.step(state, key, stage, legend,
+      { ...options, learnedCommands: ['.', 'dd'] }),
+    init: (stage, legend, options) => {
+      const initial = sim.init({ ...stage, map: ['oooo', ...stage.map] }, legend, options);
+      const first = sim.step(initial, 'd', stage, legend, { ...options, learnedCommands: ['dd'] });
+      return sim.step(first.state, 'd', stage, legend, { ...options, learnedCommands: ['dd'] }).state;
+    },
+  };
+  // Search only repeats; the underlying engine still needs dd permission to replay its keys.
+  const settings = { learnedCommands: ['.'], flags: {} };
+  const solution = solveStage(seeded, room, legend, settings, { maxTurns: 4, maxExpanded: 100 });
+  expect(solution?.turns).toBe(4);
+  expect(solution?.keys).toEqual(['.', '.', '.']);
+});

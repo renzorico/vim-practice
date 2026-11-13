@@ -1,4 +1,4 @@
-import type { Legend, Stage } from '@escape/world';
+import type { EntitySpawn, Legend, Stage } from '@escape/world';
 import {
   checkAutoScript,
   checkClearReferences,
@@ -26,19 +26,21 @@ export function lintLegend(legend: Legend): LintIssue[] {
 }
 
 /** Every stage rule, given the legend the stage names. Does not repeat the legend's own rules. */
-export function lintStageAgainst(stage: Stage, legend: Legend): LintIssue[] {
+export function lintStageAgainst(stage: Stage, legend: Legend, storySpawns: readonly EntitySpawn[] = []): LintIssue[] {
+  // Include story-owned actors when checking references and build-row tiles.
+  const authored = { ...stage, entities: [...stage.entities, ...storySpawns] };
   return [
     ...legendMismatch(stage, legend),
     ...checkRows(stage),
     ...checkCharacters(stage, legend),
-    ...checkStartAndEntities(stage, legend),
-    ...checkUniqueIds(stage),
+    ...checkStartAndEntities(authored, legend),
+    ...checkUniqueIds(authored),
     ...checkAreas(stage),
-    ...checkTriggerReferences(stage),
+    ...checkTriggerReferences(authored),
     ...checkClearReferences(stage),
     ...checkAutoScript(stage),
     ...checkSetRowsRange(stage),
-    ...checkEffectReferences(stage),
+    ...checkEffectReferences(authored),
     ...checkParAndSolution(stage),
   ];
 }
@@ -48,6 +50,6 @@ export function lintStageAgainst(stage: Stage, legend: Legend): LintIssue[] {
  * every finding; the caller decides what fails. Folder linting uses lintLegend once per legend
  * and lintStageAgainst per stage, so a legend problem is not repeated for every stage.
  */
-export function lintStage(stage: Stage, legend: Legend): LintIssue[] {
-  return [...lintLegend(legend), ...lintStageAgainst(stage, legend)];
+export function lintStage(stage: Stage, legend: Legend, storySpawns: readonly EntitySpawn[] = []): LintIssue[] {
+  return [...lintLegend(legend), ...lintStageAgainst(stage, legend, storySpawns)];
 }

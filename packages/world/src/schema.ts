@@ -50,6 +50,7 @@ export const LegendSchema = z
   .strict();
 
 const behaviour = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('build'), rows: z.array(z.string()) }).strict(),
   z.object({ type: z.literal('still') }).strict(),
   z.object({ type: z.literal('chase') }).strict(),
   z.object({ type: z.literal('patrol'), path: z.array(position) }).strict(),
