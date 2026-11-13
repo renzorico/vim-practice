@@ -26,11 +26,15 @@
     "W    P         P    W",
     "W                   W",
     "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
     "W                   W"
   ],
   "legend": "lighthouse",
   "start": {
-    "line": 21,
+    "line": 25,
     "col": 10
   },
   "hearts": 3,
@@ -57,12 +61,12 @@
       "on": "enter",
       "area": {
         "from": {
-          "line": 12,
-          "col": 1
+          "line": 0,
+          "col": 0
         },
         "to": {
           "line": 12,
-          "col": 1
+          "col": 20
         }
       },
       "once": true
@@ -96,24 +100,8 @@
     "0",
     "$"
   ],
-  "parTurns": 7,
-  "solution": [
-    "9",
-    "h",
-    "1",
-    "2",
-    "k",
-    "2",
-    "b",
-    "3",
-    "k",
-    "0",
-    "3",
-    "k",
-    "9",
-    "l",
-    "<CR>"
-  ],
+  "parTurns": 0,
+  "solution": [],
   "hints": [
     "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
   ]

@@ -40,6 +40,22 @@
                   "type": "unwrite",
                   "path": [
                     {
+                      "line": 25,
+                      "col": 0
+                    },
+                    {
+                      "line": 24,
+                      "col": 0
+                    },
+                    {
+                      "line": 23,
+                      "col": 0
+                    },
+                    {
+                      "line": 22,
+                      "col": 0
+                    },
+                    {
                       "line": 21,
                       "col": 0
                     },
