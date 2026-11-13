@@ -129,7 +129,7 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "I left a note for you, whoever you are.\n$ jumps to the end of the line."
+          "text": "A note pinned across the jetty. It reads:\n$ jumps to the end of the line."
         },
         {
           "speaker": "scribe",
@@ -141,6 +141,15 @@
           "type": "set-flag",
           "flag": "lowlands.knows-dollar",
           "value": true
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "scribe-note"
+            }
+          ]
         }
       ]
     },
@@ -168,7 +177,7 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 7,
+                  "line": 11,
                   "col": 50
                 },
                 "behaviour": {
@@ -186,7 +195,7 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 7,
+                  "line": 11,
                   "col": 53
                 },
                 "behaviour": {

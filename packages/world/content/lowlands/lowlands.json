@@ -12,11 +12,11 @@
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t    T       T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    ".............oo\t\t\to\t\t\too\t\to            .===============L",
+    ".............oo\t\t\to\t\t\too\t\to            T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T  T         \t\t\t\t\t\t\t\t\t\t\t\t\t\t       T    T",
+    "TTTTTTTTTTTTT\t\t\t\t\t\t\t\t\t\t\t\t\t\t            .===============L",
     "T         T  \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
     "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
@@ -48,7 +48,7 @@
       "kind": "npc",
       "sprite": "gull",
       "at": {
-        "line": 6,
+        "line": 10,
         "col": 37
       },
       "behaviour": {
@@ -63,8 +63,8 @@
       "kind": "prop",
       "sprite": "note",
       "at": {
-        "line": 8,
-        "col": 38
+        "line": 11,
+        "col": 39
       },
       "behaviour": {
         "type": "still"
@@ -77,6 +77,7 @@
   "triggers": [
     {
       "id": "lowlands.edge",
+      "once": true,
       "on": "enter",
       "area": {
         "from": {
@@ -87,38 +88,38 @@
           "line": 8,
           "col": 12
         }
-      },
-      "once": true
+      }
     },
     {
       "id": "lowlands.talk-wren",
+      "once": false,
       "on": "interact",
       "target": {
         "type": "entity",
         "entity": "wren"
-      },
-      "once": false
+      }
     },
     {
       "id": "lowlands.talk-gull",
+      "once": false,
       "on": "interact",
       "target": {
         "type": "entity",
         "entity": "gull"
-      },
-      "once": false
+      }
     },
     {
       "id": "lowlands.talk-note",
+      "once": false,
       "on": "interact",
       "target": {
         "type": "entity",
         "entity": "scribe-note"
-      },
-      "once": false
+      }
     },
     {
       "id": "lowlands.far-side",
+      "once": true,
       "on": "enter",
       "area": {
         "from": {
@@ -129,23 +130,22 @@
           "line": 13,
           "col": 38
         }
-      },
-      "once": true
+      }
     },
     {
       "id": "lowlands.jetty",
+      "once": true,
       "on": "enter",
       "area": {
         "from": {
-          "line": 7,
-          "col": 39
+          "line": 11,
+          "col": 40
         },
         "to": {
-          "line": 7,
-          "col": 39
+          "line": 11,
+          "col": 40
         }
-      },
-      "once": true
+      }
     }
   ],
   "scripts": [],
@@ -154,11 +154,11 @@
       "type": "reach",
       "area": {
         "from": {
-          "line": 7,
+          "line": 11,
           "col": 55
         },
         "to": {
-          "line": 7,
+          "line": 11,
           "col": 55
         }
       }
@@ -168,6 +168,7 @@
   "requires": [],
   "parTurns": 1,
   "solution": [
+    "5",
     "$"
   ],
   "hints": [
