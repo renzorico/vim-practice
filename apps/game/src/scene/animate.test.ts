@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WorldEvent } from '@escape/world';
-import { animationSteps, PLAYBACK_BUDGET_MS } from './animate.js';
+import { animationSteps, rowAnimationStart, PLAYBACK_BUDGET_MS } from './animate.js';
 const from = { line: 7, col: 19 };
 const to = { line: 7, col: 20 };
 const walk: WorldEvent = { type: 'player-moved', from, to, style: 'walk' };
@@ -29,4 +29,17 @@ describe('shared animation window', () => {
   it('is instant for reduced motion', () => expect(animationSteps([walk], true)[0]?.durationMs).toBe(0));
   it('omits unchanged movement and nonvisual events', () => expect(animationSteps([{ ...walk, to: from }, { type: 'turn-ended', turn: 1 }])).toEqual([]));
   it('omits row effects while a command is pending', () => expect(animationSteps([{ type: 'rows-changed', fromLine: 1, toLine: 3, lineDelta: 0, by: 'player' }], false, true)).toEqual([]));
+});
+
+it('slides inserted rows from the builder and the old scaffold down within 90 ms', () => {
+  const rows = [{ fromLine: 14, lineDelta: 1 }];
+  expect(rowAnimationStart(3, rows)).toBe(3);
+  expect(rowAnimationStart(14, rows)).toBe(15);
+  expect(rowAnimationStart(15, rows)).toBe(14);
+  expect(animationSteps([{ type: 'rows-changed', fromLine: 14, lineDelta: 1, toLine: 14, by: 'entity' }])[0]?.durationMs).toBe(90);
+});
+it('composes a player deletion with a builder insertion on the same turn', () => {
+  const rows = [{ fromLine: 3, lineDelta: -3 }, { fromLine: 11, lineDelta: 1 }];
+  expect(rowAnimationStart(3, rows)).toBe(6);
+  expect(rowAnimationStart(12, rows)).toBe(14);
 });

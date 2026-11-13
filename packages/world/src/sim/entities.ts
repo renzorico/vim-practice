@@ -1,7 +1,7 @@
 import type { Entity, Legend, WorldEvent, WorldState } from '../types.js';
 import { changeBuffer } from './effects.js';
 import { blocked, distance } from './movement.js';
-import { deleteRowEdit, tile } from './remap.js';
+import { deleteRowEdit, offsetAt, tile } from './remap.js';
 
 export function actEntities(state: WorldState, legend: Legend, events: WorldEvent[]): WorldState {
   let next = state;
@@ -10,6 +10,18 @@ export function actEntities(state: WorldState, legend: Legend, events: WorldEven
     const entity = next.entities.find((entry) => entry.id === id);
     if (entity === undefined || next.turn % entity.def.every !== 0) continue;
     const behaviour = entity.def.behaviour;
+    if (behaviour.type === 'build') {
+      const row = behaviour.rows[entity.pathIndex];
+      if (row === undefined) continue;
+      const lines = [...next.engine.lines];
+      lines.splice(entity.at.line, 0, row);
+      const edits = [{ start: offsetAt(next.engine.lines, { line: entity.at.line, col: 0 }),
+        removed: 0, inserted: `${row}\n` }];
+      next = changeBuffer(next, lines, legend, events, 'entity', edits);
+      next = { ...next, entities: next.entities.map(entry => entry.id === id
+        ? { ...entry, pathIndex: entity.pathIndex + 1 } : entry) };
+      continue;
+    }
     if (behaviour.type === 'unwrite') {
       const target = behaviour.path[entity.pathIndex];
       if (target === undefined) continue;

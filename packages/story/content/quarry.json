@@ -6,10 +6,11 @@
       "name": "The Quarry",
       "stages": [
         "quarry-road",
-        "cut"
+        "cut",
+        "shaft"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "shaft",
+      "statue": "E"
     }
   ],
   "quests": [

@@ -1,6 +1,6 @@
 import type { EngineState, Position, TextEdit } from '@escape/engine';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldState } from '../types.js';
-import { blocked, distance, inside } from './movement.js';
+import { blocked, inside, nearestFreeCell } from './movement.js';
 import { changedRows, deleteRowEdit, mapOffset, offsetAt, positionAt, remapEntities } from './remap.js';
 
 export function changeBuffer(state: WorldState, lines: readonly string[], legend: Legend, events: WorldEvent[],
@@ -23,18 +23,7 @@ export function changeBuffer(state: WorldState, lines: readonly string[], legend
   let cursor = mapPosition(before.cursor);
   const displaced = cursor === null || blocked(lines, cursor, entities, legend) !== null;
   const from = cursor ?? before.cursor;
-  if (displaced) {
-    // Iterating in reading order implements the line/column tie break.
-    let nearest: Position | null = null;
-    for (let line = 0; line < lines.length; line += 1) {
-      for (let col = 0; col < (lines[line]?.length ?? 0); col += 1) {
-        const candidate = { line, col };
-        if (blocked(lines, candidate, entities, legend) === null
-          && (nearest === null || distance(from, candidate) < distance(from, nearest))) nearest = candidate;
-      }
-    }
-    cursor = nearest;
-  }
+  if (displaced) cursor = nearestFreeCell(lines, from, entities, legend);
   // Rule 3, THE PLAYER: with no legal cell anywhere, the player dies where they stood.
   const stranded = cursor === null;
   cursor ??= before.cursor;
@@ -129,12 +118,15 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
         next = { ...next, entities: next.entities.filter((entity) => entity.id !== effect.entity) };
         break;
       case 'heal': next = { ...next, hearts: Math.min(stage.hearts, next.hearts + effect.hearts) }; break;
-      case 'move-player':
-        if (blocked(next.engine.lines, effect.to, next.entities, legend) === null) {
-          events.push({ type: 'player-moved', from: next.engine.cursor, to: effect.to, style: 'jump' });
-          next = { ...next, engine: { ...next.engine, cursor: effect.to, desiredCol: effect.to.col } };
+      case 'move-player': {
+        const to = blocked(next.engine.lines, effect.to, next.entities, legend) === null ? effect.to
+          : nearestFreeCell(next.engine.lines, effect.to, next.entities, legend);
+        if (to !== null) {
+          events.push({ type: 'player-moved', from: next.engine.cursor, to, style: 'jump' });
+          next = { ...next, engine: { ...next.engine, cursor: to, desiredCol: to.col } };
         }
         break;
+      }
     }
   }
   if (bufferChanged) {

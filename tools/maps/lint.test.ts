@@ -458,3 +458,27 @@ describe('lintStage: messages', () => {
     expect(message).toContain('not walkable');
   });
 });
+
+it('accepts finite build rows, including ragged walkable rows, and rejects empty or unsafe rows', () => {
+  const buildStage = (rows: readonly string[]): Stage => baseStage({
+    entities: [entity({ behaviour: { type: 'build', rows } })], triggers: [], scripts: [],
+    clear: [{ type: 'flag', flag: 'done' }],
+  });
+  expect(lintStage(buildStage(['oo', '    ', 'o']), FIXTURE_LEGEND)).toEqual([]);
+  expect(lintStage(buildStage(['']), FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ rule: 'row-empty' }));
+  for (const row of ['T', '?', 'o\no']) {
+    expect(lintStage(buildStage([row]), FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ rule: 'entity-cell' }));
+  }
+});
+
+it('resolves story-spawned builders and checks their rows without changing the map', () => {
+  const builder = entity({ id: 'mason', behaviour: { type: 'build', rows: ['oooo'] } });
+  const stage = baseStage({ entities: [], scripts: [], triggers: [
+    { id: 'talk', on: 'interact', once: false, target: { type: 'entity', entity: 'mason' } },
+  ], clear: [] });
+  expectErrorRule(lintStage(stage, FIXTURE_LEGEND), 'missing-entity');
+  expect(lintStage(stage, FIXTURE_LEGEND, [builder])).toEqual([]);
+  const invalid = { ...builder, behaviour: { type: 'build' as const, rows: ['~'] } };
+  expectErrorRule(lintStage(stage, FIXTURE_LEGEND, [invalid]), 'entity-cell');
+  expect(stage.entities).toEqual([]);
+});

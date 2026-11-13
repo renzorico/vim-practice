@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import type { Position } from '@escape/engine';
-import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
+import type { Area, Legend, Stage, WorldEvent, WorldState } from '@escape/world';
 import { unwritingAlpha, unwritingPlan } from './unwrite.js';
 import { SPRITES } from './sprites/index.js';
-import { animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
+import { rowAnimationStart, animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { blankEdges, tileGrid } from './tiles.js';
 import { bufferSize, cameraTarget } from './camera.js';
@@ -14,10 +14,13 @@ export interface FieldFrame {
   readonly legend: Legend;
   readonly stage: Stage;
   readonly showSource: boolean;
+  readonly hazards?: readonly Area[];
 }
 
 const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
 const PILE_OFFSET_PX = 3;
+
+const HAZARD_SHADE = 0x1b2a3a;
 
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
@@ -25,6 +28,7 @@ export class FieldScene extends Phaser.Scene {
   private animating = false;
   private reducedMotion: boolean;
   private tiles: Phaser.GameObjects.Container | undefined;
+  private hazards: Phaser.GameObjects.Container | undefined;
   private actors: Phaser.GameObjects.Container | undefined;
   private source: Phaser.GameObjects.Container | undefined;
   private label: Phaser.GameObjects.Text | undefined;
@@ -67,6 +71,7 @@ export class FieldScene extends Phaser.Scene {
     this.actors = this.add.container(0, 0).setDepth(2);
     this.source = this.add.container(0, 0).setDepth(1);
     this.prompts = this.add.container(0, 0).setDepth(4);
+    this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.label = this.add.text(8, 8, '', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
@@ -113,6 +118,7 @@ export class FieldScene extends Phaser.Scene {
     if (sameFrame) {
       // Presentation options can change without interrupting the active clock.
       if (this.frame.showSource !== frame.showSource) this.setSourceVisible(frame.showSource);
+      this.syncHazards(frame);
       this.frame = frame;
       return;
     }
@@ -129,6 +135,7 @@ export class FieldScene extends Phaser.Scene {
     this.captureDust(frame);
     this.captureUnwriting(frame);
     this.syncCells();
+    this.syncHazards(frame);
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
     this.syncActors();
@@ -277,6 +284,25 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
+  private syncHazards(frame: FieldFrame): void {
+    this.hazards?.removeAll(true);
+    for (const area of frame.hazards ?? []) {
+      for (let line = Math.max(0, area.from.line); line <= Math.min(area.to.line, frame.state.engine.lines.length - 1); line += 1) {
+        const row = frame.state.engine.lines[line] ?? '';
+        for (let col = Math.max(0, area.from.col); col <= Math.min(area.to.col, row.length - 1); col += 1) {
+          const tile = frame.legend.tiles.find(tile => tile.char === row[col]) ?? frame.legend.fallback;
+          if (!tile.walkable) continue;
+          // Darken, then sheen: the danger zone must read at a glance (Opus playthrough: 0.28 sheen alone was invisible).
+          this.hazards?.add(this.add.rectangle(center(col), center(line), TILE_SIZE, TILE_SIZE, HAZARD_SHADE, 0.38));
+          this.hazards?.add(this.add.image(center(col), center(line), this.texture('wet-sheen')).setAlpha(0.6));
+          if (line === area.from.line) {
+            this.hazards?.add(this.add.image(center(col), center(line), this.texture('wet-edge')));
+          }
+        }
+      }
+    }
+  }
+
   private texture(sprite: string, frame = 0): string {
     const art = SPRITES[sprite];
     const pixels = art?.frames[frame % art.frames.length];
@@ -381,11 +407,11 @@ export class FieldScene extends Phaser.Scene {
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
         const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
-          if (step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
-            const firstShifted = step.fromLine + Math.max(0, step.lineDelta);
+          if (step.lineDelta > 0 || step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
+            const rows = steps.filter(hint => hint.type === 'rows');
             for (const cell of this.cells.values()) {
-              if (cell.line < firstShifted) continue;
-              const y = center(cell.line - step.lineDelta * (1 - fraction));
+              const source = rowAnimationStart(cell.line, rows);
+              const y = center(source + (cell.line - source) * fraction);
               cell.tile.setPosition(cell.tile.x, y);
               cell.glyph.setPosition(cell.glyph.x, y);
             }

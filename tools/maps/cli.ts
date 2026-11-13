@@ -4,12 +4,34 @@
  * Legend files are `*.legend.json`; every other `*.json` is a stage matched to its legend by id.
  * Exits 1 on any error. Warnings are printed and do not fail the run.
  */
+import { contentSchema, type StoryContent } from '@escape/story';
+import type { EntitySpawn } from '@escape/world';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { countBySeverity, lintSources, type FileReport, type SourceFile } from './folder';
 
 const JSON_SUFFIX = '.json';
-const USAGE = 'usage: npx tsx tools/maps/cli.ts <dir>';
+const USAGE = 'usage: npx tsx tools/maps/cli.ts <dir> [stage-story.json]';
+
+function assertStory(value: unknown): asserts value is StoryContent {
+  contentSchema.parse(value);
+}
+
+/** A stage-local story fragment supplies actors absent from the starting map. */
+async function readStorySpawns(path: string | undefined): Promise<Readonly<Record<string, readonly EntitySpawn[]>>> {
+  if (path === undefined) return {};
+  const story: unknown = JSON.parse(await readFile(path, 'utf8'));
+  assertStory(story);
+  const effects = [
+    ...story.dialogues.flatMap(item => item.then),
+    ...story.reactions.flatMap(item => item.then),
+    ...story.cutscenes.flatMap(item => item.then),
+    ...story.quests.flatMap(item => item.steps.flatMap(step => step.then)),
+  ];
+  const entities = effects.flatMap(effect => effect.type === 'world'
+    ? effect.effects.flatMap(inner => inner.type === 'spawn' ? [inner.entity] : []) : []);
+  return { [story.openingStage]: entities };
+}
 
 async function readFolder(dir: string): Promise<SourceFile[]> {
   const names = (await readdir(dir)).filter((name) => name.endsWith(JSON_SUFFIX)).sort();
@@ -35,7 +57,7 @@ async function main(): Promise<number> {
     console.error(USAGE);
     return 2;
   }
-  const reports = lintSources(await readFolder(dir));
+  const reports = lintSources(await readFolder(dir), await readStorySpawns(process.argv[3]));
   for (const report of reports.filter((item) => item.issues.length > 0)) {
     console.log(formatReport(report).join('\n'));
   }

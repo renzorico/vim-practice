@@ -511,13 +511,28 @@ describe('revised contract regressions', () => {
     expect(result.events.filter((event) => event.type === 'player-moved')).toEqual([]);
     expect(result.events.some((event) => event.type === 'player-died')).toBe(true);
   });
-  it.each([{ line: 1, col: 0 }, { line: 3, col: 4 }, { line: 99, col: 0 }, { line: 2, col: 99 }])(
-    'ignores invalid move-player to $line:$col', (to) => {
-      const initial = sim.init(FIXTURE_STAGE, legend, options);
-      const result = sim.apply(initial, [{ type: 'move-player', to }], FIXTURE_STAGE, legend);
-      expect(result.state.engine.cursor).toEqual(initial.engine.cursor);
-      expect(result.events.filter((event) => event.type === 'player-moved')).toEqual([]);
-    });
+  it.each([
+    { to: { line: 1, col: 0 }, expected: { line: 0, col: 0 } },
+    { to: { line: 3, col: 4 }, expected: { line: 2, col: 4 } },
+    { to: { line: 99, col: 0 }, expected: { line: 2, col: 0 } },
+    { to: { line: 2, col: 99 }, expected: { line: 2, col: 15 } },
+  ])('moves invalid target $to to the nearest free cell', ({ to, expected }) => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const result = sim.apply(initial, [{ type: 'move-player', to }], FIXTURE_STAGE, legend);
+    expect(result.state.engine.cursor).toEqual(expected);
+    expect(result.state.engine.desiredCol).toBe(expected.col);
+    expect(result.state.hearts).toBe(initial.hearts);
+    expect(result.events).toContainEqual({ type: 'player-moved', from: initial.engine.cursor, to: expected, style: 'jump' });
+    expect(result.events.some(event => event.type === 'player-hit')).toBe(false);
+  });
+  it('ignores move-player only when no free cell exists', () => {
+    const value = stage({ map: ['~'], entities: [], clear: [{ type: 'flag', flag: 'never' }] });
+    const initial = sim.init(value, legend, options);
+    const result = sim.apply(initial, [{ type: 'move-player', to: { line: 0, col: 0 } }], value, legend);
+    expect(result.state.engine.cursor).toEqual(initial.engine.cursor);
+    expect(result.events.some(event => event.type === 'player-moved')).toBe(false);
+    expect(result.state.hearts).toBe(initial.hearts);
+  });
   it('valid move-player emits a jump', () => {
     const initial = sim.init(FIXTURE_STAGE, legend, options);
     const to = { line: 0, col: 0 };

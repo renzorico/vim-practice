@@ -34,3 +34,6 @@ C-1 (engine edits) -> C-2 (2-1) -> C-3 (2-2, Dot) -> C-4 (2-3 castle, `build`) -
 - Ash: "Stone doesn't forget what it's been." / "The crew stands. The wall stands."
 - Kit: "I heard the wall whisper once." / "What if we're already gone?" (twist seed)
 - Crack in the wall: "The wall was taller once.\nNo one walks this road now."
+
+## 2-3 design decision (Opus, 2026-11-13, paused for the motion fix)
+A counted `j` lands on the same cell `dd` does, so walls alone can never force `dd`. Use what only `dd` does: it moves the world, not you. The player stays on row 3 while rows below rise. The shaft below row 3 is the Mason's: a repeatable enter trigger over rows 4..end throws anyone who climbs down back to the start (move-player), so jumping never reaches him. The Mason builds one mortar row directly above himself every turn (new behaviour `build` with a finite `rows` list, so the shaft can never grow past the trap area). Single `dd` gains nothing on him; `3dd` gains two rows a turn; `.` repeats it (Dot teaches `.`). His row holds fixed scaffold, so overshooting bumps. Reach him when his row is directly below yours, talk: cured, statue E, clue.

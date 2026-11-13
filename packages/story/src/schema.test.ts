@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Dialogue, StoryContent } from './types';
 import { FIXTURE_CONTENT } from './engine/testContent';
-import { contentSchema, lineRows, validateContent } from './schema';
+import { contentSchema, effectSchema, lineRows, validateContent } from './schema';
 
 const content = FIXTURE_CONTENT;
 const patch = (change: Partial<StoryContent>): StoryContent => ({ ...content, ...change });
@@ -244,4 +244,14 @@ describe('validateContent', () => {
     const errors = validateContent(patch({ quests: [quest, content.quests[1]!] }));
     expect(errors).toContain('Quest "river-crossing": two steps share the id "read-sign".');
   });
+});
+
+it('accepts build spawns and rejects malformed rows', () => {
+  const spawn = (rows: unknown) => ({ type: 'world', effects: [{ type: 'spawn', entity: {
+    id: 'mason', kind: 'keeper', sprite: 'mason', at: { line: 14, col: 4 },
+    behaviour: { type: 'build', rows }, every: 2, damage: 0, solid: true,
+  } }] });
+  expect(effectSchema.safeParse(spawn(['.........'])).success).toBe(true);
+  expect(effectSchema.safeParse(spawn([12])).success).toBe(false);
+  expect(effectSchema.safeParse(spawn(undefined)).success).toBe(false);
 });
