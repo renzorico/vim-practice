@@ -362,6 +362,18 @@ Tags: `#gates` `#eval`
 
 ---
 
+## 2026-11-13: Exact edits (C-1), World 2 unblocked
+Phase: C | Agent(s): Orchestrator (Opus, contract, World 2 design, sim prototypes), Codex/GPT (build), Claude Sonnet (review), Ollama qwen3:14b (Quarry lines) | PR: C-1
+Tags: `#contract` `#gates`
+
+**What:** The engine now reports the exact text edits every key makes (`StepResult.edits`), and undo/redo report theirs through `Snapshot.edits`. The world sim carries entities, the cursor, marks and fixed tiles through those edits instead of diffing texts around a cursor anchor. This removes the known limit that kept field editing out of Worlds 0 and 1: inside a run of equal tiles, `X`, `db`, `a`, `p`, undo and redo now hit the right Blot. The golden runner checks on every key that the edits rebuild the new text. World 2 design written (`docs/briefs/phase-c/WORLD-2.md`), every mechanic run in the sim first.
+
+**What the checks caught:** Codex stopped on a real contract error: a replace does not always keep length (`r` with an emoji inserts 2 UTF-16 units; `2r<CR>` puts one newline for two characters). Contract fixed. Sonnet fuzzed about 29k sequences with zero edit violations, and found that a `set-rows` effect past the last row changed text with no edit; it now throws as a content error.
+
+**Lesson:** Ask the engine what changed; never infer it from before and after. Builders stopping on a contract contradiction instead of working around it is the process working.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

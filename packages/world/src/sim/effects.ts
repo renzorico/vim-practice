@@ -89,6 +89,11 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
         events.push({ type: 'flag-set', flag: effect.flag, value: effect.value });
         break;
       case 'set-rows': {
+        // The contract keeps the row count; a set-rows past the last row is a content bug,
+        // and silently growing the buffer would change text with no edit to remap through.
+        if (effect.fromLine < 0 || effect.fromLine + effect.lines.length > next.engine.lines.length) {
+          throw new Error(`set-rows ${effect.fromLine}..${effect.fromLine + effect.lines.length - 1} is outside the field (${next.engine.lines.length} rows)`);
+        }
         const updated = [...next.engine.lines];
         updated.splice(effect.fromLine, effect.lines.length, ...effect.lines);
         const rowEdits: TextEdit[] = [];

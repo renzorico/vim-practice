@@ -149,6 +149,12 @@ describe('buffer edits and undo', () => {
     const value = stage({ entities: [] });
     expect(run('io<Esc>', value).state.engine.lines[2]?.[8]).toBe('S');
   });
+  it('set-rows outside the field is a content error, never a silent change', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const rows = FIXTURE_STAGE.map.length;
+    expect(() => sim.apply(initial, [{ type: 'set-rows', fromLine: rows, lines: ['ooo'] }], FIXTURE_STAGE, legend))
+      .toThrow(/outside the field/);
+  });
   it('world effects enter the undo stack with truthful modified state', () => {
     const initial = sim.init(FIXTURE_STAGE, legend, options);
     const applied = sim.apply(initial, [{ type: 'set-rows', fromLine: 1, lines: ['~~~~~~~oo~~~~~~~'] }], FIXTURE_STAGE, legend);
