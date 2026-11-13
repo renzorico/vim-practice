@@ -207,10 +207,13 @@ export class FieldScene extends Phaser.Scene {
     this.positionDanger();
   }
 
-  private positionCamera(): void {
+  /**
+   * Centre on the player's ground cell. During playback that cell is fractional, on the same
+   * clock as the sprite, so the map scrolls with the player instead of jumping ahead of it.
+   */
+  private positionCamera(cell: { readonly line: number; readonly col: number } = this.frame.state.engine.cursor): void {
     if (!this.player) return;
-    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale,
-      this.frame.state.engine.cursor, TILE_SCALE);
+    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, TILE_SCALE);
     this.cameras.main.centerOn(target.x, target.y);
   }
 
@@ -371,6 +374,7 @@ export class FieldScene extends Phaser.Scene {
       for (const cell of this.unwriting) {
         cell.image.setAlpha(unwritingAlpha(cell.col, cell.columns, clock.value));
       }
+      let cameraCell: { line: number; col: number } | undefined;
       for (const step of steps) {
         if (clock.value < step.start) continue;
         const fraction = Math.min(1, (clock.value - step.start) / (step.end - step.start));
@@ -397,6 +401,13 @@ export class FieldScene extends Phaser.Scene {
         }
         const target = 'entity' in step ? this.entities.get(step.entity) : this.player;
         if (!target) continue;
+        if (step.type === 'walk' || step.type === 'jump') {
+          // Follow the ground position, not the arc, so a jump does not bob the whole map.
+          cameraCell = {
+            line: step.from.line + (step.to.line - step.from.line) * progress,
+            col: step.from.col + (step.to.col - step.from.col) * progress,
+          };
+        }
         if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
           const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE : 0;
           const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
@@ -413,9 +424,12 @@ export class FieldScene extends Phaser.Scene {
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }
-      this.positionCamera();
+      this.positionCamera(cameraCell);
     };
     this.animating = true;
+    // Draw the first frame now, so nothing shows at its destination before the tween's first update.
+    clock.value = 0;
+    render();
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,

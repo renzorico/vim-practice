@@ -114,6 +114,9 @@ describe('FieldScene without canvas', () => {
       { type: 'entity-removed', entity: 'blot-1', cause: 'effect' },
     ] });
     const ghost = fake.images.filter(image => image.texture === 'field:blot').at(-1);
+    // Frame 0 is drawn at once (start of the move); by the end of the move it is at the destination.
+    const config = fake.tween.mock.calls[0]?.[0];
+    config.targets.value = 0.65; config.onUpdate();
     expect(ghost?.x).toBe(13 * 16 + 8); expect(ghost?.y).toBe(2 * 16 + 8);
   });
 });
@@ -161,14 +164,21 @@ it('keeps ghosts visible through movement and fades after the move span', () => 
   expect(ghost?.alpha).toBeCloseTo(0.5); expect(ghost?.x).toBe(216);
 });
 
-it('anchors the camera to the final player cell during movement playback', () => {
-  const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
-  const camera = fake.centerOn.mock.calls.at(-1);
+it('scrolls the camera with the player during playback and ends on the final cell', () => {
+  fake.scale.width = 150; // narrower than the map, so the camera has to scroll
+  const arrived = { ...moving, state: { ...moving.state, engine: { ...moving.state.engine, cursor: { line: 2, col: 40 } } } };
+  const scene = new FieldScene(frame, false); scene.create(); scene.present(arrived);
+  // The first frame is drawn at once: the camera starts at the old cell, not the new one.
+  const start = fake.centerOn.mock.calls.at(-1) as number[];
   const config = fake.tween.mock.calls[0]?.[0];
-  config.targets.value = 0.1; config.onUpdate();
-  expect(fake.centerOn.mock.calls.at(-1)).toEqual(camera);
-  config.targets.value = 0.8; config.onUpdate();
-  expect(fake.centerOn.mock.calls.at(-1)).toEqual(camera);
+  config.targets.value = 0.5; config.onUpdate();
+  const middle = fake.centerOn.mock.calls.at(-1) as number[];
+  config.targets.value = 1; config.onUpdate();
+  const end = fake.centerOn.mock.calls.at(-1) as number[];
+  scene.finish();
+  expect(fake.centerOn.mock.calls.at(-1)).toEqual(end);
+  expect(start[0]).toBeLessThan(middle[0] as number);
+  expect(middle[0]).toBeLessThanOrEqual(end[0] as number); // the camera clamps at the map edge
 });
 
 it('refreshes cell textures when only the legend changes', () => {
