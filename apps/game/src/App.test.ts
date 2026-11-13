@@ -129,7 +129,7 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('lowlands');
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(session().queue).toEqual([]);
-  key('$'); key('Enter'); // ending -> terminal
+  key('5'); key('$'); key('Enter'); // expert shortcut -> terminal
   key('Enter'); // title
   key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');

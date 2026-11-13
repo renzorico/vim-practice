@@ -17,7 +17,8 @@ it('validates the exact story and every trigger against the skill catalog', () =
 });
 
 it('preserves the ragged Lowlands map and passes the complete linter', () => {
-  expect(lowlands.map[7]).toHaveLength(56);
-  expect(lowlands.map[6]).toHaveLength(40);
+  expect(lowlands.map[11]).toHaveLength(56);
+  expect(lowlands.map.filter((_, line) => line !== 11).every(row => row.length === 40)).toBe(true);
+  expect(lowlands.map[7]).toHaveLength(40);
   expect(lintStage(lowlands, lowlandsLegend)).toEqual([]);
 });
