@@ -44,11 +44,9 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, lowlands, lowlandsLegend } from './play2/content.js';
+import { content, stage, lowlands } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
-import { createEngine } from '@escape/engine';
-import { createWorldSim } from '@escape/world';
 
 class KeyEvent extends Event {
   stopped = false;
@@ -136,16 +134,47 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'margin' });
 });
-it('persists stage changes and story changes via the actual App route', () => {
+function dismiss(): void {
+  for (let lines = 0; session().queue.length && lines < 100; lines += 1) key('Enter');
+}
+function play(input: readonly string[]): void {
+  for (const value of input) { dismiss(); key(value === '<CR>' ? 'Enter' : value); }
+}
+function savedProgress(): { stage: string; story: Session['story'] } {
+  return JSON.parse(values.get(PROGRESS_KEY) ?? '{}') as { stage: string; story: Session['story'] };
+}
+function enterLowlands(): void {
+  flush(); key('Enter'); play(stage.solution); dismiss();
+  expect(session().world.stage).toBe('lowlands');
+}
+it('saves the entry story on New game and the actual Margin-to-Lowlands change only', () => {
   flush(); key('Enter');
-  const storyEngine = createStoryEngine();
-  const story = storyEngine.apply(session().story, [{ type: 'start-quest', quest: 'lowlands.lighthouse' }], content).state;
-  hooks.session = { ...session(), story, queue: [], world: createWorldSim(createEngine()).init(lowlands, lowlandsLegend,
-    { learnedCommands: ['h','j','k','l','w','b','e','0','$'], flags: story.flags }) };
-  flush();
-  expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'lowlands' });
-  key('9'); key('l'); key('Enter'); key('Enter'); key('Enter');
-  expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ story: { flags: { 'lowlands.knows-w': true } } });
+  expect(savedProgress()).toEqual({ stage: 'margin', story: session().story });
+  play(stage.solution); dismiss();
+  const entryStory = session().story;
+  expect(savedProgress()).toEqual({ stage: 'lowlands', story: entryStory });
+  play([...'9l']); dismiss();
+  expect(session().story.flags['lowlands.knows-w']).toBe(true);
+  expect(savedProgress().story.flags['lowlands.knows-w']).toBeUndefined();
+  expect(savedProgress().story).toEqual(entryStory);
+});
+it('Continue replays the Lowlands entry, including the note and both once-only jetty Blots', () => {
+  enterLowlands();
+  const entry = values.get(PROGRESS_KEY);
+  play([...'9l', ...'4w', 'l', ...'11l4j', '<CR>', 'l', 'l']); dismiss();
+  expect(session().world.entities.filter(entity => entity.def.kind === 'blot')).toHaveLength(2);
+  expect(values.get(PROGRESS_KEY)).toBe(entry);
+  // Reload the actual App while preserving storage.
+  hooks.effects.forEach(effect => effect.cleanup?.());
+  hooks.values.clear(); hooks.effects.clear(); hooks.pending.length = 0; hooks.session = undefined;
+  flush(); key('Enter');
+  expect(session().world.engine.cursor).toEqual(lowlands.start);
+  expect(session().story.flags['lowlands.knows-dollar']).toBeUndefined();
+  expect(session().world.entities.some(entity => entity.id === 'scribe-note')).toBe(true);
+  play([...'9l', ...'4w', 'l', ...'11l4j', '<CR>', 'l', 'l']); dismiss();
+  expect(session().world.entities.some(entity => entity.id === 'scribe-note')).toBe(false);
+  expect(session().world.entities.filter(entity => entity.def.kind === 'blot').map(entity => entity.id))
+    .toEqual(['lowlands.blot-1', 'lowlands.blot-2']);
 });
 it('plays normally when the storage getter throws', () => {
   Object.defineProperty(window, 'localStorage', { get: () => { throw new Error('Blocked'); } });

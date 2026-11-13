@@ -71,11 +71,11 @@ export function App() {
     return () => window.removeEventListener('keydown', wake, true);
   }, [started, session.world.status, terminal, saved, choice, choose]);
   useEffect(() => {
-    if (!started) return;
-    const progress = { stage: session.world.stage, story: session.story };
+    if (!started || saved === session.stageEntry) return;
+    const progress = session.stageEntry;
     saveProgress(storage, progress);
     setSaved(progress);
-  }, [started, session.world.stage, session.story]);
+  }, [started, session, saved]);
   useEffect(() => {
     const release = (event: KeyboardEvent): void => {
       if (event.key === 'Tab') { event.preventDefault(); setShowSource(false); }

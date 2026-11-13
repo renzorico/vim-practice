@@ -44,7 +44,7 @@ it('Wren calls out at the edge once, teaches w, and answers repeat interactions'
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.wren', index: 0 });
   session = dismiss(session);
   expect(session.story.flags['lowlands.knows-w']).toBe(true);
-  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
+  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(0);
   session = keys(session, ['l','h','l']);
   expect(session.queue).toEqual([]);
   session = controller.reduce(session, '<CR>');
@@ -68,7 +68,7 @@ it('l bumps into blank; w leaps each gap, b returns, and the far-side trigger ad
   session = keys(session, ['l']);
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 27 });
   expect(session.world.firedTriggers).toContain('lowlands.far-side');
-  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(2);
+  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
 });
 function jetty(): Session {
   const read = dismiss(controller.reduce(move(startLowlands(), 11, 38), '<CR>'));
@@ -141,4 +141,21 @@ it('holds story world effects while dead and applies them immediately after rest
   expect(restored.deferredEffects).toEqual([]);
   expect(restored.world.status).toBe('playing');
   expect(restored.world.entities.some(entity => entity.id === 'bram')).toBe(false);
+});
+
+it('Margin solver solution enters Lowlands and starts its quest', () => {
+  const next = dismiss(keys(dismiss(controller.init()), stage.solution));
+  expect(next.world.stage).toBe('lowlands');
+  expect(next.story.quests['lowlands.lighthouse']).toEqual({ step: 0, done: false });
+});
+it('Margin clear starts the next quest even when its lesson quest was skipped', () => {
+  const result = storyEngine.onEvents(storyEngine.init(content), [{ type: 'stage-cleared', stage: 'margin', turns: stage.parTurns }], content);
+  expect(result.state.quests['lowlands.lighthouse']).toEqual({ step: 0, done: false });
+});
+it('Lowlands solver solution reaches the terminal stage ending without Wren or far-side lessons', () => {
+  const cleared = keys(startLowlands(), lowlands.solution);
+  expect(cleared.world.status).toBe('cleared');
+  expect(cleared.story.flags['lowlands.knows-w']).toBeUndefined();
+  expect(cleared.queue).toEqual([{ type: 'dialogue', dialogue: 'lowlands.end', index: 0 }]);
+  expect(dismiss(cleared).world.status).toBe('cleared');
 });

@@ -16,6 +16,11 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  unknown: {
+    palette: { m: '#ff00ff', k: '#000000' },
+    frames: [Array.from({ length: 16 }, (_, row) => row % 2 === 0
+      ? 'mkmkmkmkmkmkmkmk' : 'kmkmkmkmkmkmkmkm')],
+  },
   wren: WREN, gull: GULL, note: NOTE, stone: STONE, jetty: JETTY,
   'lighthouse-door': LIGHTHOUSE_DOOR, blank: BLANK,
   'player': PLAYER,

@@ -19,18 +19,8 @@
       "kind": "main",
       "steps": [
         {
-          "id": "meet-wren",
-          "objective": "Find a way across the blank field.",
-          "completeWhen": {
-            "type": "flag",
-            "flag": "lowlands.knows-w",
-            "value": true
-          },
-          "then": []
-        },
-        {
           "id": "cross",
-          "objective": "Leap from stone to stone with w.",
+          "objective": "Find a way across the blank field.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "lowlands.far-side"
@@ -44,12 +34,7 @@
             "type": "stage-cleared",
             "stage": "lowlands"
           },
-          "then": [
-            {
-              "type": "dialogue",
-              "dialogue": "lowlands.end"
-            }
-          ]
+          "then": []
         }
       ]
     }
@@ -306,6 +291,20 @@
         {
           "type": "dialogue",
           "dialogue": "lowlands.jetty"
+        }
+      ]
+    },
+    {
+      "id": "lowlands.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "lowlands"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.end"
         }
       ]
     }

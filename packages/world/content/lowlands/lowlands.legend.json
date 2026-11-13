@@ -34,29 +34,12 @@
       "label": "Save Stone"
     },
     {
-      "char": "D",
-      "kind": "object",
-      "sprite": "door",
-      "walkable": true,
-      "fixed": true,
-      "label": "gate"
-    },
-    {
       "char": "~",
       "kind": "barrier",
       "sprite": "water",
       "walkable": false,
       "fixed": false,
       "label": "water"
-    },
-    {
-      "char": "^",
-      "kind": "barrier",
-      "sprite": "thorns",
-      "walkable": true,
-      "fixed": false,
-      "label": "thorns",
-      "damage": 1
     },
     {
       "char": "\t",

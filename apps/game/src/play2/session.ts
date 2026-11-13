@@ -6,6 +6,7 @@ import type { Legend, Stage, WorldEffect, WorldEvent, WorldSim, WorldState } fro
 type PresentationEffect = Extract<StoryEffect, { type: 'dialogue' | 'cutscene' | 'teach' | 'ending' }>;
 export type Presentation = PresentationEffect & { readonly index: number };
 export interface Session {
+  readonly stageEntry: Progress;
   readonly deferredEffects: readonly WorldEffect[];
   readonly keys: number;
   readonly world: WorldState;
@@ -84,6 +85,10 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     throw new Error(`Story/world effect loop exceeded ${MAX_EFFECT_ROUNDS} rounds in ${session.world.stage}`);
   }
 
+  function saveOnStageEntry(session: Session): Session {
+    return { ...session, stageEntry: { stage: session.world.stage, story: session.story } };
+  }
+
   function enter(current: SessionStage, incoming: StoryState, keys = 0, showIntro = true): Session {
     const intro = `${current.stage.id}.intro`;
     const seen = `${current.stage.id}.intro-seen`;
@@ -91,10 +96,11 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     const opening = storyEngine.apply(incoming, show ? [{ type: 'set-flag', flag: seen, value: true }] : [], content);
     const story = opening.state;
     const session: Session = {
+      stageEntry: { stage: current.stage.id, story },
       keys, deferredEffects: [], world: sim.init(current.stage, current.legend, options(story, current.stage)),
       story, lastEvents: [], queue: show ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
     };
-    return settle(session, opening);
+    return saveOnStageEntry(settle(session, opening));
   }
   function init(showIntro = true): Session {
     return enter(entry(stage.id), storyEngine.init(content), 0, showIntro);
