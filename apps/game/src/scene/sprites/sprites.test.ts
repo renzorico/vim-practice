@@ -1,3 +1,4 @@
+import { lowlands, lowlandsLegend } from '../../play2/content.js';
 import { describe, expect, it } from 'vitest';
 import { SPRITES } from './index.js';
 describe('pixel art', () => {
@@ -10,4 +11,17 @@ describe('pixel art', () => {
       }
     }
   });
+});
+
+it('every Lowlands legend sprite has art, including its visible magenta checker fallback', () => {
+  for (const tile of [...lowlandsLegend.tiles, lowlandsLegend.fallback]) {
+    expect(SPRITES[tile.sprite], tile.sprite).toBeDefined();
+  }
+  expect(lowlandsLegend.tiles.some(tile => ['door', 'thorns'].includes(tile.sprite))).toBe(false);
+  expect(lowlands.map.join('')).not.toMatch(/[D^]/);
+  const fallback = SPRITES['unknown'];
+  expect(fallback).toBeDefined();
+  expect(Object.values(fallback?.palette ?? {})).toContain('#ff00ff');
+  expect(fallback?.frames[0]?.[0]?.[0]).not.toBe(fallback?.frames[0]?.[0]?.[1]);
+  expect(fallback?.frames[0]?.[0]?.[0]).toBe(fallback?.frames[0]?.[1]?.[1]);
 });

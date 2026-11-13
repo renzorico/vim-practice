@@ -1,17 +1,22 @@
 import type { Key } from '@escape/engine';
 import type { StoryContent, StoryEffect, StoryEngine, StoryState, StoryStepResult } from '@escape/story';
+import type { Progress } from './progress.js';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldSim, WorldState } from '@escape/world';
 
 type PresentationEffect = Extract<StoryEffect, { type: 'dialogue' | 'cutscene' | 'teach' | 'ending' }>;
 export type Presentation = PresentationEffect & { readonly index: number };
 export interface Session {
+  readonly stageEntry: Progress;
+  readonly deferredEffects: readonly WorldEffect[];
   readonly keys: number;
   readonly world: WorldState;
   readonly story: StoryState;
   readonly queue: readonly Presentation[];
   readonly lastEvents: readonly WorldEvent[];
 }
+export interface SessionStage { readonly stage: Stage; readonly legend: Legend }
 export interface SessionDependencies {
+  readonly stages?: readonly SessionStage[];
   readonly sim: WorldSim;
   readonly storyEngine: StoryEngine;
   readonly stage: Stage;
@@ -19,6 +24,7 @@ export interface SessionDependencies {
   readonly content: StoryContent;
 }
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
+export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -26,9 +32,19 @@ export function resultData(session: Session) {
 }
 
 /** The only bridge between the two pure engines. No Vim behaviour lives here. */
-export function createSession({ sim, storyEngine, stage, legend, content }: SessionDependencies) {
-  function options(story: StoryState) {
-    return { learnedCommands: LEARNED_COMMANDS, flags: story.flags };
+export function createSession({ sim, storyEngine, stage, legend, content, stages = [{ stage, legend }] }: SessionDependencies) {
+  function entry(id: string): SessionStage {
+    const found = stages.find(item => item.stage.id === id);
+    if (!found) throw new Error(`Missing session stage ${id}`);
+    return found;
+  }
+  function options(story: StoryState, current: Stage) {
+    return { learnedCommands: current.world === 'lowlands' ? LOWLANDS_COMMANDS : LEARNED_COMMANDS, flags: story.flags };
+  }
+  function transition(session: Session): Session {
+    if (session.world.status !== 'cleared' || session.queue.length > 0) return session;
+    const following = stages[stages.findIndex(item => item.stage.id === session.world.stage) + 1];
+    return following ? enter(following, session.story, session.keys) : session;
   }
 
   function settle(session: Session, initial: StoryStepResult): Session {
@@ -59,25 +75,38 @@ export function createSession({ sim, storyEngine, stage, legend, content }: Sess
       }
       next = { ...next, story: result.state, queue };
       if (effects.length === 0) return next;
-      const applied = sim.apply(next.world, effects, stage, legend);
+      if (next.world.status === 'dead') return { ...next, deferredEffects: [...next.deferredEffects, ...effects] };
+      const current = entry(next.world.stage);
+      const applied = sim.apply(next.world, effects, current.stage, current.legend);
       next = { ...next, world: applied.state, lastEvents: [...next.lastEvents, ...applied.events] };
       if (applied.events.length === 0) return next;
       result = storyEngine.onEvents(next.story, applied.events, content);
     }
-    throw new Error(`Story/world effect loop exceeded ${MAX_EFFECT_ROUNDS} rounds in ${stage.id}`);
+    throw new Error(`Story/world effect loop exceeded ${MAX_EFFECT_ROUNDS} rounds in ${session.world.stage}`);
   }
 
-  function init(showIntro = true): Session {
-    const story = storyEngine.init(content);
-    const intro = `${stage.id}.intro`;
+  function saveOnStageEntry(session: Session): Session {
+    return { ...session, stageEntry: { stage: session.world.stage, story: session.story } };
+  }
+
+  function enter(current: SessionStage, incoming: StoryState, keys = 0, showIntro = true): Session {
+    const intro = `${current.stage.id}.intro`;
+    const seen = `${current.stage.id}.intro-seen`;
+    const show = showIntro && !incoming.flags[seen] && content.dialogues.some(dialogue => dialogue.id === intro);
+    const opening = storyEngine.apply(incoming, show ? [{ type: 'set-flag', flag: seen, value: true }] : [], content);
+    const story = opening.state;
     const session: Session = {
-      keys: 0, world: sim.init(stage, legend, options(story)), story, lastEvents: [],
-      queue: showIntro && content.dialogues.some(dialogue => dialogue.id === intro)
-        ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
+      stageEntry: { stage: current.stage.id, story },
+      keys, deferredEffects: [], world: sim.init(current.stage, current.legend, options(story, current.stage)),
+      story, lastEvents: [], queue: show ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
     };
-    // init returns state only. Reconciliation surfaces opening flag reactions without
-    // inventing a world event or reaching into either engine's implementation.
-    return settle(session, storyEngine.apply(story, [], content));
+    return saveOnStageEntry(settle(session, opening));
+  }
+  function init(showIntro = true): Session {
+    return enter(entry(stage.id), storyEngine.init(content), 0, showIntro);
+  }
+  function resume(progress: Progress): Session {
+    return enter(entry(progress.stage), progress.story);
   }
 
   function advance(session: Session): Session {
@@ -100,23 +129,37 @@ export function createSession({ sim, storyEngine, stage, legend, content }: Sess
       return { ...session, queue: [{ ...current, index: current.index + 1 }, ...session.queue.slice(1)] };
     }
     const next = { ...session, queue: session.queue.slice(1), lastEvents: [] };
-    if (current.type === 'teach') return settle(next, storyEngine.learn(next.story, current.skill, content));
-    return settle(next, storyEngine.apply(next.story, then, content));
+    if (current.type === 'teach') return transition(settle(next, storyEngine.learn(next.story, current.skill, content)));
+    return transition(settle(next, storyEngine.apply(next.story, then, content)));
   }
 
   function reduce(session: Session, key: Key): Session {
     if (session.world.status === 'dead') {
       const restored = sim.restore(session.world);
-      const next = { ...session, world: restored.state, lastEvents: restored.events };
-      return settle(next, storyEngine.onEvents(next.story, restored.events, content));
+      let next = { ...session, deferredEffects: [], world: restored.state, lastEvents: restored.events };
+      if (session.deferredEffects.length > 0) {
+        const current = entry(next.world.stage);
+        const applied = sim.apply(next.world, session.deferredEffects, current.stage, current.legend);
+        next = { ...next, world: applied.state, lastEvents: [...next.lastEvents, ...applied.events] };
+      }
+      return transition(settle(next, storyEngine.onEvents(next.story, next.lastEvents, content)));
     }
     if (session.queue.length > 0) {
       return key === '<CR>' || key === '<Space>' || key === ' ' ? advance(session) : session;
     }
     if (session.world.status === 'cleared') return key === '<CR>' ? init() : session;
-    const stepped = sim.step(session.world, key, stage, legend, options(session.story));
-    return settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
+    const current = entry(session.world.stage);
+    const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
+    const next = settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
       storyEngine.onEvents(session.story, stepped.events, content));
+    // Reaching a door always presents its ending, including routes that bypass an optional conversation.
+    const end = `${current.stage.id}.end`;
+    if (stepped.events.some(event => event.type === 'stage-cleared')
+      && content.dialogues.some(dialogue => dialogue.id === end)
+      && !next.queue.some(item => item.type === 'dialogue' && item.dialogue === end)) {
+      return { ...next, queue: [...next.queue, { type: 'dialogue', dialogue: end, index: 0 }] };
+    }
+    return transition(next);
   }
-  return { init, reduce };
+  return { init, resume, reduce };
 }

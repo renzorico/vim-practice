@@ -34,14 +34,6 @@
       "label": "Save Stone"
     },
     {
-      "char": "D",
-      "kind": "object",
-      "sprite": "door",
-      "walkable": true,
-      "fixed": true,
-      "label": "gate"
-    },
-    {
       "char": "~",
       "kind": "barrier",
       "sprite": "water",
@@ -50,13 +42,36 @@
       "label": "water"
     },
     {
-      "char": "^",
+      "char": "\t",
+      "kind": "ground",
+      "sprite": "blank",
+      "walkable": false,
+      "fixed": false,
+      "label": "unwritten ground"
+    },
+    {
+      "char": ".",
       "kind": "barrier",
-      "sprite": "thorns",
+      "sprite": "road",
       "walkable": true,
       "fixed": false,
-      "label": "thorns",
-      "damage": 1
+      "label": "road"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "jetty",
+      "walkable": true,
+      "fixed": false,
+      "label": "jetty plank"
+    },
+    {
+      "char": "L",
+      "kind": "object",
+      "sprite": "lighthouse-door",
+      "walkable": true,
+      "fixed": true,
+      "label": "Lighthouse door"
     }
   ],
   "fallback": {

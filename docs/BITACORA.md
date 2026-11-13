@@ -331,6 +331,25 @@ Tags: `#eval`
 
 ---
 
+## 2026-11-13: The Margin merged, the Lowlands built ("I see the point now")
+Phase: B | Agent(s): Renzo (playtest), Orchestrator (Opus, design, content, browser checks), Codex/GPT (builds), Claude Sonnet (reviews), Ollama qwen3:14b (Gull's lines) | PRs: #39, #40
+Tags: `#eval` `#routing` `#hybrid`
+
+**What:** Renzo played the Margin (one open map, five characters, the `30l` road) and said: "I see the point now, keep going." It merged after a Sonnet review (#39). The Lowlands followed (#40): erased land drawn from tab characters, which Vim's word motions skip, so `w` leaps the gaps; a jetty where `$` outruns the Blots; Continue and New game.
+
+**What the checks caught:**
+| Where | Caught by | Problem |
+|---|---|---|
+| Lowlands design | orchestrator, playing in the browser | `w` from the last stone flew onto the jetty, skipping the `$` lesson and stalling the quest |
+| Lowlands design | the solver | `$` from the first tile reached the Lighthouse: road, stones and jetty were one line. Then `5$` did the same from another line (kept as an expert shortcut) |
+| Saves | orchestrator in the browser, confirmed by Sonnet | Continue replayed the map but kept mid-stage story, so once-only events (Blots, heals, Bram leaving) never happened again. Rule now: save only at stage entry |
+| Quests | Sonnet | a lesson skipped with Vim (`w` past Wren's trigger) stalled the quest; progression now hangs on stage clears, never on lesson steps |
+| Ollama | first call | qwen3:14b returned `{}` with `/no_think`; `think: false` plus a JSON schema worked. 6 drafts, 2 used after editing |
+
+**Lesson:** Vim is a speedrunning tool. Any lesson can be skipped by a player who already knows a better command, so levels must be proven by the solver (it finds the skips) and progression must never depend on a lesson being taken.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

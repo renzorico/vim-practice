@@ -40,12 +40,12 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
     <div className="play-field"><FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} /></div>
     <footer className="play-controls">
-      <span><kbd>h</kbd> left · <kbd>j</kbd> down · <kbd>k</kbd> up · <kbd>l</kbd> right</span>
+      <span aria-label="Learned commands">{learnedKeycaps(session.story.flags).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       <output aria-label="Pending keys">{world.engine.pendingKeys.join('') || '\u00a0'}</output>
       <span>Hold <kbd>Tab</kbd> for Source</span>
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
-      <h2>You were unwritten.</h2><p>{deathHint(content)}</p>
+      <h2>You were unwritten.</h2><p>{world.stage === 'lowlands' ? 'w leaps over blank. $ reaches the end of the jetty.' : deathHint(content)}</p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : <>
       {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
@@ -59,7 +59,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
         <h2>{presentation.ending}</h2><button onClick={onAdvance}>Continue</button>
       </section>}
       {world.status === 'cleared' && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
-        <h2>The road east is open.</h2><p>To be continued.</p>
+        <h2>To be continued.</h2>
         <p>{result.keys} keys typed.</p>
         <p>{result.hearts} of {stage.hearts} hearts left.</p>
         <button onClick={onAdvance}>Enter to return to title</button>
@@ -70,4 +70,10 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
 
 export function deathHint(content: StoryContent): string {
   return content.dialogues.find(dialogue => dialogue.id === 'margin.death-hint')?.lines[0]?.text ?? '';
+}
+
+export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readonly string[] {
+  return ['h', 'j', 'k', 'l', ...(flags['margin.knows-counts'] ? ['3l'] : []),
+    ...(flags['lowlands.knows-w'] ? ['w', 'b'] : []),
+    ...(flags['lowlands.knows-dollar'] ? ['$', '0'] : [])];
 }

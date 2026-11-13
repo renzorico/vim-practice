@@ -19,6 +19,7 @@ const fake = vi.hoisted(() => {
   });
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
+    strokeText: vi.fn(), fillText: vi.fn(),
     scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
@@ -37,7 +38,7 @@ vi.mock('phaser', () => ({ default: {
       generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }),
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: (key: string) => fake.textures.has(key),
-      createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: vi.fn(), fillText: vi.fn() }, refresh: vi.fn() }; } };
+      createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
     cameras = { main: { setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
@@ -173,4 +174,27 @@ it('refreshes cell textures when only the legend changes', () => {
   scene.present({ ...frame, legend: { ...frame.legend, tiles: frame.legend.tiles.map(tile =>
     tile.sprite === 'grass' ? { ...tile, sprite: 'stone' } : tile) } });
   expect(grass?.setTexture).toHaveBeenCalledWith('field:stone');
+});
+
+it('does not rebuild actors or prompts when finish has no active tween', () => {
+  const scene = new FieldScene(frame, false); scene.create();
+  const images = fake.images.length;
+  const resets = fake.containers[3]?.removeAll.mock.calls.length;
+  scene.finish(); scene.finish();
+  expect(fake.images).toHaveLength(images);
+  expect(fake.containers[3]?.removeAll).toHaveBeenCalledTimes(resets ?? 0);
+  expect(fake.killAll).not.toHaveBeenCalled();
+  scene.present(moving); scene.finish();
+  const finishedImages = fake.images.length;
+  scene.finish();
+  expect(fake.images).toHaveLength(finishedImages);
+  expect(fake.killAll).toHaveBeenCalledOnce();
+});
+it('draws each tab as a single source arrow', () => {
+  const scene = new FieldScene({ ...frame, state: { ...frame.state,
+    engine: { ...frame.state.engine, lines: ['\t'] } } }, false);
+  scene.create();
+  expect(fake.fillText).toHaveBeenCalledWith('→', 8, 8);
+  expect(fake.strokeText).toHaveBeenCalledWith('→', 8, 8);
+  expect(fake.fillText).not.toHaveBeenCalledWith('\t', 8, 8);
 });
