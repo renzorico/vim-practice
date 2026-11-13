@@ -1,3 +1,4 @@
+import { applyTextEdits, offsetAt } from '../edits.js';
 import type { CommandLineOutcome, ModeDeps } from '../modules.js';
 import type { EngineState, Key, Position } from '../types.js';
 
@@ -30,9 +31,8 @@ export function enterInsert(state: EngineState, how: InsertCommand, deps: ModeDe
     // Opening a line changes the buffer immediately; other insert entries do not.
     const before = deps.pushUndo(state);
     const insertionLine = how === 'o' ? line + 1 : line;
-    const lines = [...before.lines];
-    lines.splice(insertionLine, 0, '');
-    return moveCursor({ ...before, lines, mode: 'insert', modified: before.changeSeq !== before.savedSeq }, {
+    // Open before the next row; at EOF the newline belongs after the current row.
+    return moveCursor({ ...applyTextEdits(before, [{ start: insertionLine < state.lines.length ? offsetAt(state.lines, { line: insertionLine, col: 0 }) : state.lines.join('\n').length, removed: 0, inserted: '\n' }]), mode: 'insert', modified: before.changeSeq !== before.savedSeq }, {
       line: insertionLine, col: 0,
     });
   }
@@ -63,31 +63,35 @@ export function handleInsertKey(state: EngineState, key: Key): EngineState {
     return moveCursor(exitToNormal(recorded), { line, col: previousColumn(text, col) });
   }
 
-  const lines = [...state.lines];
   let cursor: Position;
+  let start = offsetAt(state.lines, state.cursor);
+  let removed = 0;
+  let inserted = '';
   if (key === '<BS>') {
     if (col > 0) {
       const column = previousColumn(text, col);
-      lines[line] = text.slice(0, column) + text.slice(col);
+      removed = col - column;
+      start -= removed;
       cursor = { line, col: column };
     } else if (line > 0) {
-      const previous = lines[line - 1] ?? '';
-      lines.splice(line - 1, 2, previous + text);
+      start -= 1;
+      removed = 1;
+      const previous = state.lines[line - 1] ?? '';
       cursor = { line: line - 1, col: previous.length };
     } else {
       return recorded;
     }
   } else if (key === '<CR>') {
-    lines.splice(line, 1, text.slice(0, col), text.slice(col));
+    inserted = '\n';
     cursor = { line: line + 1, col: 0 };
   } else if (/^[^\u0000-\u001F\u007F-\u009F]$/u.test(key)) {
-    lines[line] = text.slice(0, col) + key + text.slice(col);
+    inserted = key;
     cursor = { line, col: col + key.length };
   } else {
     return recorded;
   }
   // The caller starts the undo transaction before the first actual insert edit.
-  return moveCursor({ ...recorded, lines, modified: recorded.changeSeq !== recorded.savedSeq }, cursor);
+  return moveCursor({ ...applyTextEdits(recorded, [{ start, removed, inserted }]), modified: recorded.changeSeq !== recorded.savedSeq }, cursor);
 }
 
 export function enterVisual(state: EngineState, kind: 'visual' | 'visual-line'): EngineState {

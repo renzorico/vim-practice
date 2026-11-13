@@ -149,6 +149,12 @@ describe('buffer edits and undo', () => {
     const value = stage({ entities: [] });
     expect(run('io<Esc>', value).state.engine.lines[2]?.[8]).toBe('S');
   });
+  it('set-rows outside the field is a content error, never a silent change', () => {
+    const initial = sim.init(FIXTURE_STAGE, legend, options);
+    const rows = FIXTURE_STAGE.map.length;
+    expect(() => sim.apply(initial, [{ type: 'set-rows', fromLine: rows, lines: ['ooo'] }], FIXTURE_STAGE, legend))
+      .toThrow(/outside the field/);
+  });
   it('world effects enter the undo stack with truthful modified state', () => {
     const initial = sim.init(FIXTURE_STAGE, legend, options);
     const applied = sim.apply(initial, [{ type: 'set-rows', fromLine: 1, lines: ['~~~~~~~oo~~~~~~~'] }], FIXTURE_STAGE, legend);
@@ -455,9 +461,8 @@ describe('revised contract regressions', () => {
   });
   it.each([{ key: 'x', col: 2, removed: 2, survivor: 4, to: 3 },
     { key: 'x', col: 5, removed: 5, survivor: 2, to: 2 },
-    // Known limit: X inside equal tiles is placed at the cursor, not to its left.
-    { key: 'X', col: 2, removed: 2, survivor: 1, to: 1 }])(
-    '$key in a run at $col anchors removal at the cursor', ({ key, col, removed, survivor, to }) => {
+    { key: 'X', col: 2, removed: 1, survivor: 2, to: 1 }])(
+    '$key in a run at $col removes the exact cell', ({ key, col, removed, survivor, to }) => {
       const value = stage({ map: ['oooooo'], start: { line: 0, col }, entities: [still(removed), still(survivor)] });
       const result = run(key, value);
       expect(result.state.entities.map((entity) => ({ id: entity.id, at: entity.at })))
@@ -575,5 +580,80 @@ describe('revised contract regressions', () => {
   });
   it('diagonal to the sign does not open it', () => {
     expect(run('<CR>', stage({ start: { line: 2, col: 3 } })).state.script).toBeNull();
+  });
+});
+
+describe('exact edit combat in equal tile runs', () => {
+  const still = (col: number, line = 0): EntitySpawn => blot({ line, col }, {
+    id: `${line}:${col}`, behaviour: { type: 'still' }, damage: 0,
+  });
+  const editOptions = { ...options, learnedCommands: [...options.learnedCommands, 'A', '.', 'P'] };
+  function execute(state: WorldState, keys: string, value: Stage) {
+    for (const key of parseKeys(keys)) state = sim.step(state, key, value, legend, editOptions).state;
+    return state;
+  }
+  const positions = (state: WorldState) => state.entities.map(({ id, at }) => ({ id, at }));
+  it.each([
+    { keys: 'x', col: 2, expected: [['0:1', 1], ['0:3', 2]] },
+    { keys: 'X', col: 3, expected: [['0:1', 1], ['0:3', 2]] },
+    { keys: 'dh', col: 2, expected: [['0:3', 2]] },
+    { keys: 'db', col: 3, expected: [['0:3', 0]] },
+    { keys: 'ao<Esc>', col: 2, expected: [['0:1', 1], ['0:3', 4]] },
+    { keys: 'Ao<Esc>', col: 2, expected: [['0:1', 1], ['0:3', 3]] },
+    { keys: 'p', col: 2, expected: [['0:1', 1], ['0:3', 4]] },
+    { keys: 'r ', col: 1, expected: [['0:1', 1], ['0:3', 3]] },
+    { keys: '3x', col: 1, expected: [] },
+  ])('$keys maps only its own cells; undo and redo never resurrect Blots', ({ keys, col, expected }) => {
+    const value = stage({ map: ['ooooo'], start: { line: 0, col }, entities: [still(1), still(3)] });
+    const initial = sim.init(value, legend, editOptions);
+    const withRegister = { ...initial, engine: { ...initial.engine,
+      registers: { '"': { text: 'o', linewise: false } } } };
+    const changed = execute(withRegister, keys, value);
+    const wanted = expected.map(([id, column]) => ({ id, at: { line: 0, col: column } }));
+    expect(positions(changed)).toEqual(wanted);
+    const undone = execute(changed, 'u', value);
+    expect(positions(undone)).toEqual(positions(initial).filter(({ id }) => expected.some(([survivor]) => id === survivor)));
+    expect(positions(execute(undone, '<C-r>', value))).toEqual(wanted);
+  });
+  it.each([
+    { keys: 'dd', line: 0, expected: [{ id: '1:1', at: { line: 0, col: 1 } }] },
+    { keys: 'dd', line: 1, expected: [{ id: '0:1', at: { line: 0, col: 1 } }] },
+    { keys: 'J', line: 0, expected: [{ id: '0:1', at: { line: 0, col: 1 } }, { id: '1:1', at: { line: 0, col: 5 } }] },
+  ])('$keys on row $line uses exact newline boundaries', ({ keys, line, expected }) => {
+    const value = stage({ map: ['ooo', 'ooo'], start: { line, col: 2 }, entities: [still(1), still(1, 1)] });
+    const initial = sim.init(value, legend, editOptions);
+    const changed = execute(initial, keys, value);
+    expect(positions(changed)).toEqual(expected);
+    const undone = execute(changed, 'u', value);
+    expect(positions(undone)).toEqual(positions(initial).filter(({ id }) => expected.some((survivor) => id === survivor.id)));
+    expect(positions(execute(undone, '<C-r>', value))).toEqual(expected);
+  });
+  it('dot removes the next exact Blot inside a run', () => {
+    const value = stage({ map: ['ooooo'], start: { line: 0, col: 1 }, entities: [still(1), still(3)] });
+    const initial = sim.init(value, legend, editOptions);
+    const changed = execute(initial, 'x', value);
+    expect(positions(changed)).toEqual([{ id: '0:3', at: { line: 0, col: 2 } }]);
+    const repeated = execute(changed, 'l.', value);
+    expect(repeated.entities).toEqual([]);
+    expect(execute(repeated, 'u', value).entities).toEqual([]);
+  });
+  it('fixed tiles block their own deletion and allow deletion of a neighbour', () => {
+    const value = stage({ map: ['ooSoo'], start: { line: 0, col: 2 }, entities: [still(1), still(3)] });
+    const blocked = run('x', value);
+    expect(blocked.events).toEqual([{ type: 'bump', reason: 'fixed', at: { line: 0, col: 2 } }]);
+    const allowed = run('hx', value);
+    expect(allowed.state.engine.lines).toEqual(['oSoo']);
+    expect(positions(allowed.state)).toEqual([{ id: '0:3', at: { line: 0, col: 2 } }]);
+    expect(keysFrom(allowed.state, 'u', value).state.entities).toHaveLength(1);
+  });
+  it('effects collect ordered per-row ranges into one undo transaction', () => {
+    const value = stage({ map: ['ooo', 'ooo'], start: { line: 0, col: 0 }, entities: [still(1), still(1, 1)] });
+    const initial = sim.init(value, legend, editOptions);
+    const changed = sim.apply(initial, [{ type: 'set-rows', fromLine: 0, lines: ['o', 'oooo'] }], value, legend);
+    expect(changed.state.engine.undoStack.at(-1)?.edits).toEqual([
+      { start: 0, removed: 3, inserted: 'o' }, { start: 2, removed: 3, inserted: 'oooo' },
+    ]);
+    expect(changed.events).toContainEqual({ type: 'rows-changed', fromLine: 0, toLine: 1, lineDelta: 0, by: 'effect' });
+    expect(positions(execute(changed.state, 'u', value))).toEqual([{ id: '1:1', at: { line: 1, col: 1 } }]);
   });
 });

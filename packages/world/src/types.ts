@@ -416,30 +416,24 @@ export interface WorldOptions {
  *    landing test applies after an edit, an undo or a redo, wherever the engine leaves the cursor.
  * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled. After ANY
  *    change to the field buffer, whatever caused it (a committed command, undo, redo, effect,
- *    entity), positions are remapped by one rule that also covers split and joined rows. Join
- *    the old lines with '\n' into one text, and the new lines likewise. The changed span is what
- *    lies between a common prefix and a common suffix of the two texts, with the spans as short
- *    as possible. When equal neighbouring characters allow several placements of that span (a
- *    deleted tile inside a run of the same tile), take the placement whose start is nearest to
- *    the ANCHOR, the earlier one on a tie. The anchor is the cursor's offset in the old text
- *    before the command; for an effect or entity change, the offset where that change starts.
- *    For each entity, by its offset in the old text:
- *      a. before the span: the offset is kept;
- *      b. after the span: the offset shifts by (new span length - old span length);
- *      c. inside the span: the offset is kept if it is still inside the new span, else the entity
- *         is removed.
- *    Turn the offset back into a line and column of the new text. An entity that lands on a
- *    '\n', or on a cell that is not walkable, is removed. Fixed tiles are tracked by the same
- *    mapping: one that falls under (c)-removal, or whose character differs afterwards, was
- *    deleted or replaced. Removal by remapping is how the player fights (cause 'deleted-tile').
- *    Undo never brings an entity back.
- *    KNOWN LIMIT (task C-1). Text and cursor alone cannot say exactly which of several equal
- *    tiles an edit touched. The anchor is right for edits that start at the cursor (`x`, `i`,
- *    `dw`, `dd` from column 0) and wrong, inside a run of equal tiles, for undo and redo, for
- *    linewise edits made off column 0, for `a`, `A` and charwise `p`, and for backward deletes
- *    (`X`, `dh`, `db`). Task C-1 replaces the anchor with exact edit ranges reported by the
- *    engine. Until C-1 lands, no stage lets the player edit the field: World 0 and World 1 use
- *    motions on the field and edits only inside scripts.
+ *    entity), positions are remapped by one rule that also covers split and joined rows. Every
+ *    change is a list of EXACT EDITS (`TextEdit` from the engine contract: offsets in the text
+ *    as `lines.join('\n')`). A command, undo or redo uses the engine's `StepResult.edits`. The
+ *    world builds its own for effects and entities: 'set-rows' is one edit per row, removing
+ *    the old row's characters and inserting the new row's; 'delete-row' removes the row and
+ *    one adjacent '\n' (the one after it; for the last row, the one before it). Edits never
+ *    come from comparing texts. Each position (an entity, the cursor, a mark, the visual
+ *    anchor, a fixed tile) is carried through the edits in order. For one edit and an offset:
+ *      a. before `start`: the offset is kept;
+ *      b. at or after `start + removed`: it shifts by (inserted.length - removed), so text put
+ *         in exactly at a cell pushes that cell on;
+ *      c. inside the removed range: kept if (offset - start) < inserted.length (the cell was
+ *         written over in place), else the position is gone.
+ *    Turn the final offset back into a line and column of the new text. An entity that lands on
+ *    a '\n', or on a cell that is not walkable, is removed. A fixed tile that is gone, or whose
+ *    character differs afterwards, was deleted or replaced. Removal by remapping is how the
+ *    player fights (cause 'deleted-tile'). Undo never brings an entity back. 'rows-changed'
+ *    spans the lines touched by the first edit's start to the last edit's end (old text).
  *    THE PLAYER. After a committed command the player's cell is the engine cursor. After a
  *    buffer change by an effect or an entity, the cursor, the marks and the visual anchor are
  *    mapped by the same rule. A mark whose cell is gone is dropped. If the visual anchor's cell

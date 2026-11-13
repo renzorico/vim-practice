@@ -1,3 +1,4 @@
+import { applyTextEdits, offsetAt } from '../edits.js';
 import type { CommandOutcome, SimpleCommandFn, SimpleCommandSpec } from '../modules.js';
 import type { EngineState, Position, RegisterName } from '../types.js';
 import { deleteCharRegion, failure, operators, pushUndo, success } from './operators.js';
@@ -71,17 +72,14 @@ function r(state: EngineState, count: number, _register: RegisterName | null, ar
     return failure(state, 'Not enough characters to replace');
   }
   const before = line.slice(0, col);
-  const after = line.slice(endCol);
   const undoable = pushUndo(state);
   const index = state.cursor.line;
   if (replacement.kind === 'break') {
-    const lines = [...state.lines.slice(0, index), before, after, ...state.lines.slice(index + 1)];
-    return success({ ...withCursor(undoable, { line: index + 1, col: 0 }), lines, modified: true });
+    return success({ ...withCursor(applyTextEdits(undoable, [{ start: offsetAt(state.lines, state.cursor), removed: endCol - col, inserted: '\n' }]), { line: index + 1, col: 0 }), modified: true });
   }
-  const lines = [...state.lines.slice(0, index), before + replacement.char.repeat(length) + after, ...state.lines.slice(index + 1)];
   const replaced = before + replacement.char.repeat(length);
   const cursor = { line: index, col: retreatChars(replaced, replaced.length, 1) };
-  return success({ ...withCursor(undoable, cursor), lines, modified: true });
+  return success({ ...withCursor(applyTextEdits(undoable, [{ start: offsetAt(state.lines, state.cursor), removed: endCol - col, inserted: replacement.char.repeat(length) }]), cursor), modified: true });
 }
 
 function paste(state: EngineState, count: number, register: RegisterName | null, after: boolean): CommandOutcome {
@@ -99,7 +97,11 @@ function paste(state: EngineState, count: number, register: RegisterName | null,
     const at = after ? index + 1 : index;
     const lines = [...state.lines.slice(0, at), ...pasted, ...state.lines.slice(at)];
     const cursor = { line: at, col: firstNonBlankCol(lineAt(lines, at)) };
-    return success({ ...withCursor(undoable, cursor), lines, modified: true });
+    return success({ ...withCursor(applyTextEdits(undoable, [{
+      // Whole rows carry a following newline, except appending at EOF uses a preceding one.
+      start: at < state.lines.length ? offsetAt(state.lines, { line: at, col: 0 }) : state.lines.join('\n').length,
+      removed: 0, inserted: at < state.lines.length ? pasted.join('\n') + '\n' : '\n' + pasted.join('\n'),
+    }]), cursor), modified: true });
   }
 
   const { line, col } = atCursor(state);
@@ -117,7 +119,7 @@ function paste(state: EngineState, count: number, register: RegisterName | null,
     parts.length === 1
       ? { line: index, col: retreatChars(pastedEnd, pastedEnd.length, 1) }
       : { line: index, col: Math.min(insertCol, lastCol(lineAt(lines, index))) };
-  return success({ ...withCursor(undoable, cursor), lines, modified: true });
+  return success({ ...withCursor(applyTextEdits(undoable, [{ start: offsetAt(state.lines, { line: index, col: insertCol }), removed: 0, inserted: value.text.repeat(repeat) }]), cursor), modified: true });
 }
 
 function p(state: EngineState, count: number, register: RegisterName | null): CommandOutcome {
@@ -182,21 +184,19 @@ function joinLines(state: EngineState, count: number): CommandOutcome {
   }
   let text = lineAt(state.lines, state.cursor.line);
   let cursorCol = 0;
+  const edits = [];
   for (let offset = 1; offset < joined; offset += 1) {
-    const next = lineAt(state.lines, state.cursor.line + offset).replace(/^[ \t]+/, '');
+    const original = lineAt(state.lines, state.cursor.line + offset);
+    const next = original.replace(/^[ \t]+/, '');
     const lastChar = text.slice(-1);
     const needsSpace = next.length > 0 && next[0] !== ')' && text.length > 0 && lastChar !== '\t' && lastChar !== ' ';
+    edits.push({ start: offsetAt(state.lines, { line: state.cursor.line, col: text.length }), removed: 1 + original.length - next.length, inserted: needsSpace ? ' ' : '' });
     cursorCol = text.length;
     text += (needsSpace ? ' ' : '') + next;
   }
-  const lines = [
-    ...state.lines.slice(0, state.cursor.line),
-    text,
-    ...state.lines.slice(state.cursor.line + joined),
-  ];
   const col = clamp(cursorCol, 0, lastCol(text));
   const undoable = pushUndo(state);
-  return success({ ...withCursor(undoable, { line: state.cursor.line, col }), lines, modified: true });
+  return success({ ...withCursor(applyTextEdits(undoable, edits), { line: state.cursor.line, col }), modified: true });
 }
 
 function J(state: EngineState, count: number): CommandOutcome {
@@ -209,7 +209,7 @@ function restore(state: EngineState, from: 'undo' | 'redo'): EngineState {
   if (snapshot === undefined) {
     return state;
   }
-  const current = { lines: state.lines, cursor: state.cursor, seq: state.changeSeq };
+  const current = { lines: state.lines, cursor: state.cursor, seq: state.changeSeq, edits: snapshot.edits };
   const undoStack = from === 'undo' ? source.slice(0, -1) : [...state.undoStack, current];
   const redoStack = from === 'undo' ? [...state.redoStack, current] : source.slice(0, -1);
   const line = clamp(snapshot.cursor.line, 0, snapshot.lines.length - 1);

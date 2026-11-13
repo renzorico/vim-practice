@@ -80,6 +80,14 @@ export interface Snapshot {
   readonly cursor: Position;
   /** changeSeq of the buffer version this snapshot holds. */
   readonly seq: number;
+  /**
+   * The exact edits (see TextEdit) of the one change this entry stands for, in order.
+   * Undo-stack entry: the edits that turned this snapshot's text into the next version,
+   * filled in as the change goes on (an insert session adds one per key); undo reports
+   * their inverses, last first. Redo-stack entry: the same edits, which redo reapplies to
+   * the text undo returned to, and reports. Lets undo and redo name the exact cells.
+   */
+  readonly edits: readonly TextEdit[];
 }
 
 /**
@@ -112,11 +120,37 @@ export interface EngineError {
   readonly message: string;
 }
 
+/**
+ * One exact change to the buffer text. Offsets count characters in the text as
+ * `lines.join('\n')`, so a line break is one character.
+ * Applying it: text = text.slice(0, start) + inserted + text.slice(start + removed).
+ */
+export interface TextEdit {
+  /** Offset in the text as it was just before this edit. */
+  readonly start: number;
+  /** Number of characters removed at `start`. */
+  readonly removed: number;
+  /** The characters put in their place (may be empty). */
+  readonly inserted: string;
+}
+
 export interface StepResult {
   readonly state: EngineState;
   /** Commands completed by this key (usually 0 or 1). */
   readonly commands: readonly CommandRecord[];
   readonly error: EngineError | null;
+  /**
+   * Every change this key made to the text, in the order made; each edit's offsets refer to
+   * the text after the edits before it. Empty when the text did not change.
+   * GUARANTEE: applying `edits` in order to the old text gives exactly the new text.
+   * Edits are exact: an edit covers only characters really removed or put in (`x` on "aaa"
+   * at col 1 is { start: 1, removed: 1, inserted: '' }, never col 0 or 2). A replace (`r`,
+   * `R`, `~`) is one edit per replaced run, at its own cells. Usually removed ===
+   * inserted.length; not always, as in Neovim (`r` with a surrogate pair inserts 2 UTF-16
+   * units for 1; `2r<CR>` removes 2 and inserts one '\n').
+   * Undo and redo report the edits that turn the text back, at their real positions.
+   */
+  readonly edits: readonly TextEdit[];
 }
 
 export interface EngineOptions {

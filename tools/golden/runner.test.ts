@@ -10,7 +10,7 @@ function fakeEngine(seen: Key[] = []): Engine {
       seen.push(key);
       return {
         state: key === 'l' ? { ...state, cursor: { ...state.cursor, col: state.cursor.col + 1 } } : state,
-        commands: [], error: null,
+        commands: [], error: null, edits: [],
       };
     },
   };
@@ -20,6 +20,23 @@ const base: Case = { name: 'right', lines: ['abc'], cursor: [0, 0], keys: 'l',
   expect: { lines: ['abc'], cursor: [0, 1], mode: 'n' } };
 
 describe('runGolden', () => {
+  it('fails when a key changes text without reporting the matching edits', () => {
+    const engine = fakeEngine();
+    engine.step = (state) => ({ state: { ...state, lines: ['changed'] }, commands: [], error: null, edits: [] });
+    const result = runGolden(engine, [{ ...base, keys: 'x',
+      expect: { lines: ['changed'], cursor: [0, 0], mode: 'n' } }])[0];
+    expect(result).toMatchObject({ passed: false, differences: ['edits at step 0 (x)'] });
+  });
+
+  it('rejects out-of-buffer ranges even if slicing happens to produce the expected text', () => {
+    const engine = fakeEngine();
+    engine.step = (state) => ({ state, commands: [], error: null,
+      edits: [{ start: 4, removed: 0, inserted: '' }] });
+    expect(runGolden(engine, [{ ...base, keys: 'x',
+      expect: { lines: ['abc'], cursor: [0, 0], mode: 'n' } }])[0])
+      .toMatchObject({ passed: false, differences: ['invalid edit at step 0 (x)'] });
+  });
+
   it('replays from independent states and does not mutate cases', () => {
     const cases = [structuredClone(base), structuredClone(base)];
     const before = structuredClone(cases);

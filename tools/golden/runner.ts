@@ -35,12 +35,24 @@ const MODES: Readonly<Record<string, Mode>> = {
 export function runGolden(engine: Engine, cases: Case[]): Result[] {
   return cases.map((testCase) => {
     let state = engine.init(testCase.lines, { line: testCase.cursor[0], col: testCase.cursor[1] });
-    for (const key of parseKeys(testCase.keys)) state = engine.step(state, key).state;
+    const editDifferences: string[] = [];
+    for (const [index, key] of parseKeys(testCase.keys).entries()) {
+      let text = state.lines.join('\n');
+      const result = engine.step(state, key);
+      for (const edit of result.edits) {
+        if (edit.start < 0 || edit.removed < 0 || edit.start + edit.removed > text.length) {
+          editDifferences.push(`invalid edit at step ${index} (${key})`);
+        }
+        text = text.slice(0, edit.start) + edit.inserted + text.slice(edit.start + edit.removed);
+      }
+      if (text !== result.state.lines.join('\n')) editDifferences.push(`edits at step ${index} (${key})`);
+      state = result.state;
+    }
     const actual: Expectation = {
       lines: [...state.lines], cursor: [state.cursor.line, state.cursor.col], mode: state.mode,
     };
     const expected = testCase.expect;
-    const differences: string[] = [];
+    const differences: string[] = [...editDifferences];
     if (!expected) {
       differences.push('Missing expect; generate the Neovim golden first.');
     } else {

@@ -65,7 +65,7 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 
 | ID | Task | Owns files | Runner | Reviewer | Branch | Status |
 |---|---|---|---|---|---|---|
-| C-1 | Engine reports exact edit ranges; simulation maps positions from them instead of the cursor anchor (world contract rule 3, known limit). **Blocks every World 2 stage.** | `packages/engine/src/**`, `packages/world/src/sim/remap.ts` | codex | claude-sonnet | | todo |
+| C-1 | Engine reports exact edit ranges; simulation maps positions from them instead of the cursor anchor (world contract rule 3, known limit). **Blocks every World 2 stage.** | `packages/engine/src/**`, `packages/world/src/sim/remap.ts` | codex | claude-sonnet | | done |
 
 ## Backlog (minor review findings, not blocking merge)
 
@@ -78,6 +78,10 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | P1-C fix | engine.ts must pass an exclusive empty range for `d$` `de` `dl` on an empty line (operators treat inclusive empty ranges as `vd`) | P1-F wiring |
 | P1-B/P1-C | `''`, `` `` `` jump-back marks; `cw` as `ce`; o_v linewise promotion for `d}`; `"1` for `%` `(` `{` deletes | P1-F wiring |
 | P1-D review | Better watchdog error, pending-command tests, edge-case samples, reject raw `\n` in keys | Phase 2 |
+| C-1 review | `rows-changed` over-reports by one row around a deleted row (follows the literal rule; check animation needs) | orchestrator |
+| C-1 review | `applyTextEdits` should assert an open undo entry and bounds-check `start`/`removed` | codex |
+| C-1 review | `J` with leading spaces and `3rx` over a mixed run give exact but not minimal edits | codex |
+| C-1 review | World tests for insert sessions across keys (`a`/`i` with `<BS>`, `o`, `O`, `i<CR>`, `P`) and undo of them with Blots | haiku |
 
 | B-B review 2 | Camera follows the jump arc and bump shake on maps larger than the view, cancelling them on screen | B-H |
 | B-B review 2 | Hit flash, bump shake and fades vanish when one step has more than 14 animation hints | B-H |

@@ -12,7 +12,7 @@ function dependencies(target: Position | null = null): ModeDeps {
     findPattern: vi.fn(() => target),
     pushUndo: vi.fn((state: EngineState): EngineState => ({
       ...state,
-      undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq }],
+      undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq, edits: [] }],
       redoStack: [],
       changeSeq: state.changeSeq + 1,
       modified: state.changeSeq + 1 !== state.savedSeq,
@@ -64,12 +64,12 @@ describe('enterInsert', () => {
     expect(result).toMatchObject({ cursor: { line: target, col: 0 }, desiredCol: 0, mode: 'insert', modified: true });
     expect(deps.pushUndo).toHaveBeenCalledTimes(1);
     expect(deps.pushUndo).toHaveBeenCalledWith(state);
-    expect(result.undoStack).toEqual([{ lines: ['one', 'two'], cursor: state.cursor, seq: state.changeSeq }]);
+    expect(result.undoStack).toEqual([{ lines: ['one', 'two'], cursor: state.cursor, seq: state.changeSeq, edits: [{ start: target === 2 ? 7 : target * 4, removed: 0, inserted: '\n' }] }]);
     expect(state.lines).toEqual(['one', 'two']);
   });
 
   it('opens a line in an empty buffer and preserves dependency state', () => {
-    const state = { ...createInitialState([]), redoStack: [{ lines: ['old'], cursor: { line: 0, col: 0 }, seq: 0 }] };
+    const state = { ...createInitialState([]), redoStack: [{ lines: ['old'], cursor: { line: 0, col: 0 }, seq: 0, edits: [] }] };
     const result = enterInsert(state, 'o', dependencies());
     expect(result.lines).toEqual(['', '']);
     expect(result.redoStack).toEqual([]);
@@ -79,7 +79,7 @@ describe('enterInsert', () => {
   it.each(['i', 'a', 'I', 'A'] as const)('%s followed by escape preserves saved version and redo history', (how) => {
     const state: EngineState = {
       ...createInitialState(['abc']), changeSeq: 3, savedSeq: 3,
-      redoStack: [{ lines: ['abcd'], cursor: { line: 0, col: 3 }, seq: 4 }],
+      redoStack: [{ lines: ['abcd'], cursor: { line: 0, col: 3 }, seq: 4, edits: [] }],
     };
     const deps = dependencies();
     const result = handleInsertKey(enterInsert(state, how, deps), '<Esc>');
@@ -379,7 +379,12 @@ describe('complete insert sessions', () => {
     expect(state.cursor).toEqual({ line: 1, col: 1 });
     expect(state.mode).toBe('normal');
     expect(state.changeInProgress).toEqual(['o', ...keys]);
-    expect(state.undoStack).toEqual([{ lines: original.lines, cursor: original.cursor, seq: original.changeSeq }]);
+    expect(state.undoStack).toEqual([{ lines: original.lines, cursor: original.cursor, seq: original.changeSeq, edits: [
+      { start: 3, removed: 0, inserted: '\n' }, { start: 4, removed: 0, inserted: 'x' },
+      { start: 5, removed: 0, inserted: '\n' }, { start: 6, removed: 0, inserted: 'y' },
+      { start: 6, removed: 1, inserted: '' }, { start: 5, removed: 1, inserted: '' },
+      { start: 5, removed: 0, inserted: 'z' },
+    ] }]);
     expect(deps.pushUndo).toHaveBeenCalledTimes(1);
   });
 
