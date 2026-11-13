@@ -145,7 +145,9 @@ export interface StepResult {
    * GUARANTEE: applying `edits` in order to the old text gives exactly the new text.
    * Edits are exact: an edit covers only characters really removed or put in (`x` on "aaa"
    * at col 1 is { start: 1, removed: 1, inserted: '' }, never col 0 or 2). A replace (`r`,
-   * `R`, `~`) is one edit per replaced run with removed === inserted.length at its own cells.
+   * `R`, `~`) is one edit per replaced run, at its own cells. Usually removed ===
+   * inserted.length; not always, as in Neovim (`r` with a surrogate pair inserts 2 UTF-16
+   * units for 1; `2r<CR>` removes 2 and inserts one '\n').
    * Undo and redo report the edits that turn the text back, at their real positions.
    */
   readonly edits: readonly TextEdit[];
