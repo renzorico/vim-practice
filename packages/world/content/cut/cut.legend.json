@@ -1,0 +1,45 @@
+{
+  "id": "cut",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "bedrock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "dirt",
+      "walkable": true,
+      "fixed": false,
+      "label": "dirt"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "ledge",
+      "walkable": true,
+      "fixed": false,
+      "label": "ledge"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "bedrock",
+      "walkable": false,
+      "fixed": true,
+      "label": "bedrock"
+    },
+    {
+      "char": ":",
+      "kind": "barrier",
+      "sprite": "chasm",
+      "walkable": false,
+      "fixed": false,
+      "label": "the drop"
+    }
+  ]
+}

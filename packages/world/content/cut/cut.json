@@ -1,0 +1,110 @@
+{
+  "id": "cut",
+  "world": "quarry",
+  "type": "field",
+  "title": "The Cut",
+  "goalText": "Find who is caged at the end of the ledge.",
+  "map": [
+    "################################",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       ::::::::::::::::::::: :#",
+    "................................",
+    "........:::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "#       :::::::::::::::::::::::#",
+    "################################"
+  ],
+  "legend": "cut",
+  "start": {
+    "line": 2,
+    "col": 3
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "scribe-note",
+      "kind": "prop",
+      "sprite": "note",
+      "at": {
+        "line": 4,
+        "col": 6
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "dot-caged",
+      "kind": "npc",
+      "sprite": "dot-cage",
+      "at": {
+        "line": 4,
+        "col": 29
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "cut.ledge",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 0
+        },
+        "to": {
+          "line": 5,
+          "col": 31
+        }
+      }
+    },
+    {
+      "id": "cut.talk-note",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "scribe-note"
+      }
+    },
+    {
+      "id": "cut.talk-dot",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "dot-caged"
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "cut.dot-free"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 1,
+  "solution": [],
+  "hints": [
+    "Lure the Blots onto your line, then dd.",
+    "u brings the ledge back. Never the Blots."
+  ]
+}
