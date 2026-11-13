@@ -54,9 +54,9 @@ describe('operator d', () => {
   });
 
   it('pushes an undo snapshot and clears redo', () => {
-    const start = { ...state(['abc']), redoStack: [{ lines: ['zzz'], cursor: { line: 0, col: 0 }, seq: 5 }] };
+    const start = { ...state(['abc']), redoStack: [{ lines: ['zzz'], cursor: { line: 0, col: 0 }, seq: 5, edits: [] }] };
     const out = operators.d(start, charRange(0, 0, 0, 1, false), null);
-    expect(out.state.undoStack).toEqual([{ lines: ['abc'], cursor: { line: 0, col: 0 }, seq: 0 }]);
+    expect(out.state.undoStack).toEqual([{ lines: ['abc'], cursor: { line: 0, col: 0 }, seq: 0, edits: [{ start: 0, removed: 1, inserted: '' }] }]);
     expect(out.state.redoStack).toEqual([]);
   });
 
@@ -287,9 +287,9 @@ describe('writeRegister', () => {
 
 describe('pushUndo', () => {
   it('snapshots lines and cursor and clears redo', () => {
-    const start = { ...state(['a'], 0, 0), redoStack: [{ lines: ['b'], cursor: { line: 0, col: 0 }, seq: 5 }] };
+    const start = { ...state(['a'], 0, 0), redoStack: [{ lines: ['b'], cursor: { line: 0, col: 0 }, seq: 5, edits: [] }] };
     const out = pushUndo(start);
-    expect(out.undoStack).toEqual([{ lines: ['a'], cursor: { line: 0, col: 0 }, seq: 0 }]);
+    expect(out.undoStack).toEqual([{ lines: ['a'], cursor: { line: 0, col: 0 }, seq: 0, edits: [] }]);
     expect(out.redoStack).toEqual([]);
   });
 });

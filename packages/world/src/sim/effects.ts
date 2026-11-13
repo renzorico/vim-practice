@@ -1,20 +1,17 @@
-import type { EngineState, Position } from '@escape/engine';
+import type { EngineState, Position, TextEdit } from '@escape/engine';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldState } from '../types.js';
 import { blocked, distance, inside } from './movement.js';
-import { changedSpan, offsetAt, positionAt, remapEntities } from './remap.js';
+import { changedRows, deleteRowEdit, mapOffset, offsetAt, positionAt, remapEntities } from './remap.js';
 
 export function changeBuffer(state: WorldState, lines: readonly string[], legend: Legend, events: WorldEvent[],
-  by: 'player' | 'effect' | 'entity', engine?: EngineState, anchor = offsetAt(state.engine.lines, state.engine.cursor)): WorldState {
+  by: 'player' | 'effect' | 'entity', edits: readonly TextEdit[], engine?: EngineState): WorldState {
   const before = state.engine;
   if (before.lines.join('\n') === lines.join('\n')) return engine === undefined ? state : { ...state, engine };
-  const span = changedSpan(before.lines, lines, anchor);
-  const fromLine = before.lines.join('\n').slice(0, span.start).split('\n').length - 1;
-  const toLine = before.lines.join('\n').slice(0, span.oldEnd).split('\n').length - 1;
-  events.push({ type: 'rows-changed', fromLine, toLine, lineDelta: lines.length - before.lines.length, by });
-  const entities = remapEntities(before.lines, lines, state.entities, legend, events, anchor);
+  events.push({ type: 'rows-changed', ...changedRows(before.lines, edits), lineDelta: lines.length - before.lines.length, by });
+  const entities = remapEntities(before.lines, lines, state.entities, legend, events, edits);
   if (engine !== undefined) return { ...state, engine, entities };
   const mapPosition = (at: Position): Position | null => {
-    const offset = span.map(offsetAt(before.lines, at));
+    const offset = mapOffset(offsetAt(before.lines, at), edits);
     return offset === null ? null : positionAt(lines, offset);
   };
   const marks: Record<string, Position> = {};
@@ -45,7 +42,7 @@ export function changeBuffer(state: WorldState, lines: readonly string[], legend
   const next: EngineState = { ...before, lines, cursor, marks, visualAnchor,
     mode: before.mode.startsWith('visual') && visualAnchor === null ? 'normal' : before.mode,
     desiredCol: cursor.col, changeSeq, modified: changeSeq !== before.savedSeq,
-    undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq }], redoStack: [] };
+    undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq, edits }], redoStack: [] };
   const hearts = stranded ? 0 : displaced ? Math.max(0, state.hearts - 1) : state.hearts;
   if (displaced) {
     events.push({ type: 'player-hit', by: 'tile', hearts });
@@ -84,6 +81,7 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
   events: WorldEvent[]): WorldState {
   let next = state;
   let bufferChanged = false;
+  const edits: TextEdit[] = [];
   for (const effect of effects) {
     switch (effect.type) {
       case 'set-flag':
@@ -93,16 +91,26 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
       case 'set-rows': {
         const updated = [...next.engine.lines];
         updated.splice(effect.fromLine, effect.lines.length, ...effect.lines);
-        const changed = changeBuffer(next, updated, legend, events, 'effect', undefined,
-          offsetAt(next.engine.lines, { line: effect.fromLine, col: 0 }));
+        const rowEdits: TextEdit[] = [];
+        let delta = 0;
+        effect.lines.forEach((row, index) => {
+          const line = effect.fromLine + index;
+          const old = next.engine.lines[line];
+          if (old === undefined || old === row) return;
+          rowEdits.push({ start: offsetAt(next.engine.lines, { line, col: 0 }) + delta, removed: old.length, inserted: row });
+          delta += row.length - old.length;
+        });
+        edits.push(...rowEdits);
+        const changed = changeBuffer(next, updated, legend, events, 'effect', rowEdits);
         bufferChanged ||= changed.engine !== next.engine;
         next = changed;
         break;
       }
       case 'delete-row': {
         const updated = next.engine.lines.filter((_, index) => index !== effect.line);
-        const changed = changeBuffer(next, updated.length === 0 ? [''] : updated, legend, events, 'effect', undefined,
-          offsetAt(next.engine.lines, { line: effect.line, col: 0 }));
+        const rowEdits = deleteRowEdit(next.engine.lines, effect.line);
+        edits.push(...rowEdits);
+        const changed = changeBuffer(next, updated.length === 0 ? [''] : updated, legend, events, 'effect', rowEdits);
         bufferChanged ||= changed.engine !== next.engine;
         next = changed;
         break;
@@ -128,7 +136,7 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
     const before = state.engine;
     const changeSeq = Math.max(before.changeSeq, before.savedSeq) + 1;
     next = { ...next, engine: { ...next.engine, changeSeq, modified: changeSeq !== before.savedSeq,
-      undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq }], redoStack: [] } };
+      undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq, edits }], redoStack: [] } };
   }
   next = finish(next, stage, events);
   return effects.some((effect) => effect.type !== 'set-flag') ? checkpoint(next, events) : next;

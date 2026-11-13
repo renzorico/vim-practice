@@ -1,3 +1,4 @@
+import { applyTextEdits, editsSince, offsetAt } from './edits.js';
 /**
  * Engine.step: turns one key into a new state by wiring the Phase 1 modules together.
  *
@@ -158,7 +159,7 @@ function record(id: string, kind: CommandKind, keys: readonly Key[], count: numb
 }
 
 function result(state: EngineState, commands: readonly CommandRecord[] = [], error: EngineError | null = null): StepResult {
-  return { state, commands, error };
+  return { state, commands, error, edits: [] };
 }
 
 function notAllowed(id: string): EngineError {
@@ -297,10 +298,8 @@ function insertedKeys(state: EngineState): { count: number; typed: readonly Key[
 /** modes/ drops control characters, so a literal tab is inserted here. TODO(backlog): move into modes/. */
 function insertTab(state: EngineState): EngineState {
   const { line, col } = state.cursor;
-  const text = state.lines[line] ?? '';
-  const lines = state.lines.map((value, index) => (index === line ? `${text.slice(0, col)}\t${text.slice(col)}` : value));
   const changeInProgress = state.changeInProgress === null ? null : [...state.changeInProgress, '<Tab>'];
-  return { ...state, lines, cursor: { line, col: col + 1 }, desiredCol: col + 1, changeInProgress };
+  return { ...applyTextEdits(state, [{ start: offsetAt(state.lines, state.cursor), removed: 0, inserted: '\t' }]), cursor: { line, col: col + 1 }, desiredCol: col + 1, changeInProgress };
 }
 
 function stepInsert(state: EngineState, rawKey: Key): StepResult {
@@ -324,7 +323,7 @@ function stepInsert(state: EngineState, rawKey: Key): StepResult {
   const collapsed: EngineState = unchanged && snapshot !== undefined
     ? { ...next, undoStack: next.undoStack.slice(0, -1), changeSeq: snapshot.seq, modified: snapshot.seq !== next.savedSeq }
     : next;
-  return result({ ...collapsed, lastChange: unchanged ? state.lastChange : collapsed.changeInProgress, changeInProgress: null });
+  return { ...result({ ...collapsed, lastChange: unchanged ? state.lastChange : collapsed.changeInProgress, changeInProgress: null }), edits: editsSince(state, next) };
 }
 
 function stepCommandLine(state: EngineState, key: Key, options: EngineOptions | undefined): StepResult {
@@ -361,7 +360,7 @@ function stepVisual(state: EngineState, key: Key, options: EngineOptions | undef
   return result(nextState, moved === null ? [] : [record(motion.id, 'motion', keys, count, null, null)]);
 }
 
-export function step(state: EngineState, key: Key, options?: EngineOptions): StepResult {
+function stepInternal(state: EngineState, key: Key, options?: EngineOptions): StepResult {
   switch (state.mode) {
     case 'insert':
       return stepInsert(state, key);
@@ -374,6 +373,11 @@ export function step(state: EngineState, key: Key, options?: EngineOptions): Ste
     default:
       return stepNormal(state, key, options);
   }
+}
+
+export function step(state: EngineState, key: Key, options?: EngineOptions): StepResult {
+  const outcome = stepInternal(state, key, options);
+  return { ...outcome, edits: outcome.edits.length > 0 ? outcome.edits : editsSince(state, outcome.state) };
 }
 
 export function createEngine(): Engine {

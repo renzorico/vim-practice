@@ -1,3 +1,4 @@
+import { applyTextEdits, offsetAt } from '../edits.js';
 import type { CommandOutcome, Range } from '../modules.js';
 import type { EngineError, EngineState, Position, RegisterName } from '../types.js';
 import { linewiseText, writeRegister } from './registers.js';
@@ -10,7 +11,7 @@ export function pushUndo(state: EngineState): EngineState {
   const changeSeq = Math.max(state.changeSeq, state.savedSeq) + 1;
   return {
     ...state,
-    undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq }],
+    undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq, edits: [] }],
     redoStack: [],
     changeSeq,
     modified: changeSeq !== state.savedSeq,
@@ -91,8 +92,7 @@ export function deleteCharRegion(
   const lines = removeText(state.lines, region.start, region.end);
   const col = forInsert ? region.start.col : Math.min(region.start.col, lastCol(lineAt(lines, region.start.line)));
   return {
-    ...next,
-    lines,
+    ...applyTextEdits(next, [{ start: offsetAt(state.lines, region.start), removed: text.length, inserted: '' }]),
     cursor: { line: region.start.line, col },
     desiredCol: col,
     modified: true,
@@ -106,16 +106,21 @@ function deleteLines(state: EngineState, range: Range, register: RegisterName | 
   const line = Math.min(range.start.line, lines.length - 1);
   const col = clamp(state.desiredCol, 0, lastCol(lineAt(lines, line)));
   const next = writeRegister(pushUndo(state), register, linewiseText(removed), true, 'delete');
-  return { ...next, lines, cursor: { line, col }, desiredCol: col, modified: true };
+  // Delete the following newline; at EOF take the preceding newline instead.
+  const start = offsetAt(state.lines, { line: range.start.line, col: 0 });
+  const end = offsetAt(state.lines, { line: range.end.line, col: removed[removed.length - 1]?.length ?? 0 });
+  const hasFollowing = range.end.line < state.lines.length - 1;
+  const editStart = hasFollowing || range.start.line === 0 ? start : start - 1;
+  const editEnd = hasFollowing ? end + 1 : end;
+  return { ...applyTextEdits(next, [{ start: editStart, removed: editEnd - editStart, inserted: '' }]),
+    cursor: { line, col }, desiredCol: col, modified: true };
 }
 
 function changeLines(state: EngineState, range: Range, register: RegisterName | null): EngineState {
   const removed = state.lines.slice(range.start.line, range.end.line + 1);
-  const lines = [...state.lines.slice(0, range.start.line), '', ...state.lines.slice(range.end.line + 1)];
   const next = writeRegister(pushUndo(state), register, linewiseText(removed), true, 'delete');
   return {
-    ...next,
-    lines,
+    ...applyTextEdits(next, [{ start: offsetAt(state.lines, { line: range.start.line, col: 0 }), removed: removed.join('\n').length, inserted: '' }]),
     cursor: { line: range.start.line, col: 0 },
     desiredCol: 0,
     mode: 'insert',

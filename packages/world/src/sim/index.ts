@@ -3,7 +3,7 @@ import type { Legend, Stage, WorldEvent, WorldOptions, WorldSim, WorldState, Wor
 import { applyBatch, changeBuffer, checkpoint, finish } from './effects.js';
 import { actEntities } from './entities.js';
 import { distance, inside, isWalk, validateMovement } from './movement.js';
-import { changedSpan, fixedChanged, offsetAt } from './remap.js';
+import { changedRows, fixedChanged } from './remap.js';
 import { eligible, fire, inReach, openScript, stepScript } from './scripts.js';
 import { atRest } from './turn.js';
 
@@ -40,10 +40,7 @@ export function createWorldSim(engine: Engine): WorldSim {
       }
       if (!atRest(result.state)) {
         if (state.engine.lines.join('\n') !== result.state.lines.join('\n')) {
-          const span = changedSpan(state.engine.lines, result.state.lines, offsetAt(pending.engine.lines, pending.engine.cursor));
-          events.push({ type: 'rows-changed',
-            fromLine: state.engine.lines.join('\n').slice(0, span.start).split('\n').length - 1,
-            toLine: state.engine.lines.join('\n').slice(0, span.oldEnd).split('\n').length - 1,
+          events.push({ type: 'rows-changed', ...changedRows(state.engine.lines, result.edits),
             lineDelta: result.state.lines.length - state.engine.lines.length, by: 'player' });
         }
         return { state: { ...state, engine: result.state, pending: { ...pending, commands } }, events };
@@ -57,11 +54,15 @@ export function createWorldSim(engine: Engine): WorldSim {
         }
         return { state: next, events };
       }
-      const anchor = offsetAt(pending.engine.lines, pending.engine.cursor);
+      // Earlier insert keys are recorded on the transaction's undo entry.
+      const edits = [...state.engine.undoStack.flatMap((entry, index) => {
+        const old = pending.engine.undoStack[index];
+        return entry.edits.slice(old?.seq === entry.seq ? old.edits.length : 0);
+      }), ...result.edits];
       const commitEvents: WorldEvent[] = [];
       const candidate = changeBuffer({ ...next, engine: pending.engine, entities: pending.entities }, result.state.lines,
-        legend, commitEvents, 'player', result.state, anchor);
-      const bump = fixedChanged(pending.engine.lines, result.state.lines, legend, anchor)
+        legend, commitEvents, 'player', edits, result.state);
+      const bump = fixedChanged(pending.engine.lines, result.state.lines, legend, edits)
         ? { reason: 'fixed' as const, at: result.state.cursor }
         : validateMovement(pending.engine, result.state, commands, candidate.entities, legend);
       if (bump !== null) {
