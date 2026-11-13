@@ -152,13 +152,20 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       return key === '<CR>' || key === '<Space>' || key === ' ' ? advance(session) : session;
     }
     if (session.world.status === 'cleared') return key === '<CR>' ? init() : session;
+    // :e! is the game's checkpoint restore; Vim parsing up to Enter stays in the engine.
+    if (key === '<CR>' && session.world.script === null
+      && session.world.engine.mode === 'command-line' && session.world.engine.commandLine === ':e!') {
+      const restored = sim.restore(session.world);
+      return settle({ ...session, keys: session.keys + 1, world: restored.state, lastEvents: restored.events },
+        storyEngine.onEvents(session.story, restored.events, content));
+    }
     const current = entry(session.world.stage);
     const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
     const next = settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
       storyEngine.onEvents(session.story, stepped.events, content));
     // Reaching a door always presents its ending, including routes that bypass an optional conversation.
     const end = `${current.stage.id}.end`;
-    if (stepped.events.some(event => event.type === 'stage-cleared')
+    if (next.lastEvents.some(event => event.type === 'stage-cleared')
       && content.dialogues.some(dialogue => dialogue.id === end)
       && !next.queue.some(item => item.type === 'dialogue' && item.dialogue === end)) {
       return { ...next, queue: [...next.queue, { type: 'dialogue', dialogue: end, index: 0 }] };

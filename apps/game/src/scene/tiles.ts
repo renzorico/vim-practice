@@ -1,12 +1,13 @@
 import type { Legend, WorldState } from '@escape/world';
 
-/** Row lengths are preserved: no invented cells beyond a ragged row's end.
+/** Pad the visual bounding box with unwritten paper; the simulation keeps ragged rows.
  * Index by UTF-16 code unit, matching Engine.Position columns.
  */
 export function tileGrid(lines: WorldState['engine']['lines'], legend: Legend): string[][] {
   const sprites = new Map(legend.tiles.map(tile => [tile.char, tile.sprite]));
-  return lines.map(row => Array.from({ length: row.length }, (_, col) =>
-    sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
+  const width = Math.max(0, ...lines.map(row => row.length));
+  return lines.map(row => Array.from({ length: width }, (_, col) =>
+    col >= row.length ? 'blank' : sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
 }
 
 /** Top, right, bottom, left. A ragged row's missing cells never become land. */

@@ -83,6 +83,11 @@
           "speaker": "npc",
           "text": "Three rubble, plus yours: 4x.\nOne move, and the road's open.",
           "name": "Foreman Ash"
+        },
+        {
+          "speaker": "npc",
+          "name": "Foreman Ash",
+          "text": "Cut too much? :e! puts the quarry back\nthe way it was. No shame in it."
         }
       ],
       "then": [
@@ -321,6 +326,21 @@
         {
           "type": "dialogue",
           "dialogue": "quarry.crack"
+        }
+      ]
+    },
+    {
+      "id": "quarry.south",
+      "when": {
+        "type": "trigger",
+        "trigger": "quarry.talk-gate"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "quarry.south",
+          "value": true
         }
       ]
     }

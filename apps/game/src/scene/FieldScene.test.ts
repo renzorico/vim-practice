@@ -19,7 +19,7 @@ const fake = vi.hoisted(() => {
   });
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
-    strokeText: vi.fn(), fillText: vi.fn(),
+    strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
     scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
@@ -43,7 +43,7 @@ vi.mock('phaser', () => ({ default: {
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
-    time = { addEvent: vi.fn() };
+    time = { addEvent: fake.idle };
   },
 } }));
 import { FieldScene } from './FieldScene.js';
@@ -293,4 +293,42 @@ it.each([
     for (const image of dust) expect(image.destroy).toHaveBeenCalledOnce();
   }
   for (const tile of tiles) expect(tile.setTintFill).not.toHaveBeenCalled();
+});
+
+it('draws missing row ends as unwritten paper without source glyphs', () => {
+  const initial = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines: ['ooo', 'o'] } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  const paper = fake.images.find(image => image.x === 24 && image.y === 24 && image.texture.startsWith('field:blank'));
+  expect(paper).toBeDefined();
+  const source = fake.images.find(image => image.x === 24 && image.y === 24 && image.texture.startsWith('glyph:'));
+  expect(source?.visible).toBe(false);
+  expect(initial.state.engine.lines[1]).toHaveLength(1);
+});
+it('uses sequential edit offsets for dust, including edits across rows', () => {
+  const lines = ['abcd', 'efgh'];
+  const initial = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  scene.present({ ...initial, state: { ...initial.state, engine: { ...initial.state.engine,
+    lines: ['cd', 'gh'], undoStack: [{ lines, cursor: { line: 0, col: 0 }, seq: 0,
+      edits: [{ start: 0, removed: 2, inserted: '' }, { start: 3, removed: 2, inserted: '' }] }],
+  } }, events: [{ type: 'rows-changed', fromLine: 0, toLine: 1, lineDelta: 0, by: 'player' }] });
+  expect(fake.images.filter(image => image.texture === 'field:dust').map(image => [image.x, image.y]))
+    .toEqual([[8, 8], [24, 8], [8, 24], [24, 24]]);
+});
+it('re-creates river tiles at the current idle frame', () => {
+  const initial = { ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...frame.state, stage: quarry.id, engine: { ...frame.state.engine, lines: ['=~'] } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  fake.idle.mock.calls[0]?.[0].callback();
+  scene.present({ ...initial, state: { ...initial.state, engine: { ...initial.state.engine, lines: ['~~'] } } });
+  const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
+  expect(river).toBeDefined();
+});
+it('prompts Enter to go south beside the quarry gate', () => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
+  const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
+  scene.create();
+  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
 });

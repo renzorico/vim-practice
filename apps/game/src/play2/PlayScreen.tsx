@@ -41,6 +41,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       legend={legend} showSource={showSource} /></div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
+      {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
       <output aria-label="Pending keys">{world.engine.pendingKeys.join('') || '\u00a0'}</output>
       <span>Hold <kbd>Tab</kbd> for Source</span>
     </footer>

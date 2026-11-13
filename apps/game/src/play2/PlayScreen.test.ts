@@ -7,7 +7,7 @@ import { createWorldSim } from '@escape/world';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 import { deathHint, learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
-import { stage, legend, content, lighthouse, lighthouseLegend } from './content.js';
+import { stage, legend, content, lighthouse, lighthouseLegend, quarry, quarryLegend } from './content.js';
 const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content });
 it('renders the story objective rather than the stage goal', () => {
@@ -76,4 +76,14 @@ it('reveals Quarry keycaps from flags and selects its authored death hint', () =
   expect(learnedKeycaps({ 'quarry.knows-r': true }).slice(-2)).toEqual(['r', '5r=']);
   expect(deathHint(content, 'quarry-road')).toBe('Count the water, plus your own stone.\n5r= lays five planks in one move.');
   expect(deathHint(content, 'unknown')).toBe(deathHint(content, 'margin'));
+});
+
+it('shows start over from the Quarry onward', () => {
+  const session = controller.init(false);
+  for (const entry of [{ stage, legend }, { stage: quarry, legend: quarryLegend }]) {
+    const html = renderToStaticMarkup(createElement(PlayScreen, {
+      session, ...entry, content, showSource: false, objectives: [], onAdvance: () => {},
+    }));
+    expect(html.includes('<kbd>:e!</kbd> start over')).toBe(entry.stage.world === 'quarry');
+  }
 });

@@ -158,14 +158,16 @@ export class FieldScene extends Phaser.Scene {
     // Exact engine edits identify even replacements/deletions inside equal tile runs.
     const snapshot = frame.state.engine.undoStack.at(-1);
     if (!snapshot) return;
-    const text = snapshot.lines.join('\n');
+    let text = snapshot.lines.join('\n');
     for (const edit of snapshot.edits) {
-      const prefix = text.slice(0, edit.start).split('\n');
-      const line = prefix.length - 1;
-      const col = prefix.at(-1)?.length ?? 0;
       for (let offset = 0; offset < edit.removed; offset += 1) {
-        this.dust.push(this.add.image(center(col + offset), center(line), this.texture('dust')).setDepth(3));
+        if (text[edit.start + offset] === '\n') continue;
+        const prefix = text.slice(0, edit.start + offset).split('\n');
+        const line = prefix.length - 1;
+        const col = prefix.at(-1)?.length ?? 0;
+        this.dust.push(this.add.image(center(col), center(line), this.texture('dust')).setDepth(3));
       }
+      text = text.slice(0, edit.start) + edit.inserted + text.slice(edit.start + edit.removed);
     }
   }
 
@@ -237,23 +239,26 @@ export class FieldScene extends Phaser.Scene {
     const live = new Set<string>();
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
       const key = `${line}:${col}`;
-      const char = this.frame.state.engine.lines[line]?.charAt(col) ?? ' ';
+      const char = this.frame.state.engine.lines[line]?.charAt(col) ?? '';
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
+        : (sprite === 'water' || sprite === 'river') ? (this.reducedMotion ? 0 : this.idleFrame)
         : (sprite === 'grass' || sprite === 'dirt') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
         if (cell.sprite !== sprite || cell.variant !== variant) cell.tile.setTexture(this.texture(sprite, variant));
-        if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char));
+        if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char || ' '));
+        cell.glyph.setVisible(char !== '');
         cell.variant = variant;
         cell.sprite = sprite;
         cell.char = char;
       } else {
         const tile = this.add.image(center(col), center(line), this.texture(sprite, variant));
-        const glyph = this.add.image(center(col), center(line), this.glyphTexture(char));
+        const glyph = this.add.image(center(col), center(line), this.glyphTexture(char || ' '));
         this.tiles?.add(tile);
+        glyph.setVisible(char !== '');
         this.source?.add(glyph);
         this.cells.set(key, { char, sprite, tile, glyph, line, variant });
       }
@@ -315,7 +320,7 @@ export class FieldScene extends Phaser.Scene {
         && (trigger.onlyIf === undefined || this.frame.state.flags[trigger.onlyIf] === true)
         && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
       if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
-        this.prompts?.add(this.add.text(center(entity.at.col), center(entity.at.line) - 13, 'Enter: talk', {
+        this.prompts?.add(this.add.text(center(entity.at.col), center(entity.at.line) - 13, entity.def.sprite === 'quarry-gate' ? 'Enter: go south' : 'Enter: talk', {
           fontFamily: 'monospace', fontSize: '7px', color: '#f6efd4', backgroundColor: '#20252b', padding: { x: 2, y: 1 },
         }).setOrigin(0.5, 1));
       }

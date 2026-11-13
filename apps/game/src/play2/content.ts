@@ -21,7 +21,7 @@ export const stage = parseStage(stageJson);
 export const legend = parseLegend(legendJson);
 export const lowlands = parseStage(lowlandsJson);
 export const lowlandsLegend = parseLegend(lowlandsLegendJson);
-// Quarry par is best known, not proven: the maxTurns: 4 search hit its 500-expansion cap.
+// Quarry par is best known, not proven: the new gate-clear search (maxTurns: 4) hit its 500-expansion cap.
 export const quarry = parseStage(quarryJson);
 export const quarryLegend = parseLegend(quarryLegendJson);
 export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }];

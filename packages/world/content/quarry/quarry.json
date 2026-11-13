@@ -213,28 +213,40 @@
           "col": 44
         }
       }
+    },
+    {
+      "id": "quarry.talk-gate",
+      "once": true,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "gate"
+      }
     }
   ],
   "scripts": [],
   "clear": [
     {
-      "type": "reach",
-      "area": {
-        "from": {
-          "line": 9,
-          "col": 42
-        },
-        "to": {
-          "line": 11,
-          "col": 44
-        }
-      }
+      "type": "flag",
+      "flag": "quarry.south"
     }
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 4,
-  "solution": ["2", "6", "r", "=", "3", "j", "8", "r", "=", "8", "l"],
+  "parTurns": 3,
+  "solution": [
+    "2",
+    "6",
+    "r",
+    "=",
+    "4",
+    "j",
+    "1",
+    "6",
+    "r",
+    "=",
+    "<CR>"
+  ],
   "hints": [
     "Count the rubble, plus the stone under you. 4x.",
     "Count the river, plus your own stone. 5r= lays planks."
