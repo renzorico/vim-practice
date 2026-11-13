@@ -1,0 +1,124 @@
+{
+  "id": "lighthouse",
+  "world": "lowlands",
+  "type": "castle",
+  "title": "The Lighthouse",
+  "goalText": "Climb the Lighthouse. Find who weeps at the top.",
+  "map": [
+    "WWWWWWWWWWWWWWWWWWWWW",
+    "          A         W",
+    "                    W",
+    "                    W",
+    " WWWWWWWWWWWWWWWWWWWW",
+    "                    W",
+    "WWWWWWWWWWWWWWWWWWW W",
+    "W\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\toW",
+    "W\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\toW",
+    "W \t\too\t\t\to\t\t\too\t\toooW",
+    "W \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tW",
+    "W \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tW",
+    "W WWWWWWWWWWWWWWWWWWW",
+    "W                   W",
+    "W                   W",
+    "W    P         P    W",
+    "W                   W",
+    "W                   W",
+    "W    P         P    W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W",
+    "W                   W"
+  ],
+  "legend": "lighthouse",
+  "start": {
+    "line": 25,
+    "col": 10
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "lamplighter",
+      "kind": "keeper",
+      "sprite": "lamplighter",
+      "at": {
+        "line": 2,
+        "col": 10
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "lighthouse.climb",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 0,
+          "col": 0
+        },
+        "to": {
+          "line": 12,
+          "col": 20
+        }
+      },
+      "once": true
+    },
+    {
+      "id": "lighthouse.talk-lamplighter",
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "lamplighter"
+      },
+      "once": false
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "lighthouse.lit"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "0",
+    "$"
+  ],
+  "parTurns": 7,
+  "solution": [
+    "9",
+    "h",
+    "1",
+    "6",
+    "k",
+    "2",
+    "b",
+    "3",
+    "k",
+    "0",
+    "3",
+    "k",
+    "9",
+    "l",
+    "<CR>"
+  ],
+  "hints": [
+    "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
+  ]
+}

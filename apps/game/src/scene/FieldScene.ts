@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import type { Position } from '@escape/engine';
 import type { Legend, Stage, WorldEvent, WorldState } from '@escape/world';
+import { unwritingAlpha, unwritingPlan } from './unwrite.js';
 import { SPRITES } from './sprites/index.js';
-import { animationSteps, type AnimationStep } from './animate.js';
+import { animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { blankEdges, tileGrid } from './tiles.js';
 import { bufferSize, cameraTarget } from './camera.js';
@@ -32,6 +33,8 @@ export class FieldScene extends Phaser.Scene {
     char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
     line: number; variant: number;
   }>();
+  private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
+  private danger: Phaser.GameObjects.Image | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
   private facing = new Map<string, boolean>();
   private idleFrame = 0;
@@ -71,6 +74,7 @@ export class FieldScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.ready = false;
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeView, this);
+      this.clearUnwriting();
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -95,6 +99,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.killAll();
     this.syncActors();
     this.clearRowEffects();
+    this.clearUnwriting();
   }
 
   present(frame: FieldFrame): void {
@@ -115,6 +120,8 @@ export class FieldScene extends Phaser.Scene {
         if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
       }
     }
+    this.cameras.main.setBackgroundColor(frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.captureUnwriting(frame);
     this.syncCells();
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
@@ -135,6 +142,26 @@ export class FieldScene extends Phaser.Scene {
     this.play(animationSteps(frame.events, this.reducedMotion, frame.state.pending !== null));
   }
 
+  private clearUnwriting(): void {
+    for (const cell of this.unwriting) cell.image.destroy();
+    this.unwriting = [];
+  }
+
+  private captureUnwriting(frame: FieldFrame): void {
+    this.clearUnwriting();
+    if (this.previousState?.stage !== frame.state.stage) return;
+    for (const row of unwritingPlan(frame.events, this.reducedMotion)) {
+      if (row.durationMs === 0) continue;
+      const columns = this.previousState.engine.lines[row.line]?.length ?? 0;
+      for (let col = 0; col < columns; col += 1) {
+        const cell = this.cells.get(`${row.line}:${col}`);
+        if (!cell) continue;
+        const image = this.add.image(center(col), center(row.line), this.texture(cell.sprite, cell.variant)).setDepth(1);
+        this.unwriting.push({ image, col, columns });
+      }
+    }
+  }
+
   private positionLabel(): void {
     this.label?.setScale(1 / TILE_SCALE).setPosition(
       (this.scale.width - this.scale.width / TILE_SCALE) / 2 + 8 / TILE_SCALE,
@@ -145,6 +172,7 @@ export class FieldScene extends Phaser.Scene {
   private resizeView(): void {
     this.positionLabel();
     this.positionCamera();
+    this.positionDanger();
   }
 
   private positionCamera(): void {
@@ -183,6 +211,7 @@ export class FieldScene extends Phaser.Scene {
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
       const key = `${line}:${col}`;
       const char = this.frame.state.engine.lines[line]?.charAt(col) ?? ' ';
+      if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : sprite === 'grass' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
@@ -265,6 +294,15 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.positionCamera();
+    this.positionDanger();
+  }
+
+  private positionDanger(): void {
+    const active = this.frame.state.entities.some(entity => entity.def.kind === 'unwriter');
+    if (!active && !this.danger) return;
+    this.danger ??= this.add.image(0, 0, this.texture('unwrite-edge')).setScrollFactor(0).setDepth(3);
+    this.danger.setVisible(active).setDisplaySize(this.scale.width / TILE_SCALE, 32 / TILE_SCALE)
+      .setPosition(this.scale.width / 2, (this.scale.height + this.scale.height / TILE_SCALE) / 2 - 16 / TILE_SCALE);
   }
 
   private clearRowEffects(): void {
@@ -273,17 +311,21 @@ export class FieldScene extends Phaser.Scene {
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0);
+    const duration = Math.max(this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
     if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
       this.clearRowEffects();
+      for (const cell of this.unwriting) {
+        cell.image.setAlpha(unwritingAlpha(cell.col, cell.columns, clock.value));
+      }
       for (const step of steps) {
         if (clock.value < step.start) continue;
         const fraction = Math.min(1, (clock.value - step.start) / (step.end - step.start));
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
         const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
+          if (this.unwriting.length > 0 && step.lineDelta < 0) continue;
           if (fraction < 1) {
             for (const cell of this.cells.values()) {
               if (cell.line >= step.fromLine && cell.line <= step.toLine) cell.tile.setTintFill(0xffffff);
@@ -314,7 +356,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.animating = false; this.clearRowEffects(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.syncActors(); },
     });
   }
 }

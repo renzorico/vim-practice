@@ -45,7 +45,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       <span>Hold <kbd>Tab</kbd> for Source</span>
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
-      <h2>You were unwritten.</h2><p>{world.stage === 'lowlands' ? 'w leaps over blank. $ reaches the end of the jetty.' : deathHint(content)}</p>
+      <h2>You were unwritten.</h2><p>{world.stage === 'lighthouse' ? 'Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter.' : world.stage === 'lowlands' ? 'w leaps over blank. $ reaches the end of the jetty.' : deathHint(content)}</p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : <>
       {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}

@@ -1,0 +1,61 @@
+{
+  "id": "lighthouse",
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "stone-floor",
+      "walkable": true,
+      "fixed": false,
+      "label": "stone floor"
+    },
+    {
+      "char": "\t",
+      "kind": "ground",
+      "sprite": "blank",
+      "walkable": false,
+      "fixed": false,
+      "label": "unwritten ground"
+    },
+    {
+      "char": "W",
+      "kind": "object",
+      "sprite": "tower-wall",
+      "walkable": false,
+      "fixed": false,
+      "label": "wall"
+    },
+    {
+      "char": "P",
+      "kind": "object",
+      "sprite": "pillar",
+      "walkable": false,
+      "fixed": false,
+      "label": "pillar"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "stone",
+      "walkable": true,
+      "fixed": false,
+      "label": "stepping stone"
+    },
+    {
+      "char": "A",
+      "kind": "object",
+      "sprite": "lamp",
+      "walkable": false,
+      "fixed": true,
+      "label": "lamp"
+    }
+  ],
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "unknown",
+    "walkable": false,
+    "fixed": false,
+    "label": "unknown"
+  }
+}

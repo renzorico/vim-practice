@@ -8,11 +8,17 @@ import lowlandsJson from '../../../../packages/world/content/lowlands/lowlands.j
 import lowlandsLegendJson from '../../../../packages/world/content/lowlands/lowlands.legend.json';
 import lowlandsStoryJson from '../../../../packages/story/content/lowlands.json';
 
+import lighthouseJson from '../../../../packages/world/content/lighthouse/lighthouse.json';
+import lighthouseLegendJson from '../../../../packages/world/content/lighthouse/lighthouse.legend.json';
+import lighthouseStoryJson from '../../../../packages/story/content/lighthouse.json';
+
+export const lighthouse = parseStage(lighthouseJson);
+export const lighthouseLegend = parseLegend(lighthouseLegendJson);
 export const stage = parseStage(stageJson);
 export const legend = parseLegend(legendJson);
 export const lowlands = parseStage(lowlandsJson);
 export const lowlandsLegend = parseLegend(lowlandsLegendJson);
-export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }];
+export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }];
 
 // Validate the original JSON, rather than assigning Zod's inferred optional `undefined`
 // properties to the stricter contract. Bundled JSON cannot contain undefined values.
@@ -22,9 +28,10 @@ function assertStoryJson(value: unknown): asserts value is StoryContent {
 const bundledStory: unknown = {
   ...storyJson,
   worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds],
+  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes],
   quests: [...storyJson.quests, ...lowlandsStoryJson.quests],
-  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues],
-  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions],
+  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues],
+  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions],
 };
 assertStoryJson(bundledStory);
 export const content = bundledStory;

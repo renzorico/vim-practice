@@ -1,0 +1,278 @@
+{
+  "worlds": [],
+  "quests": [],
+  "openingStage": "lighthouse",
+  "openingQuests": [],
+  "dialogues": [
+    {
+      "id": "lighthouse.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Inside, the stairs climb into the dark.\nAt the top, someone is weeping."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "lighthouse.climb",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Above you, a hooded shape. Below you,\nthe floor begins to vanish. Climb!"
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "unwriter",
+                "kind": "unwriter",
+                "sprite": "unwriter",
+                "at": {
+                  "line": 1,
+                  "col": 18
+                },
+                "behaviour": {
+                  "type": "unwrite",
+                  "path": [
+                    {
+                      "line": 25,
+                      "col": 0
+                    },
+                    {
+                      "line": 24,
+                      "col": 0
+                    },
+                    {
+                      "line": 23,
+                      "col": 0
+                    },
+                    {
+                      "line": 22,
+                      "col": 0
+                    },
+                    {
+                      "line": 21,
+                      "col": 0
+                    },
+                    {
+                      "line": 20,
+                      "col": 0
+                    },
+                    {
+                      "line": 19,
+                      "col": 0
+                    },
+                    {
+                      "line": 18,
+                      "col": 0
+                    },
+                    {
+                      "line": 17,
+                      "col": 0
+                    },
+                    {
+                      "line": 16,
+                      "col": 0
+                    },
+                    {
+                      "line": 15,
+                      "col": 0
+                    },
+                    {
+                      "line": 14,
+                      "col": 0
+                    },
+                    {
+                      "line": 13,
+                      "col": 0
+                    },
+                    {
+                      "line": 12,
+                      "col": 0
+                    },
+                    {
+                      "line": 11,
+                      "col": 0
+                    },
+                    {
+                      "line": 10,
+                      "col": 0
+                    },
+                    {
+                      "line": 9,
+                      "col": 0
+                    },
+                    {
+                      "line": 8,
+                      "col": 0
+                    },
+                    {
+                      "line": 7,
+                      "col": 0
+                    },
+                    {
+                      "line": 6,
+                      "col": 0
+                    },
+                    {
+                      "line": 5,
+                      "col": 0
+                    },
+                    {
+                      "line": 4,
+                      "col": 0
+                    },
+                    {
+                      "line": 3,
+                      "col": 0
+                    },
+                    {
+                      "line": 2,
+                      "col": 0
+                    },
+                    {
+                      "line": 1,
+                      "col": 0
+                    },
+                    {
+                      "line": 0,
+                      "col": 0
+                    }
+                  ]
+                },
+                "every": 1,
+                "damage": 0,
+                "solid": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lighthouse.lamplighter",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Who's there? He took a row of my light.\nI can't see the words to light it.",
+          "name": "The Lamplighter"
+        },
+        {
+          "speaker": "npc",
+          "text": "Tilde? Then read them to me. Quick!\nThere. There... it catches.",
+          "name": "The Lamplighter"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lighthouse.lit",
+          "value": true
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "unwriter"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "lighthouse.climb",
+      "when": {
+        "type": "trigger",
+        "trigger": "lighthouse.climb"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lighthouse.climb"
+        }
+      ]
+    },
+    {
+      "id": "lighthouse.lamplighter",
+      "when": {
+        "type": "trigger",
+        "trigger": "lighthouse.talk-lamplighter"
+      },
+      "unless": "lighthouse.lit",
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lighthouse.lamplighter"
+        }
+      ]
+    },
+    {
+      "id": "lighthouse.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "lighthouse"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "lighthouse.end"
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "lighthouse.end",
+      "beats": [
+        {
+          "type": "title",
+          "text": "The lamp is lit. The Unwriter is gone."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "text": "The Scribe came here three nights ago.\nWrote something on my wall. Look.",
+            "name": "The Lamplighter"
+          }
+        },
+        {
+          "type": "title",
+          "text": "The Scribe is in another buffer."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "text": "Means nothing to me. Maybe to you.\nThe road goes on, past the sea.",
+            "name": "The Lamplighter"
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 1."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "light-statue",
+          "letter": "R"
+        }
+      ]
+    }
+  ]
+}
