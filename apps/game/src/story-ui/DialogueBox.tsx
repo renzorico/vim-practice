@@ -29,7 +29,7 @@ function DialogueLine({ line, onAdvance }: { readonly line: Line | undefined; re
   const name = speakerName(line);
   return (
     <div className={`dialogue dialogue--${line.speaker}`} role="dialog" aria-live="polite">
-      <Portrait sprite={line.speaker === 'npc' ? (line.name ?? '').toLowerCase() : line.speaker} />
+      <Portrait sprite={line.speaker === 'npc' ? (line.name ?? '').replace(/^The /, '').toLowerCase() : line.speaker} />
       {name !== '' && <div className="dialogue__name">{name}</div>}
       <p className="dialogue__text">{line.text}</p>
       {onAdvance ? <button type="button" className="dialogue__hint" onClick={onAdvance}>

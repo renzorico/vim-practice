@@ -12,7 +12,7 @@ const fake = vi.hoisted(() => {
     setTexture: vi.fn(function (this: { texture: string }, value: string) { this.texture = value; return this; }),
     setText(value: string) { this.text = value; return this; },
     setFlipX: vi.fn().mockReturnThis(),
-    setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
+    setDisplaySize: vi.fn().mockReturnThis(), setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
     setOrigin: vi.fn().mockReturnThis(), setTintFill: vi.fn().mockReturnThis(), clearTint: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(), removeAll: vi.fn(), destroy: vi.fn(),
     setStroke: vi.fn().mockReturnThis(),
@@ -39,7 +39,7 @@ vi.mock('phaser', () => ({ default: {
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: (key: string) => fake.textures.has(key),
       createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
-    cameras = { main: { setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn } };
+    cameras = { main: { setBackgroundColor() { return this; }, setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
@@ -197,4 +197,40 @@ it('draws each tab as a single source arrow', () => {
   expect(fake.fillText).toHaveBeenCalledWith('→', 8, 8);
   expect(fake.strokeText).toHaveBeenCalledWith('→', 8, 8);
   expect(fake.fillText).not.toHaveBeenCalledWith('\t', 8, 8);
+});
+
+it('retains a deleted row as ghosts and wipes left to right within 90 ms, then cleans up', () => {
+  const scene = new FieldScene(frame, false); scene.create();
+  scene.present({ ...frame, state: { ...frame.state, engine: {
+    ...frame.state.engine, lines: frame.state.engine.lines.slice(0, -1),
+  } }, events: [{ type: 'rows-changed', fromLine: 3, toLine: 3, lineDelta: -1, by: 'entity' }] });
+  const ghosts = fake.images.filter(image => image.depth === 1 && image.y === 56);
+  expect(ghosts).toHaveLength(16);
+  const config = fake.tween.mock.calls[0]?.[0];
+  expect(config.duration).toBe(90);
+  config.targets.value = 0.5; config.onUpdate();
+  expect(ghosts[0]?.alpha).toBe(0);
+  expect(ghosts.at(-1)?.alpha).toBe(1);
+  scene.finish();
+  for (const ghost of ghosts) expect(ghost.destroy).toHaveBeenCalledOnce();
+});
+it('skips deleted row ghosts with reduced motion', () => {
+  const scene = new FieldScene(frame, true); scene.create();
+  scene.present({ ...frame, state: { ...frame.state, engine: {
+    ...frame.state.engine, lines: frame.state.engine.lines.slice(0, -1),
+  } }, events: [{ type: 'rows-changed', fromLine: 3, toLine: 3, lineDelta: -1, by: 'entity' }] });
+  expect(fake.tween).not.toHaveBeenCalled();
+  expect(fake.images.filter(image => image.depth === 1 && image.y === 56)).toEqual([]);
+});
+it('shows the dark bottom edge while the Unwriter is present and removes it when gone', () => {
+  const unwriter = { id: 'unwriter', at: { line: 1, col: 1 }, pathIndex: 0, def: {
+    id: 'unwriter', kind: 'unwriter' as const, sprite: 'unwriter', at: { line: 1, col: 1 },
+    behaviour: { type: 'unwrite' as const, path: [{ line: 3, col: 0 }] }, every: 1, damage: 0, solid: true,
+  } };
+  const scene = new FieldScene({ ...frame, state: { ...frame.state, entities: [unwriter] } }, false);
+  scene.create();
+  const edge = fake.images.find(image => image.texture === 'field:unwrite-edge');
+  expect(edge?.visible).toBe(true);
+  scene.present({ ...frame, state: { ...frame.state, entities: [] } });
+  expect(edge?.visible).toBe(false);
 });

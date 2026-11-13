@@ -5,10 +5,11 @@
       "order": 1,
       "name": "Lowlands",
       "stages": [
-        "lowlands"
+        "lowlands",
+        "lighthouse"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "lighthouse",
+      "statue": "R"
     }
   ],
   "quests": [
@@ -33,6 +34,16 @@
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "lowlands"
+          },
+          "then": []
+        },
+        {
+          "id": "lamp",
+          "objective": "Climb the Lighthouse. Find who weeps at the top.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "lighthouse.lit",
+            "value": true
           },
           "then": []
         }

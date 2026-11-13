@@ -1,3 +1,4 @@
+import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
 import { WREN, GULL, NOTE, STONE, JETTY, LIGHTHOUSE_DOOR, BLANK } from './lowlands.js';
 import { PLAYER } from './player.js';
 import { ELDER } from './elder.js';
@@ -21,6 +22,9 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
     frames: [Array.from({ length: 16 }, (_, row) => row % 2 === 0
       ? 'mkmkmkmkmkmkmkmk' : 'kmkmkmkmkmkmkmkm')],
   },
+  'unwrite-edge': UNWRITE_EDGE,
+  unwriter: UNWRITER, lamplighter: LAMPLIGHTER, 'stone-floor': STONE_FLOOR,
+  'tower-wall': TOWER_WALL, pillar: PILLAR, lamp: LAMP, 'lamp-lit': LIT_LAMP,
   wren: WREN, gull: GULL, note: NOTE, stone: STONE, jetty: JETTY,
   'lighthouse-door': LIGHTHOUSE_DOOR, blank: BLANK,
   'player': PLAYER,

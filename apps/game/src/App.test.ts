@@ -44,7 +44,7 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, stage, lowlands } from './play2/content.js';
+import { content, stage, lowlands, lighthouse } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
 
@@ -127,7 +127,9 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('lowlands');
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(session().queue).toEqual([]);
-  key('5'); key('$'); key('Enter'); // expert shortcut -> terminal
+  play(lowlands.solution); dismiss();
+  expect(session().world.stage).toBe('lighthouse');
+  play(lighthouse.solution); dismiss();
   key('Enter'); // title
   key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
