@@ -26,9 +26,12 @@ export interface SessionDependencies {
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
 export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>', '.'] as const;
+/** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
+export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS,
 };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { ledger: LEDGER_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -43,7 +46,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return found;
   }
   function options(story: StoryState, current: Stage) {
-    return { learnedCommands: WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
+    return { learnedCommands: STAGE_COMMANDS[current.id] ?? WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
   }
   function transition(session: Session): Session {
     if (session.world.status !== 'cleared' || session.queue.length > 0) return session;
@@ -104,7 +107,12 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       keys, deferredEffects: [], world: sim.init(current.stage, current.legend, options(story, current.stage)),
       story, lastEvents: [], queue: show ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
     };
-    return saveOnStageEntry(settle(session, opening));
+    const ready = saveOnStageEntry(settle(session, opening));
+    // A text-stage save precedes its lesson: Continue must replay an unfinished
+    // introduction so the player receives its teaching flag on dismissal.
+    return show && current.stage.type === 'text' ? { ...ready,
+      stageEntry: { ...ready.stageEntry, story: { ...ready.stageEntry.story,
+        flags: { ...ready.stageEntry.story.flags, [seen]: false } } } } : ready;
   }
   function init(showIntro = true): Session {
     return enter(entry(stage.id), storyEngine.init(content), 0, showIntro);
@@ -162,6 +170,15 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       return key === '<CR>' || key === '<Space>' || key === ' ' ? advance(session) : session;
     }
     if (session.world.status === 'cleared') return key === '<CR>' ? init() : session;
+    const current = entry(session.world.stage);
+    // Text stages cannot strand the player outside their editor. Restart only this
+    // attempt, preserving story and the stage-entry save used by Continue.
+    const activeEngine = session.world.script?.engine ?? session.world.engine;
+    if (current.stage.type === 'text' && key === '<CR>'
+      && activeEngine.mode === 'command-line' && activeEngine.commandLine === ':e!') {
+      return { ...session, keys: session.keys + 1, lastEvents: [],
+        world: sim.init(current.stage, current.legend, options(session.story, current.stage)) };
+    }
     // :e! is the game's checkpoint restore; Vim parsing up to Enter stays in the engine.
     if (key === '<CR>' && session.world.script === null
       && session.world.engine.mode === 'command-line' && session.world.engine.commandLine === ':e!') {
@@ -169,9 +186,10 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       return settle({ ...session, keys: session.keys + 1, world: restored.state, lastEvents: restored.events },
         storyEngine.onEvents(session.story, restored.events, content));
     }
-    const current = entry(session.world.stage);
     const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
-    const next = settle({ ...session, keys: session.keys + 1, world: stepped.state, lastEvents: stepped.events },
+    const world = current.stage.type === 'text' && stepped.state.status === 'playing' && stepped.state.script === null
+      ? sim.init(current.stage, current.legend, options(session.story, current.stage)) : stepped.state;
+    const next = settle({ ...session, keys: session.keys + 1, world, lastEvents: stepped.events },
       storyEngine.onEvents(session.story, stepped.events, content));
     return transition(presentEnd(next));
   }

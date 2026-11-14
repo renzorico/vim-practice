@@ -1,0 +1,158 @@
+{
+  "id": "ledger",
+  "world": "quarry",
+  "type": "text",
+  "title": "The Mason's Ledger",
+  "goalText": "Strike every wall, pay the crew, fix Bram's name, cut Mira's note, and add a door at the end.",
+  "autoScript": "ledger.book",
+  "map": [
+    " "
+  ],
+  "legend": "quarry",
+  "start": {
+    "line": 0,
+    "col": 0
+  },
+  "hearts": 3,
+  "entities": [],
+  "triggers": [],
+  "scripts": [
+    {
+      "id": "ledger.book",
+      "title": "The Mason's ledger",
+      "goalText": "Strike every wall, pay the crew, fix Bram's name, cut Mira's note, and add a door at the end.",
+      "startLines": [
+        "THE MASON'S LEDGER",
+        "wall",
+        "Ash ........ unpaid",
+        "Kit ........ unpaid",
+        "Brem ....... unpaid",
+        "wall",
+        "Mira ....... unpaid  (owed since the Last Saving)",
+        "wall"
+      ],
+      "startCursor": {
+        "line": 0,
+        "col": 0
+      },
+      "goals": [
+        {
+          "type": "transform",
+          "targetLines": [
+            "THE MASON'S LEDGER",
+            "Ash ........ paid",
+            "Kit ........ paid",
+            "Bram ....... paid",
+            "Mira ....... paid",
+            "door"
+          ]
+        }
+      ],
+      "par": 38,
+      "solution": [
+        "j",
+        "d",
+        "d",
+        "1",
+        "3",
+        "l",
+        "2",
+        "x",
+        "j",
+        ".",
+        "j",
+        ".",
+        "0",
+        "l",
+        "l",
+        "r",
+        "a",
+        "j",
+        "d",
+        "d",
+        "0",
+        "1",
+        "3",
+        "l",
+        "2",
+        "x",
+        "4",
+        "l",
+        "D",
+        "j",
+        "d",
+        "d",
+        "o",
+        "d",
+        "o",
+        "o",
+        "r",
+        "<Esc>"
+      ],
+      "hints": [
+        "dd strikes a line. . repeats it.",
+        "2x deletes the un of unpaid. j, then . does the next.",
+        "r fixes one letter: Brem has an e too many.",
+        "D cuts from the cursor to the end of the line.",
+        "o opens a line below. Type door, then Esc."
+      ],
+      "effects": []
+    }
+  ],
+  "clear": [
+    {
+      "type": "script-solved",
+      "script": "ledger.book"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 0,
+  "solution": [
+    "j",
+    "d",
+    "d",
+    "1",
+    "3",
+    "l",
+    "2",
+    "x",
+    "j",
+    ".",
+    "j",
+    ".",
+    "0",
+    "l",
+    "l",
+    "r",
+    "a",
+    "j",
+    "d",
+    "d",
+    "0",
+    "1",
+    "3",
+    "l",
+    "2",
+    "x",
+    "4",
+    "l",
+    "D",
+    "j",
+    "d",
+    "d",
+    "o",
+    "d",
+    "o",
+    "o",
+    "r",
+    "<Esc>"
+  ],
+  "hints": [
+    "dd strikes a line. . repeats it.",
+    "2x deletes the un of unpaid. j, then . does the next.",
+    "r fixes one letter: Brem has an e too many.",
+    "D cuts from the cursor to the end of the line.",
+    "o opens a line below. Type door, then Esc."
+  ]
+}

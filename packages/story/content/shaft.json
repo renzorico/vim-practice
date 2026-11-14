@@ -353,13 +353,6 @@
             "text": "Another buffer. Same words the Lamplighter\nfound, I'd bet. And a letter: E.",
             "name": "The Mason"
           }
-        },
-        {
-          "type": "line",
-          "line": {
-            "speaker": "system",
-            "text": "End of World 2."
-          }
         }
       ],
       "then": [

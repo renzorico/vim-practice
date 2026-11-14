@@ -1,0 +1,107 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "quarry.ledger",
+      "world": "quarry",
+      "title": "The Mason's ledger",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "ledger",
+          "objective": "Set the Mason's ledger right.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "ledger"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "ledger.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "shaft"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "quarry.ledger"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "ledger"
+        }
+      ]
+    },
+    {
+      "id": "ledger.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "ledger"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "ledger.end"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "ledger.intro",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "The Mason",
+          "text": "My ledger. Every line of it wrong.\nWalls I never needed. A crew never paid."
+        },
+        {
+          "speaker": "npc",
+          "name": "The Mason",
+          "text": "Two new tricks. o opens a new line below\nand lets you write. Esc when you're done."
+        },
+        {
+          "speaker": "npc",
+          "name": "The Mason",
+          "text": "D cuts a line from the cursor to its end.\nThe rest you know: dd, x, r, and the dot."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "ledger.knows-o",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "ledger.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "The crew is paid. The plan has a door.\nThe Mason hums as he works."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 2."
+          }
+        }
+      ],
+      "then": []
+    }
+  ]
+}

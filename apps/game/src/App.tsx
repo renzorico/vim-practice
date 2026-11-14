@@ -1,3 +1,4 @@
+import { useScriptStamp } from './play2/useScriptStamp.js';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
@@ -27,6 +28,7 @@ export function App() {
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
   const [choice, setChoice] = useState(0);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
+  const scriptStamp = useScriptStamp(session);
   const terminal = session.world.status === 'cleared' && session.queue.length === 0;
   const choose = useCallback((continueGame: boolean) => {
     if (continueGame && saved) dispatch({ type: 'continue', progress: saved });
@@ -39,11 +41,11 @@ export function App() {
     setStarted(true);
   }, [saved]);
   const onKey = useCallback((key: Key) => {
-    if (!started) return;
+    if (!started || scriptStamp) return;
     if (key === '<Tab>') { setShowSource(true); return; }
     if (terminal && key === '<CR>') { setStarted(false); setChoice(0); return; }
     dispatch(key);
-  }, [started, terminal]);
+  }, [started, terminal, scriptStamp]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true,
     enabled: started && session.world.status !== 'dead' });
@@ -96,5 +98,5 @@ export function App() {
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
   return <PlayScreen session={session} stage={current.stage} legend={current.legend} content={content}
-    objectives={storyEngine.objectives(session.story, content)} showSource={showSource} onAdvance={advance} />;
+    objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} />;
 }

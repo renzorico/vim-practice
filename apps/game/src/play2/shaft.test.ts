@@ -12,7 +12,7 @@ vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
 const dependencies = { sim, storyEngine, content, stage: shaft, legend: shaftLegend };
-const controller = createSession({ ...dependencies, stages });
+const controller = createSession({ ...dependencies, stages: stages.filter(entry => entry.stage.id !== 'ledger') });
 const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
 function dismiss(session: Session): Session {
   let next = session;
@@ -58,9 +58,8 @@ it.each(['jj10dd<CR>', '2j10dddd<CR>', '2j3dd...<CR>', '2j3dd..2dddddd<CR>'])('c
   expect(cured.world.hearts).toBe(3);
   expect(cured.story.flags['shaft.mason-cured']).toBe(true);
   expect(cured.story.statues).toContain('E');
-  expect(content.cutscenes.find(scene => scene.id === 'shaft.end')?.beats.at(-1)).toEqual({
-    type: 'line', line: { speaker: 'system', text: 'End of World 2.' },
-  });
+  expect(content.cutscenes.find(scene => scene.id === 'shaft.end')?.beats.some(
+    beat => beat.type === 'line' && beat.line.text === 'End of World 2.')).toBe(false);
 });
 it('single dd takes 17 turns, over twice the best-known route', () => {
   const route = '2j' + 'dd'.repeat(16) + '<CR>';
