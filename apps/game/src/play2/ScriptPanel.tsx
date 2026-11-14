@@ -4,6 +4,8 @@ import { Buffer } from '../ui/Buffer.js';
 
 const FIRST_HINT_KEYS = 60;
 const NEXT_HINT_KEYS = 30;
+const SHOWN_MODES: ReadonlySet<string> = new Set(['insert', 'visual', 'visual-line', 'visual-block']);
+
 export const SET_RIGHT_MS = 400;
 
 export function visibleHints(script: Script, keys: number): readonly string[] {
@@ -28,8 +30,9 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
     <div className="script-columns">
       <div className="script-editor">
         <Buffer state={engine} />
+        {/* Like Vim: the mode line names insert and visual modes only; normal mode shows nothing. */}
         <output className="script-mode" aria-label="Vim mode">
-          {`-- ${engine.mode.replaceAll('-', ' ').toUpperCase()} --`}
+          {SHOWN_MODES.has(engine.mode) ? `-- ${engine.mode.replaceAll('-', ' ').toUpperCase()} --` : ''}
         </output>
       </div>
       {target && <aside className="script-target" aria-label="Target text">

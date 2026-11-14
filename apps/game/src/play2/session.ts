@@ -25,10 +25,13 @@ export interface SessionDependencies {
 }
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
-export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>', '.', 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
+export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>', '.'] as const;
+/** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
+export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS,
 };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { ledger: LEDGER_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -43,7 +46,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return found;
   }
   function options(story: StoryState, current: Stage) {
-    return { learnedCommands: WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
+    return { learnedCommands: STAGE_COMMANDS[current.id] ?? WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
   }
   function transition(session: Session): Session {
     if (session.world.status !== 'cleared' || session.queue.length > 0) return session;

@@ -7,7 +7,7 @@ import { checkGoals, SKILL_IDS } from '@escape/curriculum';
 import { createStoryEngine, validateContent } from '@escape/story';
 import { createWorldSim, playKeys } from '@escape/world';
 import { content, ledger, ledgerLegend, shaft, shaftLegend, stages } from './content.js';
-import { createSession, QUARRY_COMMANDS, type Session } from './session.js';
+import { createSession, LEDGER_COMMANDS, type Session } from './session.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { ScriptPanel, visibleHints } from './ScriptPanel.js';
 import { readProgress, saveProgress } from './progress.js';
@@ -54,7 +54,7 @@ it('replays the best-known 38 keys with the real engine and clears without a fie
   const engine = createEngine();
   let buffer = engine.init(book.startLines, book.startCursor);
   for (const key of book.solution) {
-    const result = engine.step(buffer, key, { allowedCommands: QUARRY_COMMANDS });
+    const result = engine.step(buffer, key, { allowedCommands: LEDGER_COMMANDS });
     expect(result.error).toBeNull();
     buffer = result.state;
   }
@@ -132,7 +132,7 @@ it('reveals a hint at 60 keys, then one every 30, capped at five', () => {
 it('validates content, the text-stage map and the raw world replay', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);
   expect(ledger.clear).toEqual([{ type: 'script-solved', script: 'ledger.book' }]);
-  const replay = playKeys(sim, ledger, ledgerLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} }, ledger.solution);
+  const replay = playKeys(sim, ledger, ledgerLegend, { learnedCommands: LEDGER_COMMANDS, flags: {} }, ledger.solution);
   expect(replay.state.status).toBe('cleared');
 });
 

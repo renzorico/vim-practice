@@ -420,6 +420,18 @@ Tags: `#contract` `#design` `#gates`
 
 ---
 
+## 2026-11-14: The Mason's Ledger (2-4), the first text stage; World 2 complete
+Phase: C | Agent(s): Orchestrator (Opus, puzzle design proven with the engine, fixes, browser playthrough), Codex/GPT (build), Claude Sonnet (review) | PR: C-5
+Tags: `#design` `#gates`
+
+**What:** World 2 ends on pure text, as the masterplan asks: the cured Mason's ledger. Strike the walls (`dd`, `.`), pay the crew (`2x`, `j`, `.`), fix a name (`r`), cut a note (`D`), add a door (`o`). New script panel: goal, buffer, the target beside it with a tick per matching line, hints by key count, `:e!` and closing unsolved restart it. "End of World 2" moved here.
+
+**What the checks caught:** The first proven route used `f`, which is World 3; replaced by `4l`. The linter demanded field turns from a text stage. Sonnet: insert commands had been added to every quarry field stage, so they could be used before being taught; the ledger now has its own command list. The script accepts any Vim command (accepted: Vim freedom, like the field). The mode line now shows only insert and visual modes, like Vim.
+
+**Lesson:** A command list is part of the lesson plan. Give each stage the commands it has taught, not the whole world's.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

@@ -62,7 +62,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-hints { margin-top: 24px; max-width: 75ch; line-height: 1.5; }
 .script-hints p { margin: 8px 0; }
 .script-stamp { position: absolute; inset: 40% auto auto 50%; transform: translateX(-50%) rotate(-8deg); padding: 12px 24px; border: 3px solid currentColor; background: var(--text); color: var(--bg); font: 600 32px var(--font-mono); white-space: nowrap; }
-@media (max-width: 800px) {
+@media (max-width: 680px) {
   .script-columns { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .script-panel { padding: 16px; }
   .script-heading { top: -16px; padding-top: 16px; }
