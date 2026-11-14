@@ -36,3 +36,34 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-menu button[aria-current="true"] { border-color: var(--you); color: var(--you); }
 .play-title .play-menu-hint { margin: 24px 0 0; font-size: 13px; }
 .learned-key { display: inline-block; min-width: 28px; margin-right: 6px; padding: 3px 6px; border: 1px solid var(--line-strong); text-align: center; }
+
+/* The ledger is an Ember parchment sheet; the field is never mounted beneath it. */
+.script-panel { position: relative; height: 100%; overflow: auto; padding: 24px; background: var(--text); color: var(--bg); scrollbar-color: var(--line-strong) var(--text-soft); }
+.script-heading { position: sticky; top: -24px; z-index: 1; padding-top: 24px; background: var(--text); }
+.script-panel h2 { margin: 0 0 12px; font-size: 24px; }
+.script-goal { max-width: 75ch; margin: 0 0 32px; line-height: 1.5; }
+.script-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(22ch, 1fr); gap: 40px; }
+.script-editor { min-width: 0; }
+.script-panel .buffer { padding: 16px; overflow-x: auto; background: var(--text-soft); color: var(--bg); font: 16px/1.6 var(--font-mono); }
+.script-panel .buffer__line { display: flex; min-height: 1.6em; white-space: pre; }
+.script-panel .buffer__gutter { padding-right: 16px; color: var(--line-strong); user-select: none; text-align: right; }
+.script-panel .buffer__cmdline { min-height: 1.6em; white-space: pre; }
+.script-panel .cell--cursor-block { background: var(--bg); color: var(--text); }
+.script-panel .cell--cursor-bar { box-shadow: -2px 0 0 var(--bg); }
+.script-panel .cell--selected { background: var(--text-muted); }
+.script-mode { display: block; min-height: 1.6em; padding: 8px 16px; font-family: var(--font-mono); }
+.script-target { min-width: 0; color: var(--line-strong); }
+.script-target h3 { margin: 0 0 16px; font-size: 16px; font-weight: 500; }
+.script-target ol { margin: 0; padding: 0; list-style: none; overflow-x: auto; font: 16px/1.6 var(--font-mono); }
+.script-target li { display: flex; gap: 8px; white-space: pre; }
+.script-target li[data-matched="true"] { color: var(--bg); }
+.script-tick { display: inline-block; flex: 0 0 16px; width: 16px; }
+.script-tick svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.script-hints { margin-top: 24px; max-width: 75ch; line-height: 1.5; }
+.script-hints p { margin: 8px 0; }
+.script-stamp { position: absolute; inset: 40% auto auto 50%; transform: translateX(-50%) rotate(-8deg); padding: 12px 24px; border: 3px solid currentColor; background: var(--text); color: var(--bg); font: 600 32px var(--font-mono); white-space: nowrap; }
+@media (max-width: 800px) {
+  .script-columns { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .script-panel { padding: 16px; }
+  .script-heading { top: -16px; padding-top: 16px; }
+}

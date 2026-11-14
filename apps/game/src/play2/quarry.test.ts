@@ -129,7 +129,11 @@ it.each(stages)('supports :e! in $stage.id', entry => {
   while (session.queue.length) session = game.reduce(session, '<CR>');
   for (const key of ':e!') session = game.reduce(session, key);
   session = game.reduce(session, '<CR>');
-  expect(session.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
+  if (entry.stage.type === 'text') {
+    const script = entry.stage.scripts.find(item => item.id === entry.stage.autoScript);
+    expect(session.world.script?.engine.lines).toEqual(script?.startLines);
+    expect(session.world.script?.keys).toBe(0);
+  } else expect(session.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
   expect(session.world.engine).toEqual(session.world.checkpoint.engine);
   expect(session.world.entities).toEqual(session.world.checkpoint.entities);
   expect(session.world.turn).toBe(session.world.checkpoint.turn);

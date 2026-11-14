@@ -44,7 +44,7 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, stage, lowlands, lighthouse, quarry, cut, shaft } from './play2/content.js';
+import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
 
@@ -58,6 +58,8 @@ class KeyEvent extends Event {
   override stopImmediatePropagation() { this.stopped = true; super.stopImmediatePropagation(); }
 }
 class WindowEvents {
+  readonly setTimeout = globalThis.setTimeout;
+  readonly clearTimeout = globalThis.clearTimeout;
   private readonly capture = new EventTarget();
   private readonly bubble = new EventTarget();
   constructor(readonly localStorage: ProgressStorage) {}
@@ -91,6 +93,7 @@ function session(): Session {
   return hooks.session;
 }
 beforeEach(() => {
+  vi.useFakeTimers();
   hooks.cursor = 0; hooks.dirty = false; hooks.values.clear(); hooks.effects.clear(); hooks.pending.length = 0; hooks.session = undefined;
   values = new Map();
   vi.stubGlobal('window', new WindowEvents({ getItem: key => values.get(key) ?? null,
@@ -98,7 +101,7 @@ beforeEach(() => {
   vi.stubGlobal('HTMLElement', class {});
 });
 afterEach(() => {
-  hooks.effects.forEach(effect => effect.cleanup?.()); vi.unstubAllGlobals();
+  hooks.effects.forEach(effect => effect.cleanup?.()); vi.unstubAllGlobals(); vi.useRealTimers();
 });
 it('Enter advances exactly one line through both App listeners; repeat Enter and Space advance nothing extra', () => {
   flush(); key('Enter');
@@ -137,6 +140,9 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('shaft');
   play(shaft.solution); dismiss();
   expect(session().story.statues).toContain('E');
+  expect(session().world.stage).toBe('ledger');
+  play(ledger.solution);
+  vi.advanceTimersByTime(400); flush(); dismiss();
   key('Enter'); // title
   key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
@@ -147,7 +153,7 @@ function dismiss(): void {
   for (let lines = 0; session().queue.length && lines < 100; lines += 1) key('Enter');
 }
 function play(input: readonly string[]): void {
-  for (const value of input) { dismiss(); key(value === '<CR>' ? 'Enter' : value); }
+  for (const value of input) { dismiss(); key(value === '<CR>' ? 'Enter' : value === '<Esc>' ? 'Escape' : value); }
 }
 function savedProgress(): { stage: string; story: Session['story'] } {
   return JSON.parse(values.get(PROGRESS_KEY) ?? '{}') as { stage: string; story: Session['story'] };
@@ -189,4 +195,21 @@ it('plays normally when the storage getter throws', () => {
   Object.defineProperty(window, 'localStorage', { get: () => { throw new Error('Blocked'); } });
   flush(); key('Enter'); key('Enter'); key('Enter'); key('l');
   expect(session().world.turn).toBe(1);
+});
+
+it('keeps the solved ledger stamped for 400 ms and blocks keys until the story continues', () => {
+  const story = createStoryEngine().init(content);
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'ledger', story }));
+  flush(); key('Enter'); dismiss();
+  expect(session().world.script?.id).toBe('ledger.book');
+  play(ledger.solution);
+  expect(session().world.status).toBe('cleared');
+  expect(session().queue[0]).toMatchObject({ cutscene: 'ledger.end', index: 0 });
+  key('Enter');
+  vi.advanceTimersByTime(399); flush(); key('Enter');
+  expect(session().queue[0]?.index).toBe(0);
+  vi.advanceTimersByTime(1); flush(); key('Enter');
+  expect(session().queue[0]?.index).toBe(1);
+  key('Enter');
+  expect(session().queue).toEqual([]);
 });

@@ -11,6 +11,7 @@ import {
   type Trigger,
 } from '@escape/world';
 import { lintStage, type LintIssue, type LintRule } from './lint';
+import { checkParAndSolution } from './content-rules';
 
 const TEST_STAGE_ID = 'test-1';
 const TEST_SCRIPT_ID = 'river-spell';
@@ -481,4 +482,10 @@ it('resolves story-spawned builders and checks their rows without changing the m
   const invalid = { ...builder, behaviour: { type: 'build' as const, rows: ['~'] } };
   expectErrorRule(lintStage(stage, FIXTURE_LEGEND, [invalid]), 'entity-cell');
   expect(stage.entities).toEqual([]);
+});
+
+it('accepts parTurns 0 for a text stage, whose par is the script keystroke par', () => {
+  const issues = checkParAndSolution({ ...FIXTURE_STAGE, id: 'text-ledger', type: 'text', parTurns: 0, solution: ['j'] });
+  expect(issues).toEqual([]);
+  expect(checkParAndSolution({ ...FIXTURE_STAGE, id: 'field-x', parTurns: 0, solution: ['j'] })).toHaveLength(1);
 });

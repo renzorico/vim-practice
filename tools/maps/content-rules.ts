@@ -130,9 +130,12 @@ export function checkEffectReferences(stage: Stage): LintIssue[] {
   );
 }
 
-/** parTurns above 0 and a non-empty solution. Fixture stages get one placeholder warning instead. */
+/**
+ * parTurns above 0 and a non-empty solution. Fixture stages get one placeholder warning instead.
+ * A 'text' stage has no field turns (its par is the script's keystroke par), so parTurns 0 is right there.
+ */
 export function checkParAndSolution(stage: Stage): LintIssue[] {
-  const parMissing = stage.parTurns <= 0;
+  const parMissing = stage.type === 'text' ? stage.parTurns < 0 : stage.parTurns <= 0;
   const solutionMissing = stage.solution.length === 0;
   if (stage.id.startsWith(FIXTURE_ID_PREFIX)) {
     return parMissing || solutionMissing

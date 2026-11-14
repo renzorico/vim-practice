@@ -1,3 +1,5 @@
+import { createEngine } from '@escape/engine';
+import { ScriptPanel } from './ScriptPanel.js';
 import type { Beat } from '@escape/story';
 import type { Legend, Stage } from '@escape/world';
 import { throwbackAreas } from '../scene/hazards.js';
@@ -14,6 +16,7 @@ interface PlayScreenProps {
   readonly content: StoryContent;
   readonly objectives: readonly string[];
   readonly showSource: boolean;
+  readonly scriptStamp?: boolean;
   readonly onAdvance: () => void;
 }
 function BeatView({ beat }: { readonly beat: Beat | undefined }) {
@@ -25,7 +28,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance }: PlayScreenProps) {
+export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, scriptStamp = false }: PlayScreenProps) {
   const { world } = session;
   const presentation = session.queue[0];
   const dialogue = presentation?.type === 'dialogue'
@@ -33,23 +36,27 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
   const cutscene = presentation?.type === 'cutscene'
     ? content.cutscenes.find(item => item.id === presentation.cutscene) : undefined;
   const result = resultData(session);
+  const script = stage.scripts.find(item => item.id === world.script?.id
+    || (scriptStamp && world.solvedScripts[item.id] !== undefined));
+  const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.title}</h1>
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
-    <div className="play-field"><FieldView state={world} events={session.lastEvents} stage={stage}
-      legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} /></div>
+    <div className="play-field">{script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
+      keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
+      legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys">{world.engine.pendingKeys.join('') || '\u00a0'}</output>
-      <span>Hold <kbd>Tab</kbd> for Source</span>
+      <output aria-label="Pending keys">{(world.script?.engine ?? world.engine).pendingKeys.join('') || '\u00a0'}</output>
+      {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p>{deathHint(content, world.stage)}</p>
       <button onClick={onAdvance}>Press any key to return</button>
-    </section> : <>
+    </section> : scriptStamp ? null : <>
       {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
       {cutscene && presentation && <section className="play-panel" role="dialog" aria-label="Story">
         <BeatView beat={cutscene.beats[presentation.index]} /><button onClick={onAdvance}>Enter to go on</button>
@@ -83,5 +90,6 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readon
     ...(flags['quarry.knows-r'] ? ['r', '5r='] : []),
     ...(flags['cut.knows-dd'] ? ['dd'] : []),
     ...(flags['cut.knows-u'] ? ['u'] : []),
-    ...(flags['shaft.knows-dot'] ? ['.'] : [])];
+    ...(flags['shaft.knows-dot'] ? ['.'] : []),
+    ...(flags['ledger.knows-o'] ? ['o', 'D'] : [])];
 }
