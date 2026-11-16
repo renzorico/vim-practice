@@ -5,9 +5,9 @@ import type { Legend, WorldState } from '@escape/world';
  */
 export function tileGrid(lines: WorldState['engine']['lines'], legend: Legend): string[][] {
   const sprites = new Map(legend.tiles.map(tile => [tile.char, tile.sprite]));
-  const width = Math.max(0, ...lines.map(row => row.length));
+  const width = Math.max(legend.emptyRow === undefined ? 0 : 1, ...lines.map(row => row.length));
   return lines.map(row => Array.from({ length: width }, (_, col) =>
-    col >= row.length ? 'blank' : sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
+    row === '' && col === 0 && legend.emptyRow !== undefined ? legend.emptyRow.sprite : col >= row.length ? 'blank' : sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
 }
 
 /** Top, right, bottom, left. A ragged row's missing cells never become land. */

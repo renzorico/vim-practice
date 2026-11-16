@@ -31,16 +31,16 @@ export function lintStageAgainst(stage: Stage, legend: Legend, storySpawns: read
   const authored = { ...stage, entities: [...stage.entities, ...storySpawns] };
   return [
     ...legendMismatch(stage, legend),
-    ...checkRows(stage),
+    ...checkRows(stage, legend),
     ...checkCharacters(stage, legend),
     ...checkStartAndEntities(authored, legend),
     ...checkUniqueIds(authored),
-    ...checkAreas(stage),
+    ...checkAreas(stage, legend),
     ...checkTriggerReferences(authored),
     ...checkClearReferences(stage),
     ...checkAutoScript(stage),
     ...checkSetRowsRange(stage),
-    ...checkEffectReferences(authored),
+    ...checkEffectReferences(authored, legend),
     ...checkParAndSolution(stage),
   ];
 }

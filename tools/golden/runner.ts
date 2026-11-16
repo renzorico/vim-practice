@@ -5,6 +5,7 @@ export interface Expectation {
   readonly lines: readonly string[];
   readonly cursor: readonly [number, number];
   readonly mode: string;
+  readonly scroll?: number;
 }
 
 export interface Case {
@@ -49,7 +50,7 @@ export function runGolden(engine: Engine, cases: Case[]): Result[] {
       state = result.state;
     }
     const actual: Expectation = {
-      lines: [...state.lines], cursor: [state.cursor.line, state.cursor.col], mode: state.mode,
+      lines: [...state.lines], cursor: [state.cursor.line, state.cursor.col], mode: state.mode, scroll: state.scroll,
     };
     const expected = testCase.expect;
     const differences: string[] = [...editDifferences];
@@ -59,6 +60,7 @@ export function runGolden(engine: Engine, cases: Case[]): Result[] {
       if (JSON.stringify(actual.lines) !== JSON.stringify(expected.lines)) differences.push('lines');
       if (actual.cursor[0] !== expected.cursor[0] || actual.cursor[1] !== expected.cursor[1]) differences.push('cursor');
       if (actual.mode !== (MODES[expected.mode] ?? expected.mode)) differences.push('mode');
+      if (expected.scroll !== undefined && actual.scroll !== expected.scroll) differences.push('scroll');
     }
     return { name: testCase.name, passed: differences.length === 0, actual, expected, differences };
   });

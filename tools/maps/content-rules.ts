@@ -1,6 +1,6 @@
-import type { Stage, WorldEffect } from '@escape/world';
+import type { Legend, Stage, WorldEffect } from '@escape/world';
 import { knownEntityIds } from './entities';
-import { cellChar } from './grid';
+import { cellChar, tileAt } from './grid';
 import { errorIssue, warningIssue, type LintIssue } from './issue';
 
 /** Fixture stages keep placeholder par and solution until the solver fills them (MASTERPLAN phase B). */
@@ -103,7 +103,7 @@ function reshapedBefore(effects: readonly WorldEffect[], index: number): boolean
   return effects.slice(0, index).some((effect) => effect.type === 'set-rows' || effect.type === 'delete-row');
 }
 
-export function checkEffectReferences(stage: Stage): LintIssue[] {
+export function checkEffectReferences(stage: Stage, legend?: Legend): LintIssue[] {
   const entities = knownEntityIds(stage);
   return stage.scripts.flatMap((script) =>
     script.effects.flatMap((effect, index): LintIssue[] => {
@@ -113,7 +113,7 @@ export function checkEffectReferences(stage: Stage): LintIssue[] {
             ? []
             : [errorIssue('missing-entity', `Script "${script.id}" removes entity "${effect.entity}", which does not exist.`)];
         case 'move-player':
-          return reshapedBefore(script.effects, index) || cellChar(stage, effect.to) !== undefined
+          return reshapedBefore(script.effects, index) || (legend === undefined ? cellChar(stage, effect.to) !== undefined : tileAt(stage, legend, effect.to) !== undefined)
             ? []
             : [errorIssue('effect-cell', `Script "${script.id}" moves the player to line ${effect.to.line}, column ${effect.to.col}, which is outside the map.`)];
         case 'delete-row':

@@ -16,7 +16,7 @@ export interface StageSolveLimits {
 
 const MOTIONS = new Set([
   'h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$', 'gg', 'G',
-  'f', 'F', 't', 'T', ';', ',', '%', '{', '}', 'n', 'N', '*', '#',
+  'f', 'F', 't', 'T', ';', ',', '%', '{', '}', 'n', 'N', '*', '#', '<C-d>', '<C-u>',
 ]);
 const FINDS = new Set(['f', 'F', 't', 'T']);
 
@@ -81,7 +81,7 @@ function* fieldActions(
 ): Generator<readonly Key[], void, string | null> {
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map((line) => line.length));
-  const totalCells = state.engine.lines.reduce((total, line) => total + line.length, 0);
+  const totalCells = state.engine.lines.reduce((total, line) => total + Math.max(1, line.length), 0);
   for (const command of [...new Set(commands)].sort()) {
     if (command === ':w') {
       yield [':', 'w', '<CR>'];
@@ -104,6 +104,11 @@ function* fieldActions(
           previous = current;
         }
       }
+      continue;
+    }
+    if (command === '<C-d>' || command === '<C-u>') {
+      yield [command];
+      for (let count = 1; count <= state.engine.lines.length; count += 1) yield [...String(count), command];
       continue;
     }
     if (!MOTIONS.has(command)) continue;
@@ -154,7 +159,7 @@ function periodFor(stage: Stage): number {
 function identity(state: WorldState, period: number, history: boolean): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),

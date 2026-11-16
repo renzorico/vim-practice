@@ -156,8 +156,8 @@ describe('lintStage: map rows and characters', () => {
     expectErrorRule(lintStage(baseStage({ map: [] }), FIXTURE_LEGEND), 'map-empty');
   });
 
-  it('rejects an empty row', () => {
-    expectErrorRule(lintStage(baseStage({ map: ['  ', ''] }), FIXTURE_LEGEND), 'row-empty');
+  it('warns that an empty row without an emptyRow tile is unreachable', () => {
+    expect(lintStage(baseStage({ map: ['  ', ''] }), FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ severity: 'warning', rule: 'row-empty' }));
   });
 
   it('rejects a character the legend does not list', () => {
@@ -488,4 +488,20 @@ it('accepts parTurns 0 for a text stage, whose par is the script keystroke par',
   const issues = checkParAndSolution({ ...FIXTURE_STAGE, id: 'text-ledger', type: 'text', parTurns: 0, solution: ['j'] });
   expect(issues).toEqual([]);
   expect(checkParAndSolution({ ...FIXTURE_STAGE, id: 'field-x', parTurns: 0, solution: ['j'] })).toHaveLength(1);
+});
+
+
+it('accepts empty-row starts, entities, waypoints and reach areas with a clearing tile', () => {
+  const legend = legendWith({ emptyRow: tile(' ', 'ground') });
+  const room = baseStage({ map: [''], start: { line: 0, col: 0 }, scripts: [], triggers: [],
+    entities: [entity({ at: { line: 0, col: 0 }, behaviour: { type: 'patrol', path: [{ line: 0, col: 0 }] } })],
+    clear: [{ type: 'reach', area: { from: { line: 0, col: 0 }, to: { line: 0, col: 0 } } }] });
+  expect(lintStage(room, legend)).toEqual([]);
+  expect(lintStage({ ...room, start: { line: 0, col: 1 } }, legend))
+    .toContainEqual(expect.objectContaining({ rule: 'start-cell' }));
+});
+
+it('applies legend conventions to emptyRow', () => {
+  expect(lintStage(baseStage(), legendWith({ emptyRow: tile('x', 'ground') })))
+    .toContainEqual(expect.objectContaining({ rule: 'legend-ground' }));
 });

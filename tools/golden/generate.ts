@@ -16,7 +16,7 @@ vim.cmd('set encoding=utf-8 fileencoding=utf-8 backspace=indent,eol,start whichw
 vim.cmd('set selection=inclusive selectmode= virtualedit= tabstop=8 shiftwidth=8 softtabstop=0 noexpandtab')
 vim.cmd('set textwidth=0 wrapmargin=0 formatoptions=nrq nomodeline noswapfile noundofile')
 vim.cmd('set noignorecase nosmartcase magic cpoptions=aABceFs_ scrolloff=0 sidescrolloff=0')
-vim.cmd('set lines=24 columns=80 scroll=11')
+vim.cmd('set lines=30 columns=80 scroll=14')
 vim.bo.undolevels = -1
 vim.api.nvim_buf_set_lines(0, 0, -1, false, case.lines)
 vim.bo.undolevels = 1000
@@ -30,7 +30,7 @@ _G.escape_golden_read_state = function(offset)
   local p = vim.api.nvim_win_get_cursor(0)
   local line = vim.api.nvim_get_current_line()
   _G.escape_golden_snapshot = vim.json.encode({lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
-    cursor = {p[1] - 1, vim.str_utfindex(line, 'utf-16', p[2], false)}, mode = vim.api.nvim_get_mode().mode}):gsub('.', function(byte) return string.format('%02x', string.byte(byte)) end)
+    cursor = {p[1] - 1, vim.str_utfindex(line, 'utf-16', p[2], false)}, mode = vim.api.nvim_get_mode().mode, scroll = vim.wo.scroll}):gsub('.', function(byte) return string.format('%02x', string.byte(byte)) end)
   return _G.escape_golden_snapshot:sub(1, 512)
 end
 
@@ -68,7 +68,9 @@ export async function captureNeovim(testCase: Case): Promise<Expectation> {
     } while (chunk.length === 512);
     if (typeof result !== 'string') throw new Error('Neovim returned a non-JSON result');
     const captured = JSON.parse(Buffer.from(result, 'hex').toString('utf8')) as Expectation;
-    return { lines: captured.lines, cursor: captured.cursor, mode: captured.mode };
+    return { lines: captured.lines, cursor: captured.cursor, mode: captured.mode,
+      ...(/\d+<C-[du]>/.test(testCase.keys) ? { scroll: captured.scroll } : {}),
+    };
   } catch (error) {
     if (timedOut) {
       throw new Error(`Neovim capture timed out after ${PROCESS_TIMEOUT_MS}ms for ${testCase.name} (keys: ${JSON.stringify(testCase.keys)})`, { cause: error });

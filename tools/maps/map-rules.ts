@@ -1,16 +1,16 @@
 import type { Position } from '@escape/engine';
 import type { Area, EntitySpawn, Legend, Stage } from '@escape/world';
 import { spawnedEntities } from './entities';
-import { areaProblem, cellChar, describeCell, tileAt } from './grid';
-import { errorIssue, type LintIssue } from './issue';
+import { areaProblem, describeCell, tileAt } from './grid';
+import { errorIssue, warningIssue, type LintIssue } from './issue';
 
-/** The Vim-visible rows of the map: at least one, none empty. */
-export function checkRows(stage: Stage): LintIssue[] {
+/** The map needs at least one row; empty rows need a clearing tile to be reachable. */
+export function checkRows(stage: Stage, legend?: Legend): LintIssue[] {
   if (stage.map.length === 0) {
     return [errorIssue('map-empty', 'The map has no rows.')];
   }
   return stage.map.flatMap((row, lineIndex) =>
-    row.length === 0 ? [errorIssue('row-empty', `Row ${lineIndex} is empty.`)] : [],
+    row.length === 0 && legend?.emptyRow === undefined ? [warningIssue('row-empty', `Row ${lineIndex} is empty and unreachable without legend.emptyRow.`)] : [],
   );
 }
 
@@ -41,7 +41,7 @@ export function checkWalkableCell(
   rule: 'start-cell' | 'entity-cell' | 'waypoint-cell',
   what: string,
 ): LintIssue[] {
-  if (cellChar(stage, cell) === undefined) {
+  if (tileAt(stage, legend, cell) === undefined) {
     return [errorIssue(rule, `${what} is outside the map at ${describeCell(cell)}.`)];
   }
   const tile = tileAt(stage, legend, cell);
@@ -75,9 +75,10 @@ function entityIssues(stage: Stage, legend: Legend, entity: EntitySpawn): LintIs
   const start = checkWalkableCell(stage, legend, entity.at, 'entity-cell', `${label} starts`);
   const { behaviour } = entity;
   if (behaviour.type === 'build') {
-    // Maps may be ragged: their width rule is simply that every row is nonempty.
+    // Build rows use the same tiles as authored rows, including clearings.
     return [...start, ...behaviour.rows.flatMap((row, index) => {
-      if (row.length === 0) return [errorIssue('row-empty', `${label} build row ${index} is empty.`)];
+      if (row.length === 0) return legend.emptyRow?.walkable === true ? []
+        : [errorIssue('row-empty', `${label} build row ${index} is empty and has no walkable emptyRow tile.`)];
       return [...row].flatMap(char => legend.tiles.some(tile => tile.char === char && tile.walkable)
         ? [] : [errorIssue('entity-cell', `${label} build row ${index} has non-walkable or unknown character "${char}".`)]);
     })];
@@ -127,8 +128,8 @@ function duplicateIdIssues(kind: string, ids: readonly string[]): LintIssue[] {
   return issues;
 }
 
-function areaIssues(stage: Stage, area: Area, label: string): LintIssue[] {
-  switch (areaProblem(stage, area)) {
+function areaIssues(stage: Stage, area: Area, label: string, legend?: Legend): LintIssue[] {
+  switch (areaProblem(stage, area, legend)) {
     case 'reversed':
       return [errorIssue('area', `${label} has its corners the wrong way round, so it covers nothing.`)];
     case 'outside':
@@ -139,16 +140,16 @@ function areaIssues(stage: Stage, area: Area, label: string): LintIssue[] {
 }
 
 /** Every area (enter triggers, interact areas, reach clear conditions) must lie inside the map. */
-export function checkAreas(stage: Stage): LintIssue[] {
+export function checkAreas(stage: Stage, legend?: Legend): LintIssue[] {
   const triggerAreas = stage.triggers.flatMap((trigger) => {
     const label = `Trigger "${trigger.id}"`;
     if (trigger.on === 'enter') {
-      return areaIssues(stage, trigger.area, label);
+      return areaIssues(stage, trigger.area, label, legend);
     }
-    return trigger.target.type === 'area' ? areaIssues(stage, trigger.target.area, label) : [];
+    return trigger.target.type === 'area' ? areaIssues(stage, trigger.target.area, label, legend) : [];
   });
   const clearAreas = stage.clear.flatMap((condition) =>
-    condition.type === 'reach' ? areaIssues(stage, condition.area, 'A reach clear condition') : [],
+    condition.type === 'reach' ? areaIssues(stage, condition.area, 'A reach clear condition', legend) : [],
   );
   return [...triggerAreas, ...clearAreas];
 }

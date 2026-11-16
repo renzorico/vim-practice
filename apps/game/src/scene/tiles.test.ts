@@ -28,3 +28,9 @@ it('edges blank paper only against written cells, never missing cells', () => {
   expect(blankEdges(['\t'], 0, 0)).toBe(0);
   expect(blankEdges(['\t.'], 0, 0)).toBe(2);
 });
+
+it('draws one clearing cell, with unwritten paper filling the rest of the empty row', () => {
+  const legend = { ...FIXTURE_LEGEND, emptyRow: { ...FIXTURE_LEGEND.fallback, sprite: 'grass' } };
+  expect(tileGrid(['ooo', ''], legend)).toEqual([['stone', 'stone', 'stone'], ['grass', 'blank', 'blank']]);
+  expect(tileGrid([''], legend)).toEqual([['grass']]);
+});

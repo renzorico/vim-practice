@@ -32,10 +32,13 @@ export function createWorldSim(engine: Engine): WorldSim {
       const pending = state.pending ?? { engine: state.engine, entities: state.entities, commands: [] };
       const allowedCommands = stage.allowedCommands === undefined ? options.learnedCommands
         : options.learnedCommands.filter((command) => stage.allowedCommands?.includes(command));
-      const result = engine.step(state.engine, key, { allowedCommands });
+      const result = engine.step(state.engine, key, { allowedCommands, ...(stage.windowHeight === undefined ? {} : { windowHeight: stage.windowHeight }) });
       const commands = [...pending.commands, ...result.commands];
       if (result.error !== null) {
         events.push({ type: 'engine-error', error: result.error });
+        if (result.error.code === 'invalid-range' && ['<C-d>', '<C-u>'].includes(key)) {
+          events.push({ type: 'bump', reason: 'edge', at: result.state.cursor });
+        }
         return { state: { ...state, engine: pending.engine, entities: pending.entities, pending: null }, events };
       }
       if (!atRest(result.state)) {

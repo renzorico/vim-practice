@@ -46,8 +46,10 @@ export const LegendSchema = z
     id: z.string(),
     tiles: z.array(tileDef),
     fallback: tileDef,
+    emptyRow: tileDef.optional(),
   })
-  .strict();
+  .strict()
+  .transform(({ emptyRow, ...rest }) => ({ ...rest, ...(emptyRow === undefined ? {} : { emptyRow }) }));
 
 const behaviour = z.discriminatedUnion('type', [
   z.object({ type: z.literal('build'), rows: z.array(z.string()) }).strict(),
@@ -165,6 +167,7 @@ export const StageSchema = z
     title: z.string(),
     goalText: z.string(),
     map: z.array(z.string()),
+    windowHeight: POSITIVE_INT.optional(),
     legend: z.string(),
     start: position,
     hearts: NON_NEGATIVE_INT,
@@ -180,9 +183,10 @@ export const StageSchema = z
     hints: z.array(z.string()),
   })
   .strict()
-  .transform(({ autoScript, allowedCommands, ...rest }) => ({
+  .transform(({ autoScript, allowedCommands, windowHeight, ...rest }) => ({
     ...rest,
     ...(autoScript === undefined ? {} : { autoScript }),
+    ...(windowHeight === undefined ? {} : { windowHeight }),
     ...(allowedCommands === undefined ? {} : { allowedCommands }),
   }));
 

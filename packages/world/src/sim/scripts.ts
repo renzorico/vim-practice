@@ -38,8 +38,10 @@ export function stepScript(state: WorldState, key: Key, stage: Stage, legend: Le
   const script = stage.scripts.find((entry) => entry.id === opened.id);
   if (script === undefined) return state;
   const solved = state.solvedScripts[script.id] !== undefined;
-  const result = script.allowedCommands === undefined || solved ? engine.step(opened.engine, key)
-    : engine.step(opened.engine, key, { allowedCommands: script.allowedCommands });
+  const result = engine.step(opened.engine, key, {
+    ...(stage.windowHeight === undefined ? {} : { windowHeight: stage.windowHeight }),
+    ...(script.allowedCommands === undefined || solved ? {} : { allowedCommands: script.allowedCommands }),
+  });
   // Let the engine parse motions and prefixes. Reject entry to editing modes,
   // completed edits (including no-op edits), and any buffer mutation.
   if (solved && (result.state.mode === 'insert' || result.state.mode === 'operator-pending'

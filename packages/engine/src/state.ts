@@ -12,6 +12,7 @@ export function createInitialState(lines: readonly string[], cursor: Position = 
     commandLine: '',
     lastSearch: null,
     desiredCol: cursor.col,
+    scroll: 0,
     quitRequested: false,
     modified: false,
     changeSeq: 0,

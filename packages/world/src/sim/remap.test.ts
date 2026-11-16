@@ -59,3 +59,16 @@ describe('text offset mapping', () => {
     expect(mapOffset(3, [{ start: 1, removed: 1, inserted: '' }])).toBe(2);
   });
 });
+
+it('removes an entity when its final empty row is deleted, even after another empty row', () => {
+  const clearingLegend = { ...legend, emptyRow: { ...legend.fallback, walkable: true } };
+  const final = { ...entity, at: { line: 2, col: 0 } };
+  expect(remapEntities(['o', '', ''], ['o', ''], [final], clearingLegend, [], [{ start: 2, removed: 1, inserted: '' }])).toEqual([]);
+});
+
+it('keeps an entity on an empty row when the following final row is deleted', () => {
+  const clearingLegend = { ...legend, emptyRow: { ...legend.fallback, walkable: true } };
+  const clearing = { ...entity, at: { line: 1, col: 0 } };
+  expect(remapEntities(['o', '', 'oo'], ['o', ''], [clearing], clearingLegend, [], [{ start: 2, removed: 3, inserted: '' }])[0]?.at)
+    .toEqual({ line: 1, col: 0 });
+});
