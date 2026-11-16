@@ -5,7 +5,8 @@
       "order": 3,
       "name": "The Wordwood",
       "stages": [
-        "canopy"
+        "canopy",
+        "glades"
       ],
       "castle": null,
       "statue": null

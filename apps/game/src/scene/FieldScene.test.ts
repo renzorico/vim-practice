@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createWorldSim, playKeys, FIXTURE_LEGEND, FIXTURE_STAGE } from '@escape/world';
+import { createWorldSim, playKeys, FIXTURE_LEGEND, FIXTURE_STAGE, type WorldStepResult } from '@escape/world';
 import { FIXTURE_INITIAL_STATE } from './fixtureFrames.js';
 
 const fake = vi.hoisted(() => {
@@ -446,4 +446,37 @@ it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the
   const liftState = sim.apply(jumped.state, [{ type: 'move-player', to: { line: 7, col: 27 } }], canopy, canopyLegend);
   scene.present({ ...initial, ...liftState });
   expect(fake.texts.some(text => text.text === 'Enter: take lift')).toBe(true);
+});
+
+it('renders Glades terrain and actors and follows G and gg over all eighteen rows', async () => {
+  const { glades, gladesLegend } = await import('../play2/content.js');
+  const { GLADES_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: GLADES_COMMANDS, flags: {} };
+  let state = sim.init(glades, gladesLegend, options);
+  const initial = { state, stage: glades, legend: gladesLegend, events: [], showSource: false };
+  fake.scale.height = 300;
+  const scene = new FieldScene(initial, false); scene.create();
+  for (const sprite of ['pilcrow', 'rope', 'stump', 'glade-lamp-lit', 'lamp-out', 'moss', 'fern-fronds', 'bramble', 'clearing']) {
+    expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  }
+  expect(fake.images.some(image => image.texture === 'field:moss:1')).toBe(true);
+  const player = fake.images.find(image => image.texture === 'field:player');
+  for (const keys of [['G'], ['g', 'g']]) {
+    let jumped: WorldStepResult = { state, events: [] };
+    for (const key of keys) {
+      const result = sim.step(jumped.state, key, glades, gladesLegend, options);
+      jumped = result;
+    }
+    scene.present({ ...initial, ...jumped });
+    const playback = fake.tween.mock.calls.at(-1)?.[0];
+    expect(playback.duration).toBeLessThanOrEqual(90);
+    playback.targets.value = 0.5; playback.onUpdate();
+    expect(fake.centerOn).toHaveBeenLastCalledWith(72, 144);
+    expect(player?.y).toBe(136); // half-height arc, eight pixels above the ground midpoint
+    playback.targets.value = 1; playback.onUpdate(); scene.finish();
+    expect(player?.y).toBe(jumped.state.engine.cursor.line * 16 + 8);
+    expect(fake.centerOn).toHaveBeenLastCalledWith(72, keys[0] === 'G' ? 238 : 50);
+    state = jumped.state;
+  }
 });

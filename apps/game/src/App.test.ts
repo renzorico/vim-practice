@@ -44,7 +44,7 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy } from './play2/content.js';
+import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy, glades } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
 
@@ -145,6 +145,8 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   vi.advanceTimersByTime(400); flush(); dismiss();
   expect(session().world.stage).toBe('canopy');
   play(canopy.solution); dismiss();
+  expect(session().world.stage).toBe('glades');
+  play(glades.solution); dismiss();
   expect(session().world.status).toBe('cleared');
   key('Enter'); // title
   key('j'); key('Enter');

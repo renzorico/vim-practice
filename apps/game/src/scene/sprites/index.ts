@@ -1,3 +1,4 @@
+import { MOSS, FERNS, BRAMBLE, CLEARING, PILCROW, ROPE, STUMP, GLADE_LAMP_LIT, GLADE_LAMP_OUT } from './glades.js';
 import { BRANCH, KNOT, LEAVES, AIR, TRUNK, LADDER, THORNS, PLATFORM, FERN, KNOTHOLE, LIFT } from './canopy.js';
 import { MASON, MORTAR, SCAFFOLD, WET_SHEEN, WET_EDGE } from './shaft.js';
 import { LEDGE, CHASM, DOT, DOT_CAGE } from './cut.js';
@@ -21,6 +22,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  moss: MOSS, 'fern-fronds': FERNS, bramble: BRAMBLE, clearing: CLEARING, pilcrow: PILCROW,
+  rope: ROPE, stump: STUMP, 'glade-lamp-lit': GLADE_LAMP_LIT, 'lamp-out': GLADE_LAMP_OUT,
   branch: BRANCH, knot: KNOT, leaves: LEAVES, air: AIR, trunk: TRUNK, ladder: LADDER,
   thorns: THORNS, platform: PLATFORM, fern: FERN, knothole: KNOTHOLE, lift: LIFT,
   'wet-sheen': WET_SHEEN, 'wet-edge': WET_EDGE,

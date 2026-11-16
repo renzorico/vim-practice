@@ -454,6 +454,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-16 · D-3: The Glades (3-2)
+**Who:** Fable (design, map, story), Codex (build), Sonnet (review).
+
+**What:** Below the canopy: four thickets with three clearings between them. A clearing is an empty buffer row, one cell at column 0. `}` drops to the next clearing, `{` climbs back, `gg` is the lookout, `G` the forest floor. Pilcrow the owl sends the player back up to relight the second glade's lamp (`{{`) and to pull the gate rope at the lookout (`gg`), then down again (`G`). Learner route 8 turns; par 4 with `9G` (a line-number jump, real Vim).
+
+**What the checks caught:** In the sim, before the brief: counted old motions teleport as well as `{ }` do (`18$` lands on the last row, counted `b`/`w` stop on empty rows), so this stage cannot halve the old-tools turn count. Accepted and written into the brief: `{ }` win by needing no counting. Sonnet found no bugs; added a test that visiting the lamp glade before Pilcrow asks does not use up its trigger, and stopped a test from pinning the solver's exact keys.
+
+**Lesson:** Landing-only motions make every counted motion a teleport. Design the errand around where the player must go, not around which key gets there.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
