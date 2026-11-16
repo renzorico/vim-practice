@@ -432,6 +432,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-16 · D-2: `<C-d>`/`<C-u>` and empty rows (PR 48)
+**Who:** Opus (World 3 design, contract), Codex (build), Sonnet (review).
+
+**What:** World 3 (Wordwood) is designed (`docs/briefs/phase-d/WORLD-3.md`). Two contract pieces it needs: the engine has `<C-d>`/`<C-u>` with Vim's 'scroll' option (`EngineState.scroll`, `EngineOptions.windowHeight`, default 28; a count sets scroll and keeps it), golden-tested against Neovim 0.11. `Legend.emptyRow` makes an empty row's (line, 0) a real cell, so `{ }` can land in clearings. `Stage.windowHeight` makes `<C-d>` move half of what the player sees.
+
+**What the checks caught:** Sonnet: the script solver ignored the stage's window height; an entity on an empty row was deleted when text was typed there; a fixed clearing could be deleted; a count-set scroll was lost when the move errored; `<C-d>` counts above the window height multiplied solver branches; an empty row without `emptyRow` had become a lint warning. All fixed with tests.
+
+**Lesson:** Measure Neovim before writing the contract. The numbers (half of 28, clamping, counts that stick) went into the brief, and the builder matched them on the first try.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
