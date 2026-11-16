@@ -69,6 +69,14 @@ export interface Legend {
   readonly tiles: readonly TileDef[];
   /** Used for a character the legend does not list. The map linter rejects such maps; this is a runtime safety net. */
   readonly fallback: TileDef;
+  /**
+   * The tile under the cursor on an empty buffer row. In Vim the cursor on an empty line sits at
+   * column 0, so an empty row has exactly one cell, (line, 0). Without `emptyRow` that cell does not
+   * exist (bump 'edge'), as before. With it, the cell is this tile: walkable or not, for every rule
+   * that reads a tile (movement, landing, entities, nearest free cell). Edits never target it: it is
+   * not a character. Used by the Wordwood glades, where `{` and `}` land on empty rows.
+   */
+  readonly emptyRow?: TileDef;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -271,6 +279,11 @@ export interface Stage {
   readonly clear: readonly ClearCondition[];
   readonly teaches: readonly SkillId[];
   readonly requires: readonly SkillId[];
+  /**
+   * Rows the field window shows, passed to the engine as EngineOptions.windowHeight, so <C-d>/<C-u>
+   * move half of what the player sees. Omit for the engine default. The game sizes its camera to it.
+   */
+  readonly windowHeight?: number;
   /** Commands the field accepts. Omit to allow everything the player has learned. */
   readonly allowedCommands?: readonly string[];
   /** Fewest turns to clear, proven by the solver. Shown only after a clear. Never gates progress. */
