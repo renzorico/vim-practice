@@ -14,7 +14,7 @@
       "kind": "barrier",
       "sprite": "branch",
       "walkable": true,
-      "fixed": false,
+      "fixed": true,
       "label": "branch"
     },
     {
@@ -22,7 +22,7 @@
       "kind": "barrier",
       "sprite": "knot",
       "walkable": true,
-      "fixed": false,
+      "fixed": true,
       "label": "knot"
     },
     {
@@ -30,7 +30,7 @@
       "kind": "object",
       "sprite": "leaves",
       "walkable": true,
-      "fixed": false,
+      "fixed": true,
       "label": "leafy branch"
     },
     {

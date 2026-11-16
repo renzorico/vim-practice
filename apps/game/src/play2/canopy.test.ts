@@ -144,11 +144,12 @@ it('stageReplayIssue passes for every bundled stage with its own command set', (
   }
 });
 
-it('legal field edits keep the lift and knothole reachable instead of removing them', () => {
-  const edited = keys(start(), 'x');
-  expect(edited.world.engine.lines).not.toEqual(canopy.map);
-  expect(edited.world.entities.map(entity => entity.id)).toEqual(expect.arrayContaining(['crack', 'lift']));
-  const restored = keys(edited, 'u');
-  expect(restored.world.entities.map(entity => entity.id)).toEqual(expect.arrayContaining(['crack', 'lift']));
-  expect(keys(restored, 'fH2j,2jt@2jfD<CR>').world.status).toBe('cleared');
+it('edits cannot change the canopy: every Wordwood tile is fixed', () => {
+  const atLift = keys(start(), 'fH2j,2jt@2jf*5l');
+  for (const input of ['x', '3x', 'rH', 'dd']) {
+    const edited = keys(atLift, input);
+    expect(edited.world.engine.lines, input).toEqual(canopy.map);
+    expect(edited.world.entities.map(entity => entity.id), input).toEqual(expect.arrayContaining(['crack', 'lift', 'scribe-note']));
+  }
+  expect(keys(start(), 'xfH2j').world.engine.cursor).toEqual({ line: 3, col: 30 });
 });

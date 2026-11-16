@@ -4,26 +4,24 @@ import { createStoryEngine } from '@escape/story';
 import { createWorldSim, solveStage } from '@escape/world';
 import { canopy, canopyLegend, content } from './content.js';
 import { sessionSolver } from './solver.js';
+import { LOWLANDS_COMMANDS, WORDWOOD_COMMANDS } from './session.js';
 
-// Full learned-command search ran out of a 1.5 GB heap, including a retry
-// dropping u/<C-r>/. as permitted by D-1. This smaller search proves only the
-// find-and-ladder route; seven remains best known when all edits are available.
-it('finds the authored seven-turn route in the focused motion search', () => {
-  const sim = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
-    stage: canopy, legend: canopyLegend });
-  const solution = solveStage(sim, canopy, canopyLegend, { learnedCommands: ['f', 't', ',', 'j'], flags: {} },
-    { maxTurns: 7, maxExpanded: 6000 });
+// Every Wordwood tile is fixed, so x, r and dd never change the canopy (canopy.test.ts checks it)
+// and u, <C-r> and . have nothing to act on. Searching the motions is therefore a full proof;
+// leaving the edits out avoids the solver's undo-history memory cost.
+const EDITS = new Set(['x', 'r', 'dd', 'u', '<C-r>', '.']);
+const MOTIONS = WORDWOOD_COMMANDS.filter(command => !EDITS.has(command));
+const solver = () => sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
+  stage: canopy, legend: canopyLegend });
+
+it('proves par over every learned motion (edits cannot change the canopy)', () => {
+  const solution = solveStage(solver(), canopy, canopyLegend, { learnedCommands: MOTIONS, flags: {} },
+    { maxTurns: 8, maxExpanded: 200_000 });
   expect(solution?.turns).toBe(canopy.parTurns);
-  expect(solution?.keys).toEqual(canopy.solution);
 }, 120_000);
 
-// Moving the knothole onto branch (1,29) keeps it alive through edits and
-// blocks the original thirteen-turn old-motion route; the new optimum is 14.
-it('finds a fourteen-turn route with the old motions alone', () => {
-  const sim = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
-    stage: canopy, legend: canopyLegend });
-  const solution = solveStage(sim, canopy, canopyLegend, {
-    learnedCommands: ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$'], flags: {},
-  }, { maxTurns: 14, maxExpanded: 6000 });
-  expect(solution?.turns).toBe(14);
+it('the motions before World 3 need twice the turns', () => {
+  const solution = solveStage(solver(), canopy, canopyLegend, { learnedCommands: LOWLANDS_COMMANDS, flags: {} },
+    { maxTurns: 16, maxExpanded: 200_000 });
+  expect(solution?.turns).toBeGreaterThanOrEqual(2 * canopy.parTurns);
 }, 120_000);
