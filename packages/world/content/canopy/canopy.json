@@ -1,0 +1,229 @@
+{
+  "id": "canopy",
+  "world": "wordwood",
+  "type": "field",
+  "title": "The Canopy Road",
+  "goalText": "Cross the canopy to the lift.",
+  "map": [
+    "################################",
+    "#==v=v==___*=v=v==____*=v=v=v=H#",
+    "##############################H#",
+    "#H==v=v=*____=v=v==*___=v=v===H#",
+    "#H##############################",
+    "#H==v==___=@####################",
+    "##########H#####################",
+    "##########H=v=v=___*=v=v=v=D####",
+    "################################"
+  ],
+  "legend": "wordwood",
+  "start": {
+    "line": 1,
+    "col": 2
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "fern",
+      "kind": "npc",
+      "sprite": "fern",
+      "at": {
+        "line": 1,
+        "col": 1
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "blot-a",
+      "kind": "blot",
+      "sprite": "blot",
+      "at": {
+        "line": 1,
+        "col": 15
+      },
+      "behaviour": {
+        "type": "chase"
+      },
+      "every": 2,
+      "damage": 1,
+      "solid": false
+    },
+    {
+      "id": "blot-b",
+      "kind": "blot",
+      "sprite": "blot",
+      "at": {
+        "line": 3,
+        "col": 16
+      },
+      "behaviour": {
+        "type": "chase"
+      },
+      "every": 2,
+      "damage": 1,
+      "solid": false
+    },
+    {
+      "id": "crack",
+      "kind": "prop",
+      "sprite": "knothole",
+      "at": {
+        "line": 2,
+        "col": 29
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "scribe-note",
+      "kind": "prop",
+      "sprite": "note",
+      "at": {
+        "line": 5,
+        "col": 6
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "lift",
+      "kind": "prop",
+      "sprite": "lift",
+      "at": {
+        "line": 7,
+        "col": 28
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "canopy.edge",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 2
+        },
+        "to": {
+          "line": 1,
+          "col": 7
+        }
+      }
+    },
+    {
+      "id": "canopy.talk-fern",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "fern"
+      }
+    },
+    {
+      "id": "canopy.tier-b",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 3,
+          "col": 1
+        },
+        "to": {
+          "line": 3,
+          "col": 30
+        }
+      }
+    },
+    {
+      "id": "canopy.talk-crack",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "crack"
+      }
+    },
+    {
+      "id": "canopy.tier-c",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 1
+        },
+        "to": {
+          "line": 5,
+          "col": 10
+        }
+      }
+    },
+    {
+      "id": "canopy.talk-note",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "scribe-note"
+      }
+    },
+    {
+      "id": "canopy.talk-lift",
+      "once": true,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "lift"
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "canopy.down"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 7,
+  "solution": [
+    "f",
+    "H",
+    "2",
+    "j",
+    ",",
+    "2",
+    "j",
+    "t",
+    "@",
+    "2",
+    "j",
+    "f",
+    "D",
+    "<CR>"
+  ],
+  "hints": [
+    "f and a character jumps to the next one on your row. fH: the ladder.",
+    ", repeats your last f backwards. t stops one short: t@."
+  ]
+}
