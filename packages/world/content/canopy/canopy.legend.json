@@ -11,7 +11,7 @@
   "tiles": [
     {
       "char": "=",
-      "kind": "ground",
+      "kind": "barrier",
       "sprite": "branch",
       "walkable": true,
       "fixed": false,
@@ -19,7 +19,7 @@
     },
     {
       "char": "*",
-      "kind": "ground",
+      "kind": "barrier",
       "sprite": "knot",
       "walkable": true,
       "fixed": false,
@@ -27,7 +27,7 @@
     },
     {
       "char": "v",
-      "kind": "ground",
+      "kind": "object",
       "sprite": "leaves",
       "walkable": true,
       "fixed": false,
@@ -35,7 +35,7 @@
     },
     {
       "char": "_",
-      "kind": "barrier",
+      "kind": "object",
       "sprite": "air",
       "walkable": false,
       "fixed": true,
@@ -51,7 +51,7 @@
     },
     {
       "char": "H",
-      "kind": "ground",
+      "kind": "object",
       "sprite": "ladder",
       "walkable": true,
       "fixed": true,
@@ -67,7 +67,7 @@
     },
     {
       "char": "D",
-      "kind": "ground",
+      "kind": "object",
       "sprite": "platform",
       "walkable": true,
       "fixed": true,
