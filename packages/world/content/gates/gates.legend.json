@@ -1,0 +1,53 @@
+{
+  "id": "gates",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "trunk",
+    "walkable": false,
+    "fixed": true,
+    "label": "trunk"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "heartwood",
+      "walkable": true,
+      "fixed": true,
+      "label": "heartwood floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "trunk",
+      "walkable": false,
+      "fixed": true,
+      "label": "trunk"
+    },
+    {
+      "char": "_",
+      "kind": "object",
+      "sprite": "hollow",
+      "walkable": false,
+      "fixed": true,
+      "label": "the hollow"
+    },
+    {
+      "char": "(",
+      "kind": "barrier",
+      "sprite": "gate-open",
+      "walkable": true,
+      "fixed": true,
+      "label": "opening gate mark"
+    },
+    {
+      "char": ")",
+      "kind": "barrier",
+      "sprite": "gate-close",
+      "walkable": true,
+      "fixed": true,
+      "label": "closing gate mark"
+    }
+  ]
+}
