@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { createEngine } from '@escape/engine';
 import type { Position } from '@escape/engine';
 import type { Area, Legend, Stage, WorldEvent, WorldState } from '@escape/world';
 import { unwritingAlpha, unwritingPlan } from './unwrite.js';
@@ -6,7 +7,7 @@ import { SPRITES } from './sprites/index.js';
 import { rowAnimationStart, animationSteps, PLAYBACK_BUDGET_MS, type AnimationStep } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { blankEdges, tileGrid } from './tiles.js';
-import { bufferSize, cameraTarget } from './camera.js';
+import { bufferSize, cameraTarget, fieldZoom } from './camera.js';
 
 export interface FieldFrame {
   readonly state: WorldState;
@@ -17,6 +18,7 @@ export interface FieldFrame {
   readonly hazards?: readonly Area[];
 }
 
+const presentationEngine = createEngine();
 const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
 const PILE_OFFSET_PX = 3;
 
@@ -45,9 +47,12 @@ export class FieldScene extends Phaser.Scene {
   private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
   private dust: Phaser.GameObjects.Image[] = [];
   private danger: Phaser.GameObjects.Image | undefined;
+  private gateMarks: Phaser.GameObjects.Container | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
   private facing = new Map<string, boolean>();
   private idleFrame = 0;
+  private cameraY = 0;
+  private scrollOffset = 0;
   private previousState: WorldState | undefined;
   private previousEvents: readonly WorldEvent[] | undefined;
 
@@ -66,6 +71,7 @@ export class FieldScene extends Phaser.Scene {
       for (const entity of this.frame.state.entities) {
         this.entities.get(entity.id)?.setTexture(this.texture(this.entitySprite(entity.def.sprite), this.idleFrame));
       }
+      this.syncGateMarks();
       for (const cell of this.cells.values()) {
         if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
       }
@@ -73,6 +79,7 @@ export class FieldScene extends Phaser.Scene {
     this.tiles = this.add.container(0, 0);
     this.actors = this.add.container(0, 0).setDepth(2);
     this.source = this.add.container(0, 0).setDepth(1);
+    this.gateMarks = this.add.container(0, 0).setDepth(1);
     this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.label = this.add.text(8, 8, '', {
@@ -126,6 +133,11 @@ export class FieldScene extends Phaser.Scene {
       return;
     }
     this.finish();
+    const scroll = frame.events.some(event => event.type === 'command'
+      && ['<C-d>', '<C-u>'].includes(event.command.id));
+    if (this.previousState?.stage !== frame.state.stage) this.scrollOffset = 0;
+    else if (scroll) this.scrollOffset = center(this.previousState.engine.cursor.line) - this.cameraY;
+    else if (frame.events.some(event => event.type === 'command' && event.command.id === '%')) this.scrollOffset = 0;
     this.frame = frame;
     if (!this.ready) return;
     for (const event of frame.events) {
@@ -166,6 +178,11 @@ export class FieldScene extends Phaser.Scene {
   private captureDust(frame: FieldFrame): void {
     this.clearDust();
     if (this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
+    const blink = animationSteps(frame.events).find(step => step.type === 'blink');
+    if (blink?.type === 'blink') {
+      for (const at of [blink.from, blink.to]) this.dust.push(
+        this.add.image(center(at.col), center(at.line), this.texture('gate-glint')).setDepth(3));
+    }
     if (!frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) return;
     // Exact engine edits identify even replacements/deletions inside equal tile runs.
     if (frame.events.some(event => event.type === 'command' && event.command.kind === 'undo')) return;
@@ -205,9 +222,10 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private positionLabel(): void {
-    this.label?.setScale(1 / TILE_SCALE).setPosition(
-      (this.scale.width - this.scale.width / TILE_SCALE) / 2 + 8 / TILE_SCALE,
-      (this.scale.height - this.scale.height / TILE_SCALE) / 2 + 8 / TILE_SCALE,
+    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    this.label?.setScale(1 / zoom).setPosition(
+      (this.scale.width - this.scale.width / zoom) / 2 + 8 / zoom,
+      (this.scale.height - this.scale.height / zoom) / 2 + 8 / zoom,
     );
   }
 
@@ -223,7 +241,10 @@ export class FieldScene extends Phaser.Scene {
    */
   private positionCamera(cell: { readonly line: number; readonly col: number } = this.frame.state.engine.cursor): void {
     if (!this.player) return;
-    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, TILE_SCALE);
+    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    this.cameras.main.setZoom(zoom);
+    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, zoom, this.scrollOffset);
+    this.cameraY = target.y;
     this.cameras.main.centerOn(target.x, target.y);
   }
 
@@ -330,7 +351,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private entitySprite(sprite: string): string {
-    return this.frame.stage.id === 'glades' && sprite === 'lamp-lit' ? 'glade-lamp-lit' : sprite;
+    return ['glades', 'gates'].includes(this.frame.stage.id) && sprite === 'lamp-lit' ? 'glade-lamp-lit' : sprite;
   }
 
   private addEntity(id: string, sprite: string, at: Position): void {
@@ -340,7 +361,26 @@ export class FieldScene extends Phaser.Scene {
     this.entities.set(id, image);
   }
 
+  private syncGateMarks(): void {
+    this.gateMarks?.removeAll(true);
+    if (this.frame.stage.id !== 'gates') return;
+    const engine = this.frame.state.engine;
+    const char = engine.lines[engine.cursor.line]?.[engine.cursor.col];
+    // Ask the engine for the partner; presentation never parses bracket nesting.
+    const partner = char === '(' || char === ')'
+      ? presentationEngine.step({ ...engine, pendingKeys: [] }, '%').state.cursor : undefined;
+    for (const [key, cell] of this.cells) {
+      if (cell.char !== '(' && cell.char !== ')') continue;
+      const column = Number(key.split(':')[1]);
+      const outer = cell.line === 0 || cell.line === engine.lines.length - 1 && column === 3;
+      const pulse = partner?.line === cell.line && partner.col === column;
+      if (outer || pulse) this.gateMarks?.add(this.add.image(center(column), center(cell.line), this.texture('gate-glint'))
+        .setAlpha(pulse ? (this.reducedMotion ? 0.6 : this.idleFrame ? 0.85 : 0.35) : 0.2));
+    }
+  }
+
   private syncActors(): void {
+    this.syncGateMarks();
     if (!this.player) {
       this.player = this.add.image(0, 0, this.texture('player')).setDepth(1);
       this.actors?.add(this.player);
@@ -385,8 +425,9 @@ export class FieldScene extends Phaser.Scene {
     const active = this.frame.state.entities.some(entity => entity.def.kind === 'unwriter');
     if (!active && !this.danger) return;
     this.danger ??= this.add.image(0, 0, this.texture('unwrite-edge')).setScrollFactor(0).setDepth(3);
-    this.danger.setVisible(active).setDisplaySize(this.scale.width / TILE_SCALE, 32 / TILE_SCALE)
-      .setPosition(this.scale.width / 2, (this.scale.height + this.scale.height / TILE_SCALE) / 2 - 16 / TILE_SCALE);
+    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    this.danger.setVisible(active).setDisplaySize(this.scale.width / zoom, 32 / zoom)
+      .setPosition(this.scale.width / 2, (this.scale.height + this.scale.height / zoom) / 2 - 16 / zoom);
   }
 
   private clearRowEffects(): void {
@@ -434,14 +475,20 @@ export class FieldScene extends Phaser.Scene {
         }
         const target = 'entity' in step ? this.entities.get(step.entity) : this.player;
         if (!target) continue;
-        if (step.type === 'walk' || step.type === 'jump') {
+        if (step.type === 'blink') {
+          const at = progress < 0.5 ? step.from : step.to;
+          target.setPosition(center(at.col), center(at.line)).setAlpha(Math.abs(progress * 2 - 1));
+          cameraCell = at;
+          continue;
+        }
+        if (step.type === 'walk' || step.type === 'jump' || step.type === 'scroll') {
           // Follow the ground position, not the arc, so a jump does not bob the whole map.
           cameraCell = {
             line: step.from.line + (step.to.line - step.from.line) * progress,
             col: step.from.col + (step.to.col - step.from.col) * progress,
           };
         }
-        if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
+        if (step.type === 'walk' || step.type === 'jump' || step.type === 'scroll' || step.type === 'entity-move') {
           const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
           const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
           target.setPosition(

@@ -44,3 +44,19 @@ describe('cameraTarget', () => {
     expect(cameraTarget(bufferSize([' '.repeat(100)]), view, player, zoom)).toEqual({ x: 80, y: 8 });
   });
 });
+
+it.each([384, 600, 900])('fits exactly twelve rows at field height %i', async height => {
+  const { fieldZoom } = await import('./camera.js');
+  const zoom = fieldZoom(height, 12);
+  expect(height / zoom / 16).toBe(12);
+  const map = { width: 9, height: 37 };
+  const view = { width: 900, height };
+  // At the top, the player is half a tile from the field edge. Keep that
+  // offset while scrolling six rows rather than recentering on the destination.
+  const from = cameraTarget(map, view, { line: 0, col: 5 }, zoom);
+  const offset = 8 - from.y;
+  const to = cameraTarget(map, view, { line: 6, col: 5 }, zoom, offset);
+  expect(to.y - from.y).toBe(6 * 16);
+  expect(6 * 16 + 8 - to.y).toBe(8 - from.y);
+  expect(cameraTarget(map, view, { line: 36, col: 5 }, zoom, offset).y).toBe((37 - 6) * 16);
+});

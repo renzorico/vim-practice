@@ -5,7 +5,7 @@ export const PLAYBACK_BUDGET_MS = 90;
 const WALK_DURATION_MS = 60;
 
 type AnimationHint =
-  | { readonly type: 'walk' | 'jump'; readonly from: Position; readonly to: Position }
+  | { readonly type: 'walk' | 'jump' | 'blink' | 'scroll'; readonly from: Position; readonly to: Position }
   | { readonly type: 'bump'; readonly at: Position }
   | { readonly type: 'hit' }
   | { readonly type: 'entity-move'; readonly entity: string; readonly from: Position; readonly to: Position }
@@ -17,11 +17,14 @@ export type AnimationStep = AnimationHint & { readonly durationMs: number; reado
 /** This describes presentation only; endpoints and walk/jump semantics come from WorldSim. */
 export function animationSteps(events: readonly WorldEvent[], reducedMotion = false, pending = false): AnimationStep[] {
   const hints: AnimationHint[] = [];
+  const command = events.find(event => event.type === 'command')?.command;
+  const motion = command?.id === '%' && command.count === null ? 'blink'
+    : command && ['<C-d>', '<C-u>'].includes(command.id) ? 'scroll' : undefined;
   for (const event of events) {
     switch (event.type) {
       case 'player-moved': {
         const distance = Math.abs(event.to.line - event.from.line) + Math.abs(event.to.col - event.from.col);
-        if (distance > 0) hints.push({ type: event.style === 'jump' || distance > 1 ? 'jump' : 'walk', from: event.from, to: event.to });
+        if (distance > 0) hints.push({ type: motion ?? (event.style === 'jump' || distance > 1 ? 'jump' : 'walk'), from: event.from, to: event.to });
         break;
       }
       case 'bump': hints.push({ type: 'bump', at: event.at }); break;
@@ -33,7 +36,7 @@ export function animationSteps(events: readonly WorldEvent[], reducedMotion = fa
     }
   }
   const total = reducedMotion || hints.length === 0 ? 0
-    : hints.some(hint => hint.type === 'jump' || hint.type === 'rows' && hint.lineDelta > 0) ? PLAYBACK_BUDGET_MS : WALK_DURATION_MS;
+    : hints.some(hint => hint.type === 'jump' || hint.type === 'scroll' || hint.type === 'rows' && hint.lineDelta > 0) ? PLAYBACK_BUDGET_MS : WALK_DURATION_MS;
   // Actors share the same clock. Removal follows its own actor's movement.
   return hints.map(hint => {
     const delayed = hint.type === 'entity-remove' && hints.some(other => other.type === 'entity-move' && other.entity === hint.entity);

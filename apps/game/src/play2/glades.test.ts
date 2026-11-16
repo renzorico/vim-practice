@@ -72,7 +72,7 @@ it('a visit to the lamp glade before Pilcrow asks does not use up the lamp trigg
   expect(early.story.flags['glades.lamp']).toBeUndefined();
   const lit = dismiss(keys(early, 'G<CR>{{'));
   expect(lit.story.flags['glades.lamp']).toBe(true);
-  expect(dismiss(keys(lit, 'gg<CR>G<CR>')).world.status).toBe('cleared');
+  expect(dismiss(keys(lit, 'gg<CR>G<CR>')).world.stage).toBe('gates');
 });
 it.each([
   ['G<CR>', {}, 'pilcrow-ask'],
@@ -86,13 +86,15 @@ it.each([
   expect(at(route, flags).queue).toEqual([{ type: 'dialogue', dialogue: `glades.${dialogue}`, index: 0 }]);
 });
 it('learner route clears with three hearts, eight turns and the ending', () => {
-  const clear = dismiss(keys(start(), '}}}}<CR>{{gg<CR>G<CR>'));
+  const talking = keys(start(), '}}}}<CR>{{gg<CR>G<CR>');
+  const clear = controller.reduce(controller.reduce(talking, '<CR>'), '<CR>');
   expect(clear.world.status).toBe('cleared');
   expect(clear.world.hearts).toBe(3);
   expect(clear.world.turn).toBe(8);
   const html = renderToStaticMarkup(createElement(PlayScreen, { session: clear, stage: glades, legend: gladesLegend,
     content, objectives: [], showSource: false, onAdvance: () => {} }));
-  expect(html).toContain('To be continued.');
+  expect(html).toContain('Past the ferns, two gates face each other.');
+  expect(dismiss(clear).world.stage).toBe('gates');
 });
 it('walking through the third thicket costs a heart', () => {
   expect(keys(start(), '}}j2l').world.hearts).toBeLessThan(3);

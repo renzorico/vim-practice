@@ -28,12 +28,13 @@ export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] 
 export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>', '.'] as const;
 export const WORDWOOD_COMMANDS = [...QUARRY_COMMANDS, 'f', 't', ';', ','] as const;
 export const GLADES_COMMANDS = [...WORDWOOD_COMMANDS, '{', '}', 'gg', 'G'] as const;
+export const GATES_COMMANDS = [...GLADES_COMMANDS, '%', '<C-d>', '<C-u>'] as const;
 /** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -185,17 +186,17 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     if (key === '<CR>' && session.world.script === null
       && session.world.engine.mode === 'command-line' && session.world.engine.commandLine === ':e!') {
       const restored = sim.restore(session.world);
-      return settle({ ...session, keys: session.keys + 1, world: restored.state, lastEvents: restored.events },
+      return settle({ ...session, keys: session.keys + 1, world: { ...restored.state, engine: { ...restored.state.engine, scroll: 0 } }, lastEvents: restored.events },
         storyEngine.onEvents(session.story, restored.events, content));
     }
     const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
     const world = current.stage.type === 'text' && stepped.state.status === 'playing' && stepped.state.script === null
       ? sim.init(current.stage, current.legend, options(session.story, current.stage)) : stepped.state;
-    // Failed find motions currently emit neither a CommandRecord nor an engine
+    // Failed find/matching-bracket motions currently emit neither a CommandRecord nor an engine
     // error. Give that completed, unchanged attempt visual feedback only: no
     // turn, cursor, or Vim state is changed, and Escape remains a quiet cancel.
     const findAttempt = /[ft]$/.test(session.world.engine.pendingKeys.join(''))
-      || key === ';' || key === ',';
+      || key === ';' || key === ',' || key === '%';
     const failedFind = session.world.script === null && session.world.engine.mode === 'normal' && findAttempt && key !== '<Esc>'
       && stepped.events.length === 0 && world.engine.pendingKeys.length === 0
       && world.engine.cursor.line === session.world.engine.cursor.line
