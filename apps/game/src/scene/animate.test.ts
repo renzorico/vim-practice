@@ -43,3 +43,14 @@ it('composes a player deletion with a builder insertion on the same turn', () =>
   expect(rowAnimationStart(3, rows)).toBe(6);
   expect(rowAnimationStart(12, rows)).toBe(14);
 });
+
+it('uses the command record to blink matching brackets in 30 + 30 ms and scroll without an arc', () => {
+  const move: WorldEvent = { type: 'player-moved', from: { line: 36, col: 3 }, to: { line: 0, col: 3 }, style: 'jump' };
+  const command = (id: string, count: number | null = null): WorldEvent => ({ type: 'command', in: 'field', command: {
+    id, count, keys: [id], kind: 'motion', register: null, motion: null,
+  } });
+  expect(animationSteps([command('%'), move])[0]).toMatchObject({ type: 'blink', durationMs: 60 });
+  expect(animationSteps([command('%', 65), move])[0]).toMatchObject({ type: 'jump' });
+  expect(animationSteps([command('<C-d>'), move])[0]).toMatchObject({ type: 'scroll', durationMs: 90 });
+  expect(animationSteps([command('<C-u>'), move], true)[0]?.durationMs).toBe(0);
+});

@@ -480,3 +480,51 @@ it('renders Glades terrain and actors and follows G and gg over all eighteen row
     state = jumped.state;
   }
 });
+
+it('blinks between real bracket partners, cuts the camera and settles on interruption', async () => {
+  const { gates, gatesLegend } = await import('../play2/content.js');
+  const { GATES_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: GATES_COMMANDS, flags: {} };
+  const state = playKeys(sim, gates, gatesLegend, options, ['h']).state;
+  const initial = { state, stage: gates, legend: gatesLegend, events: [], showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const jumped = sim.step(state, '%', gates, gatesLegend, options);
+  scene.present({ ...initial, ...jumped });
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  expect(playback.duration).toBe(60);
+  playback.targets.value = 0.25; playback.onUpdate();
+  expect(player?.y).toBe(36 * 16 + 8);
+  expect(player?.alpha).toBe(0.5);
+  playback.targets.value = 0.5; playback.onUpdate();
+  expect(player?.alpha).toBe(0);
+  expect(player?.y).toBe(8);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 96);
+  playback.targets.value = 0.75; playback.onUpdate();
+  expect(player?.alpha).toBe(0.5);
+  scene.finish();
+  expect(player?.alpha).toBe(1);
+  expect(player?.y).toBe(8);
+});
+it.each([false, true])('scrolls exactly half the twelve-row window with no arc (reduced motion: %s)', async reducedMotion => {
+  const { gates, gatesLegend } = await import('../play2/content.js');
+  const { GATES_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: GATES_COMMANDS, flags: {} };
+  const state = playKeys(sim, gates, gatesLegend, options, ['h', '%', '2', 'l']).state;
+  const initial = { state, stage: gates, legend: gatesLegend, events: [], showSource: false };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const jumped = sim.step(state, '<C-d>', gates, gatesLegend, options);
+  scene.present({ ...initial, ...jumped });
+  if (!reducedMotion) {
+    const playback = fake.tween.mock.calls.at(-1)?.[0];
+    playback.targets.value = 0.5; playback.onUpdate();
+    expect(player?.y).toBe(3 * 16 + 8);
+    expect(fake.centerOn).toHaveBeenLastCalledWith(72, 9 * 16);
+    playback.targets.value = 1; playback.onUpdate(); scene.finish();
+  }
+  expect(player?.y).toBe(6 * 16 + 8);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 12 * 16);
+});

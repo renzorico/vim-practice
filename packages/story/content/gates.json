@@ -1,0 +1,653 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "wordwood.gates",
+      "world": "wordwood",
+      "title": "The Twin Gates",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "shut",
+          "objective": "Talk to the gatekeeper.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.met-shut",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "ope",
+          "objective": "Find the other gatekeeper.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.asked",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "lamp-a",
+          "objective": "Light the lower trunk lamp.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.lamp-a",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "lamp-b",
+          "objective": "Light the upper trunk lamp.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.lamp-b",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "tell",
+          "objective": "Tell Shut what you lit.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.shut-ready",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "open",
+          "objective": "Go back up to Ope.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "gates"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "gates.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "A hollow tree, taller than the canopy.\nA gate at its foot. A keeper asleep on it."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.shut-intro",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Gate's shut. It takes two to open,\nand there is only me.",
+          "name": "Shut"
+        },
+        {
+          "speaker": "npc",
+          "text": "A bracket with no partner is an error.\nSo I am an error. I've made my peace.",
+          "name": "Shut"
+        },
+        {
+          "speaker": "npc",
+          "text": "Don't believe me? Stand on my mark\nand press %. It goes nowhere. You'll see.",
+          "name": "Shut"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.met-shut",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-alone",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Still only me down here.\nThe trunk's been dark since the Flicker.",
+          "name": "Shut"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.top",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The top of the tree. % found the\nmark's partner. So there is one."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.ope-ask",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "A visitor! From below? Nothing's below.\nI open. Nobody shuts. That's the tragedy.",
+          "name": "Ope"
+        },
+        {
+          "speaker": "npc",
+          "text": "A brother? If I had a brother, the trunk\nlamps would be lit. They're dark.",
+          "name": "Ope"
+        },
+        {
+          "speaker": "npc",
+          "text": "Light them and I'll believe you. Lower one\nfirst, then the upper. Flame climbs.",
+          "name": "Ope"
+        },
+        {
+          "speaker": "system",
+          "text": "The trunk is hollow, with a landing every\nhalf screen. Ctrl-d drops half a screen."
+        },
+        {
+          "speaker": "system",
+          "text": "Ctrl-u climbs half a screen.\nStand over the hollow first."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.asked",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.ope-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Lower lamp, then upper. Then ask the\nnobody down there what he sees.",
+          "name": "Ope"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.lamp-a",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The lower lamp catches.\nNow the upper one: Ctrl-u climbs."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "lamp-a"
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "lamp-a",
+                "kind": "prop",
+                "sprite": "lamp-lit",
+                "at": {
+                  "line": 24,
+                  "col": 4
+                },
+                "behaviour": {
+                  "type": "still"
+                },
+                "every": 1,
+                "damage": 0,
+                "solid": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "gates.lamp-a",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.lamp-b",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The upper lamp takes the flame.\nThe whole trunk glows."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "lamp-b"
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "lamp-b",
+                "kind": "prop",
+                "sprite": "lamp-lit",
+                "at": {
+                  "line": 12,
+                  "col": 4
+                },
+                "behaviour": {
+                  "type": "still"
+                },
+                "every": 1,
+                "damage": 0,
+                "solid": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "gates.lamp-b",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-sees",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Light. In the trunk. Someone lit the\nupper lamp. You can't reach it from here.",
+          "name": "Shut"
+        },
+        {
+          "speaker": "npc",
+          "text": "...Unless you came down from above.\nUnless there is an above.",
+          "name": "Shut"
+        },
+        {
+          "speaker": "npc",
+          "text": "Tell him: on three. I never stopped\ncounting. I only stopped believing.",
+          "name": "Shut"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.met-shut",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "gates.shut-ready",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-go",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Go on. My mark, and %.\nOn three.",
+          "name": "Shut"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.ope-cure",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "On three? He said on three?\nOnly Shut says on three.",
+          "name": "Ope"
+        },
+        {
+          "speaker": "system",
+          "text": "You tell him what you have seen: a lamp\nrelit, a road reopened, two lamps in a trunk."
+        },
+        {
+          "speaker": "npc",
+          "text": "One... two...",
+          "name": "Ope"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.open",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.note",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "A sealed room, and you are in it. % took\nyou to this mark's partner, not the nearest."
+        },
+        {
+          "speaker": "scribe",
+          "text": "Brackets nest. The inner pair closes\nfirst. % again, and you are out."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.crack",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Through a knothole: one gate, whole.\nOne keeper, asleep against it."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gates.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Watch the Blot on the landing. Drop when\nit steps aside: Ctrl-u, then Ctrl-d again."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "gates.shut-intro",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-shut"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.shut-intro"
+        }
+      ],
+      "unless": "gates.met-shut",
+      "onlyIf": "gates.shut-dark"
+    },
+    {
+      "id": "gates.shut-alone",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-shut"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.shut-alone"
+        }
+      ],
+      "onlyIf": "gates.met-shut",
+      "unless": "gates.lamp-b"
+    },
+    {
+      "id": "gates.top",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.top"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.top"
+        }
+      ]
+    },
+    {
+      "id": "gates.ope-ask",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-ope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.ope-ask"
+        }
+      ],
+      "unless": "gates.asked"
+    },
+    {
+      "id": "gates.ope-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-ope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.ope-wait"
+        }
+      ],
+      "onlyIf": "gates.asked",
+      "unless": "gates.shut-ready"
+    },
+    {
+      "id": "gates.lamp-a",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.lamp-a"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.lamp-a"
+        }
+      ]
+    },
+    {
+      "id": "gates.lamp-b",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.lamp-b"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.lamp-b"
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-sees",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-shut"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.shut-sees"
+        }
+      ],
+      "onlyIf": "gates.lamp-b",
+      "unless": "gates.shut-ready"
+    },
+    {
+      "id": "gates.shut-go",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-shut"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.shut-go"
+        }
+      ],
+      "onlyIf": "gates.shut-ready"
+    },
+    {
+      "id": "gates.ope-cure",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-ope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.ope-cure"
+        }
+      ],
+      "onlyIf": "gates.shut-ready"
+    },
+    {
+      "id": "gates.note",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-note"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.note"
+        }
+      ]
+    },
+    {
+      "id": "gates.crack",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.talk-crack"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.crack"
+        }
+      ]
+    },
+    {
+      "id": "gates.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "glades"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "wordwood.gates"
+        }
+      ]
+    },
+    {
+      "id": "gates.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "gates"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "gates.end"
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-dark",
+      "when": {
+        "type": "flag",
+        "flag": "gates.lamp-b",
+        "value": false
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.shut-dark",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "gates.shut-lit",
+      "when": {
+        "type": "flag",
+        "flag": "gates.lamp-b",
+        "value": true
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.shut-dark",
+          "value": false
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "gates.end",
+      "beats": [
+        {
+          "type": "title",
+          "text": "Three. The Twin Gates swing open."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "text": "The Scribe came through when we were one.\nLeft a line on the hinge. Look.",
+            "name": "Ope"
+          }
+        },
+        {
+          "type": "title",
+          "text": "The Scribe is in another buffer."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "text": "Same as the others, they say.\nAnd a letter on the post: R.",
+            "name": "Shut"
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "text": "Attention. ...attention.",
+            "name": "Dot"
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "light-statue",
+          "letter": "R"
+        }
+      ]
+    }
+  ]
+}

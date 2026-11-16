@@ -1,3 +1,4 @@
+import { HEARTWOOD, HOLLOW, GATE_OPEN, GATE_CLOSE, GATE_GLINT, OPE, SHUT } from './gates.js';
 import { MOSS, FERNS, BRAMBLE, CLEARING, PILCROW, ROPE, STUMP, GLADE_LAMP_LIT, GLADE_LAMP_OUT } from './glades.js';
 import { BRANCH, KNOT, LEAVES, AIR, TRUNK, LADDER, THORNS, PLATFORM, FERN, KNOTHOLE, LIFT } from './canopy.js';
 import { MASON, MORTAR, SCAFFOLD, WET_SHEEN, WET_EDGE } from './shaft.js';
@@ -22,6 +23,7 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'gate-glint': GATE_GLINT, heartwood: HEARTWOOD, hollow: HOLLOW, 'gate-open': GATE_OPEN, 'gate-close': GATE_CLOSE, ope: OPE, shut: SHUT,
   moss: MOSS, 'fern-fronds': FERNS, bramble: BRAMBLE, clearing: CLEARING, pilcrow: PILCROW,
   rope: ROPE, stump: STUMP, 'glade-lamp-lit': GLADE_LAMP_LIT, 'lamp-out': GLADE_LAMP_OUT,
   branch: BRANCH, knot: KNOT, leaves: LEAVES, air: AIR, trunk: TRUNK, ladder: LADDER,

@@ -95,9 +95,11 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['canopy.knows-f'] ? ['f', 'fH'] : []),
     ...(flags['canopy.knows-repeat'] ? [';', ','] : []),
     ...(flags['canopy.knows-t'] ? ['t', 't@'] : []),
-    ...(stageId === 'glades' ? ['}', '{'] : []),
+    ...(['glades', 'gates'].includes(stageId) ? ['}', '{'] : []),
     ...(flags['glades.lamp'] ? ['gg'] : []),
-    ...(flags['glades.rope'] ? ['G'] : [])];
+    ...(flags['glades.rope'] ? ['G'] : []),
+    ...(flags['gates.met-shut'] ? ['%'] : []),
+    ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : [])];
 }
 
 export function pendingKeyLabel(keys: readonly string[]): string {

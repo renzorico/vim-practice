@@ -1,5 +1,5 @@
 import type { Position } from '@escape/engine';
-import { TILE_SIZE } from './palette.js';
+import { TILE_SCALE, TILE_SIZE } from './palette.js';
 
 interface Size {
   readonly width: number;
@@ -12,19 +12,24 @@ export function bufferSize(lines: readonly string[]): Size {
 }
 
 /** World-pixel camera centre; viewSize is in screen pixels, mapSize in cells. */
-export function cameraTarget(mapSize: Size, viewSize: Size, playerCell: Position, zoom: number): {
+export function cameraTarget(mapSize: Size, viewSize: Size, playerCell: Position, zoom: number, rowOffset = 0): {
   readonly x: number;
   readonly y: number;
 } {
-  const axis = (cells: number, viewport: number, player: number): number => {
+  const axis = (cells: number, viewport: number, player: number, offset = 0): number => {
     const extent = cells * TILE_SIZE;
     const halfView = viewport / zoom / 2;
     if (extent <= halfView * 2) return extent / 2;
-    const playerCenter = (player + 0.5) * TILE_SIZE;
+    const playerCenter = (player + 0.5) * TILE_SIZE - offset;
     return Math.max(halfView, Math.min(extent - halfView, playerCenter));
   };
   return {
     x: axis(mapSize.width, viewSize.width, playerCell.col),
-    y: axis(mapSize.height, viewSize.height, playerCell.line),
+    y: axis(mapSize.height, viewSize.height, playerCell.line, rowOffset),
   };
+}
+
+/** The stage's Vim window and the rendered field always have the same row count. */
+export function fieldZoom(height: number, windowHeight?: number): number {
+  return windowHeight === undefined ? TILE_SCALE : height / (windowHeight * TILE_SIZE);
 }

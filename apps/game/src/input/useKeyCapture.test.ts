@@ -29,3 +29,15 @@ it('dispatches 20 synchronous window keydowns through the capture hook and sessi
   expect(session.world.turn).toBe(20);
   expect(session.keys).toBe(20);
 });
+it.each(['d', 'u'])('prevents Ctrl-%s browser shortcuts and forwards Vim notation', letter => {
+  vi.stubGlobal('window', new EventTarget());
+  vi.stubGlobal('HTMLElement', class {});
+  const onKey = vi.fn();
+  useKeyCapture({ captureTab: false, onHint: () => {}, onKey });
+  const event = Object.assign(new Event('keydown', { cancelable: true }), {
+    key: letter, isComposing: false, metaKey: false, ctrlKey: true, altKey: false,
+  });
+  window.dispatchEvent(event);
+  expect(event.defaultPrevented).toBe(true);
+  expect(onKey).toHaveBeenCalledWith(`<C-${letter}>`);
+});

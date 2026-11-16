@@ -6,10 +6,11 @@
       "name": "The Wordwood",
       "stages": [
         "canopy",
-        "glades"
+        "glades",
+        "gates"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "gates",
+      "statue": "R"
     }
   ],
   "openingStage": "canopy",

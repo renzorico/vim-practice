@@ -123,13 +123,13 @@ it.each(['dd', 'io<Esc>'])('bumps fixed when %s changes a fixed clearing', keys 
   expect(result.state.turn).toBe(0);
 });
 
-it('keeps counted scroll on engine errors and restores it on blocked landings', () => {
+it('a failed counted scroll changes nothing: scroll is restored on engine errors and blocked landings', () => {
   const room = stage({ map: Array.from({ length: 10 }, () => 'ooooooo'), start: { line: 9, col: 0 } });
   const error = run('5<C-d>', room);
-  expect(error.state.engine.scroll).toBe(5);
+  expect(error.state.engine.scroll).toBe(0);
   expect(error.state.engine.pendingKeys).toEqual([]);
   expect(error.state.turn).toBe(0);
-  expect(run('5<C-d><C-u>', room).state.engine.cursor.line).toBe(4);
+  expect(run('5<C-d><C-u>', room).state.engine.cursor.line).toBe(0);
   const blockedRoom = stage({ map: ['ooooooo', 'TTTTTTT'], windowHeight: 2 });
   const bump = run('1<C-d>', blockedRoom);
   expect(bump.events).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
