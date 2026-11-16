@@ -5,7 +5,7 @@ import { createWorldSim, playKeys, stageReplayIssue } from '@escape/world';
 import { SKILL_IDS } from '@escape/curriculum';
 import { lintLegend, lintStage } from '../../../../tools/maps/lint.js';
 import { content, gates, gatesLegend, stages } from './content.js';
-import { createSession, GATES_COMMANDS, type Session } from './session.js';
+import { createSession, GATES_COMMANDS, stageCommands, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
 import { readProgress, saveProgress } from './progress.js';
 import { learnedKeycaps } from './PlayScreen.js';
@@ -135,14 +135,19 @@ it('teaches keys by flags and validates, lints and replays the content', () => {
   expect(stageReplayIssue(replay, gates, gatesLegend, { learnedCommands: GATES_COMMANDS, flags: {} })).toBeNull();
   expect(playKeys(replay, gates, gatesLegend, { learnedCommands: GATES_COMMANDS, flags: {} }, gates.solution).state.status).toBe('cleared');
 });
+it('a counted scroll that fails at the top leaves Ctrl-d working', () => {
+  const top = keys(start(), 'h%2l5<C-u>');
+  expect(top.world.engine.scroll).toBe(0);
+  expect(keys(top, '<C-d>').world.engine.cursor).toEqual({ line: 6, col: 5 });
+});
 it('Shut sees the lamps without overlapping his introduction when the player skipped him', () => {
   const lit = dismiss(keys(start(), 'h%<CR>2l25G13G'));
   expect(lit.story.flags['gates.met-shut']).toBeUndefined();
   expect(keys(lit, 'G2h<CR>').queue).toEqual([{ type: 'dialogue', dialogue: 'gates.shut-sees', index: 0 }]);
 });
-it('every bundled stage solution passes the story-aware replay gate', () => {
+it('every bundled stage solution replays with only that stage\'s own commands', () => {
   for (const { stage, legend } of stages) {
     const replay = sessionSolver({ sim, storyEngine, content, stage, legend });
-    expect(stageReplayIssue(replay, stage, legend, { learnedCommands: GATES_COMMANDS, flags: {} }), stage.id).toBeNull();
+    expect(stageReplayIssue(replay, stage, legend, { learnedCommands: stageCommands(stage), flags: {} }), stage.id).toBeNull();
   }
 });

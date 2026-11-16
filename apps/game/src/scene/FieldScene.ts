@@ -137,7 +137,9 @@ export class FieldScene extends Phaser.Scene {
       && ['<C-d>', '<C-u>'].includes(event.command.id));
     if (this.previousState?.stage !== frame.state.stage) this.scrollOffset = 0;
     else if (scroll) this.scrollOffset = center(this.previousState.engine.cursor.line) - this.cameraY;
-    else if (frame.events.some(event => event.type === 'command' && event.command.id === '%')) this.scrollOffset = 0;
+    // Jumps and restores (:e!, death) recentre; walking keeps the row the last scroll left.
+    else if (!frame.events.some(event => event.type === 'command')
+      || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}'].includes(event.command.id))) this.scrollOffset = 0;
     this.frame = frame;
     if (!this.ready) return;
     for (const event of frame.events) {

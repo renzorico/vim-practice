@@ -35,11 +35,13 @@ export function createWorldSim(engine: Engine): WorldSim {
       const result = engine.step(state.engine, key, { allowedCommands, ...(stage.windowHeight === undefined ? {} : { windowHeight: stage.windowHeight }) });
       const commands = [...pending.commands, ...result.commands];
       if (result.error !== null) {
+        // A command that fails changes nothing, a counted scroll's 'scroll' option included: in a
+        // world of landings a silently changed scroll makes every later <C-d> miss.
         events.push({ type: 'engine-error', error: result.error });
         if (result.error.code === 'invalid-range' && ['<C-d>', '<C-u>'].includes(key)) {
           events.push({ type: 'bump', reason: 'edge', at: result.state.cursor });
         }
-        return { state: { ...state, engine: { ...pending.engine, scroll: result.state.scroll }, entities: pending.entities, pending: null }, events };
+        return { state: { ...state, engine: pending.engine, entities: pending.entities, pending: null }, events };
       }
       if (!atRest(result.state)) {
         if (state.engine.lines.join('\n') !== result.state.lines.join('\n')) {

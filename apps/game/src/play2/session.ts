@@ -41,6 +41,10 @@ export function resultData(session: Session) {
   return { keys: session.keys, turns: session.world.turn, hearts: session.world.hearts };
 }
 
+/** The commands a stage accepts: its own list if it has one, else its world's. */
+export function stageCommands(stage: Stage): readonly string[] {
+  return STAGE_COMMANDS[stage.id] ?? WORLD_COMMANDS[stage.world] ?? LEARNED_COMMANDS;
+}
 /** The only bridge between the two pure engines. No Vim behaviour lives here. */
 export function createSession({ sim, storyEngine, stage, legend, content, stages = [{ stage, legend }] }: SessionDependencies) {
   function entry(id: string): SessionStage {
@@ -49,7 +53,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return found;
   }
   function options(story: StoryState, current: Stage) {
-    return { learnedCommands: STAGE_COMMANDS[current.id] ?? WORLD_COMMANDS[current.world] ?? LEARNED_COMMANDS, flags: story.flags };
+    return { learnedCommands: stageCommands(current), flags: story.flags };
   }
   function transition(session: Session): Session {
     if (session.world.status !== 'cleared' || session.queue.length > 0) return session;

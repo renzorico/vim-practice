@@ -465,6 +465,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-16 · D-4: The Twin Gates (3-3), World 3's castle
+**Who:** Fable (design, map, story), Codex (build), Sonnet (review).
+
+**What:** A hollow tree, 37 rows. Shut keeps the bottom gate, Ope the top; one keeper before the Flicker, each now sure he is alone. The gate marks are real brackets: `%` on Shut's `)` lands on Ope's `(`. A second, inner pair leads to a sealed room (nesting). The hollow has a landing every 6 rows and `Stage.windowHeight` is 12, so `<C-d>`/`<C-u>` move landing to landing; the camera scrolls half a screen like Vim. Errand: light the lower trunk lamp, then the upper, tell Shut, go back to Ope. Statue R. Dot says "attention". Learner route 15 turns; par 8 with `65%`/`33%` (real Vim).
+
+**What the checks caught:** Sonnet: a counted scroll that errored at the buffer edge (`5<C-u>` on the top row) spent no turn but set 'scroll' to 5, so every later `<C-d>` landed in air. The world now treats it like any failed command: nothing changes (this reverses one D-2 review decision; the engine itself still follows Vim). A replay test checked every stage with the Gates command list; it now uses each stage's own (`stageCommands`). The camera's scroll offset went stale after `:e!`, `G`, `gg`; jumps and restores now recentre.
+
+**Lesson:** Hidden state is a trap in a turn game. If a failed command can change something the player cannot see, roll it back.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
