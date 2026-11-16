@@ -53,7 +53,7 @@ Options explicitly pinned in `generate.ts`:
 | Selection | `selection=inclusive selectmode= virtualedit=` |
 | Whitespace | `tabstop=8 shiftwidth=8 softtabstop=0 noexpandtab textwidth=0 wrapmargin=0 formatoptions=nrq` |
 | Buffer | `encoding=utf-8 fileencoding=utf-8 nomodeline noswapfile noundofile`, undo levels restored to 1000 after initialization |
-| Viewport | `lines=24 columns=80 scroll=11 scrolloff=0 sidescrolloff=0` |
+| Viewport | `lines=30 columns=80 scroll=14 scrolloff=0 sidescrolloff=0` |
 
 Page motions use that fixed viewport; they cannot be compared against a different
 viewport configuration. Cases must not quit Neovim or wait for external input (such

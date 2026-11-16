@@ -22,6 +22,8 @@ const INSERT_KEYS = new Set(['i', 'a', 'I', 'A', 'o', 'O']);
 /** Simple commands that change the buffer, so '.' can repeat them. */
 const CHANGE_COMMANDS = new Set(['x', 'X', 'r', 'p', 'P', 'D', 'C', 'J']);
 const MAX_COUNT = 99_999;
+const DEFAULT_WINDOW_HEIGHT = 28;
+const SCROLL_COMMANDS = new Set(['<C-d>', '<C-u>']);
 
 type Parsed =
   | { readonly kind: 'incomplete' }
@@ -108,6 +110,7 @@ export function parseNormal(keys: readonly Key[]): Parsed {
     const arg = keys[index + 1];
     return arg === undefined ? INCOMPLETE : { kind: 'command', ...base, id: key, arg };
   }
+  if (SCROLL_COMMANDS.has(key)) return { kind: 'command', ...base, id: key };
   if (INSERT_KEYS.has(key) || ['v', 'V', ':', '/', '?', '.', '<Esc>'].includes(key)) {
     return { kind: 'command', ...base, id: key };
   }
@@ -208,6 +211,21 @@ function runOperator(
   return fn(patched, range, register);
 }
 
+/** Half-screen scrolling preserves Vim's wanted column, even on a short landing row. */
+function stepScroll(state: EngineState, id: string, count: number | null, keys: readonly Key[], options: EngineOptions | undefined): StepResult {
+  const windowHeight = options?.windowHeight ?? DEFAULT_WINDOW_HEIGHT;
+  // Neovim caps an explicit scroll count at the window height.
+  const scroll = count === null ? state.scroll : Math.min(count, windowHeight);
+  const amount = scroll || Math.floor(windowHeight / 2);
+  const line = Math.max(0, Math.min(state.lines.length - 1, state.cursor.line + (id === '<C-d>' ? amount : -amount)));
+  const next = { ...state, scroll, pendingKeys: [] };
+  if (line === state.cursor.line) {
+    return result(next, [], { code: 'invalid-range', message: 'Cannot scroll further.' });
+  }
+  const col = Math.min(state.desiredCol, Math.max(0, (state.lines[line]?.length ?? 0) - 1));
+  return result({ ...next, cursor: { line, col } }, [record(id, 'motion', keys, count, null, null)]);
+}
+
 function stepNormal(state: EngineState, key: Key, options: EngineOptions | undefined): StepResult {
   const keys = [...state.pendingKeys, key];
   const parsed = parseNormal(keys);
@@ -233,6 +251,7 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
     const motion = id === `${operator}${operator}` ? null : id;
     return result(next, [record(commandId, 'operator', keys, total, register, motion)], outcome.error);
   }
+  if (SCROLL_COMMANDS.has(id)) return stepScroll(clean, id, count, keys, options);
   if (id === '<Esc>') return result(clean);
   if (INSERT_KEYS.has(id)) {
     const before = id === 'o' || id === 'O' ? clean : pushUndo(clean);
@@ -352,6 +371,10 @@ function stepVisual(state: EngineState, key: Key, options: EngineOptions | undef
   // Any other key is a motion that moves the cursor while the anchor stays put.
   const keys = [...state.pendingKeys, key];
   const { count, next } = readCount(keys, 0);
+  if (SCROLL_COMMANDS.has(keys[next] ?? '')) {
+    const id = keys[next] ?? '';
+    return isAllowed(id, options) ? stepScroll(state, id, count, keys, options) : result(state, [], notAllowed(id));
+  }
   const motion = parseMotion(keys, next);
   if (motion === 'incomplete') return result({ ...state, pendingKeys: keys });
   if (motion === 'invalid') return result({ ...state, pendingKeys: [] });

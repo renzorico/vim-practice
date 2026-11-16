@@ -73,6 +73,11 @@ export interface EngineState {
   readonly changeInProgress: readonly Key[] | null;
   /** Last f/F/t/T search, repeated by ';' and ','. */
   readonly lastFind: { readonly command: 'f' | 'F' | 't' | 'T'; readonly char: string } | null;
+  /**
+   * Vim's 'scroll' option: lines moved by <C-d> and <C-u>. 0 (the init value) means half of
+   * EngineOptions.windowHeight, rounded down. A count on <C-d>/<C-u> sets it first, as in Vim.
+   */
+  readonly scroll: number;
 }
 
 export interface Snapshot {
@@ -156,6 +161,13 @@ export interface StepResult {
 export interface EngineOptions {
   /** If set, commands outside this list are rejected with 'not-allowed'. Levels use this to restrict tools. */
   readonly allowedCommands?: readonly string[];
+  /**
+   * Rows of buffer the window shows (Vim's window height). Used by <C-d>/<C-u> when `scroll` is 0.
+   * Default 28 (Neovim with `lines=30`, which the golden runner uses).
+   * <C-d> moves the cursor down `scroll` lines, clamped to the last line (an error with no move when
+   * already there); <C-u> likewise up. The column follows Neovim 0.11, proven by golden cases.
+   */
+  readonly windowHeight?: number;
 }
 
 /** The single entry point every module plugs into. */

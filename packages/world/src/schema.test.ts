@@ -205,3 +205,15 @@ describe('parseStage', () => {
     expect(parsed.triggers[0]).toMatchObject({ onlyIf: 'fixture.bridge-mended' });
   });
 });
+
+it('parses emptyRow with normal tile rules and omits it when absent', () => {
+  expect(parseLegend({ ...FIXTURE_LEGEND, emptyRow: FIXTURE_LEGEND.fallback }).emptyRow).toEqual(FIXTURE_LEGEND.fallback);
+  expect(parseLegend(FIXTURE_LEGEND)).not.toHaveProperty('emptyRow');
+  expect(() => parseLegend({ ...FIXTURE_LEGEND, emptyRow: { ...FIXTURE_LEGEND.fallback, walkable: 'yes' } })).toThrow();
+});
+
+it('accepts only positive integer window heights and omits absent heights', () => {
+  expect(parseStage({ ...FIXTURE_STAGE, windowHeight: 10 }).windowHeight).toBe(10);
+  expect(parseStage(FIXTURE_STAGE)).not.toHaveProperty('windowHeight');
+  for (const windowHeight of [0, -1, 1.5]) expect(() => parseStage({ ...FIXTURE_STAGE, windowHeight })).toThrow();
+});

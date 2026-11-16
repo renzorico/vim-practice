@@ -132,3 +132,25 @@ describe('Neovim golden generation (requires nvim)', () => {
     }
   });
 });
+
+
+it.each([-1, 1.5, '14', null])('rejects malformed expect.scroll %s before writing', async scroll => {
+  const directory = await mkdtemp(join(tmpdir(), 'golden-scroll-'));
+  try {
+    const file = join(directory, 'case.json');
+    const original = JSON.stringify([{ name: 'bad scroll', lines: ['o'], cursor: [0, 0], keys: '',
+      expect: { lines: ['o'], cursor: [0, 0], mode: 'n', scroll } }]);
+    await writeFile(file, original);
+    await expect(generateFile(file)).rejects.toThrow('invalid expect');
+    expect(await readFile(file, 'utf8')).toBe(original);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it.each([['<C-d>', 14], ['v3<C-d>', 3], ['d3<C-d>', 14]] as const)(
+  'records effective scroll for %s', async (keys, scroll) => {
+    expect(await captureNeovim({ name: 'scroll', lines: Array.from({ length: 30 }, () => 'abc'),
+      cursor: [0, 0], keys })).toMatchObject({ scroll });
+  },
+);

@@ -47,6 +47,6 @@ function duplicateIssues(legend: Legend): LintIssue[] {
 
 /** Checks the legend convention for every tile and the fallback, and that no character repeats. */
 export function checkLegend(legend: Legend): LintIssue[] {
-  const tileIssues = [...legend.tiles, legend.fallback].flatMap(conventionIssues);
+  const tileIssues = [...legend.tiles, legend.fallback, ...(legend.emptyRow === undefined ? [] : [legend.emptyRow])].flatMap(conventionIssues);
   return [...duplicateIssues(legend), ...tileIssues];
 }

@@ -1,7 +1,7 @@
 import type { EngineState, Position, TextEdit } from '@escape/engine';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldState } from '../types.js';
 import { blocked, inside, nearestFreeCell } from './movement.js';
-import { changedRows, deleteRowEdit, mapOffset, offsetAt, positionAt, remapEntities } from './remap.js';
+import { changedRows, deleteRowEdit, offsetAt, remapPosition, remapEntities } from './remap.js';
 
 export function changeBuffer(state: WorldState, lines: readonly string[], legend: Legend, events: WorldEvent[],
   by: 'player' | 'effect' | 'entity', edits: readonly TextEdit[], engine?: EngineState): WorldState {
@@ -10,10 +10,8 @@ export function changeBuffer(state: WorldState, lines: readonly string[], legend
   events.push({ type: 'rows-changed', ...changedRows(before.lines, edits), lineDelta: lines.length - before.lines.length, by });
   const entities = remapEntities(before.lines, lines, state.entities, legend, events, edits);
   if (engine !== undefined) return { ...state, engine, entities };
-  const mapPosition = (at: Position): Position | null => {
-    const offset = mapOffset(offsetAt(before.lines, at), edits);
-    return offset === null ? null : positionAt(lines, offset);
-  };
+  const mapPosition = (at: Position): Position | null =>
+    remapPosition(before.lines, lines, at, edits, legend.emptyRow !== undefined);
   const marks: Record<string, Position> = {};
   for (const [name, at] of Object.entries(before.marks)) {
     const mapped = mapPosition(at);

@@ -16,18 +16,19 @@ export function tileFor(legend: Legend, char: string): TileDef {
 
 /** The tile at a cell, or undefined when the cell does not exist. */
 export function tileAt(stage: Stage, legend: Legend, cell: Position): TileDef | undefined {
+  if (stage.map[cell.line] === '' && cell.col === 0) return legend.emptyRow;
   const char = cellChar(stage, cell);
   return char === undefined ? undefined : tileFor(legend, char);
 }
 
 /** Whether every cell of an inclusive area exists. Returns the first problem found, if any. */
-export function areaProblem(stage: Stage, area: Area): AreaProblem | undefined {
+export function areaProblem(stage: Stage, area: Area, legend?: Legend): AreaProblem | undefined {
   if (area.from.line > area.to.line || area.from.col > area.to.col) {
     return 'reversed';
   }
   for (let lineIndex = area.from.line; lineIndex <= area.to.line; lineIndex += 1) {
     const row = stage.map[lineIndex];
-    if (row === undefined || area.from.col < 0 || row.length <= area.to.col) {
+    if (row === undefined || area.from.col < 0 || (row === '' && legend?.emptyRow !== undefined ? 1 : row.length) <= area.to.col) {
       return 'outside';
     }
   }

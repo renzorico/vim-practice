@@ -1,7 +1,7 @@
 import type { Entity, Legend, WorldEvent, WorldState } from '../types.js';
 import { changeBuffer } from './effects.js';
 import { blocked, distance } from './movement.js';
-import { deleteRowEdit, offsetAt, tile } from './remap.js';
+import { deleteRowEdit, offsetAt, tileAt } from './remap.js';
 
 export function actEntities(state: WorldState, legend: Legend, events: WorldEvent[]): WorldState {
   let next = state;
@@ -62,7 +62,7 @@ export function actEntities(state: WorldState, legend: Legend, events: WorldEven
       }
     }
   }
-  const damage = tile(legend, next.engine.lines[next.engine.cursor.line]?.[next.engine.cursor.col]).damage ?? 0;
+  const damage = tileAt(legend, next.engine.lines, next.engine.cursor)?.damage ?? 0;
   if (damage > 0) {
     next = { ...next, hearts: Math.max(0, next.hearts - damage) };
     events.push({ type: 'player-hit', by: 'tile', hearts: next.hearts });

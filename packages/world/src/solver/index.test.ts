@@ -432,3 +432,53 @@ it('searches dot using a real saved last change', () => {
   expect(solution?.turns).toBe(4);
   expect(solution?.keys).toEqual(['.', '.', '.']);
 });
+
+describe('clearings and half-screen routes', () => {
+  const clearingLegend = { ...legend, emptyRow: { ...legend.fallback, char: ' ', kind: 'ground', walkable: true, fixed: false } as const };
+  it.each([
+    ['}', ['o', 'T', '', 'T', ''], 0, 4],
+    ['{', ['', 'T', '', 'T', 'o'], 4, 0],
+  ] as const)('finds %s routes through clearings', (command, map, startLine, endLine) => {
+    const room = stage({ map, start: { line: startLine, col: 0 }, clear: [{ type: 'reach', area: area(endLine, 0) }] });
+    const settings = { learnedCommands: [command], flags: {} };
+    const solution = solveStage(sim, room, clearingLegend, settings, { maxTurns: 1 });
+    expect(solution?.turns).toBe(1);
+    expect(solution?.keys).toEqual(['2', command]);
+    expect(playKeys(sim, room, clearingLegend, settings, solution?.keys ?? []).state.status).toBe('cleared');
+    expect(solveStage(sim, room, legend, settings, { maxTurns: 2 })).toBeNull();
+  });
+  it.each([['<C-d>', 0, 3], ['<C-u>', 3, 0]] as const)('searches counted %s including count one', (command, startLine, endLine) => {
+    const room = stage({ map: ['o', 'T', 'T', 'o'], start: { line: startLine, col: 0 },
+      clear: [{ type: 'reach', area: area(endLine, 0) }], windowHeight: 10 });
+    const settings = { learnedCommands: [command], flags: {} };
+    const solution = solveStage(sim, room, legend, settings, { maxTurns: 1 });
+    expect(solution?.turns).toBe(1);
+    expect(playKeys(sim, room, legend, settings, solution?.keys ?? []).state.status).toBe('cleared');
+    const adjacent = { ...room, map: ['o', 'o', 'T', 'T'], start: { line: 0, col: 0 },
+      clear: [{ type: 'reach' as const, area: area(1, 0) }] };
+    const adjacentSolution = solveStage(sim, adjacent, legend, { learnedCommands: ['<C-d>'], flags: {} }, { maxTurns: 1 });
+    expect(adjacentSolution?.keys).toEqual(['1', '<C-d>']);
+  });
+});
+
+it('caps scroll counts at the window height and coalesces implicit half-height scroll', () => {
+  const counts: (number | null)[] = [];
+  const expandedScrolls: number[] = [];
+  const observed: WorldSim = { ...sim, step(state, key, room, tiles, settings) {
+    if (state.turn === 1 && state.engine.cursor.line === 1 && state.engine.pendingKeys.length === 0) {
+      expandedScrolls.push(state.engine.scroll);
+    }
+    const result = sim.step(state, key, room, tiles, settings);
+    for (const event of result.events) {
+      if (event.type === 'command' && event.command.id === '<C-d>') counts.push(event.command.count);
+    }
+    return result;
+  } };
+  const room = stage({ map: Array.from({ length: 40 }, () => 'o'), windowHeight: 2,
+    clear: [{ type: 'flag', flag: 'unreachable' }] });
+  expect(solveStage(observed, room, legend, { learnedCommands: ['<C-d>'], flags: {} },
+    { maxTurns: 1, maxExpanded: 100 })).toBeNull();
+  expect(new Set(counts)).toEqual(new Set([null, 1, 2]));
+  expect(expandedScrolls.length).toBeGreaterThan(0);
+  expect(new Set(expandedScrolls)).toEqual(new Set([0]));
+});

@@ -20,3 +20,12 @@ it('reports an exhausted budget without claiming an optimum', () => {
     maxKeys: 6, maxExpanded: 1, alphabet: ['i', 'd', 'o', 'r', '<Esc>'],
   })).toEqual({ solution: null, expanded: 1, exhausted: true });
 });
+
+it.each([undefined, ['<C-d>']])('searches with the stage window height and command restrictions %s', allowedCommands => {
+  const roomScript: Script = { ...script, startLines: Array.from({ length: 30 }, () => 'o'),
+    goals: [{ type: 'reach', target: { line: 5, col: 0 } }],
+    ...(allowedCommands === undefined ? {} : { allowedCommands }) };
+  const limits = { maxKeys: 1, maxExpanded: 10, alphabet: ['<C-d>'] };
+  expect(searchScript(createEngine(), roomScript, limits, 10).solution).toEqual(['<C-d>']);
+  expect(searchScript(createEngine(), roomScript, limits).solution).toBeNull();
+});

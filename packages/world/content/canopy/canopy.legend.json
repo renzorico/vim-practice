@@ -1,0 +1,77 @@
+{
+  "id": "wordwood",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "trunk",
+    "walkable": false,
+    "fixed": true,
+    "label": "trunk"
+  },
+  "tiles": [
+    {
+      "char": "=",
+      "kind": "ground",
+      "sprite": "branch",
+      "walkable": true,
+      "fixed": false,
+      "label": "branch"
+    },
+    {
+      "char": "*",
+      "kind": "ground",
+      "sprite": "knot",
+      "walkable": true,
+      "fixed": false,
+      "label": "knot"
+    },
+    {
+      "char": "v",
+      "kind": "ground",
+      "sprite": "leaves",
+      "walkable": true,
+      "fixed": false,
+      "label": "leafy branch"
+    },
+    {
+      "char": "_",
+      "kind": "barrier",
+      "sprite": "air",
+      "walkable": false,
+      "fixed": true,
+      "label": "open air"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "trunk",
+      "walkable": false,
+      "fixed": true,
+      "label": "trunk"
+    },
+    {
+      "char": "H",
+      "kind": "ground",
+      "sprite": "ladder",
+      "walkable": true,
+      "fixed": true,
+      "label": "rope ladder"
+    },
+    {
+      "char": "@",
+      "kind": "barrier",
+      "sprite": "thorns",
+      "walkable": false,
+      "fixed": true,
+      "label": "thorns"
+    },
+    {
+      "char": "D",
+      "kind": "ground",
+      "sprite": "platform",
+      "walkable": true,
+      "fixed": true,
+      "label": "lift platform"
+    }
+  ]
+}
