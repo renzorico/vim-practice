@@ -71,7 +71,8 @@ it('replays the best-known 38 keys with the real engine and clears without a fie
   expect(stamp).not.toContain('FIELD');
   expect(screen(controller.reduce(session, '<CR>'))).toContain('End of World 2.');
   session = dismiss(session);
-  expect(screen(session)).toContain('To be continued.');
+  expect(session.world.stage).toBe('canopy');
+  expect(screen(session)).not.toContain('To be continued.');
 });
 it('undo recovers a wrong edit and leaves the script open', () => {
   const session = keys(start(), 'xu');

@@ -12,7 +12,7 @@ vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
 const dependencies = { sim, storyEngine, content, stage: shaft, legend: shaftLegend };
-const controller = createSession({ ...dependencies, stages: stages.filter(entry => entry.stage.id !== 'ledger') });
+const controller = createSession({ ...dependencies, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'shaft') + 1) });
 const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
 function dismiss(session: Session): Session {
   let next = session;

@@ -443,6 +443,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-16 · D-1: The Canopy Road (3-1), World 3 begins
+**Who:** Opus (design, map, story), Codex (build), Sonnet (review).
+
+**What:** After the Mason's Ledger, the Wordwood. Branches hang in open air; walking cannot cross a gap, but `f t ; ,` only check where they land. `fH` jumps to the ladder across every gap, `,` runs the last find backwards on the next tier, `t@` stops one short of thorns, `fD` reaches the lift. Par 7 (`fH 2j , 2j t@ 2j fD`), proven over every learned motion; the World 1-2 motions need 14. Fern teaches `f`, Dot teaches `,`, a knothole shows the same wood as saplings (twin seed).
+
+**What the checks caught:** Codex relaxed the legend linter for Wordwood; the real error was the legend's tile kinds, which encode Vim word classes (`object` = letters, digits, `_`; `barrier` = punctuation). Fixed the legend, dropped the special case. Sonnet: `3x` deleted the lift's cell (softlock), and `x` misaligned ladders. Every Wordwood tile is now fixed: nothing in this world needs deleting, and with edits inert the par proof is complete.
+
+**Lesson:** When edits are not the lesson, make the world fixed. It removes a whole class of traps and lets the solver prove par.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

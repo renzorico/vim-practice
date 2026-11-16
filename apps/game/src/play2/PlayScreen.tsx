@@ -48,9 +48,9 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
-      <span aria-label="Learned commands">{learnedKeycaps(session.story.flags).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
+      <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text').map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys">{(world.script?.engine ?? world.engine).pendingKeys.join('') || '\u00a0'}</output>
+      <output aria-label="Pending keys">{pendingKeyLabel((world.script?.engine ?? world.engine).pendingKeys)}</output>
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
@@ -82,7 +82,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
     ?? content.dialogues.find(dialogue => dialogue.id === 'margin.death-hint'))?.lines[0]?.text ?? '';
 }
 
-export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readonly string[] {
+export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true): readonly string[] {
   return ['h', 'j', 'k', 'l', ...(flags['margin.knows-counts'] ? ['3l'] : []),
     ...(flags['lowlands.knows-w'] ? ['w', 'b'] : []),
     ...(flags['lowlands.knows-dollar'] ? ['$', '0'] : []),
@@ -91,5 +91,13 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>): readon
     ...(flags['cut.knows-dd'] ? ['dd'] : []),
     ...(flags['cut.knows-u'] ? ['u'] : []),
     ...(flags['shaft.knows-dot'] ? ['.'] : []),
-    ...(flags['ledger.knows-o'] ? ['o', 'D'] : [])];
+    ...(textStage && flags['ledger.knows-o'] ? ['o', 'D'] : []),
+    ...(flags['canopy.knows-f'] ? ['f', 'fH'] : []),
+    ...(flags['canopy.knows-repeat'] ? [';', ','] : []),
+    ...(flags['canopy.knows-t'] ? ['t', 't@'] : [])];
+}
+
+export function pendingKeyLabel(keys: readonly string[]): string {
+  const pending = keys.join('');
+  return pending ? `${pending}${/[ft]$/.test(pending) ? '…' : ''}` : '\u00a0';
 }
