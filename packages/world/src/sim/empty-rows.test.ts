@@ -96,3 +96,42 @@ describe('field half-screen jumps', () => {
     expect(result.events).toContainEqual({ type: 'engine-error', error: { code: 'invalid-range', message: 'Cannot scroll further.' } });
   });
 });
+
+it.each(['player', 'set-rows'])('keeps an empty-row entity at column zero after %s insertion', source => {
+  const def = FIXTURE_STAGE.entities[0];
+  if (def === undefined) throw new Error('Missing entity fixture');
+  const room = stage({ start: { line: 1, col: 0 }, entities: [
+    { ...def, at: { line: 1, col: 0 }, behaviour: { type: 'still' }, damage: 0, solid: false },
+  ] });
+  const settings = { ...options, learnedCommands: [...options.learnedCommands, 'i'] };
+  const result = source === 'player'
+    ? playKeys(sim, room, legend, settings, parseKeys('ioo<Esc>'))
+    : sim.apply(sim.init(room, legend, settings), [{ type: 'set-rows', fromLine: 1, lines: ['oo'] }], room, legend);
+  expect(result.state.engine.lines).toEqual(['ooooooo', 'oo', 'ooooooo']);
+  expect(result.state.entities[0]?.at).toEqual({ line: 1, col: 0 });
+  expect(result.events.some(event => event.type === 'entity-removed')).toBe(false);
+});
+
+it.each(['dd', 'io<Esc>'])('bumps fixed when %s changes a fixed clearing', keys => {
+  const room = stage({ start: { line: 1, col: 0 } });
+  const tiles = { ...legend, emptyRow: { ...clearing, fixed: true } };
+  const settings = { ...options, learnedCommands: [...options.learnedCommands, 'i'] };
+  const initial = sim.init(room, tiles, settings);
+  const result = playKeys(sim, room, tiles, settings, parseKeys(keys));
+  expect(result.events).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'fixed' }));
+  expect(result.state.engine).toEqual(initial.engine);
+  expect(result.state.turn).toBe(0);
+});
+
+it('keeps counted scroll on engine errors and restores it on blocked landings', () => {
+  const room = stage({ map: Array.from({ length: 10 }, () => 'ooooooo'), start: { line: 9, col: 0 } });
+  const error = run('5<C-d>', room);
+  expect(error.state.engine.scroll).toBe(5);
+  expect(error.state.engine.pendingKeys).toEqual([]);
+  expect(error.state.turn).toBe(0);
+  expect(run('5<C-d><C-u>', room).state.engine.cursor.line).toBe(4);
+  const blockedRoom = stage({ map: ['ooooooo', 'TTTTTTT'], windowHeight: 2 });
+  const bump = run('1<C-d>', blockedRoom);
+  expect(bump.events).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
+  expect(bump.state.engine).toEqual(sim.init(blockedRoom, legend, options).engine);
+});

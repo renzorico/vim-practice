@@ -39,7 +39,7 @@ export function createWorldSim(engine: Engine): WorldSim {
         if (result.error.code === 'invalid-range' && ['<C-d>', '<C-u>'].includes(key)) {
           events.push({ type: 'bump', reason: 'edge', at: result.state.cursor });
         }
-        return { state: { ...state, engine: pending.engine, entities: pending.entities, pending: null }, events };
+        return { state: { ...state, engine: { ...pending.engine, scroll: result.state.scroll }, entities: pending.entities, pending: null }, events };
       }
       if (!atRest(result.state)) {
         if (state.engine.lines.join('\n') !== result.state.lines.join('\n')) {

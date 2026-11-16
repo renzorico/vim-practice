@@ -69,7 +69,7 @@ export async function captureNeovim(testCase: Case): Promise<Expectation> {
     if (typeof result !== 'string') throw new Error('Neovim returned a non-JSON result');
     const captured = JSON.parse(Buffer.from(result, 'hex').toString('utf8')) as Expectation;
     return { lines: captured.lines, cursor: captured.cursor, mode: captured.mode,
-      ...(/\d+<C-[du]>/.test(testCase.keys) ? { scroll: captured.scroll } : {}),
+      ...(/<C-[du]>/.test(testCase.keys) ? { scroll: captured.scroll } : {}),
     };
   } catch (error) {
     if (timedOut) {
@@ -106,7 +106,9 @@ function assertCases(value: unknown, file: string): asserts value is Case[] {
     assertSupportedKeys(item.keys);
     if (item.expect !== undefined) {
       const expected = item.expect as Record<string, unknown> | null;
-      if (!expected || !lines(expected.lines) || !position(expected.cursor) || typeof expected.mode !== 'string') {
+      if (!expected || !lines(expected.lines) || !position(expected.cursor) || typeof expected.mode !== 'string'
+        || (expected.scroll !== undefined && (typeof expected.scroll !== 'number'
+          || !Number.isInteger(expected.scroll) || expected.scroll < 0))) {
         throw new Error(`${file}: invalid expect for ${item.name}`);
       }
     }

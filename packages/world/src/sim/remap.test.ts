@@ -72,3 +72,9 @@ it('keeps an entity on an empty row when the following final row is deleted', ()
   expect(remapEntities(['o', '', 'oo'], ['o', ''], [clearing], clearingLegend, [], [{ start: 2, removed: 3, inserted: '' }])[0]?.at)
     .toEqual({ line: 1, col: 0 });
 });
+
+it('allows fixed clearings to shift when preceding text is removed', () => {
+  const tiles = { ...legend, emptyRow: { ...legend.fallback, fixed: true } };
+  expect(fixedChanged(['oo', '', 'oo'], ['', 'oo'], tiles, [{ start: 0, removed: 3, inserted: '' }])).toBe(false);
+  expect(fixedChanged(['o', '', ''], ['o', ''], tiles, [{ start: 2, removed: 1, inserted: '' }])).toBe(true);
+});

@@ -81,3 +81,10 @@ describe('runGolden', () => {
     expect(runGolden(fakeEngine(), [{ ...base, expect: { ...base.expect!, mode: 'unsupported-mode' } }])[0]?.passed).toBe(false);
   });
 });
+
+
+it('compares recorded scroll using the effective half-height for the zero sentinel', () => {
+  expect(runGolden(fakeEngine(), [{ ...base, expect: { lines: ['abc'], cursor: [0, 1], mode: 'n', scroll: 14 } }])[0]?.passed).toBe(true);
+  expect(runGolden(fakeEngine(), [{ ...base, expect: { lines: ['abc'], cursor: [0, 1], mode: 'n', scroll: 3 } }])[0])
+    .toMatchObject({ passed: false, differences: ['scroll'] });
+});

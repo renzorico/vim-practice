@@ -15,7 +15,7 @@ interface ScriptSearchResult {
 }
 
 /** Bounded breadth-first search by individual keys. All Vim semantics stay in Engine.step. */
-export function searchScript(engine: Engine, script: Script, limits: ScriptSearchLimits): ScriptSearchResult {
+export function searchScript(engine: Engine, script: Script, limits: ScriptSearchLimits, windowHeight?: number): ScriptSearchResult {
   interface Node {
     readonly state: EngineState;
     readonly keys: readonly Key[];
@@ -39,8 +39,10 @@ export function searchScript(engine: Engine, script: Script, limits: ScriptSearc
     if (expanded >= limits.maxExpanded) return { solution: null, expanded, exhausted: true };
     expanded += 1;
     for (const key of alphabet) {
-      const result = script.allowedCommands === undefined ? engine.step(node.state, key)
-        : engine.step(node.state, key, { allowedCommands: script.allowedCommands });
+      const result = engine.step(node.state, key, {
+        ...(windowHeight === undefined ? {} : { windowHeight }),
+        ...(script.allowedCommands === undefined ? {} : { allowedCommands: script.allowedCommands }),
+      });
       if (result.error || result.state.quitRequested) continue;
       const skills = [...new Set([...node.skills, ...usedSkills(result.commands)])].sort();
       const next: Node = { state: result.state, keys: [...node.keys, key], skills };

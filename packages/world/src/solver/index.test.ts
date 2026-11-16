@@ -460,3 +460,25 @@ describe('clearings and half-screen routes', () => {
     expect(adjacentSolution?.keys).toEqual(['1', '<C-d>']);
   });
 });
+
+it('caps scroll counts at the window height and coalesces implicit half-height scroll', () => {
+  const counts: (number | null)[] = [];
+  const expandedScrolls: number[] = [];
+  const observed: WorldSim = { ...sim, step(state, key, room, tiles, settings) {
+    if (state.turn === 1 && state.engine.cursor.line === 1 && state.engine.pendingKeys.length === 0) {
+      expandedScrolls.push(state.engine.scroll);
+    }
+    const result = sim.step(state, key, room, tiles, settings);
+    for (const event of result.events) {
+      if (event.type === 'command' && event.command.id === '<C-d>') counts.push(event.command.count);
+    }
+    return result;
+  } };
+  const room = stage({ map: Array.from({ length: 40 }, () => 'o'), windowHeight: 2,
+    clear: [{ type: 'flag', flag: 'unreachable' }] });
+  expect(solveStage(observed, room, legend, { learnedCommands: ['<C-d>'], flags: {} },
+    { maxTurns: 1, maxExpanded: 100 })).toBeNull();
+  expect(new Set(counts)).toEqual(new Set([null, 1, 2]));
+  expect(expandedScrolls.length).toBeGreaterThan(0);
+  expect(new Set(expandedScrolls)).toEqual(new Set([0]));
+});

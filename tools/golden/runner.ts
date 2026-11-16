@@ -24,6 +24,8 @@ export interface Result {
   readonly differences: readonly string[];
 }
 
+const GOLDEN_WINDOW_HEIGHT = 28;
+
 const MODES: Readonly<Record<string, Mode>> = {
   n: 'normal', i: 'insert', v: 'visual', V: 'visual-line',
   '\u0016': 'visual-block', c: 'command-line', no: 'operator-pending',
@@ -50,7 +52,7 @@ export function runGolden(engine: Engine, cases: Case[]): Result[] {
       state = result.state;
     }
     const actual: Expectation = {
-      lines: [...state.lines], cursor: [state.cursor.line, state.cursor.col], mode: state.mode, scroll: state.scroll,
+      lines: [...state.lines], cursor: [state.cursor.line, state.cursor.col], mode: state.mode, scroll: state.scroll || Math.floor(GOLDEN_WINDOW_HEIGHT / 2),
     };
     const expected = testCase.expect;
     const differences: string[] = [...editDifferences];

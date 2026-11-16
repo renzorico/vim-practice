@@ -77,7 +77,7 @@ const SATURATING = new Set([
 
 /** Generate counts lazily; feedback is the simulated identity, or null for a rejection. */
 function* fieldActions(
-  state: WorldState, commands: readonly string[], legend: Legend,
+  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number,
 ): Generator<readonly Key[], void, string | null> {
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map((line) => line.length));
@@ -108,7 +108,7 @@ function* fieldActions(
     }
     if (command === '<C-d>' || command === '<C-u>') {
       yield [command];
-      for (let count = 1; count <= state.engine.lines.length; count += 1) yield [...String(count), command];
+      for (let count = 1; count <= Math.min(state.engine.lines.length, windowHeight); count += 1) yield [...String(count), command];
       continue;
     }
     if (!MOTIONS.has(command)) continue;
@@ -156,10 +156,10 @@ function periodFor(stage: Stage): number {
   return entities.reduce((period, entity) => period / gcd(period, entity.every) * entity.every, 1);
 }
 
-function identity(state: WorldState, period: number, history: boolean): string {
+function identity(state: WorldState, period: number, history: boolean, windowHeight: number): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll, engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
@@ -177,12 +177,13 @@ export function solveStage(
   const commands = options.learnedCommands.filter((command) => stage.allowedCommands === undefined
     || stage.allowedCommands.includes(command));
   const period = periodFor(stage);
+  const windowHeight = stage.windowHeight ?? 28;
   // Undo/redo futures depend on snapshots, even when current text and cursor match.
   const history = commands.includes('u') || commands.includes('<C-r>');
   const initial = sim.init(stage, legend, options);
   const frontier = new Frontier();
   let order = 0;
-  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history), order: order++ };
+  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
   let expanded = 0;
@@ -202,7 +203,7 @@ export function solveStage(
       })();
     } else {
       actions = (function* () {
-        yield* fieldActions(node.state, commands, legend);
+        yield* fieldActions(node.state, commands, legend, windowHeight);
         if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) yield ['<CR>'];
       })();
     }
@@ -230,12 +231,12 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
-      if (!rejected) feedback = identity(state, period, history);
+      if (!rejected) feedback = identity(state, period, history, windowHeight);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight), order: order++ };
       const sibling = successors.get(next.identity);
       if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
     }

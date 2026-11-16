@@ -2,7 +2,7 @@ import type { Position } from '@escape/engine';
 import type { Area, EntitySpawn, Legend, Stage } from '@escape/world';
 import { spawnedEntities } from './entities';
 import { areaProblem, describeCell, tileAt } from './grid';
-import { errorIssue, warningIssue, type LintIssue } from './issue';
+import { errorIssue, type LintIssue } from './issue';
 
 /** The map needs at least one row; empty rows need a clearing tile to be reachable. */
 export function checkRows(stage: Stage, legend?: Legend): LintIssue[] {
@@ -10,7 +10,7 @@ export function checkRows(stage: Stage, legend?: Legend): LintIssue[] {
     return [errorIssue('map-empty', 'The map has no rows.')];
   }
   return stage.map.flatMap((row, lineIndex) =>
-    row.length === 0 && legend?.emptyRow === undefined ? [warningIssue('row-empty', `Row ${lineIndex} is empty and unreachable without legend.emptyRow.`)] : [],
+    row.length === 0 && legend?.emptyRow === undefined ? [errorIssue('row-empty', `Row ${lineIndex} is empty and unreachable without legend.emptyRow.`)] : [],
   );
 }
 

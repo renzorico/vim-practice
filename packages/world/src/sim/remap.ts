@@ -44,7 +44,10 @@ export function remapPosition(before: readonly string[], after: readonly string[
       && (offset === text.length || text[offset] === '\n');
     const deletesSuffix = edit.removed > 0 && edit.inserted === ''
       && edit.start + edit.removed === text.length && text[edit.start] === '\n';
-    if (onEmptyRow && deletesSuffix) {
+    if (onEmptyRow && edit.start === offset && edit.removed === 0 && edit.inserted.length > 0
+      && !edit.inserted.startsWith('\n')) {
+      // The virtual cell becomes the first inserted character, not the displaced newline.
+    } else if (onEmptyRow && deletesSuffix) {
       // The row ending at edit.start survives; every following row is deleted.
       if (offset > edit.start) return null;
       if (offset < edit.start) offset = mapOffset(offset, [edit]);
@@ -91,6 +94,13 @@ export function deleteRowEdit(lines: readonly string[], line: number): readonly 
 }
 
 export function fixedChanged(before: readonly string[], after: readonly string[], legend: Legend, edits: readonly TextEdit[]): boolean {
+  if (legend.emptyRow?.fixed) {
+    for (const [line, row] of before.entries()) {
+      if (row !== '') continue;
+      const mapped = remapPosition(before, after, { line, col: 0 }, edits, true);
+      if (mapped === null || after[mapped.line] !== '') return true;
+    }
+  }
   const text = before.join('\n');
   const result = after.join('\n');
   for (let offset = 0; offset < text.length; offset += 1) {

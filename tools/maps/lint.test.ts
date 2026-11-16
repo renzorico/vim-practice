@@ -156,8 +156,8 @@ describe('lintStage: map rows and characters', () => {
     expectErrorRule(lintStage(baseStage({ map: [] }), FIXTURE_LEGEND), 'map-empty');
   });
 
-  it('warns that an empty row without an emptyRow tile is unreachable', () => {
-    expect(lintStage(baseStage({ map: ['  ', ''] }), FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ severity: 'warning', rule: 'row-empty' }));
+  it('rejects an empty row without an emptyRow tile', () => {
+    expect(lintStage(baseStage({ map: ['  ', ''] }), FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ severity: 'error', rule: 'row-empty' }));
   });
 
   it('rejects a character the legend does not list', () => {
