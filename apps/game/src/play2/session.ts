@@ -26,10 +26,11 @@ export interface SessionDependencies {
 export const LEARNED_COMMANDS = ['h', 'j', 'k', 'l'] as const;
 export const LOWLANDS_COMMANDS = [...LEARNED_COMMANDS, 'w', 'b', 'e', '0', '$'] as const;
 export const QUARRY_COMMANDS = [...LOWLANDS_COMMANDS, 'x', 'r', 'dd', 'u', '<C-r>', '.'] as const;
+export const WORDWOOD_COMMANDS = [...QUARRY_COMMANDS, 'f', 't', ';', ','] as const;
 /** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
-  margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS,
+  margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
 };
 const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { ledger: LEDGER_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
@@ -189,7 +190,18 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     const stepped = sim.step(session.world, key, current.stage, current.legend, options(session.story, current.stage));
     const world = current.stage.type === 'text' && stepped.state.status === 'playing' && stepped.state.script === null
       ? sim.init(current.stage, current.legend, options(session.story, current.stage)) : stepped.state;
-    const next = settle({ ...session, keys: session.keys + 1, world, lastEvents: stepped.events },
+    // Failed find motions currently emit neither a CommandRecord nor an engine
+    // error. Give that completed, unchanged attempt visual feedback only: no
+    // turn, cursor, or Vim state is changed, and Escape remains a quiet cancel.
+    const findAttempt = /[ft]$/.test(session.world.engine.pendingKeys.join(''))
+      || key === ';' || key === ',';
+    const failedFind = session.world.script === null && session.world.engine.mode === 'normal' && findAttempt && key !== '<Esc>'
+      && stepped.events.length === 0 && world.engine.pendingKeys.length === 0
+      && world.engine.cursor.line === session.world.engine.cursor.line
+      && world.engine.cursor.col === session.world.engine.cursor.col;
+    const events: readonly WorldEvent[] = failedFind
+      ? [{ type: 'bump', reason: 'edge', at: world.engine.cursor }] : stepped.events;
+    const next = settle({ ...session, keys: session.keys + 1, world, lastEvents: events },
       storyEngine.onEvents(session.story, stepped.events, content));
     return transition(presentEnd(next));
   }

@@ -1,0 +1,335 @@
+{
+  "worlds": [
+    {
+      "id": "wordwood",
+      "order": 3,
+      "name": "The Wordwood",
+      "stages": [
+        "canopy"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "openingStage": "canopy",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "wordwood.ferry",
+      "world": "wordwood",
+      "title": "The canopy road",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "canopy",
+          "objective": "Cross the canopy.",
+          "completeWhen": {
+            "type": "trigger",
+            "trigger": "canopy.tier-c"
+          },
+          "then": []
+        },
+        {
+          "id": "lift",
+          "objective": "Take the lift down.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "canopy"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "canopy.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "West of the Quarry, the Wordwood.\nA forest grown from words."
+        },
+        {
+          "speaker": "system",
+          "text": "The road runs through the branches.\nThe rope bridges are cut."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "canopy.fern",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Don't walk off the end. It's a long way\ndown, and the ground doesn't forgive.",
+          "name": "Fern"
+        },
+        {
+          "speaker": "npc",
+          "text": "Up here we don't walk. We find.\nf and a letter: you're on the next one.",
+          "name": "Fern"
+        },
+        {
+          "speaker": "npc",
+          "text": "See the ladder at the far end? fH.\nThe gaps don't matter. Only where you land.",
+          "name": "Fern"
+        },
+        {
+          "speaker": "npc",
+          "text": "Knots work too. f* to the next knot,\nand ; finds the one after that.",
+          "name": "Fern"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "canopy.knows-f",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "canopy.fern-again",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "The Unwriter cut every bridge. Didn't\nlook down once. I don't think it could.",
+          "name": "Fern"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "canopy.tier-b",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Back! ...back.",
+          "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: , runs your last find\nbackwards. ; runs it forwards again."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "canopy.knows-repeat",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "canopy.crack",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Through a knothole: the same wood,\nbut saplings. No canopy at all."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "canopy.note",
+      "lines": [
+        {
+          "speaker": "scribe",
+          "text": "Thorns past the gap. f@ would land you\nin them. t stops one short: t@."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "canopy.knows-t",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "canopy.lift",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The lift creaks. Down through the leaves,\ninto the glades."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "canopy.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Don't walk the gaps. f jumps to a letter:\nfH for the ladder, t@ to stop short."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "canopy.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Below the canopy, the glades.\nSomething down there is counting paragraphs."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "wordwood.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "ledger"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "wordwood.ferry"
+        }
+      ]
+    },
+    {
+      "id": "canopy.edge",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.edge"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.fern"
+        }
+      ],
+      "unless": "canopy.knows-f"
+    },
+    {
+      "id": "canopy.fern",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.talk-fern"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.fern"
+        }
+      ],
+      "unless": "canopy.knows-f"
+    },
+    {
+      "id": "canopy.fern-again",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.talk-fern"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.fern-again"
+        }
+      ],
+      "onlyIf": "canopy.knows-f"
+    },
+    {
+      "id": "canopy.tier-b",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.tier-b"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.tier-b"
+        }
+      ]
+    },
+    {
+      "id": "canopy.crack",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.talk-crack"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.crack"
+        }
+      ]
+    },
+    {
+      "id": "canopy.tier-c",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.tier-c"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.note"
+        }
+      ]
+    },
+    {
+      "id": "canopy.note",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.talk-note"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.note"
+        }
+      ]
+    },
+    {
+      "id": "canopy.lift",
+      "when": {
+        "type": "trigger",
+        "trigger": "canopy.talk-lift"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "canopy.lift"
+        },
+        {
+          "type": "set-flag",
+          "flag": "canopy.down",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "canopy.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "canopy"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "canopy.end"
+        }
+      ]
+    }
+  ]
+}

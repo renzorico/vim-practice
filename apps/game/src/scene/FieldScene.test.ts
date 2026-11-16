@@ -420,3 +420,30 @@ it('shades hazard cells, adds sheen only on existing walkable cells and marks th
   expect(edges.every(image => image.y === 4 * 16 + 8)).toBe(true);
   expect(sheen.every(image => image.y >= 4 * 16 + 8 && image.y <= 14 * 16 + 8)).toBe(true);
 });
+
+it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the real fH event', async () => {
+  const { canopy, canopyLegend } = await import('../play2/content.js');
+  const { WORDWOOD_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: WORDWOOD_COMMANDS, flags: {} };
+  const state = sim.init(canopy, canopyLegend, options);
+  const initial = { state, stage: canopy, legend: canopyLegend, events: [], showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  expect(fake.images.some(image => image.texture === 'field:air')).toBe(true);
+  expect(fake.images.some(image => image.texture === 'field:branch:1')).toBe(true);
+  for (const sprite of ['fern', 'knothole', 'lift']) expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  const pending = sim.step(state, 'f', canopy, canopyLegend, options);
+  scene.present({ ...initial, ...pending });
+  const jumped = sim.step(pending.state, 'H', canopy, canopyLegend, options);
+  scene.present({ ...initial, ...jumped });
+  expect(fake.tween).toHaveBeenCalled();
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  playback.targets.value = 0.5; playback.onUpdate();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  expect(player?.y).toBeLessThan(24);
+  scene.finish();
+  expect(player?.x).toBe(30 * 16 + 8);
+  const liftState = sim.apply(jumped.state, [{ type: 'move-player', to: { line: 7, col: 27 } }], canopy, canopyLegend);
+  scene.present({ ...initial, ...liftState });
+  expect(fake.texts.some(text => text.text === 'Enter: take lift')).toBe(true);
+});

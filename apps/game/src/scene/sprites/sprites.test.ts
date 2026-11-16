@@ -25,3 +25,14 @@ it('every Lowlands legend sprite has art, including its visible magenta checker 
   expect(fallback?.frames[0]?.[0]?.[0]).not.toBe(fallback?.frames[0]?.[0]?.[1]);
   expect(fallback?.frames[0]?.[0]?.[0]).toBe(fallback?.frames[0]?.[1]?.[1]);
 });
+
+it('every Canopy tile and actor has art, with opaque distant air and two branch variants', async () => {
+  const { canopy, canopyLegend } = await import('../../play2/content.js');
+  for (const sprite of [...canopyLegend.tiles.map(tile => tile.sprite), ...canopy.entities.map(entity => entity.sprite)]) {
+    expect(SPRITES[sprite], sprite).toBeDefined();
+  }
+  expect(SPRITES['branch']?.frames).toHaveLength(2);
+  expect(SPRITES['branch']?.frames[0]).not.toEqual(SPRITES['branch']?.frames[1]);
+  expect(SPRITES['air']?.frames[0]?.join('')).not.toContain('.');
+  expect(SPRITES['air']?.frames[0]).not.toEqual(SPRITES['branch']?.frames[0]);
+});

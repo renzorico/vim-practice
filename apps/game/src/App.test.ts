@@ -44,7 +44,7 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger } from './play2/content.js';
+import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
 
@@ -143,6 +143,9 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('ledger');
   play(ledger.solution);
   vi.advanceTimersByTime(400); flush(); dismiss();
+  expect(session().world.stage).toBe('canopy');
+  play(canopy.solution); dismiss();
+  expect(session().world.status).toBe('cleared');
   key('Enter'); // title
   key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
@@ -211,5 +214,6 @@ it('keeps the solved ledger stamped for 400 ms and blocks keys until the story c
   vi.advanceTimersByTime(1); flush(); key('Enter');
   expect(session().queue[0]?.index).toBe(1);
   key('Enter');
-  expect(session().queue).toEqual([]);
+  expect(session().world.stage).toBe('canopy');
+  expect(session().queue[0]).toMatchObject({ dialogue: 'canopy.intro' });
 });

@@ -1,3 +1,6 @@
+import canopyJson from '../../../../packages/world/content/canopy/canopy.json';
+import canopyLegendJson from '../../../../packages/world/content/canopy/canopy.legend.json';
+import canopyStoryJson from '../../../../packages/story/content/canopy.json';
 import ledgerJson from '../../../../packages/world/content/ledger/ledger.json';
 import ledgerStoryJson from '../../../../packages/story/content/ledger.json';
 import shaftJson from '../../../../packages/world/content/shaft/shaft.json';
@@ -42,7 +45,11 @@ export const shaftLegend = parseLegend(shaftLegendJson);
 // Script keystroke search (maxKeys: 38) exhausted its 1,000-expansion budget.
 export const ledger = parseStage(ledgerJson);
 export const ledgerLegend = quarryLegend;
-export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }];
+// Canopy: full-command search and the retry without u/<C-r>/. both exhausted a 1.5 GB heap.
+// Focused f/t/,/j search finds par 7; optimality with edits is unproven.
+export const canopy = parseStage(canopyJson);
+export const canopyLegend = parseLegend(canopyLegendJson);
+export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }, { stage: canopy, legend: canopyLegend }];
 
 // Validate the original JSON, rather than assigning Zod's inferred optional `undefined`
 // properties to the stricter contract. Bundled JSON cannot contain undefined values.
@@ -51,11 +58,11 @@ function assertStoryJson(value: unknown): asserts value is StoryContent {
 }
 const bundledStory: unknown = {
   ...storyJson,
-  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds],
-  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes],
-  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests],
-  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues],
-  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions],
+  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds, ...canopyStoryJson.worlds],
+  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes, ...canopyStoryJson.cutscenes],
+  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests, ...canopyStoryJson.quests],
+  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues, ...canopyStoryJson.dialogues],
+  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions, ...canopyStoryJson.reactions],
 };
 assertStoryJson(bundledStory);
 export const content = bundledStory;
