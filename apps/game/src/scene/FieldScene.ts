@@ -22,6 +22,9 @@ const PILE_OFFSET_PX = 3;
 
 const HAZARD_SHADE = 0x1b2a3a;
 
+const LONG_JUMP_ROWS = 6;
+const LONG_JUMP_ARC_SCALE = 0.5;
+
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
   private ready = false;
@@ -61,7 +64,7 @@ export class FieldScene extends Phaser.Scene {
       this.idleFrame = (this.idleFrame + 1) % 2;
       this.player?.setTexture(this.texture('player', this.idleFrame));
       for (const entity of this.frame.state.entities) {
-        this.entities.get(entity.id)?.setTexture(this.texture(entity.def.sprite, this.idleFrame));
+        this.entities.get(entity.id)?.setTexture(this.texture(this.entitySprite(entity.def.sprite), this.idleFrame));
       }
       for (const cell of this.cells.values()) {
         if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
@@ -257,7 +260,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
-        : (sprite === 'grass' || sprite === 'dirt' || sprite === 'branch') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -326,9 +329,13 @@ export class FieldScene extends Phaser.Scene {
     return key;
   }
 
+  private entitySprite(sprite: string): string {
+    return this.frame.stage.id === 'glades' && sprite === 'lamp-lit' ? 'glade-lamp-lit' : sprite;
+  }
+
   private addEntity(id: string, sprite: string, at: Position): void {
     const offset = this.pileOffsets.get(id) ?? 0;
-    const image = this.add.image(center(at.col) - offset, center(at.line) - offset, this.texture(sprite, this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
+    const image = this.add.image(center(at.col) - offset, center(at.line) - offset, this.texture(this.entitySprite(sprite), this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
     this.actors?.add(image);
     this.entities.set(id, image);
   }
@@ -435,7 +442,7 @@ export class FieldScene extends Phaser.Scene {
           };
         }
         if (step.type === 'walk' || step.type === 'jump' || step.type === 'entity-move') {
-          const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE : 0;
+          const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
           const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
           target.setPosition(
             center(step.from.col + (step.to.col - step.from.col) * progress) - offset,

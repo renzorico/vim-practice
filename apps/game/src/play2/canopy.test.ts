@@ -6,7 +6,7 @@ import { createWorldSim, playKeys, stageReplayIssue } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
 import { lintStage } from '../../../../tools/maps/lint.js';
 import { canopy, canopyLegend, content, ledger, stages } from './content.js';
-import { createSession, LEDGER_COMMANDS, LEARNED_COMMANDS, LOWLANDS_COMMANDS, QUARRY_COMMANDS, WORDWOOD_COMMANDS, type Session } from './session.js';
+import { createSession, GLADES_COMMANDS, LEDGER_COMMANDS, LEARNED_COMMANDS, LOWLANDS_COMMANDS, QUARRY_COMMANDS, WORDWOOD_COMMANDS, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { animationSteps } from '../scene/animate.js';
@@ -96,7 +96,7 @@ it('shows pending f… and failed finds cost no turn', () => {
   expect(failed.world.engine.cursor).toEqual(initial.world.engine.cursor);
   expect(animationSteps(failed.lastEvents)).toContainEqual(expect.objectContaining({ type: 'bump' }));
 });
-it('the learner route clears with all hearts, lift dialogue then canopy.end then the end panel', () => {
+it('the learner route clears with all hearts, lift dialogue then canopy.end then Glades', () => {
   const cleared = keys(start(), 'f*;fH2j,2jt@2jfD<CR>');
   expect(cleared.world.status).toBe('cleared');
   expect(cleared.world.turn).toBe(9);
@@ -105,7 +105,7 @@ it('the learner route clears with all hearts, lift dialogue then canopy.end then
   expect(cleared.queue.map(item => item.type)).toEqual(['dialogue', 'cutscene']);
   expect(cleared.queue[0]).toMatchObject({ dialogue: 'canopy.lift' });
   expect(controller.reduce(cleared, '<CR>').queue[0]).toMatchObject({ cutscene: 'canopy.end' });
-  expect(screen(dismiss(cleared))).toContain('To be continued.');
+  expect(dismiss(cleared).world.stage).toBe('glades');
 });
 it('Continue restores Canopy entry and :e! restores the current stage', () => {
   const moved = keys(start(), 'fH');
@@ -137,7 +137,7 @@ it('Canopy lints with zero issues and the supplied solution replays in seven tur
 });
 it('stageReplayIssue passes for every bundled stage with its own command set', () => {
   for (const entry of stages) {
-    const learnedCommands = entry.stage.id === 'ledger' ? LEDGER_COMMANDS : entry.stage.world === 'wordwood' ? WORDWOOD_COMMANDS
+    const learnedCommands = entry.stage.id === 'glades' ? GLADES_COMMANDS : entry.stage.id === 'ledger' ? LEDGER_COMMANDS : entry.stage.world === 'wordwood' ? WORDWOOD_COMMANDS
       : entry.stage.world === 'quarry' ? QUARRY_COMMANDS : entry.stage.world === 'lowlands' ? LOWLANDS_COMMANDS : LEARNED_COMMANDS;
     const replay = sessionSolver({ sim, storyEngine, content, ...entry });
     expect(stageReplayIssue(replay, entry.stage, entry.legend, { learnedCommands, flags: {} }), entry.stage.id).toBeNull();

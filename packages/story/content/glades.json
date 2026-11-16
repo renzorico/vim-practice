@@ -1,0 +1,437 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "wordwood.glades",
+      "world": "wordwood",
+      "title": "The glades",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "floor",
+          "objective": "Hop down the glades to the forest floor.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "glades.asked",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "lamp",
+          "objective": "Relight the lamp in the second glade.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "glades.lamp",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "rope",
+          "objective": "Pull the gate rope at the lookout.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "glades.rope",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "gate",
+          "objective": "Go back down to Pilcrow.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "glades"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "glades.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The lift sets you down on a lookout.\nBelow: thickets, and clearings between."
+        },
+        {
+          "speaker": "scribe",
+          "text": "Brambles are slow. A clearing is an empty\nrow: } drops to the next, { climbs back."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.pilcrow-ask",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Three glades, four thickets, one child.\nI count everything that comes down.",
+          "name": "Pilcrow"
+        },
+        {
+          "speaker": "npc",
+          "text": "The gate is shut. Its rope hangs at the\nlookout. And the second glade is dark.",
+          "name": "Pilcrow"
+        },
+        {
+          "speaker": "npc",
+          "text": "Lamp first. { climbs one glade.\nIt's two glades up from here.",
+          "name": "Pilcrow"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "glades.asked",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "glades.pilcrow-lamp",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "The second glade. { and { again.\nI can see it's dark from here.",
+          "name": "Pilcrow"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.lamp",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "You trim the wick. The glade lamp burns."
+        },
+        {
+          "speaker": "npc",
+          "text": "Top! ...top.",
+          "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: gg jumps to the first row,\nwherever you are. The lookout."
+        }
+      ],
+      "then": [
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "lamp-2"
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "lamp-2",
+                "kind": "prop",
+                "sprite": "lamp-lit",
+                "at": {
+                  "line": 8,
+                  "col": 0
+                },
+                "behaviour": {
+                  "type": "still"
+                },
+                "every": 1,
+                "damage": 0,
+                "solid": false
+              }
+            }
+          ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "glades.lamp",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "glades.pilcrow-rope",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Lamp's lit. Now the rope. gg takes you\nto the top row. No climbing.",
+          "name": "Pilcrow"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.rope-slack",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "A rope, tied off at the rail.\nNot yours to pull. Not yet."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.rope-pull",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "You haul the rope. Far below,\na gate groans open."
+        },
+        {
+          "speaker": "npc",
+          "text": "Down! ...down.",
+          "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: G is gg's twin.\nThe last row. The forest floor."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "glades.rope",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "glades.rope-done",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The rope hangs loose. The gate is open."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.pilcrow-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "One child: down, up, down again. Counted.",
+          "name": "Pilcrow"
+        },
+        {
+          "speaker": "npc",
+          "text": "The Twin Gates are past the ferns. They\nwere one gate once. Before the Flicker.",
+          "name": "Pilcrow"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "glades.through",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "glades.stump",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Rings in the stump, one for every year\nup to the Last Saving. Then they stop."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "glades.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Don't walk the brambles. } drops a glade,\n{ climbs one. gg is the top, G the floor."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "glades.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Past the ferns, two gates face each other.\nNeither will open alone."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "glades.pilcrow-ask",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-pilcrow"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.pilcrow-ask"
+        }
+      ],
+      "unless": "glades.asked"
+    },
+    {
+      "id": "glades.pilcrow-lamp",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-pilcrow"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.pilcrow-lamp"
+        }
+      ],
+      "onlyIf": "glades.asked",
+      "unless": "glades.lamp"
+    },
+    {
+      "id": "glades.lamp",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.lamp"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.lamp"
+        }
+      ]
+    },
+    {
+      "id": "glades.pilcrow-rope",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-pilcrow"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.pilcrow-rope"
+        }
+      ],
+      "onlyIf": "glades.lamp",
+      "unless": "glades.rope"
+    },
+    {
+      "id": "glades.rope-slack",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-rope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.rope-slack"
+        }
+      ],
+      "unless": "glades.lamp"
+    },
+    {
+      "id": "glades.rope-pull",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-rope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.rope-pull"
+        }
+      ],
+      "onlyIf": "glades.lamp",
+      "unless": "glades.rope"
+    },
+    {
+      "id": "glades.rope-done",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-rope"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.rope-done"
+        }
+      ],
+      "onlyIf": "glades.rope"
+    },
+    {
+      "id": "glades.pilcrow-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-pilcrow"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.pilcrow-through"
+        }
+      ],
+      "onlyIf": "glades.rope"
+    },
+    {
+      "id": "glades.stump",
+      "when": {
+        "type": "trigger",
+        "trigger": "glades.talk-stump"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "glades.stump"
+        }
+      ]
+    },
+    {
+      "id": "glades.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "canopy"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "wordwood.glades"
+        }
+      ]
+    },
+    {
+      "id": "glades.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "glades"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "glades.end"
+        }
+      ]
+    }
+  ]
+}

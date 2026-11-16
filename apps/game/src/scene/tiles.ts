@@ -4,7 +4,7 @@ import type { Legend, WorldState } from '@escape/world';
  * Index by UTF-16 code unit, matching Engine.Position columns.
  */
 export function tileGrid(lines: WorldState['engine']['lines'], legend: Legend): string[][] {
-  const sprites = new Map(legend.tiles.map(tile => [tile.char, tile.sprite]));
+  const sprites = new Map(legend.tiles.map(tile => [tile.char, legend.id === 'glades' && tile.sprite === 'fern' ? 'fern-fronds' : tile.sprite]));
   const width = Math.max(legend.emptyRow === undefined ? 0 : 1, ...lines.map(row => row.length));
   return lines.map(row => Array.from({ length: width }, (_, col) =>
     row === '' && col === 0 && legend.emptyRow !== undefined ? legend.emptyRow.sprite : col >= row.length ? 'blank' : sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
