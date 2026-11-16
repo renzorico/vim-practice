@@ -67,6 +67,13 @@ it('lights the lamp only after asking Pilcrow, swapping the entity', () => {
   expect(lit.world.entities.filter(entity => entity.id === 'lamp-2')).toHaveLength(1);
   expect(lit.lastEvents).toContainEqual(expect.objectContaining({ type: 'entity-removed', entity: 'lamp-2' }));
 });
+it('a visit to the lamp glade before Pilcrow asks does not use up the lamp trigger', () => {
+  const early = dismiss(keys(start(), '}}{}'));
+  expect(early.story.flags['glades.lamp']).toBeUndefined();
+  const lit = dismiss(keys(early, 'G<CR>{{'));
+  expect(lit.story.flags['glades.lamp']).toBe(true);
+  expect(dismiss(keys(lit, 'gg<CR>G<CR>')).world.status).toBe('cleared');
+});
 it.each([
   ['G<CR>', {}, 'pilcrow-ask'],
   ['G<CR>', { 'glades.asked': true }, 'pilcrow-lamp'],

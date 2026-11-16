@@ -19,5 +19,11 @@ it.each([['Glades', GLADES_COMMANDS], ['old motions', WORDWOOD_COMMANDS]] as con
   if (!solution) throw new Error('No solution');
   expect(playKeys(solver, glades, gladesLegend, options, solution.keys).state.status).toBe('cleared');
   expect(solution.turns).toBe(name === 'Glades' ? glades.parTurns : 8);
-  if (name === 'Glades') expect(solution.keys).toEqual(glades.solution);
 }, 120_000);
+it('the authored solution clears in par', () => {
+  const solver = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
+    stage: glades, legend: gladesLegend });
+  const played = playKeys(solver, glades, gladesLegend, { learnedCommands: GLADES_COMMANDS, flags: {} }, glades.solution);
+  expect(played.state.status).toBe('cleared');
+  expect(played.state.turn).toBe(glades.parTurns);
+});
