@@ -1,0 +1,45 @@
+{
+  "id": "glades",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "bramble",
+    "walkable": false,
+    "fixed": true,
+    "label": "bramble"
+  },
+  "emptyRow": {
+    "char": " ",
+    "kind": "ground",
+    "sprite": "clearing",
+    "walkable": true,
+    "fixed": true,
+    "label": "clearing"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "moss",
+      "walkable": true,
+      "fixed": true,
+      "label": "moss path"
+    },
+    {
+      "char": "m",
+      "kind": "object",
+      "sprite": "fern",
+      "walkable": true,
+      "fixed": true,
+      "label": "ferns"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "bramble",
+      "walkable": false,
+      "fixed": true,
+      "label": "bramble"
+    }
+  ]
+}
