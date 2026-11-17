@@ -10,7 +10,7 @@ Twist seed: the yank register `"0` "remembers what you copied even after you del
 ## Stages
 | Stage | Teaches | The moment | Needs |
 |---|---|---|---|
-| 4-1 The Jetty | `dw`, `dt`, `df`, `d}` (d + World 1-3 motions) | Junk piled on the only walkway. `dw` or `dt.` clears a whole pile in one turn and the boards slide to you; `x` would take one turn per crate. | E-1 solver ops |
+| 4-1 The Jetty | `d` + motion, backwards: `db`, then `.` | Junk dumped on the jetty behind you. The cart needs the boards clear, end to end (a text trigger). The boards are fixed and the junk is not walkable, so `x` and `r` cannot do it: only a delete that stops short of your own board. `db` clears a pile and the boards slide up to you. Forward `dw`/`dt` come in 4-2 and 4-3. | E-1 |
 | 4-2 The Warehouse | `yl`/`y4l`, `yw`, `p`, `P`, `yy`/`p` | Empty shelves marked `[`. Yank four oil from the stock row, walk to the shelf, `p`. The quartermaster checks each shelf. | E-1 text trigger |
 | 4-3 Customs | registers `"a`-`"z`, `"0` | Two cargo kinds, two shelves. Clearing junk with `d` overwrites what you yanked; `"0p` still has it. `"ay` / `"bp` keep cargo apart. | E-1 |
 | 4-4 The Counterfeiter (castle) | counts on `p`, `.` | He pastes fakes onto the shelf every few turns; you out-copy him with `4p` and `.`. Statue D. | E-1, maybe a new behaviour |
@@ -23,6 +23,7 @@ Twist seed: the yank register `"0` "remembers what you copied even after you del
 4. Operator landing (measured in the sim on `#.xxxxx..|...#`, cursor on the first junk): after `d{motion}` the cell that slides under the cursor must be walkable, or the command bumps. `dw` and `dt.` work (boards slide in). `dt|` bumps (the bollard slides under you). `d$` bumps 'fixed' (it would delete the bollard). So junk must end on boards, and `t`/`f` targets are the boards' edge, not the wall.
 5. `yyp`/`dd` + `p` land on the new row's first non-blank: rows that will be put must start with a walkable cell.
 6. Paste shifts the rest of the row right, fixed tiles included. Put fixed tiles only where sliding is harmless, and mark shelves with an anchor entity, never an absolute column.
+7. Jumps fly over anything (only the landing cell is checked), so junk is never a wall. A goal that needs an edit is a text trigger on an anchor, and its text includes the next fixed tile so the walkway's length counts: `r` can paint junk into boards but cannot shorten the row (measured on 4-1: `13r.` matched a dots-only text).
 
 ## Contract (E-1, Opus, on this branch)
 `Trigger` gains `{ on: 'text'; anchor: EntityId; text: string }`: fires at turn end when the `text.length` characters right after the anchor entity's cell are exactly `text`. The anchor remaps with edits, so the check follows the shelf.

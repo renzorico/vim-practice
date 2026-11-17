@@ -1,3 +1,4 @@
+import { jettyDeletion, JETTY_SPLASH_FRACTION, type JettyDeletion } from './jettyDeletion.js';
 import Phaser from 'phaser';
 import { createEngine } from '@escape/engine';
 import type { Position } from '@escape/engine';
@@ -46,6 +47,8 @@ export class FieldScene extends Phaser.Scene {
   }>();
   private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
   private dust: Phaser.GameObjects.Image[] = [];
+  private junk: { image: Phaser.GameObjects.Image; splash: Phaser.GameObjects.Image; at: Position }[] = [];
+  private deletion: JettyDeletion | null = null;
   private danger: Phaser.GameObjects.Image | undefined;
   private gateMarks: Phaser.GameObjects.Container | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
@@ -73,7 +76,7 @@ export class FieldScene extends Phaser.Scene {
       }
       this.syncGateMarks();
       for (const cell of this.cells.values()) {
-        if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
+        if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
       }
     } });
     this.tiles = this.add.container(0, 0);
@@ -94,6 +97,7 @@ export class FieldScene extends Phaser.Scene {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeView, this);
       this.clearUnwriting();
       this.clearDust();
+      this.clearJunk();
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -107,7 +111,7 @@ export class FieldScene extends Phaser.Scene {
     if (value) {
       this.idleFrame = 0;
       this.finish();
-      for (const cell of this.cells.values()) if ((cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite));
+      for (const cell of this.cells.values()) if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite));
     }
   }
 
@@ -120,6 +124,7 @@ export class FieldScene extends Phaser.Scene {
     this.clearRowEffects();
     this.clearUnwriting();
     this.clearDust();
+    this.clearJunk();
   }
 
   present(frame: FieldFrame): void {
@@ -149,6 +154,7 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.cameras.main.setBackgroundColor(frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.captureJunk(frame);
     this.captureDust(frame);
     this.captureUnwriting(frame);
     this.syncCells();
@@ -172,6 +178,26 @@ export class FieldScene extends Phaser.Scene {
     this.play(animationSteps(frame.events, this.reducedMotion, frame.state.pending !== null));
   }
 
+  private clearJunk(): void {
+    for (const cell of this.junk) { cell.image.destroy(); cell.splash.destroy(); }
+    this.junk = [];
+    this.deletion = null;
+  }
+
+  private captureJunk(frame: FieldFrame): void {
+    this.clearJunk();
+    if (this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
+    this.deletion = jettyDeletion(frame.state, frame.events);
+    if (!this.deletion) return;
+    for (const [offset, char] of [...this.deletion.junk].entries()) {
+      const at = { line: this.deletion.line, col: this.deletion.col + offset };
+      this.junk.push({ at,
+        image: this.add.image(center(at.col), center(at.line), this.texture(char === 'c' ? 'crates' : 'nets')).setDepth(3),
+        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture('splash')).setDepth(3).setAlpha(0),
+      });
+    }
+  }
+
   private clearDust(): void {
     for (const image of this.dust) image.destroy();
     this.dust = [];
@@ -179,7 +205,7 @@ export class FieldScene extends Phaser.Scene {
 
   private captureDust(frame: FieldFrame): void {
     this.clearDust();
-    if (this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
+    if (this.deletion || this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
     const blink = animationSteps(frame.events).find(step => step.type === 'blink');
     if (blink?.type === 'blink') {
       for (const at of [blink.from, blink.to]) this.dust.push(
@@ -282,8 +308,8 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
-        : (sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
-        : (sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
+        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -433,15 +459,16 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private clearRowEffects(): void {
-    for (const cell of this.cells.values()) {
-      cell.tile.clearTint().setPosition(cell.tile.x, center(cell.line));
-      cell.glyph.setPosition(cell.glyph.x, center(cell.line));
+    for (const [key, cell] of this.cells) {
+      const col = Number(key.split(':')[1]);
+      cell.tile.clearTint().setPosition(center(col), center(cell.line));
+      cell.glyph.setPosition(center(col), center(cell.line));
     }
   }
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = Math.max(this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
+    const duration = Math.max(this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
     if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
@@ -450,12 +477,28 @@ export class FieldScene extends Phaser.Scene {
       for (const cell of this.unwriting) {
         cell.image.setAlpha(unwritingAlpha(cell.col, cell.columns, clock.value));
       }
+      const slide = this.deletion ? Math.max(0, (clock.value - JETTY_SPLASH_FRACTION) / (1 - JETTY_SPLASH_FRACTION)) : clock.value;
+      if (this.deletion) {
+        const tip = Math.min(1, clock.value / JETTY_SPLASH_FRACTION);
+        for (const cell of this.junk) {
+          cell.image.setPosition(center(cell.at.col), center(cell.at.line) + tip * 8).setAlpha(1 - tip);
+          cell.image.setAngle(tip * 35);
+          cell.splash.setAlpha(Math.sin(tip * Math.PI));
+        }
+        for (const [key, cell] of this.cells) {
+          const col = Number(key.split(':')[1]);
+          if (cell.line !== this.deletion.line || col < this.deletion.col) continue;
+          const x = center(col + this.deletion.junk.length * (1 - slide));
+          cell.tile.setPosition(x, center(cell.line));
+          cell.glyph.setPosition(x, center(cell.line));
+        }
+      }
       let cameraCell: { line: number; col: number } | undefined;
       for (const step of steps) {
         if (clock.value < step.start) continue;
         const fraction = Math.min(1, (clock.value - step.start) / (step.end - step.start));
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
-        const progress = step.durationMs < 1000 / 60 ? 1 : fraction;
+        const progress = this.deletion ? slide : step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
           if (step.lineDelta > 0 || step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
             const rows = steps.filter(hint => hint.type === 'rows');
@@ -491,7 +534,7 @@ export class FieldScene extends Phaser.Scene {
           };
         }
         if (step.type === 'walk' || step.type === 'jump' || step.type === 'scroll' || step.type === 'entity-move') {
-          const arc = step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
+          const arc = !this.deletion && step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
           const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
           target.setPosition(
             center(step.from.col + (step.to.col - step.from.col) * progress) - offset,
@@ -503,6 +546,8 @@ export class FieldScene extends Phaser.Scene {
           if (progress < 1) target.setTintFill(0xffffff);
           else target.clearTint();
         } else if (step.type === 'bump') {
+          const cell = this.cells.get(`${step.at.line}:${step.at.col}`);
+          if (progress < 1 && this.frame.stage.id === 'jetty') cell?.tile.setTintFill(0xd39b69);
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }
@@ -515,7 +560,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.syncActors(); },
     });
   }
 }

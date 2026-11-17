@@ -11,6 +11,7 @@ const fake = vi.hoisted(() => {
     setVisible(value: boolean) { this.visible = value; return this; },
     setTexture: vi.fn(function (this: { texture: string }, value: string) { this.texture = value; return this; }),
     setText(value: string) { this.text = value; return this; },
+    setAngle: vi.fn().mockReturnThis(),
     setFlipX: vi.fn().mockReturnThis(),
     setDisplaySize: vi.fn().mockReturnThis(), setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
     setOrigin: vi.fn().mockReturnThis(), setTintFill: vi.fn().mockReturnThis(), clearTint: vi.fn().mockReturnThis(),
@@ -527,4 +528,79 @@ it.each([false, true])('scrolls exactly half the twelve-row window with no arc (
   }
   expect(player?.y).toBe(6 * 16 + 8);
   expect(fake.centerOn).toHaveBeenLastCalledWith(72, 12 * 16);
+});
+
+it.each([false, true])('tips Jetty junk, splashes, then slides the row and actors (reduced motion: %s)', async reducedMotion => {
+  const { jetty, portLegend } = await import('../play2/content.js');
+  const { PORT_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: PORT_COMMANDS, flags: {} };
+  const before = playKeys(sim, jetty, portLegend, options, ['b']).state;
+  const initial = { state: before, stage: jetty, legend: portLegend, events: [], showSource: true };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  for (const sprite of ['port-water', 'port-ladder', 'boards', 'boards:1', 'pier-post', 'warehouse', 'crates', 'nets', 'bitt', 'ream', 'cart']) {
+    expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  }
+  const pending = sim.step(before, 'd', jetty, portLegend, options);
+  scene.present({ ...initial, ...pending });
+  const deleted = sim.step(pending.state, 'b', jetty, portLegend, options);
+  scene.present({ ...initial, ...deleted });
+  const junk = fake.images.filter(image => image.texture === 'field:nets' && image.depth === 3);
+  const splashes = fake.images.filter(image => image.texture === 'field:splash');
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const post = fake.images.find(image => image.texture === 'field:pier-post' && image.x === (reducedMotion ? 23 : 29) * 16 + 8 && image.y === 56);
+  if (reducedMotion) {
+    expect(fake.tween).not.toHaveBeenCalled();
+    expect(junk).toHaveLength(0);
+  } else {
+    expect(junk).toHaveLength(6);
+    expect(splashes).toHaveLength(6);
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(player?.x).toBe(20 * 16 + 8);
+    expect(post?.x).toBe(29 * 16 + 8);
+    const movingBitt = fake.images.filter(image => image.texture === 'field:bitt' && !image.destroy.mock.calls.length)[0];
+    expect(movingBitt?.x).toBe(28 * 16 + 8);
+    clock.targets.value = 0.2; clock.onUpdate();
+    expect(junk[0]?.y).toBeGreaterThan(56);
+    expect(junk[0]?.alpha).toBeLessThan(1);
+    expect(splashes[0]?.alpha).toBeGreaterThan(0);
+    expect(player?.x).toBe(20 * 16 + 8);
+    clock.targets.value = 0.7; clock.onUpdate();
+    expect(junk[0]?.alpha).toBe(0);
+    expect(player?.x).toBeGreaterThan(14 * 16 + 8);
+    expect(player?.x).toBeLessThan(20 * 16 + 8);
+    expect(player?.y).toBe(56);
+    expect(post?.x).toBeGreaterThan(23 * 16 + 8);
+    expect(post?.x).toBeLessThan(29 * 16 + 8);
+    expect(movingBitt?.x).toBeGreaterThan(22 * 16 + 8);
+    expect(movingBitt?.x).toBeLessThan(28 * 16 + 8);
+    scene.finish();
+    for (const image of [...junk, ...splashes]) expect(image.destroy).toHaveBeenCalledOnce();
+  }
+  expect(player?.x).toBe(14 * 16 + 8);
+  expect(post?.x).toBe(23 * 16 + 8);
+  const bitt = fake.images.filter(image => image.texture === 'field:bitt' && image.destroy.mock.calls.length === 0);
+  expect(bitt.map(image => image.x)).toEqual([22 * 16 + 8]);
+  for (const tile of fake.images.filter(image => image.texture.startsWith('field:boards') && !image.destroy.mock.calls.length)) {
+    expect(tile.x % 16).toBe(8);
+  }
+});
+it('highlights the fixed tile which rejects a Jetty delete without splashing', async () => {
+  const { jetty, portLegend } = await import('../play2/content.js');
+  const { PORT_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: PORT_COMMANDS, flags: {} };
+  const state = sim.init(jetty, portLegend, options);
+  const initial = { state, stage: jetty, legend: portLegend, events: [], showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  const result = sim.step(sim.step(state, 'd', jetty, portLegend, options).state, 'w', jetty, portLegend, options);
+  scene.present({ ...initial, ...result });
+  const bump = result.events.find(event => event.type === 'bump');
+  if (bump?.type !== 'bump') throw new Error('Expected fixed bump');
+  const tile = fake.images.find(image => image.x === bump.at.col * 16 + 8 && image.y === bump.at.line * 16 + 8 && image.texture.startsWith('field:boards'));
+  expect(tile?.setTintFill).toHaveBeenCalledWith(0xd39b69);
+  expect(fake.images.some(image => image.texture === 'field:splash')).toBe(false);
+  scene.finish();
+  expect(tile?.clearTint).toHaveBeenCalled();
 });

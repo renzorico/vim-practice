@@ -1,0 +1,69 @@
+{
+  "id": "port",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "water",
+    "walkable": false,
+    "fixed": true,
+    "label": "water"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "boards",
+      "walkable": true,
+      "fixed": true,
+      "label": "boards"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "pier-post",
+      "walkable": true,
+      "fixed": true,
+      "label": "pier end"
+    },
+    {
+      "char": "H",
+      "kind": "object",
+      "sprite": "ladder",
+      "walkable": true,
+      "fixed": true,
+      "label": "ladder"
+    },
+    {
+      "char": "~",
+      "kind": "barrier",
+      "sprite": "water",
+      "walkable": false,
+      "fixed": true,
+      "label": "water"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "warehouse",
+      "walkable": false,
+      "fixed": true,
+      "label": "warehouse wall"
+    },
+    {
+      "char": "c",
+      "kind": "object",
+      "sprite": "crates",
+      "walkable": false,
+      "fixed": false,
+      "label": "crates"
+    },
+    {
+      "char": "n",
+      "kind": "object",
+      "sprite": "nets",
+      "walkable": false,
+      "fixed": false,
+      "label": "nets"
+    }
+  ]
+}

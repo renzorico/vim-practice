@@ -100,10 +100,11 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['glades.lamp'] ? ['gg'] : []),
     ...(flags['glades.rope'] ? ['G'] : []),
     ...(flags['gates.met-shut'] ? ['%'] : []),
-    ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : [])];
+    ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : []),
+    ...(flags['jetty.asked'] ? ['d', 'db'] : [])];
 }
 
 export function pendingKeyLabel(keys: readonly string[]): string {
   const pending = keys.join('');
-  return pending ? `${pending}${/[ftg]$/.test(pending) ? '…' : ''}` : '\u00a0';
+  return pending ? `${pending}${/[ftgd]$/.test(pending) ? '…' : ''}` : '\u00a0';
 }

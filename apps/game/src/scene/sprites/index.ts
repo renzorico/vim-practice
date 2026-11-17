@@ -1,3 +1,4 @@
+import { BOARDS, PORT_WATER, PIER_POST, PORT_LADDER, WAREHOUSE, CRATES, NETS, CART, BITT, REAM, SPLASH } from './port.js';
 import { SEMI } from './manifest.js';
 import { HEARTWOOD, HOLLOW, GATE_OPEN, GATE_CLOSE, GATE_GLINT, OPE, SHUT } from './gates.js';
 import { MOSS, FERNS, BRAMBLE, CLEARING, PILCROW, ROPE, STUMP, GLADE_LAMP_LIT, GLADE_LAMP_OUT } from './glades.js';
@@ -24,6 +25,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  boards: BOARDS, 'port-water': PORT_WATER, 'pier-post': PIER_POST, 'port-ladder': PORT_LADDER,
+  warehouse: WAREHOUSE, crates: CRATES, nets: NETS, cart: CART, bitt: BITT, ream: REAM, splash: SPLASH,
   semi: SEMI,
   'gate-glint': GATE_GLINT, heartwood: HEARTWOOD, hollow: HOLLOW, 'gate-open': GATE_OPEN, 'gate-close': GATE_CLOSE, ope: OPE, shut: SHUT,
   moss: MOSS, 'fern-fronds': FERNS, bramble: BRAMBLE, clearing: CLEARING, pilcrow: PILCROW,

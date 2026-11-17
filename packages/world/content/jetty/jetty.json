@@ -1,0 +1,132 @@
+{
+  "id": "jetty",
+  "world": "copper-port",
+  "type": "field",
+  "title": "The Jetty",
+  "goalText": "Clear the jetty and report to the quartermaster.",
+  "map": [
+    "##############################",
+    "~~~H.........................=",
+    "~~~H~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~H..ccccc...nnnnnn.........=~"
+  ],
+  "legend": "port",
+  "start": {
+    "line": 3,
+    "col": 27
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "bitt",
+      "kind": "npc",
+      "sprite": "bitt",
+      "at": {
+        "line": 3,
+        "col": 28
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "cart",
+      "kind": "prop",
+      "sprite": "cart",
+      "at": {
+        "line": 3,
+        "col": 4
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "ream",
+      "kind": "npc",
+      "sprite": "ream",
+      "at": {
+        "line": 1,
+        "col": 28
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "jetty.talk-bitt",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "bitt"
+      }
+    },
+    {
+      "id": "jetty.talk-ream",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "ream"
+      }
+    },
+    {
+      "id": "jetty.nets-gone",
+      "once": true,
+      "on": "text",
+      "anchor": "cart",
+      "text": ".ccccc............="
+    },
+    {
+      "id": "jetty.crates-gone",
+      "once": true,
+      "on": "text",
+      "anchor": "cart",
+      "text": "....nnnnnn.........="
+    },
+    {
+      "id": "jetty.clear",
+      "once": true,
+      "on": "text",
+      "anchor": "cart",
+      "text": ".............="
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "jetty.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 6,
+  "solution": [
+    "b",
+    "d",
+    "b",
+    "b",
+    ".",
+    "2",
+    "<C-u>",
+    "$",
+    "<CR>"
+  ],
+  "hints": [
+    "d deletes; the motion after it says how far. db: back to the start of the word behind you.",
+    "Stand just past a pile, then db. . repeats it."
+  ]
+}

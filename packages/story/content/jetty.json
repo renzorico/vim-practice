@@ -1,0 +1,385 @@
+{
+  "worlds": [
+    {
+      "id": "copper-port",
+      "order": 4,
+      "name": "Copper Port",
+      "stages": [
+        "jetty"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "openingStage": "jetty",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "port.jetty",
+      "world": "copper-port",
+      "title": "The jetty",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "bitt",
+          "objective": "Talk to the dockhand.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "jetty.asked",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "clear",
+          "objective": "Clear the boards for the cart.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "jetty.clear",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "ream",
+          "objective": "Report to the quartermaster.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "jetty"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "jetty.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Copper Port. The ferry leaves you at\nthe far end of the jetty."
+        },
+        {
+          "speaker": "system",
+          "text": "Between you and the quay: crates and\nnets, dumped on the boards."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "jetty.bitt-ask",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "First ferry in a month. And they dumped\nthe cargo on my jetty. Look at it.",
+          "name": "Bitt"
+        },
+        {
+          "speaker": "npc",
+          "text": "My cart runs the boards to the quay.\nIt won't roll over a crate.",
+          "name": "Bitt"
+        },
+        {
+          "speaker": "npc",
+          "text": "Don't x it. From the boards you'd x the\nboards, and those are nailed down.",
+          "name": "Bitt"
+        },
+        {
+          "speaker": "npc",
+          "text": "d deletes. What comes after says how far.\nb: back to the start of the word behind.",
+          "name": "Bitt"
+        },
+        {
+          "speaker": "npc",
+          "text": "Stand just past a pile and db.\nThe boards slide right up to you.",
+          "name": "Bitt"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "jetty.asked",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "jetty.bitt-settled",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "jetty.bitt-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Just past the pile, then db.\nA pile is one word. b finds its start.",
+          "name": "Bitt"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "jetty.again",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Again! ...again.",
+          "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: . repeats your last change.\nAfter db, . is another db."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "jetty.knows-dot",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "jetty.clear",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The last of it goes over the side.\nThe boards run clear from cart to post."
+        },
+        {
+          "speaker": "npc",
+          "text": "Thirteen planks, end to end. Ha!\nUp the ladder. Ream's at the top.",
+          "name": "Bitt"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "jetty.clear",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "jetty.asked",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "jetty.bitt-settled",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "jetty.bitt-done",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Go on. The quay's up the ladder.",
+          "name": "Bitt"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "jetty.ream-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Quartermaster. Nothing reaches my\nwarehouse while that jetty's blocked.",
+          "name": "Ream"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "jetty.ream-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "text": "Cart's rolling. Good. And empty.\nLike my shelves. All of them.",
+          "name": "Ream"
+        },
+        {
+          "speaker": "npc",
+          "text": "No ship since the Flicker. And still\nsomeone fills them. With copies.",
+          "name": "Ream"
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "jetty.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "jetty.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "The warehouse doors stand open.\nRows of shelves, every one bare."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "port.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "manifest"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "port.jetty"
+        }
+      ]
+    },
+    {
+      "id": "jetty.bitt-ask",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.talk-bitt"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.bitt-ask"
+        }
+      ],
+      "unless": "jetty.bitt-settled"
+    },
+    {
+      "id": "jetty.bitt-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.talk-bitt"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.bitt-wait"
+        }
+      ],
+      "onlyIf": "jetty.asked",
+      "unless": "jetty.clear"
+    },
+    {
+      "id": "jetty.again-nets",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.nets-gone"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.again"
+        }
+      ],
+      "unless": "jetty.knows-dot"
+    },
+    {
+      "id": "jetty.again-crates",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.crates-gone"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.again"
+        }
+      ],
+      "unless": "jetty.knows-dot"
+    },
+    {
+      "id": "jetty.clear",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.clear"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.clear"
+        }
+      ]
+    },
+    {
+      "id": "jetty.bitt-done",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.talk-bitt"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.bitt-done"
+        }
+      ],
+      "onlyIf": "jetty.clear"
+    },
+    {
+      "id": "jetty.ream-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.talk-ream"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.ream-wait"
+        }
+      ],
+      "unless": "jetty.clear"
+    },
+    {
+      "id": "jetty.ream-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "jetty.talk-ream"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "jetty.ream-through"
+        }
+      ],
+      "onlyIf": "jetty.clear"
+    },
+    {
+      "id": "jetty.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "jetty"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "jetty.end"
+        }
+      ]
+    }
+  ]
+}
