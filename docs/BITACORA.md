@@ -476,6 +476,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-17 · D-5: The Ferry Manifest (3-4); World 3 complete
+**Who:** Opus (design, text, story), Codex (build), Sonnet (review).
+
+**What:** Past the Twin Gates, Semi the ferryman won't sail on a wrong manifest. Pure text, like the Ledger: World 3's motions get you there, World 2's edits fix it. `fo;x` the extra o in the title, `0%` to the passengers' `)` and add the twins, `}3jf2r4` for four coils of rope, `dd` the banned ink, `G f: l D` and `a today.`, `t.` and `a, on three`. The design route is 59 keys, checked in the engine; Codex's par is 57 (`$` instead of `0%` and `t.`). "End of World 3."
+
+**What the checks caught:** Sonnet found no bugs. The par route not using `%` or `t` is accepted: any route that reaches the target clears, and the intro, hints and HUD still teach them.
+
+**Lesson:** In a text stage the target text is the whole contract. Prove one route against it in the engine before writing the brief; the builder then only wires it in.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
