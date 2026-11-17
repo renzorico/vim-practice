@@ -129,6 +129,8 @@ function* baseFieldActions(
   }
 }
 
+const SCROLLS = new Set(['<C-d>', '<C-u>']);
+
 /** Operator counts use the motion vocabulary, but a rejected edit may land safely at a larger count. */
 function* operatorActions(
   state: WorldState, commands: readonly string[], operator: string, prefix: readonly Key[], windowHeight: number,
@@ -136,14 +138,14 @@ function* operatorActions(
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map(line => line.length));
   const totalCells = state.engine.lines.reduce((total, line) => total + Math.max(1, line.length), 0);
-  for (const motion of [...new Set(commands)].filter(command => MOTIONS.has(command)).sort()) {
+  // Scrolls are not operator motions in Vim (`d<C-d>` is an error), so never pair them.
+  for (const motion of [...new Set(commands)].filter(command => MOTIONS.has(command) && !SCROLLS.has(command)).sort()) {
     const sequences = FINDS.has(motion) ? characters.map(char => [motion, char]) : [parseKeys(motion)];
     const maxCount = ['0', '^'].includes(motion) ? 1 : motion === '%' ? 100
-      : ['<C-d>', '<C-u>'].includes(motion) ? Math.min(state.engine.lines.length, windowHeight)
       : ['w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#'].includes(motion) ? totalCells : dimension;
     for (const sequence of sequences) {
       let previous = yield [...prefix, operator, ...sequence];
-      for (let count = ['G', '%', '<C-d>', '<C-u>'].includes(motion) ? 1 : 2; count <= maxCount; count += 1) {
+      for (let count = ['G', '%'].includes(motion) ? 1 : 2; count <= maxCount; count += 1) {
         const current = yield [...prefix, operator, ...String(count), ...sequence];
         if (SATURATING.has(motion) && current !== null && current === previous) break;
         previous = current;
@@ -165,8 +167,10 @@ function* fieldActions(
       if (!commands.includes(command)) continue;
       // The unprefixed dd action already exists in the original vocabulary.
       if (command === 'dd' && prefix.length === 0) continue;
+      // A put's count is how many copies, not a distance: bound it by the map's largest dimension,
+      // and always try at least one (an empty row still takes a put).
       const length = command === 'dd' || command === 'yy' ? state.engine.lines.length
-        : state.engine.lines[state.engine.cursor.line]?.length ?? 0;
+        : Math.max(1, ...state.engine.lines.map(line => line.length), state.engine.lines.length);
       let previous: string | null = null;
       for (let count = 1; count <= length; count += 1) {
         const current = yield [...prefix, ...(count === 1 ? [] : [...String(count)]), ...parseKeys(command)];

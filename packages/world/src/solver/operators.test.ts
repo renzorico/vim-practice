@@ -92,3 +92,13 @@ it('requires a learned and allowed register prefix', () => {
   expect(solveStage(sim, { ...stage, allowedCommands: commands.filter(command => command !== '"') }, legend,
     { learnedCommands: commands, flags: {} }, { maxTurns: 4, maxExpanded: 10000 })).toBeNull();
 });
+
+it('tries put counts beyond the row length, and a plain put on an empty row', () => {
+  expect(rootCommands(['y', 'l', 'p'], ['oooo', 'oooo', 'oooo', 'oooo', 'oooo', 'oooo', 'oooo', 'oooooooo']).has('8p')).toBe(true);
+  expect(rootCommands(['p'], ['']).has('p')).toBe(true);
+});
+
+it('never pairs an operator with a scroll (not a Vim motion)', () => {
+  const seen = rootCommands(['d', 'y', '<C-d>', '<C-u>']);
+  expect([...seen].some(command => command.includes('<C-d>') && /^"?.?[dy]/.test(command))).toBe(false);
+});
