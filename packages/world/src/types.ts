@@ -156,6 +156,10 @@ export interface Area {
  *   - interact: fires when the player presses <CR> in normal mode within reach of `target`.
  *               Costs no turn. Where no interact trigger is in reach, <CR> is Vim's own motion.
  *               If several are in reach, the first in Stage.triggers order fires.
+ *   - text:     fires when a turn ends and the `text.length` characters right after the `anchor`
+ *               entity's cell, on its row, are exactly `text` (World 4: cargo on a shelf). The
+ *               anchor is remapped with the text like any entity, so the check follows edits.
+ *               A removed anchor never fires. Matches only at turn end, never mid-command.
  */
 export type InteractTarget =
   | { readonly type: 'area'; readonly area: Area }
@@ -163,7 +167,9 @@ export type InteractTarget =
   | { readonly type: 'entity'; readonly entity: EntityId };
 
 export type Trigger = TriggerBase &
-  ({ readonly on: 'enter'; readonly area: Area } | { readonly on: 'interact'; readonly target: InteractTarget });
+  ({ readonly on: 'enter'; readonly area: Area }
+    | { readonly on: 'interact'; readonly target: InteractTarget }
+    | { readonly on: 'text'; readonly anchor: EntityId; readonly text: string });
 
 export interface TriggerBase {
   readonly id: TriggerId;

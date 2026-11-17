@@ -76,7 +76,7 @@ const SATURATING = new Set([
 ]);
 
 /** Generate counts lazily; feedback is the simulated identity, or null for a rejection. */
-function* fieldActions(
+function* baseFieldActions(
   state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number,
 ): Generator<readonly Key[], void, string | null> {
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
@@ -129,6 +129,58 @@ function* fieldActions(
   }
 }
 
+const SCROLLS = new Set(['<C-d>', '<C-u>']);
+
+/** Operator counts use the motion vocabulary, but a rejected edit may land safely at a larger count. */
+function* operatorActions(
+  state: WorldState, commands: readonly string[], operator: string, prefix: readonly Key[], windowHeight: number,
+): Generator<readonly Key[], void, string | null> {
+  const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
+  const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map(line => line.length));
+  const totalCells = state.engine.lines.reduce((total, line) => total + Math.max(1, line.length), 0);
+  // Scrolls are not operator motions in Vim (`d<C-d>` is an error), so never pair them.
+  for (const motion of [...new Set(commands)].filter(command => MOTIONS.has(command) && !SCROLLS.has(command)).sort()) {
+    const sequences = FINDS.has(motion) ? characters.map(char => [motion, char]) : [parseKeys(motion)];
+    const maxCount = ['0', '^'].includes(motion) ? 1 : motion === '%' ? 100
+      : ['w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#'].includes(motion) ? totalCells : dimension;
+    for (const sequence of sequences) {
+      let previous = yield [...prefix, operator, ...sequence];
+      for (let count = ['G', '%'].includes(motion) ? 1 : 2; count <= maxCount; count += 1) {
+        const current = yield [...prefix, operator, ...String(count), ...sequence];
+        if (SATURATING.has(motion) && current !== null && current === previous) break;
+        previous = current;
+      }
+    }
+  }
+}
+
+function* fieldActions(
+  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number,
+): Generator<readonly Key[], void, string | null> {
+  yield* baseFieldActions(state, commands, legend, windowHeight);
+  const prefixes: readonly (readonly Key[])[] = commands.includes('"') ? [[], ['"', 'a'], ['"', 'b'], ['"', '0']] : [[]];
+  for (const prefix of prefixes) {
+    for (const operator of ['d', 'y']) {
+      if (commands.includes(operator)) yield* operatorActions(state, commands, operator, prefix, windowHeight);
+    }
+    for (const command of ['dd', 'yy', 'p', 'P']) {
+      if (!commands.includes(command)) continue;
+      // The unprefixed dd action already exists in the original vocabulary.
+      if (command === 'dd' && prefix.length === 0) continue;
+      // A put's count is how many copies, not a distance: bound it by the map's largest dimension,
+      // and always try at least one (an empty row still takes a put).
+      const length = command === 'dd' || command === 'yy' ? state.engine.lines.length
+        : Math.max(1, ...state.engine.lines.map(line => line.length), state.engine.lines.length);
+      let previous: string | null = null;
+      for (let count = 1; count <= length; count += 1) {
+        const current = yield [...prefix, ...(count === 1 ? [] : [...String(count)]), ...parseKeys(command)];
+        if (current !== null && current === previous) break;
+        previous = current;
+      }
+    }
+  }
+}
+
 /** Mirror only the contract's interaction reach; the sim chooses and fires the trigger. */
 function canInteract(state: WorldState, trigger: Trigger): boolean {
   if (trigger.on !== 'interact' || (trigger.once && state.firedTriggers.includes(trigger.id))
@@ -156,10 +208,10 @@ function periodFor(stage: Stage): number {
   return entities.reduce((period, entity) => period / gcd(period, entity.every) * entity.every, 1);
 }
 
-function identity(state: WorldState, period: number, history: boolean, windowHeight: number): string {
+function identity(state: WorldState, period: number, history: boolean, windowHeight: number, registers: readonly string[]): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    engine.lines, registers.map(name => engine.registers[name] ?? null), engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
@@ -180,10 +232,12 @@ export function solveStage(
   const windowHeight = stage.windowHeight ?? 28;
   // Undo/redo futures depend on snapshots, even when current text and cursor match.
   const history = commands.includes('u') || commands.includes('<C-r>');
+  const registers = commands.some(command => command === 'p' || command === 'P' || command === '.')
+    ? (commands.includes('"') ? ['"', '0', 'a', 'b'] : ['"']) : [];
   const initial = sim.init(stage, legend, options);
   const frontier = new Frontier();
   let order = 0;
-  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight), order: order++ };
+  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight, registers), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
   let expanded = 0;
@@ -231,12 +285,12 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
-      if (!rejected) feedback = identity(state, period, history, windowHeight);
+      if (!rejected) feedback = identity(state, period, history, windowHeight, registers);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight, registers), order: order++ };
       const sibling = successors.get(next.identity);
       if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
     }

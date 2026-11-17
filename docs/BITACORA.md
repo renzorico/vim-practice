@@ -487,6 +487,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-17 · E-1: World 4 design, text triggers, operators in the solver
+**Who:** Opus (World 4 design, contract), Codex (build), Sonnet (review).
+
+**What:** World 4 (Copper Port) is designed (`docs/briefs/phase-e/WORLD-4.md`): operator + motion, put, registers; five stages ending with a text stage. Contract: a `text` trigger fires at turn end when the characters right after an anchor entity spell an exact text (cargo on a shelf); the anchor follows edits. The solver now explores `d`/`y` + motions, `yy`, `p`/`P` with counts, and registers `"a "b "0`, only when a stage has learned them, so every existing proof searches exactly as before.
+
+**What the checks caught:** In the sim, before the brief: `c` opens insert mode, which would let the player write terrain, so `c` is only for text stages; `dt|` lands you on the bollard (bump) while `dw` and `dt.` land on boards; `yyp` lands on the new row's first non-blank. Sonnet: puts could never use a count above the row length, nor be tried on an empty row; operators were paired with `<C-d>`/`<C-u>`, which Vim rejects; an anchor off the map was reported as "deletable". Fixed with tests.
+
+**Lesson:** Prototype the verbs before the stages. The Jetty's real lesson (deleting behind you, which nothing before World 4 can do) only showed up once `d` was tried in the sim.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

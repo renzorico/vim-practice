@@ -15,7 +15,7 @@ function missingScript(scripts: ReadonlySet<string>, scriptId: string, owner: st
 }
 
 /** Trigger references: opensScript must name a script, an interact target entity must exist (stage or spawned). */
-export function checkTriggerReferences(stage: Stage): LintIssue[] {
+export function checkTriggerReferences(stage: Stage, legend?: Legend): LintIssue[] {
   const scripts = scriptIds(stage);
   const entities = knownEntityIds(stage);
   return stage.triggers.flatMap((trigger) => {
@@ -25,7 +25,14 @@ export function checkTriggerReferences(stage: Stage): LintIssue[] {
       trigger.on === 'interact' && trigger.target.type === 'entity' && !entities.has(trigger.target.entity)
         ? [errorIssue('missing-entity', `${owner} targets entity "${trigger.target.entity}", which does not exist.`)]
         : [];
-    return [...opens, ...target];
+    const anchor = trigger.on === 'text' ? stage.entities.find(entity => entity.id === trigger.anchor) : undefined;
+    const textIssues = trigger.on !== 'text' ? [] : anchor === undefined
+      ? [errorIssue('missing-entity', `${owner} anchors to entity "${trigger.anchor}", which does not exist in the stage.`)]
+      : legend !== undefined && tileAt(stage, legend, anchor.at) === undefined
+        ? [errorIssue('text-anchor-off-map', `${owner} anchors to entity "${anchor.id}", which is not on a cell of the map.`)]
+      : legend !== undefined && tileAt(stage, legend, anchor.at)?.fixed !== true
+        ? [warningIssue('text-anchor-not-fixed', `${owner} has a deletable anchor cell; deleting it silently disables the trigger.`)] : [];
+    return [...opens, ...target, ...textIssues];
   });
 }
 
