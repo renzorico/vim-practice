@@ -217,3 +217,10 @@ it('accepts only positive integer window heights and omits absent heights', () =
   expect(parseStage(FIXTURE_STAGE)).not.toHaveProperty('windowHeight');
   for (const windowHeight of [0, -1, 1.5]) expect(() => parseStage({ ...FIXTURE_STAGE, windowHeight })).toThrow();
 });
+
+it('validates nonempty text triggers and stage anchor references', () => {
+  const trigger = { id: 'cargo', on: 'text', anchor: 'sign-1', text: 'oil', once: true };
+  expect(parseStage({ ...FIXTURE_STAGE, triggers: [trigger] }).triggers).toEqual([trigger]);
+  expect(StageSchema.safeParse({ ...FIXTURE_STAGE, triggers: [{ ...trigger, text: '' }] }).success).toBe(false);
+  expect(StageSchema.safeParse({ ...FIXTURE_STAGE, triggers: [{ ...trigger, anchor: 'missing' }] }).success).toBe(false);
+});

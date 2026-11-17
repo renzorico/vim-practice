@@ -2,7 +2,7 @@
  * Runtime schemas for legend and stage JSON. They mirror packages/world/src/types.ts field for field:
  * schema.test.ts fails to compile if a field is added, removed or retyped on either side.
  *
- * Structural checks only. Content rules (rows, legend convention, references between stages,
+ * Structural checks plus text-trigger anchor references. Other content rules (rows, legend convention, references between stages,
  * scripts and triggers) live in tools/maps/lint.ts.
  *
  * Optional fields are omitted from the parsed output when absent, never set to undefined, because
@@ -116,7 +116,12 @@ const interactTrigger = z
   .strict()
   .transform(omitUnsetTriggerFields);
 
-const trigger = z.union([enterTrigger, interactTrigger]);
+const textTrigger = z
+  .object({ ...triggerFields, on: z.literal('text'), anchor: z.string(), text: z.string().min(1) })
+  .strict()
+  .transform(omitUnsetTriggerFields);
+
+const trigger = z.union([enterTrigger, interactTrigger, textTrigger]);
 
 const worldEffect = z.discriminatedUnion('type', [
   z.object({ type: z.literal('set-flag'), flag: z.string(), value: z.boolean() }).strict(),
@@ -158,7 +163,7 @@ const clearCondition = z.discriminatedUnion('type', [
   z.object({ type: z.literal('saved') }).strict(),
 ]);
 
-export const StageSchema = z
+const stageSchema = z
   .object({
     id: z.string(),
     world: z.enum(WORLD_IDS),
@@ -189,6 +194,14 @@ export const StageSchema = z
     ...(windowHeight === undefined ? {} : { windowHeight }),
     ...(allowedCommands === undefined ? {} : { allowedCommands }),
   }));
+
+export const StageSchema = stageSchema.superRefine((stage, context) => {
+  stage.triggers.forEach((trigger, index) => {
+    if (trigger.on === 'text' && !stage.entities.some(entity => entity.id === trigger.anchor)) {
+      context.addIssue({ code: 'custom', path: ['triggers', index, 'anchor'], message: 'Text anchor must name a stage entity.' });
+    }
+  });
+});
 
 /** Parses unknown JSON into a Legend. Throws ZodError with the failing paths. */
 export function parseLegend(json: unknown): Legend {

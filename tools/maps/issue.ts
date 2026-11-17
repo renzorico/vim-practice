@@ -23,6 +23,7 @@ export type LintRule =
   | 'auto-script-not-text'
   | 'text-entities'
   | 'text-clear'
+  | 'text-anchor-not-fixed'
   | 'set-rows-range'
   | 'effect-cell'
   | 'effect-row'

@@ -84,7 +84,11 @@ export function createWorldSim(engine: Engine): WorldSim {
       if (next.status === 'playing' && commands.some((command) => SAVE_COMMANDS.includes(command.id))) next = checkpoint(next, events);
       if (next.status !== 'dead') {
         for (const trigger of stage.triggers) {
-          if (trigger.on === 'enter' && eligible(next, trigger) && inside(next.engine.cursor, trigger.area)) {
+          const anchor = trigger.on === 'text' ? next.entities.find(entity => entity.id === trigger.anchor) : undefined;
+          const matches = trigger.on === 'enter' ? inside(next.engine.cursor, trigger.area)
+            : trigger.on === 'text' && anchor !== undefined
+              && next.engine.lines[anchor.at.line]?.slice(anchor.at.col + 1, anchor.at.col + 1 + trigger.text.length) === trigger.text;
+          if (matches && eligible(next, trigger)) {
             next = fire(next, trigger, stage, engine, events);
           }
         }

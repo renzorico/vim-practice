@@ -146,7 +146,7 @@ export function checkAreas(stage: Stage, legend?: Legend): LintIssue[] {
     if (trigger.on === 'enter') {
       return areaIssues(stage, trigger.area, label, legend);
     }
-    return trigger.target.type === 'area' ? areaIssues(stage, trigger.target.area, label, legend) : [];
+    return trigger.on === 'interact' && trigger.target.type === 'area' ? areaIssues(stage, trigger.target.area, label, legend) : [];
   });
   const clearAreas = stage.clear.flatMap((condition) =>
     condition.type === 'reach' ? areaIssues(stage, condition.area, 'A reach clear condition', legend) : [],

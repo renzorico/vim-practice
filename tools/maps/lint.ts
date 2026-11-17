@@ -36,7 +36,7 @@ export function lintStageAgainst(stage: Stage, legend: Legend, storySpawns: read
     ...checkStartAndEntities(authored, legend),
     ...checkUniqueIds(authored),
     ...checkAreas(stage, legend),
-    ...checkTriggerReferences(authored),
+    ...checkTriggerReferences(authored, legend),
     ...checkClearReferences(stage),
     ...checkAutoScript(stage),
     ...checkSetRowsRange(stage),
