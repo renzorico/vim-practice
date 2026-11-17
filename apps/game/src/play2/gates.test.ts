@@ -98,11 +98,16 @@ it.each([
   }
 });
 it.each([LEARNER, LEARNER.replace('2l<C-d>', '2l<C-d><C-u><C-d>')])('learner and wait-a-beat routes clear alive: %s', route => {
-  const clear = keys(start(), route);
+  let clear = keys(start(), route);
+  while (clear.queue[0]?.type === 'dialogue') clear = controller.reduce(clear, '<CR>');
+  expect(clear.world.status).toBe('cleared');
+  expect(clear.world.hearts).toBeGreaterThanOrEqual(2);
+  expect(clear.world.turn).toBe(route === LEARNER ? 15 : 17);
   const ended = dismiss(clear);
-  expect(ended.world.status).toBe('cleared');
+  expect(ended.world.stage).toBe('manifest');
+  expect(ended.world.script?.id).toBe('manifest.book');
   expect(ended.world.hearts).toBeGreaterThanOrEqual(2);
-  expect(ended.world.turn).toBe(route === LEARNER ? 15 : 17);
+  expect(ended.world.turn).toBe(0);
   expect(ended.story.statues).toContain('R');
 });
 it('Continue restores gates and Wordwood has castle R', () => {
@@ -112,7 +117,7 @@ it('Continue restores gates and Wordwood has castle R', () => {
   const saved = readProgress(() => storage, stages.map(e => e.stage.id));
   if (!saved) throw new Error('Missing save');
   expect(dismiss(controller.resume(saved)).world.stage).toBe('gates');
-  expect(content.worlds.find(w => w.id === 'wordwood')).toMatchObject({ castle: 'gates', statue: 'R', stages: ['canopy', 'glades', 'gates'] });
+  expect(content.worlds.find(w => w.id === 'wordwood')).toMatchObject({ castle: 'gates', statue: 'R', stages: ['canopy', 'glades', 'gates', 'manifest'] });
 });
 it.each(['%', '<C-d>', '<C-u>'])('Glades rejects %s', key => {
   const before = dismiss(controller.resume({ stage: 'glades', story: storyEngine.init(content) }));
