@@ -1,0 +1,121 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "wordwood.manifest",
+      "world": "wordwood",
+      "title": "The ferry manifest",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "manifest",
+          "objective": "Set the ferry manifest right.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "manifest"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "manifest.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "gates"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "wordwood.manifest"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "manifest"
+        }
+      ]
+    },
+    {
+      "id": "manifest.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "manifest"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "manifest.end"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "manifest.intro",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Semi",
+          "text": "Ferry's ready. Manifest isn't.\nI don't sail on a wrong manifest."
+        },
+        {
+          "speaker": "npc",
+          "name": "Semi",
+          "text": "Title's misspelt. Twins aren't listed.\nRope's short. And someone wrote in ink."
+        },
+        {
+          "speaker": "npc",
+          "name": "Semi",
+          "text": "Ink's banned on the water. Strike it.\nAnd the notes say last checked: never."
+        },
+        {
+          "speaker": "system",
+          "text": "Everything you learned in the Wordwood\nworks on text: f ; t % } G."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "manifest.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Semi",
+            "text": "Right, then. On three, as the twins say."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Three! ...three."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "The ferry pulls out. Behind you, the\nWordwood. Ahead, the lights of Copper Port."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 3."
+          }
+        }
+      ],
+      "then": []
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { createWorldSim, playKeys, stageReplayIssue } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
 import { lintStage } from '../../../../tools/maps/lint.js';
 import { canopy, canopyLegend, content, ledger, stages } from './content.js';
-import { createSession, GLADES_COMMANDS, LEDGER_COMMANDS, LEARNED_COMMANDS, LOWLANDS_COMMANDS, QUARRY_COMMANDS, WORDWOOD_COMMANDS, type Session } from './session.js';
+import { createSession, stageCommands, WORDWOOD_COMMANDS, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { animationSteps } from '../scene/animate.js';
@@ -137,8 +137,7 @@ it('Canopy lints with zero issues and the supplied solution replays in seven tur
 });
 it('stageReplayIssue passes for every bundled stage with its own command set', () => {
   for (const entry of stages) {
-    const learnedCommands = entry.stage.id === 'glades' ? GLADES_COMMANDS : entry.stage.id === 'ledger' ? LEDGER_COMMANDS : entry.stage.world === 'wordwood' ? WORDWOOD_COMMANDS
-      : entry.stage.world === 'quarry' ? QUARRY_COMMANDS : entry.stage.world === 'lowlands' ? LOWLANDS_COMMANDS : LEARNED_COMMANDS;
+    const learnedCommands = stageCommands(entry.stage);
     const replay = sessionSolver({ sim, storyEngine, content, ...entry });
     expect(stageReplayIssue(replay, entry.stage, entry.legend, { learnedCommands, flags: {} }), entry.stage.id).toBeNull();
   }

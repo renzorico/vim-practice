@@ -7,7 +7,8 @@
       "stages": [
         "canopy",
         "glades",
-        "gates"
+        "gates",
+        "manifest"
       ],
       "castle": "gates",
       "statue": "R"
