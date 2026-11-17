@@ -1,4 +1,4 @@
-import { gates, manifest } from './play2/content.js';
+import { gates, manifest, jetty } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Session } from './play2/session.js';
 import type { ProgressStorage } from './play2/progress.js';
@@ -85,8 +85,8 @@ function flush(): void {
   }
   throw new Error('Hooks did not settle');
 }
-function key(value: string, repeat = false, meta = false): KeyEvent {
-  const event = new KeyEvent(value, repeat, meta);
+function key(value: string, repeat = false, meta = false, ctrl = false): KeyEvent {
+  const event = new KeyEvent(value, repeat, meta, ctrl);
   window.dispatchEvent(event); flush(); return event;
 }
 function session(): Session {
@@ -153,6 +153,8 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('manifest');
   play(manifest.solution);
   vi.advanceTimersByTime(400); flush(); dismiss();
+  expect(session().world.stage).toBe('jetty');
+  play(jetty.solution); dismiss();
   expect(session().world.status).toBe('cleared');
   key('Enter'); // title
   key('j'); key('Enter');
@@ -164,7 +166,11 @@ function dismiss(): void {
   for (let lines = 0; session().queue.length && lines < 100; lines += 1) key('Enter');
 }
 function play(input: readonly string[]): void {
-  for (const value of input) { dismiss(); key(value === '<CR>' ? 'Enter' : value === '<Esc>' ? 'Escape' : value); }
+  for (const value of input) {
+    dismiss();
+    const control = /^<C-(.)>$/.exec(value)?.[1];
+    key(control ?? (value === '<CR>' ? 'Enter' : value === '<Esc>' ? 'Escape' : value), false, false, control !== undefined);
+  }
 }
 function savedProgress(): { stage: string; story: Session['story'] } {
   return JSON.parse(values.get(PROGRESS_KEY) ?? '{}') as { stage: string; story: Session['story'] };

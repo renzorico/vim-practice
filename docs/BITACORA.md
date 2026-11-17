@@ -498,6 +498,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-17 · E-2: The Jetty (stage 4-1), World 4 opens
+**Who:** Opus (design, sim proof, brief, browser check), Codex (build), Sonnet (review).
+
+**What:** Copper Port's first stage. Junk is dumped on the jetty behind you; Bitt's cart needs the boards clear, end to end. Boards are fixed and junk is not walkable, so `x`, `r`, `dw` and `dt.` cannot clear it: only `db` from the board just past a pile (then `.`) works, and the boards slide up to you. The goal is a `text` trigger on the cart whose text ends in the pier post, so only a shorter walkway matches. Par 6 (`b db b . 2<C-u> $ <CR>`); learner route 7 turns; World 3 commands find nothing (10 turns, 40,000 expansions). New: `PORT_COMMANDS` (`GATES_COMMANDS` + `d`), the copper-port world, port sprites, a splash-and-slide animation for deleted junk.
+
+**What the checks caught:** In the sim, before the brief: jumps fly over junk (`F.`, `2<C-u>`, `2G` reach anything), so junk cannot be a wall and a ladder-alignment design was dropped; `13r.` paints junk into boards, so the trigger text includes the next fixed tile. Sonnet: clearing before talking to Bitt never set `jetty.asked` (quest step and `d` key caps stuck): the clear now sets it. A full-vocabulary solver test asserted nothing at 200 expansions: removed, with the reason in a comment.
+
+**Lesson:** In a world where jumps only check the landing cell, an edit goal must be a trigger on the text itself, and the text must pin the length, not just the characters.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

@@ -1,3 +1,6 @@
+import jettyJson from '../../../../packages/world/content/jetty/jetty.json';
+import jettyLegendJson from '../../../../packages/world/content/jetty/jetty.legend.json';
+import jettyStoryJson from '../../../../packages/story/content/jetty.json';
 import manifestJson from '../../../../packages/world/content/manifest/manifest.json';
 import manifestStoryJson from '../../../../packages/story/content/manifest.json';
 import gatesJson from '../../../../packages/world/content/gates/gates.json';
@@ -67,7 +70,11 @@ export const gatesLegend = parseLegend(gatesLegendJson);
 // Best known 57-key route, replayed with the engine; optimality is unproven.
 export const manifest = parseStage(manifestJson);
 export const manifestLegend = quarryLegend;
-export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }, { stage: canopy, legend: canopyLegend }, { stage: glades, legend: gladesLegend }, { stage: gates, legend: gatesLegend }, { stage: manifest, legend: manifestLegend }];
+// Best known: focused b/d/./<C-u>/$ search finds 6 turns in 80 expansions.
+// Full PORT_COMMANDS search hit 40,000 expansions at maxTurns 6; global optimality is unproven.
+export const jetty = parseStage(jettyJson);
+export const portLegend = parseLegend(jettyLegendJson);
+export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }, { stage: canopy, legend: canopyLegend }, { stage: glades, legend: gladesLegend }, { stage: gates, legend: gatesLegend }, { stage: manifest, legend: manifestLegend }, { stage: jetty, legend: portLegend }];
 
 // Validate the original JSON, rather than assigning Zod's inferred optional `undefined`
 // properties to the stricter contract. Bundled JSON cannot contain undefined values.
@@ -76,11 +83,11 @@ function assertStoryJson(value: unknown): asserts value is StoryContent {
 }
 const bundledStory: unknown = {
   ...storyJson,
-  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds, ...canopyStoryJson.worlds],
-  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes, ...canopyStoryJson.cutscenes, ...gladesStoryJson.cutscenes, ...gatesStoryJson.cutscenes, ...manifestStoryJson.cutscenes],
-  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests, ...canopyStoryJson.quests, ...gladesStoryJson.quests, ...gatesStoryJson.quests, ...manifestStoryJson.quests],
-  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues, ...canopyStoryJson.dialogues, ...gladesStoryJson.dialogues, ...gatesStoryJson.dialogues, ...manifestStoryJson.dialogues],
-  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions, ...canopyStoryJson.reactions, ...gladesStoryJson.reactions, ...gatesStoryJson.reactions, ...manifestStoryJson.reactions],
+  worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds, ...canopyStoryJson.worlds, ...jettyStoryJson.worlds],
+  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes, ...canopyStoryJson.cutscenes, ...gladesStoryJson.cutscenes, ...gatesStoryJson.cutscenes, ...manifestStoryJson.cutscenes, ...jettyStoryJson.cutscenes],
+  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests, ...canopyStoryJson.quests, ...gladesStoryJson.quests, ...gatesStoryJson.quests, ...manifestStoryJson.quests, ...jettyStoryJson.quests],
+  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues, ...canopyStoryJson.dialogues, ...gladesStoryJson.dialogues, ...gatesStoryJson.dialogues, ...manifestStoryJson.dialogues, ...jettyStoryJson.dialogues],
+  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions, ...canopyStoryJson.reactions, ...gladesStoryJson.reactions, ...gatesStoryJson.reactions, ...manifestStoryJson.reactions, ...jettyStoryJson.reactions],
 };
 assertStoryJson(bundledStory);
 export const content = bundledStory;
