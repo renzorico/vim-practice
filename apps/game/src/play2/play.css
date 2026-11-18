@@ -67,3 +67,8 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .script-panel { padding: 16px; }
   .script-heading { top: -16px; padding-top: 16px; }
 }
+
+.yanked-slot { position: absolute; top: 8px; right: 16px; z-index: 5; display: flex; align-items: center; gap: 12px; margin: 0; color: var(--text-soft); font-size: 13px; }
+.yanked-slot__cargo { display: flex; align-items: center; min-width: 104px; max-width: min(360px, 80vw); min-height: 28px; overflow-x: auto; border: 1px solid var(--line-strong); padding: 2px 6px; color: var(--text); scrollbar-color: var(--line-strong) var(--surface); }
+.yanked-slot__cargo svg { width: 24px; height: 24px; }
+.yanked-slot__cargo code { white-space: pre; }

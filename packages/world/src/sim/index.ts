@@ -67,7 +67,9 @@ export function createWorldSim(engine: Engine): WorldSim {
       const commitEvents: WorldEvent[] = [];
       const candidate = changeBuffer({ ...next, engine: pending.engine, entities: pending.entities }, result.state.lines,
         legend, commitEvents, 'player', edits, result.state);
-      const bump = fixedChanged(pending.engine.lines, result.state.lines, legend, edits)
+      // Undo/redo revisit legal states; landing validation still applies.
+      const restoresHistory = commands.every(command => command.id === 'u' || command.id === '<C-r>');
+      const bump = !restoresHistory && fixedChanged(pending.engine.lines, result.state.lines, legend, edits)
         ? { reason: 'fixed' as const, at: result.state.cursor }
         : validateMovement(pending.engine, result.state, commands, candidate.entities, legend);
       if (bump !== null) {

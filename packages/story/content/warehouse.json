@@ -1,0 +1,388 @@
+{
+  "worlds": [],
+  "openingStage": "warehouse",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "port.warehouse",
+      "world": "copper-port",
+      "title": "The warehouse",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "stock",
+          "objective": "Copy the tally onto the three shelves.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "warehouse.stocked",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "ream",
+          "objective": "Report to the quartermaster.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "warehouse"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "warehouse.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The warehouse. Two tally racks,\nthree bare shelves."
+        },
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "One of each, on the tally. All the stock\nthe port has left. The tally stays put."
+        },
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "So you copy it. y yanks: it copies\nand takes nothing. yw copies one word."
+        },
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "p puts it back, just after you.\nStand on a shelf's [ and p."
+        },
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "Oil on the top shelf and the middle one.\nRope on the bottom. Then come and see me."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "warehouse.still",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Still! ...still."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: the yank is still there.\np again puts the same thing again."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.knows-still",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.rope",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Three coils. The bottom shelf is full."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "warehouse.stocked",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "Every shelf. Copied, not carried.\nAnd the tally hasn't lost a drop."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "warehouse.ream-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "A yank holds one thing at a time.\nOil first, both shelves. Then the rope."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "warehouse.ream-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "Good. Now you know how it's done.\nSo does someone else."
+        },
+        {
+          "speaker": "npc",
+          "name": "Ream",
+          "text": "Every night someone fills my shelves.\nCopies, and wrong ones. Ask at customs."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "warehouse.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Behind the warehouse, the customs shed.\nTwo queues, two kinds of cargo."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "warehouse.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "jetty"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "port.warehouse"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.still-top",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.top"
+      },
+      "once": false,
+      "unless": "warehouse.knows-still",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.still"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.still-middle",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.middle"
+      },
+      "once": false,
+      "unless": "warehouse.knows-still",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.still"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.rope",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.bottom"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.rope"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.top",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.top"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.top",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.middle",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.middle"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.middle",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.bottom",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.bottom"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.bottom",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.oil-top",
+      "when": {
+        "type": "flag",
+        "flag": "warehouse.top",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "warehouse.middle",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.oil",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.oil-middle",
+      "when": {
+        "type": "flag",
+        "flag": "warehouse.middle",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "warehouse.top",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.oil",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.stocked-oil",
+      "when": {
+        "type": "flag",
+        "flag": "warehouse.oil",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "warehouse.bottom",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.stocked",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.stocked-bottom",
+      "when": {
+        "type": "flag",
+        "flag": "warehouse.bottom",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "warehouse.oil",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "warehouse.stocked",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "warehouse.stocked",
+      "when": {
+        "type": "flag",
+        "flag": "warehouse.stocked",
+        "value": true
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.stocked"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.ream-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.talk-ream"
+      },
+      "once": false,
+      "unless": "warehouse.stocked",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.ream-wait"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.ream-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "warehouse.talk-ream"
+      },
+      "once": false,
+      "onlyIf": "warehouse.stocked",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "warehouse.ream-through"
+        }
+      ]
+    },
+    {
+      "id": "warehouse.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "warehouse"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "warehouse.end"
+        }
+      ]
+    }
+  ]
+}

@@ -509,6 +509,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-18 · E-3: The Warehouse (stage 4-2)
+**Who:** Opus (design, sim proof, brief, contract change, browser check), Codex (build), Sonnet (review).
+
+**What:** Three bare shelves and a tally (`[oooo]` oil, `[rrr]` rope) that stays put. `y` + motion copies, `p` puts after the cursor: `yw f[ p` stocks the shelf in a rack's row, the middle oil shelf has no rack (the yank is still there: `p` again), and the rope yank replaces the oil, so order matters. Shelves are `text` triggers ending in `]#`; four flag reactions set `warehouse.stocked` on the third shelf in any order. Par 15 (`b 2k l yw f[ p 4h 2j p 4h 2j 3b yw f[ p <CR>`), measured by hand: the session solver runs out of memory before depth 15. New: `WAREHOUSE_COMMANDS` (`PORT_COMMANDS` + `y`, `p`), a HUD "yanked" slot, warehouse sprites, yank glint and put animations. Contract: undo and redo are exempt from the fixed rule (they only revisit legal states), so `u` takes back a put that copied fixed tiles.
+
+**What the checks caught:** In the sim, before the brief: `u` after a put of fixed tiles bumped 'fixed' (only `:e!` could fix it), hence the contract change; a put whose last cell is a shelf lip `]` bumps, so `yf]` cannot overfill; cargo is not fixed so `x`/`u` fix an overfill. Codex: triggers fire at turn end, so a literal `p p` fires on the first `p`; the test uses `2p` (never fires) instead. Sonnet (0 blocking): the old-commands bound took 29 s and its invariant wrapper was unproven: now 1,000 expansions with a step counter (10 s); FieldView read layout on every render in every stage, FieldScene reset tile alpha and rebuilt the warehouse decorations on every frame: all gated. Browser: Ream's "Every shelf" played before "Three coils" (the flag cascade ran before the trigger dialogue): reactions reordered.
+
+**Lesson:** A rule that protects the map must not block undo: undo only goes back to states the player already reached. And the order of story reactions is the order lines play, cascades included.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
