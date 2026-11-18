@@ -43,7 +43,7 @@ vi.mock('phaser', () => ({ default: {
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: (key: string) => fake.textures.has(key),
       createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
-    cameras = { main: { setBackgroundColor() { return this; }, setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn } };
+    cameras = { main: { setBackgroundColor() { return this; }, setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn, getWorldPoint: (x: number, y: number) => ({ x, y }) } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
@@ -603,4 +603,69 @@ it('highlights the fixed tile which rejects a Jetty delete without splashing', a
   expect(fake.images.some(image => image.texture === 'field:splash')).toBe(false);
   scene.finish();
   expect(tile?.clearTint).toHaveBeenCalled();
+});
+
+it.each([false, true])('draws warehouse cargo, stencils, tally plates and remote counter; animates put (reduced=%s)', async reducedMotion => {
+  const { warehouse, warehouseLegend } = await import('../play2/content.js');
+  const { WAREHOUSE_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: WAREHOUSE_COMMANDS, flags: {} };
+  const stage = { ...warehouse, start: { line: 1, col: 2 } };
+  let state = sim.init(stage, warehouseLegend, options);
+  const initial = { state, stage, legend: warehouseLegend, events: [], showSource: true, registerTarget: { x: 300, y: -20 } };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  for (const sprite of ['warehouse-floor', 'warehouse-floor:1', 'warehouse-wall', 'oil', 'cargo-rope', 'shelf-end', 'shelf-lip', 'shelf-top', 'shelf-middle', 'shelf-bottom', 'counter-end']) {
+    expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  }
+  expect(fake.texts.filter(text => text.text === 'TALLY')).toHaveLength(2);
+  for (const key of ['y', 'w']) {
+    const result = sim.step(state, key, stage, warehouseLegend, options);
+    state = result.state; scene.present({ ...initial, ...result });
+  }
+  const glints = fake.images.filter(image => image.depth === 5 && image.texture === 'field:oil');
+  expect(glints).toHaveLength(reducedMotion ? 0 : 4);
+  if (!reducedMotion) expect(glints.every(image => image.setTintFill.mock.calls.length > 0)).toBe(true);
+  if (!reducedMotion) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    clock.targets.value = 0.7; clock.onUpdate();
+    expect(glints[0]?.x).toBeGreaterThan(2 * 16 + 8);
+    expect(glints[0]?.y).toBeLessThan(24);
+  }
+  scene.finish();
+  for (const image of glints) expect(image.destroy).toHaveBeenCalledOnce();
+  for (const key of ['f', '[']) {
+    const result = sim.step(state, key, stage, warehouseLegend, options);
+    state = result.state; scene.present({ ...initial, ...result });
+  }
+  const result = sim.step(state, 'p', stage, warehouseLegend, options);
+  scene.present({ ...initial, ...result });
+  const lip = fake.images.find(image => image.texture === 'field:shelf-lip' && image.y === 24 && image.x === (reducedMotion ? 15 : 11) * 16 + 8 && !image.destroy.mock.calls.length);
+  expect(lip).toBeDefined();
+  if (!reducedMotion) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    clock.targets.value = 0.5; clock.onUpdate();
+    expect(lip?.x).toBe(13 * 16 + 8);
+    scene.finish();
+  }
+  expect(lip?.x).toBe(15 * 16 + 8);
+  expect(result.state.engine.lines[1]).toBe('#[oooo]___[oooo]#');
+  expect(fake.images.filter(image => !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
+});
+it('lights the cell which rejects a warehouse put, without cargo growth', async () => {
+  const { warehouse, warehouseLegend } = await import('../play2/content.js');
+  const { WAREHOUSE_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: WAREHOUSE_COMMANDS, flags: {} };
+  const stage = { ...warehouse, start: { line: 1, col: 2 } };
+  const before = playKeys(sim, stage, warehouseLegend, options, ['y', 'f', ']', 'f', '[']).state;
+  const initial = { state: before, events: [], stage, legend: warehouseLegend, showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  const rejected = sim.step(before, 'p', stage, warehouseLegend, options);
+  scene.present({ ...initial, ...rejected });
+  expect(rejected.state.turn).toBe(before.turn);
+  expect(rejected.events).toContainEqual({ type: 'bump', reason: 'wall', at: { line: 1, col: 15 } });
+  expect(fake.images.some(image => image.texture === 'field:warehouse-wall' && image.depth === 3
+    && image.x === 15 * 16 + 8 && image.setTintFill.mock.calls.length > 0)).toBe(true);
+  scene.finish();
 });

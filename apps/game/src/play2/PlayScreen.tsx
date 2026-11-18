@@ -1,3 +1,4 @@
+import { YankedSlot } from './YankedSlot.js';
 import { createEngine } from '@escape/engine';
 import { ScriptPanel } from './ScriptPanel.js';
 import type { Beat } from '@escape/story';
@@ -44,7 +45,9 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       <h1>{stage.title}</h1>
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
-    <div className="play-field">{script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
+    <div className="play-field">
+      {stage.id === 'warehouse' && <YankedSlot value={world.engine.registers['"']} turn={world.turn} />}
+      {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
@@ -101,10 +104,11 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['glades.rope'] ? ['G'] : []),
     ...(flags['gates.met-shut'] ? ['%'] : []),
     ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : []),
-    ...(flags['jetty.asked'] ? ['d', 'db'] : [])];
+    ...(flags['jetty.asked'] ? ['d', 'db'] : []),
+    ...(stageId === 'warehouse' ? ['y', 'yw', 'p'] : [])];
 }
 
 export function pendingKeyLabel(keys: readonly string[]): string {
   const pending = keys.join('');
-  return pending ? `${pending}${/[ftgd]$/.test(pending) ? '…' : ''}` : '\u00a0';
+  return pending ? `${pending}${/[ftgdy]$/.test(pending) ? '…' : ''}` : '\u00a0';
 }

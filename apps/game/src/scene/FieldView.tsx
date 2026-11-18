@@ -43,7 +43,15 @@ export function FieldView(props: FieldFrame): JSX.Element {
   }, []);
 
   // New snapshots finish playback; repeated snapshots leave the shared clock running.
-  useEffect(() => { scene.current?.present(props); });
+  useEffect(() => {
+    // Layout reads only where the yank slot exists (they force a reflow on every render).
+    const yanks = props.stage.id === 'warehouse';
+    const slot = yanks ? document.querySelector('[data-yank-slot]')?.getBoundingClientRect() : undefined;
+    const field = yanks ? host.current?.getBoundingClientRect() : undefined;
+    scene.current?.present({ ...props, ...(slot && field ? {
+      registerTarget: { x: slot.right - field.left - 20, y: slot.top - field.top + slot.height / 2 },
+    } : {}) });
+  });
 
   return <div ref={host} role="img" aria-label={`${props.stage.title}. ${props.stage.goalText}`}
     style={{ position: 'relative', width: '100%', height: '100%', minWidth: 0, minHeight: 'min(360px, 60svh)', overflow: 'hidden' }} />;

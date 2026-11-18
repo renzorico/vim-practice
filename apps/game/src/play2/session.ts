@@ -30,6 +30,7 @@ export const WORDWOOD_COMMANDS = [...QUARRY_COMMANDS, 'f', 't', ';', ','] as con
 export const GLADES_COMMANDS = [...WORDWOOD_COMMANDS, '{', '}', 'gg', 'G'] as const;
 export const GATES_COMMANDS = [...GLADES_COMMANDS, '%', '<C-d>', '<C-u>'] as const;
 export const PORT_COMMANDS = [...GATES_COMMANDS, 'd'] as const;
+export const WAREHOUSE_COMMANDS = [...PORT_COMMANDS, 'y', 'p'] as const;
 /** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
@@ -37,7 +38,7 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {

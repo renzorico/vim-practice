@@ -1,0 +1,158 @@
+{
+  "id": "warehouse",
+  "world": "copper-port",
+  "type": "field",
+  "title": "The Warehouse",
+  "goalText": "Copy the tally onto the three shelves and report to the quartermaster.",
+  "map": [
+    "#############",
+    "#[oooo]___[]#",
+    "#_########_###",
+    "#_________[]#",
+    "#_########_##_",
+    "#[rrr]____[]#",
+    "#############"
+  ],
+  "legend": "warehouse",
+  "start": {
+    "line": 3,
+    "col": 5
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "ream",
+      "kind": "npc",
+      "sprite": "ream",
+      "at": {
+        "line": 4,
+        "col": 13
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "shelf-top",
+      "kind": "prop",
+      "sprite": "shelf-top",
+      "at": {
+        "line": 1,
+        "col": 10
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "shelf-middle",
+      "kind": "prop",
+      "sprite": "shelf-middle",
+      "at": {
+        "line": 3,
+        "col": 10
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "shelf-bottom",
+      "kind": "prop",
+      "sprite": "shelf-bottom",
+      "at": {
+        "line": 5,
+        "col": 10
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "warehouse.talk-ream",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "ream"
+      }
+    },
+    {
+      "id": "warehouse.top",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-top",
+      "text": "oooo]#"
+    },
+    {
+      "id": "warehouse.middle",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-middle",
+      "text": "oooo]#"
+    },
+    {
+      "id": "warehouse.bottom",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-bottom",
+      "text": "rrr]#"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "warehouse.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 15,
+  "solution": [
+    "b",
+    "2",
+    "k",
+    "l",
+    "y",
+    "w",
+    "f",
+    "[",
+    "p",
+    "4",
+    "h",
+    "2",
+    "j",
+    "p",
+    "4",
+    "h",
+    "2",
+    "j",
+    "3",
+    "b",
+    "y",
+    "w",
+    "f",
+    "[",
+    "p",
+    "<CR>"
+  ],
+  "hints": [
+    "y copies and takes nothing. yw copies one word. Stand on a shelf's [ and p puts it just after you.",
+    "The yank holds one thing at a time. Stock both oil shelves before you copy the rope."
+  ]
+}

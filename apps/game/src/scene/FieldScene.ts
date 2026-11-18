@@ -1,3 +1,4 @@
+import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
 import { jettyDeletion, JETTY_SPLASH_FRACTION, type JettyDeletion } from './jettyDeletion.js';
 import Phaser from 'phaser';
 import { createEngine } from '@escape/engine';
@@ -16,6 +17,7 @@ export interface FieldFrame {
   readonly legend: Legend;
   readonly stage: Stage;
   readonly showSource: boolean;
+  readonly registerTarget?: { readonly x: number; readonly y: number };
   readonly hazards?: readonly Area[];
 }
 
@@ -48,6 +50,10 @@ export class FieldScene extends Phaser.Scene {
   private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
   private dust: Phaser.GameObjects.Image[] = [];
   private junk: { image: Phaser.GameObjects.Image; splash: Phaser.GameObjects.Image; at: Position }[] = [];
+  private transfer: WarehouseTransfer | null = null;
+  private cargo: { image: Phaser.GameObjects.Image; at: Position }[] = [];
+  private decorations: Phaser.GameObjects.Container | undefined;
+  private decoratedStage: string | null = null;
   private deletion: JettyDeletion | null = null;
   private danger: Phaser.GameObjects.Image | undefined;
   private gateMarks: Phaser.GameObjects.Container | undefined;
@@ -85,6 +91,7 @@ export class FieldScene extends Phaser.Scene {
     this.gateMarks = this.add.container(0, 0).setDepth(1);
     this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
+    this.decorations = this.add.container(0, 0).setDepth(0.8);
     this.label = this.add.text(8, 8, '', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
@@ -98,6 +105,7 @@ export class FieldScene extends Phaser.Scene {
       this.clearUnwriting();
       this.clearDust();
       this.clearJunk();
+      this.clearTransfer();
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -125,6 +133,7 @@ export class FieldScene extends Phaser.Scene {
     this.clearUnwriting();
     this.clearDust();
     this.clearJunk();
+    this.clearTransfer();
   }
 
   present(frame: FieldFrame): void {
@@ -154,10 +163,12 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.cameras.main.setBackgroundColor(frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.captureTransfer(frame);
     this.captureJunk(frame);
     this.captureDust(frame);
     this.captureUnwriting(frame);
     this.syncCells();
+    this.syncWarehouseDecorations();
     this.syncHazards(frame);
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
@@ -176,6 +187,41 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.play(animationSteps(frame.events, this.reducedMotion, frame.state.pending !== null));
+  }
+
+  private syncWarehouseDecorations(): void {
+    // Rebuilt only when the stage changes: present() runs every frame.
+    if (this.decoratedStage === this.frame.stage.id) return;
+    this.decoratedStage = this.frame.stage.id;
+    this.decorations?.removeAll(true);
+    if (this.frame.stage.id !== 'warehouse') return;
+    // The remote counter is visible before the shelf extends the field to Ream.
+    this.decorations?.add(this.add.image(center(13), center(4), this.texture('counter-end')));
+    for (const line of [1, 5]) this.decorations?.add(this.add.text(center(1), center(line) - 7, 'TALLY', {
+      fontFamily: 'monospace', fontSize: '5px', color: '#18292b', backgroundColor: '#d39b69',
+    }).setOrigin(0.5, 1));
+  }
+
+  private clearTransfer(): void {
+    // Only undo what a transfer did, so other stages' alpha effects are left alone.
+    const active = this.transfer !== null || this.cargo.length > 0;
+    for (const cell of this.cargo) cell.image.destroy();
+    this.cargo = [];
+    this.transfer = null;
+    if (active) for (const cell of this.cells.values()) { cell.tile.setAlpha(1); cell.glyph.setAlpha(1); }
+  }
+
+  private captureTransfer(frame: FieldFrame): void {
+    this.clearTransfer();
+    if (this.reducedMotion) return;
+    this.transfer = warehouseTransfer(this.previousState, frame.state, frame.events);
+    if (this.transfer?.type !== 'yank') return;
+    for (const cell of this.transfer.cells) {
+      const sprite = frame.legend.tiles.find(tile => tile.char === cell.char)?.sprite;
+      if (!sprite) continue;
+      this.cargo.push({ at: cell.at, image: this.add.image(center(cell.at.col), center(cell.at.line),
+        this.texture(sprite === 'rope' ? 'cargo-rope' : sprite)).setDepth(5) });
+    }
   }
 
   private clearJunk(): void {
@@ -206,6 +252,15 @@ export class FieldScene extends Phaser.Scene {
   private captureDust(frame: FieldFrame): void {
     this.clearDust();
     if (this.deletion || this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
+    // A rejected put can land beyond the unchanged ragged row. Mark that
+    // attempted cell too, rather than losing its wall feedback off the field.
+    if (frame.stage.id === 'warehouse') {
+      for (const event of frame.events) {
+        if (event.type !== 'bump' || this.cells.has(`${event.at.line}:${event.at.col}`)) continue;
+        this.dust.push(this.add.image(center(event.at.col), center(event.at.line), this.texture('warehouse-wall'))
+          .setDepth(3).setTintFill(0xd39b69));
+      }
+    }
     const blink = animationSteps(frame.events).find(step => step.type === 'blink');
     if (blink?.type === 'blink') {
       for (const at of [blink.from, blink.to]) this.dust.push(
@@ -309,7 +364,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
-        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -468,7 +523,7 @@ export class FieldScene extends Phaser.Scene {
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = Math.max(this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
+    const duration = Math.max(this.transfer ? PLAYBACK_BUDGET_MS : 0, this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
     if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
@@ -491,6 +546,33 @@ export class FieldScene extends Phaser.Scene {
           const x = center(col + this.deletion.junk.length * (1 - slide));
           cell.tile.setPosition(x, center(cell.line));
           cell.glyph.setPosition(x, center(cell.line));
+        }
+      }
+      if (this.transfer?.type === 'yank') {
+        const target = this.frame.registerTarget;
+        const destination = target ? this.cameras.main.getWorldPoint(target.x, target.y) : undefined;
+        for (const cell of this.cargo) {
+          const progress = Math.max(0, (clock.value - 0.35) / 0.65);
+          cell.image.setTintFill(0xffe8b2).setAlpha(1 - progress);
+          if (destination) cell.image.setPosition(
+            center(cell.at.col) + (destination.x - center(cell.at.col)) * progress,
+            center(cell.at.line) + (destination.y - center(cell.at.line)) * progress);
+        }
+      } else if (this.transfer?.type === 'put') {
+        const { line, col: start, length } = this.transfer;
+        for (const [key, cell] of this.cells) {
+          const col = Number(key.split(':')[1]);
+          if (cell.line !== line || col < start) continue;
+          if (col < start + length) {
+            const alpha = Math.min(1, Math.max(0, clock.value * length - (col - start)));
+            cell.tile.setAlpha(alpha);
+            cell.glyph.setAlpha(alpha);
+          }
+          else {
+            const x = center(col - length * (1 - clock.value));
+            cell.tile.setPosition(x, center(line));
+            cell.glyph.setPosition(x, center(line));
+          }
         }
       }
       let cameraCell: { line: number; col: number } | undefined;
@@ -534,7 +616,7 @@ export class FieldScene extends Phaser.Scene {
           };
         }
         if (step.type === 'walk' || step.type === 'jump' || step.type === 'scroll' || step.type === 'entity-move') {
-          const arc = !this.deletion && step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
+          const arc = !this.transfer && !this.deletion && step.type === 'jump' ? Math.sin(Math.PI * progress) * TILE_SIZE * (Math.abs(step.to.line - step.from.line) > LONG_JUMP_ROWS ? LONG_JUMP_ARC_SCALE : 1) : 0;
           const offset = step.type === 'entity-move' ? this.pileOffsets.get(step.entity) ?? 0 : 0;
           target.setPosition(
             center(step.from.col + (step.to.col - step.from.col) * progress) - offset,
@@ -547,7 +629,7 @@ export class FieldScene extends Phaser.Scene {
           else target.clearTint();
         } else if (step.type === 'bump') {
           const cell = this.cells.get(`${step.at.line}:${step.at.col}`);
-          if (progress < 1 && this.frame.stage.id === 'jetty') cell?.tile.setTintFill(0xd39b69);
+          if (progress < 1 && ['jetty', 'warehouse'].includes(this.frame.stage.id)) cell?.tile.setTintFill(0xd39b69);
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }
@@ -560,7 +642,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.clearTransfer(); this.syncActors(); },
     });
   }
 }

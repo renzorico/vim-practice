@@ -5,7 +5,8 @@
       "order": 4,
       "name": "Copper Port",
       "stages": [
-        "jetty"
+        "jetty",
+        "warehouse"
       ],
       "castle": null,
       "statue": null

@@ -1,4 +1,4 @@
-import { gates, manifest, jetty } from './play2/content.js';
+import { gates, manifest, jetty, warehouse } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Session } from './play2/session.js';
 import type { ProgressStorage } from './play2/progress.js';
@@ -155,6 +155,8 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   vi.advanceTimersByTime(400); flush(); dismiss();
   expect(session().world.stage).toBe('jetty');
   play(jetty.solution); dismiss();
+  expect(session().world.stage).toBe('warehouse');
+  play(warehouse.solution); dismiss();
   expect(session().world.status).toBe('cleared');
   key('Enter'); // title
   key('j'); key('Enter');

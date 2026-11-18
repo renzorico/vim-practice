@@ -49,7 +49,7 @@ it('opens Copper Port after every manifest ending beat, keeping the story and st
   expect(session.world.stage).toBe('jetty');
   expect(session.story.clearedStages).toContain('manifest');
   expect(session.story.quests['port.jetty']).toEqual({ step: 0, done: false });
-  expect(content.worlds).toContainEqual({ id: 'copper-port', order: 4, name: 'Copper Port', stages: ['jetty'], castle: null, statue: null });
+  expect(content.worlds).toContainEqual({ id: 'copper-port', order: 4, name: 'Copper Port', stages: ['jetty', 'warehouse'], castle: null, statue: null });
 });
 it('introduces the ferry, then teaches d and db on the first interaction', () => {
   expect(controller.init().queue[0]).toMatchObject({ dialogue: 'jetty.intro' });
@@ -121,10 +121,11 @@ it('Ream waits before the clear and gives both through lines afterwards', () => 
   expect(session.world.status).toBe('cleared');
   expect(session.queue[0]).toMatchObject({ cutscene: 'jetty.end' });
   expect(screen(session)).not.toContain('To be continued.');
-  expect(screen(dismiss(session))).toContain('To be continued.');
+  expect(dismiss(session).world.stage).toBe('warehouse');
 });
 it('the learner clears in seven turns with all three hearts', () => {
-  const cleared = dismiss(route(start(), '<CR>bdbb.3h2k$<CR>'));
+  const through = route(start(), '<CR>bdbb.3h2k$<CR>');
+  const cleared = controller.reduce(controller.reduce(through, '<CR>'), '<CR>');
   expect(cleared.world.status).toBe('cleared');
   expect(cleared.world.hearts).toBe(3);
   expect(cleared.world.turn).toBe(7);

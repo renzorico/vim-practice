@@ -1,0 +1,61 @@
+{
+  "id": "warehouse",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "warehouse-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": "_",
+      "kind": "barrier",
+      "sprite": "warehouse-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "warehouse-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "[",
+      "kind": "barrier",
+      "sprite": "shelf-end",
+      "walkable": true,
+      "fixed": true,
+      "label": "shelf end"
+    },
+    {
+      "char": "]",
+      "kind": "barrier",
+      "sprite": "shelf-lip",
+      "walkable": false,
+      "fixed": true,
+      "label": "shelf lip"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "oil",
+      "walkable": true,
+      "fixed": false,
+      "label": "oil"
+    },
+    {
+      "char": "r",
+      "kind": "object",
+      "sprite": "rope",
+      "walkable": true,
+      "fixed": false,
+      "label": "rope"
+    }
+  ]
+}

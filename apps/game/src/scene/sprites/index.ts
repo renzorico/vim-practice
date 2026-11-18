@@ -1,3 +1,4 @@
+import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
 import { BOARDS, PORT_WATER, PIER_POST, PORT_LADDER, WAREHOUSE, CRATES, NETS, CART, BITT, REAM, SPLASH } from './port.js';
 import { SEMI } from './manifest.js';
 import { HEARTWOOD, HOLLOW, GATE_OPEN, GATE_CLOSE, GATE_GLINT, OPE, SHUT } from './gates.js';
@@ -25,6 +26,9 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'warehouse-floor': WAREHOUSE_FLOOR, 'warehouse-wall': WAREHOUSE_WALL,
+  'shelf-end': SHELF_END, 'shelf-lip': SHELF_LIP, oil: OIL, 'cargo-rope': CARGO_ROPE,
+  'shelf-top': OIL_STENCIL, 'shelf-middle': OIL_STENCIL, 'shelf-bottom': ROPE_STENCIL, 'counter-end': COUNTER_END,
   boards: BOARDS, 'port-water': PORT_WATER, 'pier-post': PIER_POST, 'port-ladder': PORT_LADDER,
   warehouse: WAREHOUSE, crates: CRATES, nets: NETS, cart: CART, bitt: BITT, ream: REAM, splash: SPLASH,
   semi: SEMI,

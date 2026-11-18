@@ -53,7 +53,8 @@ export interface TileDef {
   /**
    * A command whose result would delete or replace a fixed tile is cancelled as a whole
    * (event 'bump', reason 'fixed'). A fixed tile may still be shifted along its row or moved up
-   * or down by an edit elsewhere. Save Stones and quest objects are fixed. Maps have no border
+   * or down by an edit elsewhere. Undo and redo are exempt: they only return the buffer to a state
+   * the player reached legally, so `u` can take back a put that copied fixed tiles. Save Stones and quest objects are fixed. Maps have no border
    * tiles: the edge of the world is the edge of the buffer (see rule 2).
    */
   readonly fixed: boolean;
@@ -439,7 +440,8 @@ export interface WorldOptions {
  *    'wall' or 'solid-entity'). `h j k l` (with or without a count) walk: every cell on the way
  *    must pass the same test. Every other motion jumps: only the landing cell is tested. The same
  *    landing test applies after an edit, an undo or a redo, wherever the engine leaves the cursor.
- * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled. After ANY
+ * 3. BUFFER CHANGES. A command that deletes or replaces a `fixed` tile is cancelled (not undo or
+ *    redo: see `TileDef.fixed`). After ANY
  *    change to the field buffer, whatever caused it (a committed command, undo, redo, effect,
  *    entity), positions are remapped by one rule that also covers split and joined rows. Every
  *    change is a list of EXACT EDITS (`TextEdit` from the engine contract: offsets in the text
