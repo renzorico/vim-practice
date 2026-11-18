@@ -1,0 +1,77 @@
+{
+  "id": "customs",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "customs-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "customs-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "customs-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "[",
+      "kind": "barrier",
+      "sprite": "crate-end",
+      "walkable": true,
+      "fixed": true,
+      "label": "crate end"
+    },
+    {
+      "char": "]",
+      "kind": "barrier",
+      "sprite": "crate-lip",
+      "walkable": false,
+      "fixed": true,
+      "label": "crate lip"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "customs-post",
+      "walkable": true,
+      "fixed": true,
+      "label": "customs post"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "oil",
+      "walkable": true,
+      "fixed": false,
+      "label": "oil"
+    },
+    {
+      "char": "r",
+      "kind": "object",
+      "sprite": "rope",
+      "walkable": true,
+      "fixed": false,
+      "label": "rope"
+    },
+    {
+      "char": "n",
+      "kind": "object",
+      "sprite": "nets",
+      "walkable": false,
+      "fixed": false,
+      "label": "nets"
+    }
+  ]
+}

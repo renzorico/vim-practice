@@ -11,8 +11,8 @@ Twist seed: the yank register `"0` "remembers what you copied even after you del
 | Stage | Teaches | The moment | Needs |
 |---|---|---|---|
 | 4-1 The Jetty | `d` + motion, backwards: `db`, then `.` | Junk dumped on the jetty behind you. The cart needs the boards clear, end to end (a text trigger). The boards are fixed and the junk is not walkable, so `x` and `r` cannot do it: only a delete that stops short of your own board. `db` clears a pile and the boards slide up to you. Forward `dw`/`dt` come in 4-2 and 4-3. | E-1 |
-| 4-2 The Warehouse | `y` + motion (`yw`, `y4l`), `p`; the yank holds one thing | Three bare shelves and a tally (one oil rack, one rope rack) that must stay put. `yw f[ p` copies a rack onto the shelf in its row; the middle oil shelf has no rack, so `p` again; the rope yank replaces the oil, so order matters. `P` and `yy` move to 4-3/4-4. | E-1 text trigger, E-3 undo exemption |
-| 4-3 Customs | registers `"a`-`"z`, `"0` | Two cargo kinds, two shelves. Clearing junk with `d` overwrites what you yanked; `"0p` still has it. `"ay` / `"bp` keep cargo apart. | E-1 |
+| 4-2 The Warehouse | `y` + motion (`yw`, `y4l`), `p`; the yank holds one thing | Three bare shelves and a tally (one oil rack, one rope rack) that must stay put. `yw f[ p` copies a rack onto the shelf in its row; the middle oil shelf has no rack, so `p` again; the rope yank replaces the oil, so order matters. `P` and `yy` move to 4-4. | E-1 text trigger, E-3 undo exemption |
+| 4-3 Customs | registers `"a`-`"z`, `"0` | Crate 1 behind nets on the oil rack's row: `yw`, `db` the nets, and `p` would put nets (it bumps): `"0p`. Crate 2 wants oil then rope, and the rope rack is far: `"byw` carries it. Registers save a round trip (16 vs 20). `P` moves to 4-4. | E-3 |
 | 4-4 The Counterfeiter (castle) | counts on `p`, `.` | He pastes fakes onto the shelf every few turns; you out-copy him with `4p` and `.`. Statue D. | E-1, maybe a new behaviour |
 | 4-5 The Harbourmaster's Ledger (text) | `c` + motion (`cw`, `ct`, `C`), all of World 4 | The Lighthouse letter becomes the port manifest: change words, move lines. | none |
 

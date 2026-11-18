@@ -1,0 +1,151 @@
+{
+  "id": "customs",
+  "world": "copper-port",
+  "type": "field",
+  "title": "Customs",
+  "goalText": "Fill both crates and report to the customs officer.",
+  "map": [
+    "###################",
+    "#[oooo]|..nnn..[]#",
+    "#.######.#####",
+    "#..........[]#",
+    "#.################.",
+    "#[rrr]#############",
+    "###################"
+  ],
+  "legend": "customs",
+  "start": {
+    "line": 4,
+    "col": 1
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "tare",
+      "kind": "npc",
+      "sprite": "tare",
+      "at": {
+        "line": 4,
+        "col": 18
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "post",
+      "kind": "prop",
+      "sprite": "post",
+      "at": {
+        "line": 1,
+        "col": 7
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "crate",
+      "kind": "prop",
+      "sprite": "crate",
+      "at": {
+        "line": 3,
+        "col": 11
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "customs.talk-tare",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "tare"
+      }
+    },
+    {
+      "id": "customs.nets-gone",
+      "once": true,
+      "on": "text",
+      "anchor": "post",
+      "text": "....[]#"
+    },
+    {
+      "id": "customs.oil",
+      "once": true,
+      "on": "text",
+      "anchor": "post",
+      "text": "....[oooo]#"
+    },
+    {
+      "id": "customs.mixed",
+      "once": true,
+      "on": "text",
+      "anchor": "crate",
+      "text": "oooorrr]#"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "customs.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 16,
+  "solution": [
+    "j",
+    "l",
+    "\"",
+    "b",
+    "y",
+    "w",
+    "h",
+    "4",
+    "k",
+    "l",
+    "y",
+    "w",
+    "3",
+    "w",
+    "d",
+    "b",
+    "f",
+    "[",
+    "\"",
+    "0",
+    "p",
+    "8",
+    "h",
+    "2",
+    "j",
+    "f",
+    "[",
+    "\"",
+    "0",
+    "p",
+    "\"",
+    "b",
+    "p",
+    "<CR>"
+  ],
+  "hints": [
+    "d keeps what it deletes, so after db p would put the nets. \"0p puts your last yank.",
+    "\"b before y or p names a register: \"byw holds the rope while you carry the oil."
+  ]
+}
