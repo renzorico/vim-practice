@@ -11,7 +11,7 @@ Twist seed: the yank register `"0` "remembers what you copied even after you del
 | Stage | Teaches | The moment | Needs |
 |---|---|---|---|
 | 4-1 The Jetty | `d` + motion, backwards: `db`, then `.` | Junk dumped on the jetty behind you. The cart needs the boards clear, end to end (a text trigger). The boards are fixed and the junk is not walkable, so `x` and `r` cannot do it: only a delete that stops short of your own board. `db` clears a pile and the boards slide up to you. Forward `dw`/`dt` come in 4-2 and 4-3. | E-1 |
-| 4-2 The Warehouse | `yl`/`y4l`, `yw`, `p`, `P`, `yy`/`p` | Empty shelves marked `[`. Yank four oil from the stock row, walk to the shelf, `p`. The quartermaster checks each shelf. | E-1 text trigger |
+| 4-2 The Warehouse | `y` + motion (`yw`, `y4l`), `p`; the yank holds one thing | Three bare shelves and a tally (one oil rack, one rope rack) that must stay put. `yw f[ p` copies a rack onto the shelf in its row; the middle oil shelf has no rack, so `p` again; the rope yank replaces the oil, so order matters. `P` and `yy` move to 4-3/4-4. | E-1 text trigger, E-3 undo exemption |
 | 4-3 Customs | registers `"a`-`"z`, `"0` | Two cargo kinds, two shelves. Clearing junk with `d` overwrites what you yanked; `"0p` still has it. `"ay` / `"bp` keep cargo apart. | E-1 |
 | 4-4 The Counterfeiter (castle) | counts on `p`, `.` | He pastes fakes onto the shelf every few turns; you out-copy him with `4p` and `.`. Statue D. | E-1, maybe a new behaviour |
 | 4-5 The Harbourmaster's Ledger (text) | `c` + motion (`cw`, `ct`, `C`), all of World 4 | The Lighthouse letter becomes the port manifest: change words, move lines. | none |
@@ -24,6 +24,7 @@ Twist seed: the yank register `"0` "remembers what you copied even after you del
 5. `yyp`/`dd` + `p` land on the new row's first non-blank: rows that will be put must start with a walkable cell.
 6. Paste shifts the rest of the row right, fixed tiles included. Put fixed tiles only where sliding is harmless, and mark shelves with an anchor entity, never an absolute column.
 7. Jumps fly over anything (only the landing cell is checked), so junk is never a wall. A goal that needs an edit is a text trigger on an anchor, and its text includes the next fixed tile so the walkway's length counts: `r` can paint junk into boards but cannot shorten the row (measured on 4-1: `13r.` matched a dots-only text).
+8. Put lands the cursor on the last put cell, which must be walkable: rack and shelf lips `]` are not walkable, so a yank that includes one cannot be put (measured on 4-2). Cargo is not fixed (so `u` and `x` fix an overfill); undo and redo are exempt from the fixed rule (E-3), so a put of fixed tiles can be taken back.
 
 ## Contract (E-1, Opus, on this branch)
 `Trigger` gains `{ on: 'text'; anchor: EntityId; text: string }`: fires at turn end when the `text.length` characters right after the anchor entity's cell are exactly `text`. The anchor remaps with edits, so the check follows the shelf.
