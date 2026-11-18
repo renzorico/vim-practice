@@ -12,7 +12,7 @@ const engine = createEngine();
 /** Presentation asks the Vim engine for exact ranges; no motion rules live here. */
 export function warehouseTransfer(before: WorldState | undefined, after: WorldState,
   events: readonly WorldEvent[]): WarehouseTransfer | null {
-  if (before?.stage !== 'warehouse' || after.stage !== 'warehouse') return null;
+  if (!before || !['warehouse', 'customs'].includes(before.stage) || after.stage !== before.stage) return null;
   const command = events.find(event => event.type === 'command')?.command;
   if (!command || command.id !== 'y' && command.id !== 'p') return null;
   const yanking = command.id === 'y';

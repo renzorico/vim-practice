@@ -520,6 +520,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-18 · E-4: Customs (stage 4-3)
+**Who:** Opus (design, sim proof, brief, browser check), Codex (build), Sonnet (review).
+
+**What:** Registers. Crate 1 sits behind nets on the oil rack's row: `yw` the oil, `3w db` the nets, and now the unnamed register holds the nets (`p` bumps: the cursor would land on a net), so `"0p`. Crate 2 wants oil then rope and the rope rack is far: `"byw` carries the rope (a named yank leaves `"0` alone). Par 16 by hand (`j l "byw h 4k l yw 3w db f[ "0p 8h 2j f[ "0p "bp <CR>`); without `"` the best route is 20 (one extra trip). Goals are `text` triggers on the customs post and the crate; `customs.nets-gone` fires on the `db` so Dot teaches `"0p` at the right moment. New: `CUSTOMS_COMMANDS` (`WAREHOUSE_COMMANDS` + `"`), the register prefix gated before 4-3, a HUD register list (`"`, `"0`, named), customs sprites, a step cache in the session solver.
+
+**What the checks caught:** In the sim, before the brief: floor `_` is a word character, so `__nnn__` was one word and `db` could not isolate the nets (floor is `.` again); with the rope rack on crate 2's row registers saved almost nothing, so it moved to the far row. Sonnet: the old-commands bound ran 4.7 M steps in 20 s (counted operators fan out inside one expansion, so maxExpanded does not cap steps): now 5 turns / 300 expansions, 4.6 s. Accepted as intended: the `"` prefix is rejected in every stage before customs (a command list is the lesson plan); keys that leave a command pending skip the story engine. Browser: par route 16 turns, 3 hearts, plain `p` after `db` bumps, no console errors. Nit for the art pass: customs walls and floor are close in contrast.
+
+**Lesson:** A solver bound in expansions is not a bound in time when one expansion can hold thousands of counted commands: measure steps, not nodes.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

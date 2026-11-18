@@ -46,7 +46,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field">
-      {stage.id === 'warehouse' && <YankedSlot value={world.engine.registers['"']} turn={world.turn} />}
+      {['warehouse', 'customs'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id === 'customs'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
@@ -105,10 +105,11 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['gates.met-shut'] ? ['%'] : []),
     ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : []),
     ...(flags['jetty.asked'] ? ['d', 'db'] : []),
-    ...(stageId === 'warehouse' ? ['y', 'yw', 'p'] : [])];
+    ...(['warehouse', 'customs'].includes(stageId) ? ['y', 'yw', 'p'] : []),
+    ...(stageId === 'customs' ? ['"', '"a', '"0'] : [])];
 }
 
 export function pendingKeyLabel(keys: readonly string[]): string {
   const pending = keys.join('');
-  return pending ? `${pending}${/[ftgdy]$/.test(pending) ? '…' : ''}` : '\u00a0';
+  return pending ? `${pending}${(/[ftgdy]$/.test(pending) || /^"[a-z0-9-]?$/.test(pending)) ? '…' : ''}` : '\u00a0';
 }

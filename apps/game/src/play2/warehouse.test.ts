@@ -48,7 +48,7 @@ it('enters the warehouse after jetty.end, keeping story and starting its quest',
   expect(session.queue[0]).toMatchObject({ dialogue: 'warehouse.intro' });
   expect(session.story.clearedStages).toContain('jetty');
   expect(session.story.quests['port.warehouse']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(world => world.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse']);
+  expect(content.worlds.find(world => world.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs']);
 });
 it('yw costs a turn, preserves the tally and copies only its four oil jars', () => {
   const initial = move(start(), 1, 2);
@@ -135,8 +135,9 @@ it.each([false, true])('presents every Ream line exclusively when stocked=%s', s
   }
 });
 it('replays the supplied solution in 15 turns with three hearts and ends after warehouse.end', () => {
+  const local = createSession({ sim, storyEngine, content, stage: warehouse, legend: warehouseLegend });
   let session = route(start(), warehouse.solution.join(''));
-  session = dismiss(session);
+  while (session.queue.length) session = local.reduce(session, '<CR>');
   expect(session.world.status).toBe('cleared');
   expect(session.world.turn).toBe(15);
   expect(session.world.hearts).toBe(3);

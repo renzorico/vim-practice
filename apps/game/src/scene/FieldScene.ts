@@ -194,6 +194,10 @@ export class FieldScene extends Phaser.Scene {
     if (this.decoratedStage === this.frame.stage.id) return;
     this.decoratedStage = this.frame.stage.id;
     this.decorations?.removeAll(true);
+    if (this.frame.stage.id === 'customs') {
+      this.decorations?.add(this.add.image(center(18), center(4), this.texture('counter-end')));
+      return;
+    }
     if (this.frame.stage.id !== 'warehouse') return;
     // The remote counter is visible before the shelf extends the field to Ream.
     this.decorations?.add(this.add.image(center(13), center(4), this.texture('counter-end')));
@@ -254,10 +258,10 @@ export class FieldScene extends Phaser.Scene {
     if (this.deletion || this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
     // A rejected put can land beyond the unchanged ragged row. Mark that
     // attempted cell too, rather than losing its wall feedback off the field.
-    if (frame.stage.id === 'warehouse') {
+    if (['warehouse', 'customs'].includes(frame.stage.id)) {
       for (const event of frame.events) {
         if (event.type !== 'bump' || this.cells.has(`${event.at.line}:${event.at.col}`)) continue;
-        this.dust.push(this.add.image(center(event.at.col), center(event.at.line), this.texture('warehouse-wall'))
+        this.dust.push(this.add.image(center(event.at.col), center(event.at.line), this.texture(frame.stage.id === 'customs' ? 'customs-wall' : 'warehouse-wall'))
           .setDepth(3).setTintFill(0xd39b69));
       }
     }
@@ -364,7 +368,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
-        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -629,7 +633,7 @@ export class FieldScene extends Phaser.Scene {
           else target.clearTint();
         } else if (step.type === 'bump') {
           const cell = this.cells.get(`${step.at.line}:${step.at.col}`);
-          if (progress < 1 && ['jetty', 'warehouse'].includes(this.frame.stage.id)) cell?.tile.setTintFill(0xd39b69);
+          if (progress < 1 && ['jetty', 'warehouse', 'customs'].includes(this.frame.stage.id)) cell?.tile.setTintFill(0xd39b69);
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }

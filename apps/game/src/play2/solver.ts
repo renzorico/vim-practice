@@ -7,6 +7,8 @@ import { createSession, type Session, type SessionDependencies } from './session
 export function sessionSolver(dependencies: SessionDependencies): WorldSim {
   const controller = createSession(dependencies);
   const sessions = new WeakMap<WorldState, Session>();
+  // Counted operators revisit the same immutable prefix snapshots thousands of times.
+  const steps = new WeakMap<WorldState, Map<string, ReturnType<WorldSim['step']>>>();
   function remember(session: Session) {
     let next = session;
     for (let lines = 0; next.queue.length > 0; lines += 1) {
@@ -23,7 +25,15 @@ export function sessionSolver(dependencies: SessionDependencies): WorldSim {
   }
   return {
     init: () => remember(controller.init()).state,
-    step: (state, key) => remember(controller.reduce(lookup(state), key)),
+    step: (state, key) => {
+      let cached = steps.get(state);
+      if (!cached) { cached = new Map(); steps.set(state, cached); }
+      const found = cached.get(key);
+      if (found) return found;
+      const result = remember(controller.reduce(lookup(state), key));
+      cached.set(key, result);
+      return result;
+    },
     apply: (state, effects, stage, legend) => {
       const result = dependencies.sim.apply(state, effects, stage, legend);
       return remember({ ...lookup(state), world: result.state, lastEvents: result.events });
