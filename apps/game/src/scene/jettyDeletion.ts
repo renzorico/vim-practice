@@ -9,7 +9,7 @@ export interface JettyDeletion {
 }
 /** Read the engine's exact edit; repeated letters cannot identify a deletion by diffing rows. */
 export function jettyDeletion(state: WorldState, events: readonly WorldEvent[]): JettyDeletion | null {
-  if (state.stage !== 'jetty' || state.pending !== null
+  if (!['jetty', 'customs'].includes(state.stage) || state.pending !== null
     || !events.some(event => event.type === 'rows-changed' && event.by === 'player')
     || events.some(event => event.type === 'command' && event.command.kind === 'undo')) return null;
   const snapshot = state.engine.undoStack.at(-1);

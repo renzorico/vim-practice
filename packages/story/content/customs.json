@@ -1,0 +1,336 @@
+{
+  "worlds": [],
+  "openingStage": "customs",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "port.customs",
+      "world": "copper-port",
+      "title": "Customs",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "oil",
+          "objective": "Clear the nets and fill the first crate with oil.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "customs.oil",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "mixed",
+          "objective": "Fill the second crate: oil, then rope.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "customs.mixed",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "tare",
+          "objective": "Report to the customs officer.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "customs"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "customs.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The customs shed. Two crates, one officer,\nand a pile of nets in the way."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Tare. Customs. Nothing leaves without\nthe right cargo in the right crate."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "First crate: oil. Somebody dumped nets\nin front of it. Clear them."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Second crate: oil, then rope.\nThe rope rack is down by you."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "A register is a named hold. \"b before\nyw yanks into b. \"bp puts it back."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "customs.nets-gone",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Gone! ...gone."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: d keeps what it deletes.\np would put the nets now."
+        },
+        {
+          "speaker": "system",
+          "text": "\"0 keeps your last yank, whatever\nyou delete after it. \"0p puts it."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "customs.oil",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Oil. Cleared."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "customs.mixed",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Oil, then rope. In that order. Cleared."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "customs.tare-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Both crates. Oil in the first.\nOil, then rope, in the second."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "customs.tare-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "Clean work. You kept the yank\nwhile the nets went over."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "The copies on Ream's shelves came through\nhere. The clerk kept the yank too."
+        },
+        {
+          "speaker": "npc",
+          "name": "Tare",
+          "text": "He lost the row that said which crates\nwere real. Now he copies everything."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "customs.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "customs.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Behind customs, the old counting house.\nThe clerk's lamp is still lit."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "customs.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "warehouse"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "port.customs"
+        }
+      ]
+    },
+    {
+      "id": "customs.nets-gone-line",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.nets-gone"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "customs.nets-gone"
+        }
+      ]
+    },
+    {
+      "id": "customs.oil-line",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.oil"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "customs.oil"
+        }
+      ]
+    },
+    {
+      "id": "customs.mixed-line",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.mixed"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "customs.mixed"
+        }
+      ]
+    },
+    {
+      "id": "customs.oil",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.oil"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "customs.oil",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "customs.mixed",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.mixed"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "customs.mixed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "customs.cleared-oil",
+      "when": {
+        "type": "flag",
+        "flag": "customs.oil",
+        "value": true
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "customs.cleared",
+          "value": true
+        }
+      ],
+      "onlyIf": "customs.mixed"
+    },
+    {
+      "id": "customs.cleared-mixed",
+      "when": {
+        "type": "flag",
+        "flag": "customs.mixed",
+        "value": true
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "customs.cleared",
+          "value": true
+        }
+      ],
+      "onlyIf": "customs.oil"
+    },
+    {
+      "id": "customs.tare-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.talk-tare"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "customs.tare-wait"
+        }
+      ],
+      "unless": "customs.cleared"
+    },
+    {
+      "id": "customs.tare-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "customs.talk-tare"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "customs.tare-through"
+        }
+      ],
+      "onlyIf": "customs.cleared"
+    },
+    {
+      "id": "customs.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "customs"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "customs.end"
+        }
+      ]
+    }
+  ]
+}
