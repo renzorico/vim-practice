@@ -1,3 +1,4 @@
+import { GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
 import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
@@ -29,6 +30,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  gallery: GALLERY, 'library-wall': LIBRARY_WALL, 'shelf-post': SHELF_POST, 'shelf-gap': SHELF_GAP,
+  book: BOOK, 'library-dust': LIBRARY_DUST, 'dust-puff': DUST_PUFF, quire: QUIRE,
   'counter-floor': COUNTER_FLOOR, 'counter-wall': COUNTER_WALL, 'clerk-desk': CLERK_DESK,
   'crate-row': CRATE_ROW, fake: FAKE, counterfeiter: COUNTERFEITER,
   'customs-floor': CUSTOMS_FLOOR, 'customs-wall': CUSTOMS_WALL, 'customs-post': CUSTOMS_POST,

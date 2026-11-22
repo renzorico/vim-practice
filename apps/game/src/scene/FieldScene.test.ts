@@ -702,3 +702,45 @@ it.each([false, true])('stamps and slides the clerk fake on the shared clock, fi
   expect(fake.images.find(image => image.texture === 'field:counterfeiter' && !image.destroy.mock.calls.length)?.y).toBe(24);
   expect(state.engine.lines[1]).toBe('#|f...................');
 });
+
+it.each([false, true])('renders shelf spaces, posts and Quire; puffs dust before sliding (reduced=%s)', async reducedMotion => {
+  const { stacks, stacksLegend } = await import('../play2/content.js');
+  const { STACKS_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: STACKS_COMMANDS, flags: {} };
+  const before = playKeys(sim, stacks, stacksLegend, options, ['j']).state;
+  const initial = { state: before, stage: stacks, legend: stacksLegend, events: [], showSource: true };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  for (const sprite of ['gallery', 'library-wall', 'shelf-post', 'shelf-gap', 'library-dust', 'quire', 'book', 'book:1', 'book:2']) {
+    expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  }
+  expect(fake.images.some(image => image.texture === 'field:shelf-end')).toBe(false);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 40);
+  let state = before;
+  for (const key of ['d', 'a', 'w']) {
+    const result = sim.step(state, key, stacks, stacksLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const puffs = fake.images.filter(image => image.texture === 'field:dust-puff');
+  if (reducedMotion) {
+    expect(puffs).toHaveLength(0);
+    expect(fake.tween).not.toHaveBeenCalled();
+  } else {
+    expect(puffs).toHaveLength(6);
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    const post = fake.images.find(image => image.texture === 'field:shelf-post'
+      && image.y === 24 && image.x === (stacks.map[1]!.length - 1) * 16 + 8 && !image.destroy.mock.calls.length);
+    const originalX = post?.x;
+    clock.targets.value = 0.2; clock.onUpdate();
+    expect(puffs[0]?.alpha).toBeGreaterThan(0);
+    expect(post?.x).toBe(originalX);
+    clock.targets.value = 0.7; clock.onUpdate();
+    expect(post?.x).toBeLessThan(originalX ?? 0);
+    scene.finish();
+    expect(post?.x).toBe((state.engine.lines[1]!.length - 1) * 16 + 8);
+    for (const puff of puffs) expect(puff.destroy).toHaveBeenCalledOnce();
+  }
+  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 40);
+});

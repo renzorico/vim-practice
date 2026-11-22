@@ -36,3 +36,14 @@ it('every Canopy tile and actor has art, with opaque distant air and two branch 
   expect(SPRITES['air']?.frames[0]?.join('')).not.toContain('.');
   expect(SPRITES['air']?.frames[0]).not.toEqual(SPRITES['branch']?.frames[0]);
 });
+
+it('draws Library materials and Quire, with three distinct book spine colours', async () => {
+  const { stacksLegend } = await import('../../play2/content.js');
+  for (const tile of [...stacksLegend.tiles, stacksLegend.fallback]) {
+    expect(SPRITES[tile.sprite === 'dust' ? 'library-dust' : tile.sprite], tile.sprite).toBeDefined();
+  }
+  expect(SPRITES['quire']).toBeDefined();
+  expect(new Set(SPRITES['book']?.frames.map(frame => frame.join(''))).size).toBe(3);
+  expect(SPRITES['shelf-gap']?.frames[0]?.join('')).not.toContain('.');
+  expect(SPRITES['shelf-gap']?.frames).not.toEqual(SPRITES['blank']?.frames);
+});

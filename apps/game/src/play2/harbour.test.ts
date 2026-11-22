@@ -112,7 +112,7 @@ it('shows the target beside the editor, Cleat portrait and the World 4 keys', ()
   expect(html).toContain('cell--cursor-block');
   expect(learnedKeycaps({}, true, 'harbour')).toEqual(expect.arrayContaining(['c', 'cw', 'ct', 'C', 'P', 'yy', '.']));
 });
-it('presents End of World 4 before To be continued', () => {
+it('presents End of World 4 before entering the stacks', () => {
   let session = keys(start(), PROVIDED);
   const ending = content.cutscenes.find(cutscene => cutscene.id === 'harbour.end')!;
   for (const beat of ending.beats) {
@@ -121,7 +121,8 @@ it('presents End of World 4 before To be continued', () => {
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
-  expect(screen(session)).toContain('To be continued.');
+  expect(session.world.stage).toBe('stacks');
+  expect(session.queue[0]).toMatchObject({ dialogue: 'stacks.intro' });
 });
 it('validates content and replays every bundled stage with its own commands', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);

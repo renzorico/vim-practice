@@ -255,8 +255,8 @@ export class FieldScene extends Phaser.Scene {
     for (const [offset, char] of [...this.deletion.junk].entries()) {
       const at = { line: this.deletion.line, col: this.deletion.col + offset };
       this.junk.push({ at,
-        image: this.add.image(center(at.col), center(at.line), this.texture(char === 'c' ? 'crates' : 'nets')).setDepth(3),
-        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture('splash')).setDepth(3).setAlpha(0),
+        image: this.add.image(center(at.col), center(at.line), this.texture(frame.stage.id === 'stacks' ? char === 'd' ? 'library-dust' : 'shelf-gap' : char === 'c' ? 'crates' : 'nets')).setDepth(3),
+        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture(frame.stage.id === 'stacks' ? 'dust-puff' : 'splash')).setDepth(3).setAlpha(0),
       });
     }
   }
@@ -384,6 +384,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm' || sprite === 'fake') ? (this.reducedMotion ? 0 : this.idleFrame)
+        : sprite === 'book' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 3
         : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
@@ -454,6 +455,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private entitySprite(sprite: string): string {
+    if (this.frame.stage.id === 'stacks' && sprite === 'shelf-end') return 'shelf-post';
     return ['glades', 'gates'].includes(this.frame.stage.id) && sprite === 'lamp-lit' ? 'glade-lamp-lit' : sprite;
   }
 
@@ -556,8 +558,10 @@ export class FieldScene extends Phaser.Scene {
       if (this.deletion) {
         const tip = Math.min(1, clock.value / JETTY_SPLASH_FRACTION);
         for (const cell of this.junk) {
-          cell.image.setPosition(center(cell.at.col), center(cell.at.line) + tip * 8).setAlpha(1 - tip);
-          cell.image.setAngle(tip * 35);
+          const dust = this.frame.stage.id === 'stacks';
+          cell.image.setPosition(center(cell.at.col), center(cell.at.line) + tip * (dust ? -4 : 8)).setAlpha(1 - tip);
+          cell.image.setAngle(dust ? 0 : tip * 35);
+          if (dust) cell.splash.setScale(1 + tip * 0.5);
           cell.splash.setAlpha(Math.sin(tip * Math.PI));
         }
         for (const [key, cell] of this.cells) {

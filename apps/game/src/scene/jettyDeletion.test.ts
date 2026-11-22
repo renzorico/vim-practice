@@ -20,3 +20,12 @@ it.each([
   if (junk === null) expect(plan).toBeNull();
   else expect(plan).toEqual({ line: 3, col, junk });
 });
+
+it.each([
+  ['jdaw', 'ddddd '], ['jdiw', 'ddddd'], ['jdawj.', 'dddd '], ['jdawu', null], ['jdawu<C-r>', null],
+] as const)('reads a shelf dust edit and its real spaces for %s', async (keys, junk) => {
+  const { stacks, stacksLegend } = await import('../play2/content.js');
+  const { STACKS_COMMANDS } = await import('../play2/session.js');
+  const result = playKeys(sim, stacks, stacksLegend, { learnedCommands: STACKS_COMMANDS, flags: {} }, parseKeys(keys));
+  expect(jettyDeletion(result.state, result.events)?.junk ?? null).toBe(junk);
+});

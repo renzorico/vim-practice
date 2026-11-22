@@ -43,7 +43,7 @@
     },
     {
       "char": " ",
-      "kind": "barrier",
+      "kind": "ground",
       "sprite": "shelf-gap",
       "walkable": true,
       "fixed": false,

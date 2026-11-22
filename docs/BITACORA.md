@@ -561,6 +561,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · F-2: The Stacks (stage 5-1), World 5 opens
+**Who:** Opus (design, sim proof, brief, browser check, legend fix), Codex (build), Sonnet (review).
+
+**What:** The Library's first stage. Shelves are text: books are words, gaps are real spaces, dust words sit between books. From the gallery, `j` drops into the middle of a dust word; `daw` takes it and its space wherever you stand, and the shift of each delete lines the cursor up over the next shelf's dust, so `j .` repeats down the stack. `diw` leaves a double gap and the shelf's text trigger rejects it. Par 6 (`j daw j . j . <CR>`); without text objects 9. New: `STACKS_COMMANDS`, the library world, Quire, library sprites, a dust puff.
+
+**What the checks caught:** In the sim, before the brief: `dw` from a word's start equals `daw`, so the stage needed arrivals in the middle of a word (vertical drops); the solver cannot reach depth 6 even on 10 commands, so par is a replay test. Sonnet (0 bugs): the gap tile was authored as `barrier`, against the contract (a space is `ground`), and Codex had added a linter exception for it: the legend is fixed and the exception removed. Browser: 6 turns, 3 hearts, no console errors.
+
+**Lesson:** When a builder adds an exception to a check, the input is usually wrong: fix the content, not the linter.
+
+---
+
 ## Parking lot
 - Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
 Ideas that are out of v1 scope, kept so they are not lost:
