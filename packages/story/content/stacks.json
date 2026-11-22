@@ -6,7 +6,8 @@
       "name": "The Library",
       "stages": [
         "stacks",
-        "reading"
+        "reading",
+        "archive"
       ],
       "castle": null,
       "statue": null

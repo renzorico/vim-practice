@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createEngine, parseKeys } from '@escape/engine';
 import { FIXTURE_LEGEND as legend, FIXTURE_STAGE } from '../fixtures.js';
 import type { Stage, WorldOptions, WorldState, WorldStepResult } from '../types.js';
+import { StageSchema } from '../schema.js';
 import { createWorldSim, playKeys } from './index.js';
 
 const sim = createWorldSim(createEngine());
@@ -80,5 +81,36 @@ describe('turn-end text triggers', () => {
     expect(result.state.script?.id).toBe('sign');
     expect(fired(playKeys(sim, stage, legend, { ...options, flags: { ready: true, blocked: true } }, ['l']))
       .map(event => event.trigger)).toEqual(['enter', 'blocked']);
+  });
+});
+
+describe('multiline text triggers', () => {
+  const trigger = { id: 'stocked', on: 'text', anchor: 'shelf', text: 'o\noo', once: false } as const;
+  it('accepts newline text in the stage schema', () => {
+    expect(StageSchema.safeParse(room({ triggers: [trigger] })).success).toBe(true);
+  });
+  it.each([
+    [['oSo', 'oo'], true],
+    [['oSo', 'o'], false],
+    [['oSo', 'oT'], false],
+    [['oSo'], false],
+    [['oSo', '', 'oo'], false],
+  ] as const)('checks both rows of %j', (map, matches) => {
+    const stage = room({ map, triggers: [trigger] });
+    expect(fired(playKeys(sim, stage, legend, options, ['l']))).toHaveLength(matches ? 1 : 0);
+  });
+  it('follows the anchor when rows are inserted above it; an inserted row inside breaks the match', () => {
+    const stage = room({ map: ['oo', 'oSo', 'oo'], start: { line: 0, col: 0 },
+      entities: [{ ...room().entities[0]!, at: { line: 1, col: 1 } }], triggers: [trigger] });
+    const initial = sim.init(stage, legend, options);
+    const above = sim.apply(initial, [{ type: 'move-player', to: { line: 0, col: 0 } }], stage, legend).state;
+    const inserted = advance({ ...above, engine: { ...above.engine,
+      registers: { '"': { text: 'oo\n', linewise: true } } } }, 'p', stage);
+    expect(inserted.state.entities[0]?.at).toEqual({ line: 2, col: 1 });
+    expect(fired(inserted)).toHaveLength(1);
+    const inside = sim.apply(initial, [{ type: 'move-player', to: { line: 1, col: 0 } }], stage, legend).state;
+    const broken = advance({ ...inside, engine: { ...inside.engine,
+      registers: { '"': { text: 'o\n', linewise: true } } } }, 'p', stage);
+    expect(fired(broken)).toEqual([]);
   });
 });

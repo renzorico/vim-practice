@@ -1,0 +1,143 @@
+{
+  "worlds": [],
+  "openingStage": "archive",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "library.archive",
+      "world": "library",
+      "title": "The archive",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "file",
+          "objective": "File the misfiled block and copy the atlases.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "archive"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "archive.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The archive. Shelves of paragraphs,\nan aisle between each one."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "Index. Archivist. You are standing in a\nparagraph that the contract misfiled."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "It goes after the bibles. dap lifts the\nwhole paragraph, aisle and all."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "And the contract wants a copy of the atlases\nby the door. yap, then P above the rail."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Para! ...graph."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: ip is the paragraph alone,\nap takes the blank row after it too."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "archive.filed",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "Atlases, bibles, the misfiled, and a copy\nby the door. In order, for once."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "archive.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Index",
+            "text": "The Notary signed every one of these.\nHe's in the vault. He'll want them back."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Below the archive, the vault.\nSomeone is signing, and signing."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "archive.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "reading"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "library.archive"
+        }
+      ]
+    },
+    {
+      "id": "archive.filed",
+      "when": {
+        "type": "trigger",
+        "trigger": "archive.filed"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "archive.filed"
+        },
+        {
+          "type": "set-flag",
+          "flag": "archive.through",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "archive.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "archive"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "archive.end"
+        }
+      ]
+    }
+  ]
+}

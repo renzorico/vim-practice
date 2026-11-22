@@ -35,6 +35,7 @@ export const CUSTOMS_COMMANDS = [...WAREHOUSE_COMMANDS, '"'] as const;
 export const COUNTER_COMMANDS = CUSTOMS_COMMANDS;
 export const STACKS_COMMANDS = [...COUNTER_COMMANDS, 'iw', 'aw'] as const;
 export const READING_COMMANDS = [...STACKS_COMMANDS, 'i(', 'a(', 'ib', 'ab'] as const;
+export const ARCHIVE_COMMANDS = [...READING_COMMANDS, 'ip', 'ap', 'P', 'yy'] as const;
 /** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
@@ -43,7 +44,7 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {

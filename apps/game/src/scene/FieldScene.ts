@@ -1,3 +1,4 @@
+import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
 import { counterStamp, type CounterStamp } from './counterStamp.js';
 import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
 import { jettyDeletion, JETTY_SPLASH_FRACTION, type JettyDeletion } from './jettyDeletion.js';
@@ -51,6 +52,8 @@ export class FieldScene extends Phaser.Scene {
   private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
   private dust: Phaser.GameObjects.Image[] = [];
   private junk: { image: Phaser.GameObjects.Image; splash: Phaser.GameObjects.Image; at: Position }[] = [];
+  private archiveFold: ArchiveRows | null = null;
+  private foldedRows: { image: Phaser.GameObjects.Image }[] = [];
   private transfer: WarehouseTransfer | null = null;
   private stamp: CounterStamp | null = null;
   private cargo: { image: Phaser.GameObjects.Image; at: Position }[] = [];
@@ -109,6 +112,7 @@ export class FieldScene extends Phaser.Scene {
       this.clearJunk();
       this.clearTransfer();
       this.clearStamp();
+      this.clearArchiveRows();
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -138,6 +142,7 @@ export class FieldScene extends Phaser.Scene {
     this.clearJunk();
     this.clearTransfer();
     this.clearStamp();
+    this.clearArchiveRows();
   }
 
   present(frame: FieldFrame): void {
@@ -172,6 +177,7 @@ export class FieldScene extends Phaser.Scene {
     this.captureJunk(frame);
     this.captureDust(frame);
     this.captureUnwriting(frame);
+    this.captureArchiveRows(frame);
     this.syncCells();
     this.syncWarehouseDecorations();
     this.syncHazards(frame);
@@ -199,6 +205,14 @@ export class FieldScene extends Phaser.Scene {
     if (this.decoratedStage === this.frame.stage.id) return;
     this.decoratedStage = this.frame.stage.id;
     this.decorations?.removeAll(true);
+    if (this.frame.stage.id === 'archive') {
+      this.decorations?.add(this.add.image(center(1), center(0), this.texture('index')));
+      this.decorations?.add(this.add.image(center(2), center(0), this.texture('filed-stamp')));
+      this.decorations?.add(this.add.text(center(2), center(0) - 6, 'FILED', {
+        fontFamily: 'monospace', fontSize: '4px', color: '#752f39', backgroundColor: '#e1d1a6',
+      }).setOrigin(0.5, 1));
+      return;
+    }
     if (this.frame.stage.id === 'customs') {
       this.decorations?.add(this.add.image(center(18), center(4), this.texture('counter-end')));
       return;
@@ -209,6 +223,29 @@ export class FieldScene extends Phaser.Scene {
     for (const line of [1, 5]) this.decorations?.add(this.add.text(center(1), center(line) - 7, 'TALLY', {
       fontFamily: 'monospace', fontSize: '5px', color: '#18292b', backgroundColor: '#d39b69',
     }).setOrigin(0.5, 1));
+  }
+
+  private clearArchiveRows(): void {
+    if (!this.archiveFold && this.foldedRows.length === 0) return;
+    for (const cell of this.foldedRows) cell.image.destroy();
+    this.foldedRows = [];
+    this.archiveFold = null;
+    for (const cell of this.cells.values()) {
+      cell.tile.setScale(1);
+      cell.glyph.setScale(1);
+    }
+  }
+
+  private captureArchiveRows(frame: FieldFrame): void {
+    this.archiveFold = this.reducedMotion ? null : archiveRows(this.previousState, frame.state, frame.events);
+    const fold = this.archiveFold;
+    if (fold?.type !== 'delete') return;
+    for (const [key, cell] of this.cells) {
+      if (cell.line < fold.fromLine || cell.line >= fold.fromLine + fold.count) continue;
+      const col = Number(key.split(':')[1]);
+      const image = this.add.image(center(col), center(cell.line), this.texture(cell.sprite, cell.variant)).setDepth(1);
+      this.foldedRows.push({ image });
+    }
   }
 
   private clearStamp(): void {
@@ -545,7 +582,7 @@ export class FieldScene extends Phaser.Scene {
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = Math.max(this.transfer || this.stamp ? PLAYBACK_BUDGET_MS : 0, this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
+    const duration = Math.max(this.archiveFold ? PLAYBACK_BUDGET_MS : 0, this.transfer || this.stamp ? PLAYBACK_BUDGET_MS : 0, this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
     if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
@@ -612,6 +649,17 @@ export class FieldScene extends Phaser.Scene {
         }
         this.entities.get(entity)?.setPosition(center(start - 1), center(line) + Math.sin(clock.value * Math.PI) * 3);
       }
+      if (this.archiveFold) {
+        for (const cell of this.foldedRows) {
+          const scale = 1 - Math.min(1, clock.value / 0.45);
+          cell.image.setScale(1, scale).setAlpha(scale);
+        }
+        for (const cell of this.cells.values()) {
+          const pose = archiveRowPose(this.archiveFold, cell.line, clock.value);
+          cell.tile.setPosition(cell.tile.x, center(pose.line)).setScale(1, pose.scale);
+          cell.glyph.setPosition(cell.glyph.x, center(pose.line)).setScale(1, pose.scale);
+        }
+      }
       let cameraCell: { line: number; col: number } | undefined;
       for (const step of steps) {
         if (clock.value < step.start) continue;
@@ -619,6 +667,7 @@ export class FieldScene extends Phaser.Scene {
         // Sub-frame hints snap on the shared clock rather than scheduling tiny tweens.
         const progress = this.deletion ? slide : step.durationMs < 1000 / 60 ? 1 : fraction;
         if (step.type === 'rows') {
+          if (this.archiveFold) continue;
           if (step.lineDelta > 0 || step.lineDelta !== 0 && this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'player')) {
             const rows = steps.filter(hint => hint.type === 'rows');
             for (const cell of this.cells.values()) {
@@ -679,7 +728,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.clearTransfer(); this.clearStamp(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.clearTransfer(); this.clearStamp(); this.clearArchiveRows(); this.syncActors(); },
     });
   }
 }

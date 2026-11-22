@@ -1,0 +1,84 @@
+{
+  "id": "archive",
+  "world": "library",
+  "type": "field",
+  "title": "The Archive",
+  "goalText": "File the misfiled block last and put a copy of the atlases by the door.",
+  "map": [
+    "|========|",
+    "",
+    "aaaaaaaa",
+    "aaaaaaaa",
+    "",
+    "xxxxxxxx",
+    "xxxxxxxx",
+    "xxxxxxxx",
+    "",
+    "bbbbbbbb",
+    "bbbbbbbb",
+    "",
+    "|========|"
+  ],
+  "legend": "archive",
+  "start": {
+    "line": 6,
+    "col": 3
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "catalogue",
+      "kind": "prop",
+      "sprite": "catalogue",
+      "at": {
+        "line": 0,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "archive.filed",
+      "once": true,
+      "on": "text",
+      "anchor": "catalogue",
+      "text": "========|\n\naaaaaaaa\naaaaaaaa\n\nbbbbbbbb\nbbbbbbbb\n\nxxxxxxxx\nxxxxxxxx\nxxxxxxxx\n\naaaaaaaa\naaaaaaaa\n\n|========|"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "archive.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 8,
+  "solution": [
+    "d",
+    "a",
+    "p",
+    "}",
+    "p",
+    "g",
+    "g",
+    "2",
+    "j",
+    "y",
+    "a",
+    "p",
+    "G",
+    "P"
+  ],
+  "hints": [
+    "dap deletes the paragraph you stand in, and the blank row after it. } finds the next blank row; p puts it below.",
+    "yap copies a paragraph with its blank row. P puts rows above you: the copy goes above the last rail."
+  ]
+}

@@ -1,3 +1,4 @@
+import { ATLAS_SHELF, BIBLE_SHELF, MISFILED_SHELF, ARCHIVE_AISLE, ARCHIVE_RAIL, ARCHIVE_POST, CATALOGUE, FILED_STAMP, INDEX } from './library.js';
 import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, SHACKLE_RIGHT, CHAIN, CHAIN_CLATTER, FOLIO, GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
 import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
@@ -30,6 +31,9 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'atlas-shelf': ATLAS_SHELF, 'bible-shelf': BIBLE_SHELF, 'misfiled-shelf': MISFILED_SHELF,
+  'archive-aisle': ARCHIVE_AISLE, 'archive-rail': ARCHIVE_RAIL, 'archive-post': ARCHIVE_POST,
+  catalogue: CATALOGUE, 'filed-stamp': FILED_STAMP, index: INDEX,
   'reading-floor': READING_FLOOR, 'reading-wall': READING_WALL, 'reading-post': READING_POST,
   'reading-door': READING_DOOR, 'shackle-open-left': SHACKLE_LEFT, 'shackle-open-right': SHACKLE_RIGHT,
   chain: CHAIN, 'chain-clatter': CHAIN_CLATTER, folio: FOLIO,

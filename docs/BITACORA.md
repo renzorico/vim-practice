@@ -583,6 +583,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · F-4: The Archive (stage 5-3)
+**Who:** Opus (design, sim proof, contract, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** Paragraphs are blocks of rows between blank rows. You start inside a misfiled block: `dap` lifts it with its aisle, `}` finds the aisle after the bibles, `p` files it; `gg 2j yap G P` puts a copy of the atlases above the bottom rail. `dip`/`yip` leave the aisle out and fail. Contract: a `text` trigger's text may contain `\n` and then matches across rows, so one anchor checks the order of whole blocks. Par 8; without paragraph objects 10 (count the rows). New: `ARCHIVE_COMMANDS` (adds `ip ap`, and `P`, `yy` to the field), Index, row folding.
+
+**What the checks caught:** In the sim, before the brief: a row with a fixed cell cannot be deleted, so block rows are all cargo; with no blank row under the top rail, `yap` copied the rail too. Sonnet (0 blocking): the multi-row check joined the whole rest of the buffer at every turn end: it now joins only the rows the text can reach; a wall-time assertion (flaky on CI, as the Stacks one was) is dropped. Browser: 8 turns, 3 hearts, no console errors.
+
+**Lesson:** No wall-clock assertions in tests that CI runs: bound the work (steps, expansions) and log the time.
+
+---
+
 ## Parking lot
 - Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).
 - Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
