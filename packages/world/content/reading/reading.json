@@ -1,0 +1,98 @@
+{
+  "id": "reading",
+  "world": "library",
+  "type": "field",
+  "title": "The Reading Room",
+  "goalText": "Lift the chains off the floor and open Folio's shackle.",
+  "map": [
+    "###################################",
+    "|...(cccc)...((cc)ccc)...(ccccc)..|",
+    "###################################"
+  ],
+  "legend": "reading",
+  "start": {
+    "line": 1,
+    "col": 1
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "folio",
+      "kind": "npc",
+      "sprite": "folio",
+      "at": {
+        "line": 1,
+        "col": 32
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "door-post",
+      "kind": "prop",
+      "sprite": "reading-door",
+      "at": {
+        "line": 1,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "reading.talk-folio",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "folio"
+      }
+    },
+    {
+      "id": "reading.chains-gone",
+      "once": true,
+      "on": "text",
+      "anchor": "door-post",
+      "text": ".........()..|"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "reading.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 6,
+  "solution": [
+    "w",
+    "d",
+    "a",
+    "(",
+    "w",
+    "d",
+    "2",
+    "a",
+    "(",
+    "w",
+    "d",
+    "i",
+    "(",
+    "<CR>"
+  ],
+  "hints": [
+    "da( deletes the chain and both its shackles, from anywhere inside them.",
+    "A chain inside a chain: d2a( takes both. di( takes the chain and leaves the shackle."
+  ]
+}
