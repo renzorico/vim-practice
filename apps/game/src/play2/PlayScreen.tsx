@@ -88,6 +88,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
 }
 
 export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true, stageId = ''): readonly string[] {
+  if (stageId === 'archive') return ['h', 'j', 'k', 'l', '}', '{', 'gg', 'G', 'dap', 'yap', 'p', 'P', 'u', '<C-r>'];
   if (stageId === 'reading') return ['h', 'j', 'k', 'l', 'w', 'b', 'e', '%', 'da(', 'di(', 'd2a(', '.', 'u', '<C-r>'];
   if (stageId === 'stacks') return ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'd', 'diw', 'daw', '.', 'u', '<C-r>'];
   if (stageId === 'harbour') return ['h', 'j', 'k', 'l', 'w', 'b', 'gg', 'G', 'd', 'dd', 'p', 'c', 'cw', 'ct', 'C', 'P', 'yy', '.', '<Esc>'];

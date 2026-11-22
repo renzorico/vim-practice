@@ -93,3 +93,45 @@ export const FOLIO: PixelSprite = { palette, frames: [[
   '...L.K..K..L....',
   '...K.K..K..K....',
 ]] };
+
+// One continuous shelf per paragraph: no vertical dividers between its cells.
+const archiveShelf = (pixel: (x: number, y: number) => string): PixelSprite => art((x, y) =>
+  y === 15 ? 'O' : y === 14 ? 'F' : pixel(x, y));
+export const ATLAS_SHELF = archiveShelf((x, y) => y < 2 ? 'K'
+  : y % 5 === 2 ? 'F' : y % 5 === 3 ? 'V' : x === 1 || x === 14 ? 'L' : 'C');
+export const BIBLE_SHELF = archiveShelf((x, y) => y < 2 ? 'K'
+  : x % 8 === 0 ? 'O' : y === 3 || y === 12 ? 'F' : x % 8 === 2 ? 'H' : 'K');
+export const MISFILED_SHELF = archiveShelf((x, y) => {
+  // Red question slip amid books tilted in opposite directions.
+  if (x >= 10 && x <= 13 && y >= 2 && y <= 8) {
+    return (y === 3 && x < 13 || y === 4 && x === 12 || y === 5 && x === 11 || y === 7 && x === 11) ? 'V' : 'A';
+  }
+  return (x + Math.floor(y / 3)) % 7 === 0 ? 'F' : y < 2 ? 'K' : x < 8 ? 'B' : 'L';
+});
+export const ARCHIVE_AISLE = art((x, y) => y < 5 || y > 10 ? 'V'
+  : y === 5 || y === 10 ? 'F' : x % 5 === 0 ? 'H' : 'A');
+export const ARCHIVE_RAIL = art((_x, y) => y === 6 || y === 9 ? 'H' : y === 7 || y === 8 ? 'F' : 'O');
+export const ARCHIVE_POST = art((x, y) => x >= 5 && x <= 10
+  ? y === 2 || y === 13 ? 'F' : x === 5 || x === 10 ? 'H' : 'L' : y === 7 || y === 8 ? 'F' : 'O');
+export const CATALOGUE = art((x, y) => x === 0 || x === 15 || y === 0 || y === 15 ? 'K'
+  : x === 7 || y % 5 === 0 ? 'L' : y % 5 === 2 && x % 8 >= 2 && x % 8 <= 5 ? 'F' : 'O');
+export const FILED_STAMP = art((x, y) => y > 10 && y < 14 && x > 2 && x < 14 ? 'A'
+  : y === 10 && x > 1 && x < 15 ? 'K' : y >= 5 && y <= 9 && x >= 6 && x <= 9 ? 'L' : 'V');
+export const INDEX: PixelSprite = { palette, frames: [[
+  '................',
+  '................',
+  '.....BBBB.......',
+  '....BBBBBB......',
+  '....FFFFFF......',
+  '.....ssss.......',
+  '.....sKss.......',
+  '.....ssss.......',
+  '....BBVBBB......',
+  '....BBVBBB......',
+  '...sBBVBBs......',
+  '..LOOOOOOOOL....',
+  '..LOFLOFLOFL....',
+  '..LOOLOOLOOL....',
+  '..LOFLOFLOFL....',
+  '..KKKKKKKKKK....',
+]] };

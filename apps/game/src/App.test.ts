@@ -1,4 +1,4 @@
-import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading } from './play2/content.js';
+import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Session } from './play2/session.js';
 import type { ProgressStorage } from './play2/progress.js';
@@ -171,6 +171,9 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(session().world.stage).toBe('reading');
   expect(savedProgress().stage).toBe('reading');
   play(reading.solution); dismiss();
+  expect(session().world.stage).toBe('archive');
+  expect(savedProgress().stage).toBe('archive');
+  play(archive.solution); dismiss();
   expect(session().world.status).toBe('cleared');
   key('Enter'); // title
   key('j'); key('Enter');

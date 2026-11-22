@@ -744,3 +744,53 @@ it.each([false, true])('renders shelf spaces, posts and Quire; puffs dust before
   }
   expect(fake.centerOn).toHaveBeenLastCalledWith(154, 40);
 });
+
+it.each([false, true])('folds Archive rows before sliding, unfolds puts and cleans up on rapid input (reduced=%s)', async reducedMotion => {
+  const { archive, archiveLegend } = await import('../play2/content.js');
+  const { ARCHIVE_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: ARCHIVE_COMMANDS, flags: {} };
+  let state = sim.init(archive, archiveLegend, options);
+  const initial = { state, stage: archive, legend: archiveLegend, events: [], showSource: true };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  for (const sprite of ['catalogue', 'index', 'filed-stamp', 'archive-aisle', 'archive-rail', 'atlas-shelf', 'bible-shelf', 'misfiled-shelf']) {
+    expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
+  }
+  const firstGhost = fake.images.length;
+  for (const key of ['d', 'a', 'p']) {
+    const result = sim.step(state, key, archive, archiveLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const ghosts = fake.images.slice(firstGhost).filter(image => image.depth === 1 && image.texture === 'field:misfiled-shelf');
+  expect(ghosts).toHaveLength(reducedMotion ? 0 : 24);
+  const bible = fake.images.find(image => image.texture === 'field:bible-shelf' && !image.destroy.mock.calls.length);
+  if (!reducedMotion) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(bible?.y).toBe(9 * 16 + 8);
+    clock.targets.value = 0.2; clock.onUpdate();
+    expect(ghosts[0]?.alpha).toBeLessThan(1);
+    expect(bible?.y).toBe(9 * 16 + 8);
+    clock.targets.value = 0.8; clock.onUpdate();
+    expect(bible?.y).toBeLessThan(9 * 16 + 8);
+  }
+  scene.finish();
+  for (const ghost of ghosts) expect(ghost.destroy).toHaveBeenCalledOnce();
+  expect(bible?.y).toBe(5 * 16 + 8);
+  for (const key of ['}', 'p']) {
+    const result = sim.step(state, key, archive, archiveLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  if (!reducedMotion) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    const shelf = fake.images.find(image => image.texture === 'field:misfiled-shelf' && !image.destroy.mock.calls.length);
+    expect(shelf?.setScale).toHaveBeenLastCalledWith(1, 0);
+    clock.targets.value = 0.5; clock.onUpdate();
+    expect(shelf?.setScale).toHaveBeenLastCalledWith(1, 0.875);
+  }
+  scene.finish();
+  expect(fake.images.filter(image => !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
+});

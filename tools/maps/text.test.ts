@@ -2,8 +2,8 @@ import { expect, it } from 'vitest';
 import { FIXTURE_STAGE, FIXTURE_LEGEND } from '@escape/world';
 import { lintStage } from './lint.js';
 
-it('checks text anchors and warns only for deletable anchor cells', () => {
-  const trigger = { id: 'cargo', on: 'text', anchor: 'sign-1', text: 'oil', once: true } as const;
+it.each(['oil', 'oil\nrope'])('checks anchors and warns only for deletable cells with text %j', text => {
+  const trigger = { id: 'cargo', on: 'text', anchor: 'sign-1', text, once: true } as const;
   const room = { ...FIXTURE_STAGE, triggers: [trigger] };
   expect(lintStage(room, FIXTURE_LEGEND)).toContainEqual(expect.objectContaining({ rule: 'text-anchor-not-fixed', severity: 'warning' }));
   expect(lintStage({ ...room, triggers: [{ ...trigger, anchor: 'missing' }] }, FIXTURE_LEGEND))

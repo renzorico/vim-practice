@@ -89,7 +89,10 @@ export function createWorldSim(engine: Engine): WorldSim {
           const anchor = trigger.on === 'text' ? next.entities.find(entity => entity.id === trigger.anchor) : undefined;
           const matches = trigger.on === 'enter' ? inside(next.engine.cursor, trigger.area)
             : trigger.on === 'text' && anchor !== undefined
-              && next.engine.lines[anchor.at.line]?.slice(anchor.at.col + 1, anchor.at.col + 1 + trigger.text.length) === trigger.text;
+              && (trigger.text.includes('\n')
+                // Only the rows the text can reach: one per line break, plus the anchor's row.
+                ? next.engine.lines.slice(anchor.at.line, anchor.at.line + trigger.text.split('\n').length).join('\n')
+                : next.engine.lines[anchor.at.line])?.slice(anchor.at.col + 1, anchor.at.col + 1 + trigger.text.length) === trigger.text;
           if (matches && eligible(next, trigger)) {
             next = fire(next, trigger, stage, engine, events);
           }

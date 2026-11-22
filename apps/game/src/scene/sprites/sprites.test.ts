@@ -47,3 +47,12 @@ it('draws Library materials and Quire, with three distinct book spine colours', 
   expect(SPRITES['shelf-gap']?.frames[0]?.join('')).not.toContain('.');
   expect(SPRITES['shelf-gap']?.frames).not.toEqual(SPRITES['blank']?.frames);
 });
+
+it('draws all Archive tiles and its catalogue, archivist and stamp in distinct Library materials', async () => {
+  const { archive, archiveLegend } = await import('../../play2/content.js');
+  for (const sprite of [...archiveLegend.tiles.map(tile => tile.sprite), archiveLegend.emptyRow!.sprite,
+    ...archive.entities.map(entity => entity.sprite), 'index', 'filed-stamp']) {
+    expect(SPRITES[sprite], sprite).toBeDefined();
+  }
+  expect(new Set(['atlas-shelf', 'bible-shelf', 'misfiled-shelf'].map(sprite => SPRITES[sprite]?.frames[0]?.join(''))).size).toBe(3);
+});
