@@ -1,0 +1,8808 @@
+[
+  {
+    "name": "diw",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "diw",
+    "expect": {
+      "lines": [
+        " two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ciwX<Esc>",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciwX<Esc>",
+    "expect": {
+      "lines": [
+        "X two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yiwp",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yiwp",
+    "expect": {
+      "lines": [
+        "oonene two three"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "viwd",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "viwd",
+    "expect": {
+      "lines": [
+        " two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Viwy",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Viwy",
+    "expect": {
+      "lines": [
+        "one two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "daw",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "daw",
+    "expect": {
+      "lines": [
+        "two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cawX<Esc>",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "cawX<Esc>",
+    "expect": {
+      "lines": [
+        "Xtwo three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yawp",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yawp",
+    "expect": {
+      "lines": [
+        "oone ne two three"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vawd",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vawd",
+    "expect": {
+      "lines": [
+        "two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vawy",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vawy",
+    "expect": {
+      "lines": [
+        "one two three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "diW",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "diW",
+    "expect": {
+      "lines": [
+        " three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ciWX<Esc>",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciWX<Esc>",
+    "expect": {
+      "lines": [
+        "X three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yiWp",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yiWp",
+    "expect": {
+      "lines": [
+        "oone-twone-two three four"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "viWd",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "viWd",
+    "expect": {
+      "lines": [
+        " three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ViWy",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ViWy",
+    "expect": {
+      "lines": [
+        "one-two three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "daW",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "daW",
+    "expect": {
+      "lines": [
+        "three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "caWX<Esc>",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "caWX<Esc>",
+    "expect": {
+      "lines": [
+        "Xthree four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yaWp",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yaWp",
+    "expect": {
+      "lines": [
+        "oone-two ne-two three four"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vaWd",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vaWd",
+    "expect": {
+      "lines": [
+        "three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "VaWy",
+    "lines": [
+      "one-two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "VaWy",
+    "expect": {
+      "lines": [
+        "one-two three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di\"",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di\"",
+    "expect": {
+      "lines": [
+        "\"\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci\"X<Esc>",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci\"X<Esc>",
+    "expect": {
+      "lines": [
+        "\"X\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi\"p",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi\"p",
+    "expect": {
+      "lines": [
+        "\"oone twone two\" tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi\"d",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi\"d",
+    "expect": {
+      "lines": [
+        "\"\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi\"y",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi\"y",
+    "expect": {
+      "lines": [
+        "\"one two\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da\"",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da\"",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca\"X<Esc>",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca\"X<Esc>",
+    "expect": {
+      "lines": [
+        "Xtail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya\"p",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya\"p",
+    "expect": {
+      "lines": [
+        "\"\"one two\" one two\" tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va\"d",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va\"d",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va\"y",
+    "lines": [
+      "\"one two\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va\"y",
+    "expect": {
+      "lines": [
+        "\"one two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di'",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di'",
+    "expect": {
+      "lines": [
+        "'' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci'X<Esc>",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci'X<Esc>",
+    "expect": {
+      "lines": [
+        "'X' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi'p",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi'p",
+    "expect": {
+      "lines": [
+        "'oone twone two' tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi'd",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi'd",
+    "expect": {
+      "lines": [
+        "'' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi'y",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi'y",
+    "expect": {
+      "lines": [
+        "'one two' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da'",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da'",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca'X<Esc>",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca'X<Esc>",
+    "expect": {
+      "lines": [
+        "Xtail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya'p",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya'p",
+    "expect": {
+      "lines": [
+        "''one two' one two' tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va'd",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va'd",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va'y",
+    "lines": [
+      "'one two' tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va'y",
+    "expect": {
+      "lines": [
+        "'one two' tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di`",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di`",
+    "expect": {
+      "lines": [
+        "`` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci`X<Esc>",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci`X<Esc>",
+    "expect": {
+      "lines": [
+        "`X` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi`p",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi`p",
+    "expect": {
+      "lines": [
+        "`oone twone two` tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi`d",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi`d",
+    "expect": {
+      "lines": [
+        "`` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi`y",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi`y",
+    "expect": {
+      "lines": [
+        "`one two` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da`",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da`",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca`X<Esc>",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca`X<Esc>",
+    "expect": {
+      "lines": [
+        "Xtail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya`p",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya`p",
+    "expect": {
+      "lines": [
+        "``one two` one two` tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va`d",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va`d",
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va`y",
+    "lines": [
+      "`one two` tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va`y",
+    "expect": {
+      "lines": [
+        "`one two` tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di(",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di(",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci(X<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci(X<Esc>",
+    "expect": {
+      "lines": [
+        "(X) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi(p",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi(p",
+    "expect": {
+      "lines": [
+        "(oone twone two) tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi(d",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi(d",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi(y",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi(y",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da(",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da(",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca(X<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca(X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya(p",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya(p",
+    "expect": {
+      "lines": [
+        "((one two)one two) tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va(d",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va(d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va(y",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va(y",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di)",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di)",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci)X<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci)X<Esc>",
+    "expect": {
+      "lines": [
+        "(X) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi)p",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi)p",
+    "expect": {
+      "lines": [
+        "(oone twone two) tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi)d",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi)d",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi)y",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi)y",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da)",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da)",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca)X<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca)X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya)p",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya)p",
+    "expect": {
+      "lines": [
+        "((one two)one two) tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va)d",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va)d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va)y",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va)y",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dib",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dib",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cibX<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "cibX<Esc>",
+    "expect": {
+      "lines": [
+        "(X) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yibp",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yibp",
+    "expect": {
+      "lines": [
+        "(oone twone two) tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vibd",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vibd",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Viby",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Viby",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dab",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dab",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cabX<Esc>",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "cabX<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yabp",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yabp",
+    "expect": {
+      "lines": [
+        "((one two)one two) tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vabd",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vabd",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vaby",
+    "lines": [
+      "(one two) tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vaby",
+    "expect": {
+      "lines": [
+        "(one two) tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di[",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di[",
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci[X<Esc>",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci[X<Esc>",
+    "expect": {
+      "lines": [
+        "[X] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi[p",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi[p",
+    "expect": {
+      "lines": [
+        "[oone twone two] tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi[d",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi[d",
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi[y",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi[y",
+    "expect": {
+      "lines": [
+        "[one two] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da[",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da[",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca[X<Esc>",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca[X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya[p",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya[p",
+    "expect": {
+      "lines": [
+        "[[one two]one two] tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va[d",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va[d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va[y",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va[y",
+    "expect": {
+      "lines": [
+        "[one two] tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di]",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di]",
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci]X<Esc>",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci]X<Esc>",
+    "expect": {
+      "lines": [
+        "[X] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi]p",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi]p",
+    "expect": {
+      "lines": [
+        "[oone twone two] tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi]d",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi]d",
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi]y",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi]y",
+    "expect": {
+      "lines": [
+        "[one two] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da]",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da]",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca]X<Esc>",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca]X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya]p",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya]p",
+    "expect": {
+      "lines": [
+        "[[one two]one two] tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va]d",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va]d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va]y",
+    "lines": [
+      "[one two] tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va]y",
+    "expect": {
+      "lines": [
+        "[one two] tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di{",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di{",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci{X<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci{X<Esc>",
+    "expect": {
+      "lines": [
+        "{X} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi{p",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi{p",
+    "expect": {
+      "lines": [
+        "{oone twone two} tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi{d",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi{d",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi{y",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi{y",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da{",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da{",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca{X<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca{X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya{p",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya{p",
+    "expect": {
+      "lines": [
+        "{{one two}one two} tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va{d",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va{d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va{y",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va{y",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di}",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di}",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci}X<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci}X<Esc>",
+    "expect": {
+      "lines": [
+        "{X} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi}p",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi}p",
+    "expect": {
+      "lines": [
+        "{oone twone two} tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi}d",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi}d",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi}y",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi}y",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da}",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da}",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca}X<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca}X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya}p",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya}p",
+    "expect": {
+      "lines": [
+        "{{one two}one two} tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va}d",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va}d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va}y",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va}y",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "diB",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "diB",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ciBX<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciBX<Esc>",
+    "expect": {
+      "lines": [
+        "{X} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yiBp",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yiBp",
+    "expect": {
+      "lines": [
+        "{oone twone two} tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "viBd",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "viBd",
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ViBy",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ViBy",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "daB",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "daB",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "caBX<Esc>",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "caBX<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yaBp",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yaBp",
+    "expect": {
+      "lines": [
+        "{{one two}one two} tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vaBd",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vaBd",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "VaBy",
+    "lines": [
+      "{one two} tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "VaBy",
+    "expect": {
+      "lines": [
+        "{one two} tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di<",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di<lt>",
+    "expect": {
+      "lines": [
+        "<> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci<X<Esc>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci<lt>X<Esc>",
+    "expect": {
+      "lines": [
+        "<X> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi<p",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi<lt>p",
+    "expect": {
+      "lines": [
+        "<oone twone two> tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi<d",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi<lt>d",
+    "expect": {
+      "lines": [
+        "<> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi<y",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi<lt>y",
+    "expect": {
+      "lines": [
+        "<one two> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da<",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da<lt>",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca<X<Esc>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca<lt>X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya<p",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya<lt>p",
+    "expect": {
+      "lines": [
+        "<<one two>one two> tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va<d",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va<lt>d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va<y",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va<lt>y",
+    "expect": {
+      "lines": [
+        "<one two> tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "di>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di>",
+    "expect": {
+      "lines": [
+        "<> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ci>X<Esc>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ci>X<Esc>",
+    "expect": {
+      "lines": [
+        "<X> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yi>p",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yi>p",
+    "expect": {
+      "lines": [
+        "<oone twone two> tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vi>d",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi>d",
+    "expect": {
+      "lines": [
+        "<> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vi>y",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vi>y",
+    "expect": {
+      "lines": [
+        "<one two> tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "da>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "da>",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ca>X<Esc>",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ca>X<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ya>p",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ya>p",
+    "expect": {
+      "lines": [
+        "<<one two>one two> tail"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "va>d",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "va>d",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Va>y",
+    "lines": [
+      "<one two> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Va>y",
+    "expect": {
+      "lines": [
+        "<one two> tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "<p></p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citX<Esc>",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "citX<Esc>",
+    "expect": {
+      "lines": [
+        "<p>X</p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "<p>oone twone two</p> tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vitd",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vitd",
+    "expect": {
+      "lines": [
+        "<p></p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vity",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vity",
+    "expect": {
+      "lines": [
+        "<p>one two</p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "catX<Esc>",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "catX<Esc>",
+    "expect": {
+      "lines": [
+        "X tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yatp",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yatp",
+    "expect": {
+      "lines": [
+        "<<p>one two</p>p>one two</p> tail"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vatd",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vatd",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vaty",
+    "lines": [
+      "<p>one two</p> tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vaty",
+    "expect": {
+      "lines": [
+        "<p>one two</p> tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dip",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dip",
+    "expect": {
+      "lines": [
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cipX<Esc>",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "cipX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yipp",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yipp",
+    "expect": {
+      "lines": [
+        "first row",
+        "first row",
+        "second row",
+        "second row",
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vipd",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vipd",
+    "expect": {
+      "lines": [
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vipd",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vipd",
+    "expect": {
+      "lines": [
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dap",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "dap",
+    "expect": {
+      "lines": [
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "capX<Esc>",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "capX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yapp",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "yapp",
+    "expect": {
+      "lines": [
+        "first row",
+        "first row",
+        "second row",
+        "",
+        "second row",
+        "",
+        "last row",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "vapd",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vapd",
+    "expect": {
+      "lines": [
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "Vapd",
+    "lines": [
+      "first row",
+      "second row",
+      "",
+      "last row",
+      ""
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vapd",
+    "expect": {
+      "lines": [
+        "last row",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "leading count",
+    "lines": [
+      "one two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "2daw",
+    "expect": {
+      "lines": [
+        "three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "inner count",
+    "lines": [
+      "one two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "d2aw",
+    "expect": {
+      "lines": [
+        "three four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual count",
+    "lines": [
+      "one two three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "v3iw",
+    "expect": {
+      "lines": [
+        "one two three four"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "v"
+    }
+  },
+  {
+    "name": "nested count",
+    "lines": [
+      "a (b (c) d) e"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "d2i(",
+    "expect": {
+      "lines": [
+        "a () e"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph count",
+    "lines": [
+      "one",
+      "",
+      "two",
+      "",
+      "three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2dap",
+    "expect": {
+      "lines": [
+        "three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "repeat",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ciwx<Esc>w.",
+    "expect": {
+      "lines": [
+        "x x three"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty pair",
+    "lines": [
+      "() tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ci(X<Esc>",
+    "expect": {
+      "lines": [
+        "(X) tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty quote",
+    "lines": [
+      "\"\" tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ci\"X<Esc>",
+    "expect": {
+      "lines": [
+        "\"X\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty delete",
+    "lines": [
+      "() tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "di(",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty quote delete",
+    "lines": [
+      "\"\" tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "di\"",
+    "expect": {
+      "lines": [
+        "\"\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "closing delimiter",
+    "lines": [
+      "(one) tail"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "di(",
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "opening delimiter",
+    "lines": [
+      "(one) tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "da(",
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "multiline",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "}",
+      "tail"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "di{",
+    "expect": {
+      "lines": [
+        "{",
+        "}",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "multiline change",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "}",
+      "tail"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "ci{X<Esc>",
+    "expect": {
+      "lines": [
+        "{",
+        "X",
+        "}",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "last paragraph",
+    "lines": [
+      "one",
+      "",
+      "last",
+      "row"
+    ],
+    "cursor": [
+      2,
+      0
+    ],
+    "keys": "dap",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "trailing blanks",
+    "lines": [
+      "one",
+      "",
+      "last",
+      "row",
+      "",
+      ""
+    ],
+    "cursor": [
+      2,
+      0
+    ],
+    "keys": "dap",
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "missing quote",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ci\"",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "missing pair",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "di(",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "missing tag",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward quote",
+    "lines": [
+      "before \"one\" tail"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ci\"X<Esc>",
+    "expect": {
+      "lines": [
+        "before \"X\" tail"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "nested tags",
+    "lines": [
+      "<a><b>one</b></a>"
+    ],
+    "cursor": [
+      0,
+      7
+    ],
+    "keys": "d2it",
+    "expect": {
+      "lines": [
+        "<a></a>"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "space iw",
+    "lines": [
+      "one   two"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "diw",
+    "expect": {
+      "lines": [
+        "onetwo"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "space aw",
+    "lines": [
+      "one   two"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "daw",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word eof",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "daw",
+    "expect": {
+      "lines": [
+        "one"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "multiline inline",
+    "lines": [
+      "x (one",
+      "two) z"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "di(",
+    "expect": {
+      "lines": [
+        "x () z"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped quote",
+    "lines": [
+      "\"a\\\"b\" tail"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di\"",
+    "expect": {
+      "lines": [
+        "\"\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2iw",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2iw",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "two",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3iw",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3iw",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2aw",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2aw",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3aw",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3aw",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2iW",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2iW",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "two",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3iW",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3iW",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2aW",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2aW",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3aW",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3aW",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2i\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "d2i\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        " \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3i\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "d3i\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        " \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2a\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "d2a\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "\"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3a\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "d3a\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "\"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2i(",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "d2i(",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3i(",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "d3i(",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (two) three) tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2a(",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "d2a(",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3a(",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "d3a(",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (two) three) tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2it",
+    "lines": [
+      "<a><b>one</b></a> tail"
+    ],
+    "keys": "d2it",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "<a></a> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3it",
+    "lines": [
+      "<a><b>one</b></a> tail"
+    ],
+    "keys": "d3it",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "<a><b>one</b></a> tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2at",
+    "lines": [
+      "<a><b>one</b></a> tail"
+    ],
+    "keys": "d2at",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3at",
+    "lines": [
+      "<a><b>one</b></a> tail"
+    ],
+    "keys": "d3at",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "<a><b>one</b></a> tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2ip",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2ip",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "five"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3ip",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3ip",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 2ap",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d2ap",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count 3ap",
+    "lines": [
+      "one two",
+      "three four",
+      "",
+      "five"
+    ],
+    "keys": "d3ap",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block di(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "di(",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "(",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ci(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "ci(X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "(",
+        "X",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block yi(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "yi(p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "(",
+        "  one",
+        "  one",
+        "  two",
+        "  two",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        2,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block vi(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "vi(d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "(",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Vi(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "Vi(d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "(",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block da(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "da(",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ca(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "ca(X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "X",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ya(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "ya(p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "((",
+        "  one",
+        "  two",
+        "  )",
+        "  one",
+        "  two",
+        "  )",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block va(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "va(d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Va(",
+    "lines": [
+      "(",
+      "  one",
+      "  two",
+      "  )",
+      "tail"
+    ],
+    "keys": "Va(d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block di[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "di[",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ci[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "ci[X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[",
+        "X",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block yi[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "yi[p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[",
+        "  one",
+        "  one",
+        "  two",
+        "  two",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        2,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block vi[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "vi[d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Vi[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "Vi[d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block da[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "da[",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ca[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "ca[X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "X",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ya[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "ya[p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "[[",
+        "  one",
+        "  two",
+        "  ]",
+        "  one",
+        "  two",
+        "  ]",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block va[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "va[d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Va[",
+    "lines": [
+      "[",
+      "  one",
+      "  two",
+      "  ]",
+      "tail"
+    ],
+    "keys": "Va[d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block di{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "di{",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ci{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "ci{X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{",
+        "X",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block yi{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "yi{p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{",
+        "  one",
+        "  one",
+        "  two",
+        "  two",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        2,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block vi{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "vi{d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Vi{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "Vi{d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block da{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "da{",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "tail"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ca{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "ca{X<Esc>",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "X",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block ya{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "ya{p",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "{{",
+        "  one",
+        "  two",
+        "  }",
+        "  one",
+        "  two",
+        "  }",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block va{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "va{d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "block Va{",
+    "lines": [
+      "{",
+      "  one",
+      "  two",
+      "  }",
+      "tail"
+    ],
+    "keys": "Va{d",
+    "cursor": [
+      1,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection vi(i(d",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "vi(i(d",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection va(a(d",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "va(a(d",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection vititd",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "vititd",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (to) three) tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection viwawd",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "viwawd",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (three) tail"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection viwiwd",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "viwiwd",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one ( three) tail"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection vliwd",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "vliwd",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (t three) tail"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection v2i(d",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "v2i(d",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection v3awd",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "v3awd",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one () tail"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "selection vi(cX<Esc>",
+    "lines": [
+      "(one (two) three) tail"
+    ],
+    "keys": "vi(cX<Esc>",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "(one (X) three) tail"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dip(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dip",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dip(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dip",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dip(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dip",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dip(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dip",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        ""
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dap(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dap",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dap(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dap",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dap(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dap",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph dap(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "dap",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ip(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ip",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ip(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ip",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ip(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ip",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ip(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ip",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ap(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ap",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ap(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ap",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ap(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ap",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph d2ap(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2ap",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph cipX<Esc>(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "cipX<Esc>",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "X",
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph cipX<Esc>(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "cipX<Esc>",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "X",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph cipX<Esc>(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "cipX<Esc>",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "X",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph cipX<Esc>(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "cipX<Esc>",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        "X",
+        ""
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vipd(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vipd",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vipd(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vipd",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vipd(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vipd",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vipd(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vipd",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        "",
+        ""
+      ],
+      "cursor": [
+        3,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vapd(0, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vapd",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vapd(1, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vapd",
+    "cursor": [
+      1,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vapd(2, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vapd",
+    "cursor": [
+      2,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "paragraph vapd(3, 0)",
+    "lines": [
+      "one",
+      "",
+      "",
+      "two",
+      ""
+    ],
+    "keys": "vapd",
+    "cursor": [
+      3,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary diw'one'(0, 0)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "diw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary daw'one'(0, 0)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "daw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2iw'one'(0, 0)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "d2iw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2aw'one'(0, 0)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "d2aw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary diw'one   '(0, 3)",
+    "lines": [
+      "one   ",
+      "two",
+      ""
+    ],
+    "keys": "diw",
+    "cursor": [
+      0,
+      3
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary daw'one   '(0, 3)",
+    "lines": [
+      "one   ",
+      "two",
+      ""
+    ],
+    "keys": "daw",
+    "cursor": [
+      0,
+      3
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2iw'one   '(0, 3)",
+    "lines": [
+      "one   ",
+      "two",
+      ""
+    ],
+    "keys": "d2iw",
+    "cursor": [
+      0,
+      3
+    ],
+    "expect": {
+      "lines": [
+        "one",
+        ""
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2aw'one   '(0, 3)",
+    "lines": [
+      "one   ",
+      "two",
+      ""
+    ],
+    "keys": "d2aw",
+    "cursor": [
+      0,
+      3
+    ],
+    "expect": {
+      "lines": [
+        "one   ",
+        "two",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary diw''(0, 0)",
+    "lines": [
+      "",
+      "two",
+      ""
+    ],
+    "keys": "diw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary daw''(0, 0)",
+    "lines": [
+      "",
+      "two",
+      ""
+    ],
+    "keys": "daw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2iw''(0, 0)",
+    "lines": [
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2iw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2aw''(0, 0)",
+    "lines": [
+      "",
+      "two",
+      ""
+    ],
+    "keys": "d2aw",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        2,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary diw'one'(0, 2)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "diw",
+    "cursor": [
+      0,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary daw'one'(0, 2)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "daw",
+    "cursor": [
+      0,
+      2
+    ],
+    "expect": {
+      "lines": [
+        "",
+        "two",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2iw'one'(0, 2)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "d2iw",
+    "cursor": [
+      0,
+      2
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "word boundary d2aw'one'(0, 2)",
+    "lines": [
+      "one",
+      "two",
+      ""
+    ],
+    "keys": "d2aw",
+    "cursor": [
+      0,
+      2
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "undo object",
+    "lines": [
+      "one two"
+    ],
+    "keys": "diwu",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "failed dot preserves previous",
+    "lines": [
+      "one (two) three"
+    ],
+    "keys": "di(wdi(.",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "one () three"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i0",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "\"\" gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i1",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "\"\" gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i4",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "\"\" gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i5",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "\"one\"\"two\" tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i7",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "\"one\"\"two\" tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i9",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "\"one\"\"two\" tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i11",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" gap \"\" tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"i13",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" gap \"\" tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a0",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a1",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a4",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "gap \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a5",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "\"onetwo\" tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a7",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "\"onetwo\" tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a9",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "\"onetwo\" tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a11",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position \"a13",
+    "lines": [
+      "\"one\" gap \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i0",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "'' gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i1",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "'' gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i4",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "'' gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i5",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "'one''two' tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i7",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "'one''two' tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i9",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "'one''two' tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i11",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "'one' gap '' tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'i13",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "di'",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "'one' gap '' tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a0",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a1",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a4",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "gap 'two' tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a5",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "'onetwo' tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a7",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "'onetwo' tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a9",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "'onetwo' tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a11",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "'one' gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position 'a13",
+    "lines": [
+      "'one' gap 'two' tail"
+    ],
+    "keys": "da'",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "'one' gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i0",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "`` gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i1",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "`` gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i4",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "`` gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i5",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "`one``two` tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i7",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "`one``two` tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i9",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "`one``two` tail"
+      ],
+      "cursor": [
+        0,
+        5
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i11",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "`one` gap `` tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `i13",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "di`",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "`one` gap `` tail"
+      ],
+      "cursor": [
+        0,
+        11
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a0",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a1",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      1
+    ],
+    "expect": {
+      "lines": [
+        "gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a4",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      4
+    ],
+    "expect": {
+      "lines": [
+        "gap `two` tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a5",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      5
+    ],
+    "expect": {
+      "lines": [
+        "`onetwo` tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a7",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "`onetwo` tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a9",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      9
+    ],
+    "expect": {
+      "lines": [
+        "`onetwo` tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a11",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      11
+    ],
+    "expect": {
+      "lines": [
+        "`one` gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "quote position `a13",
+    "lines": [
+      "`one` gap `two` tail"
+    ],
+    "keys": "da`",
+    "cursor": [
+      0,
+      13
+    ],
+    "expect": {
+      "lines": [
+        "`one` gap tail"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag dit",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "dit",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "<p></p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag citX<Esc>",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "citX<Esc>",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "<p>X</p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag dat",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "dat",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag vitd",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "vitd",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "<p>/p> tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag vititd",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "vititd",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        " tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag d2it",
+    "lines": [
+      "<p></p> tail"
+    ],
+    "keys": "d2it",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "<p></p> tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket (0",
+    "lines": [
+      "(one \\(two\\) three) tail"
+    ],
+    "keys": "di(",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket (7",
+    "lines": [
+      "(one \\(two\\) three) tail"
+    ],
+    "keys": "di(",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "() tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket [0",
+    "lines": [
+      "[one \\[two\\] three] tail"
+    ],
+    "keys": "di[",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket [7",
+    "lines": [
+      "[one \\[two\\] three] tail"
+    ],
+    "keys": "di[",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "[] tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket {0",
+    "lines": [
+      "{one \\{two\\} three} tail"
+    ],
+    "keys": "di{",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "escaped bracket {7",
+    "lines": [
+      "{one \\{two\\} three} tail"
+    ],
+    "keys": "di{",
+    "cursor": [
+      0,
+      7
+    ],
+    "expect": {
+      "lines": [
+        "{} tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward di(",
+    "lines": [
+      "before (one) [two] {three} <p>four</p>"
+    ],
+    "keys": "di(",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "before () [two] {three} <p>four</p>"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward da(",
+    "lines": [
+      "before (one) [two] {three} <p>four</p>"
+    ],
+    "keys": "da(",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "before  [two] {three} <p>four</p>"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward di[",
+    "lines": [
+      "before (one) [two] {three} <p>four</p>"
+    ],
+    "keys": "di[",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "before (one) [] {three} <p>four</p>"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward di{",
+    "lines": [
+      "before (one) [two] {three} <p>four</p>"
+    ],
+    "keys": "di{",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "before (one) [two] {} <p>four</p>"
+      ],
+      "cursor": [
+        0,
+        20
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "forward dit",
+    "lines": [
+      "before (one) [two] {three} <p>four</p>"
+    ],
+    "keys": "dit",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "before (one) [two] {three} <p>four</p>"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual di\"",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "() \"\" tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual vi\"d",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "vi\"d",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "()  tail"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual ci\"X<Esc>",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "ci\"X<Esc>",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "() \"X\" tail"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual vi(d",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "vi(d",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ") \"\" tail"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual Vi(d",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "Vi(d",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty visual yi(p",
+    "lines": [
+      "() \"\" tail"
+    ],
+    "keys": "yi(p",
+    "cursor": [
+      0,
+      0
+    ],
+    "expect": {
+      "lines": [
+        "() \"\" tail"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "after final quote di\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "di\"",
+    "cursor": [
+      0,
+      14
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "after final quote da\"",
+    "lines": [
+      "\"one\" \"two\" tail"
+    ],
+    "keys": "da\"",
+    "cursor": [
+      0,
+      14
+    ],
+    "expect": {
+      "lines": [
+        "\"one\" \"two\" tail"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary vhiwd",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "vhiwd",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        "(oneo) \"three\" \"four\"",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary vhawd",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "vhawd",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        "(o) \"three\" \"four\"",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary vhi(d",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "vhi(d",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        "() \"three\" \"four\"",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary Vapd",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "Vapd",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary vapapd",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "vapapd",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "visual boundary vi\"a\"d",
+    "lines": [
+      "(one two) \"three\" \"four\"",
+      "",
+      "five"
+    ],
+    "keys": "vi\"a\"d",
+    "cursor": [
+      0,
+      6
+    ],
+    "expect": {
+      "lines": [
+        "(one two) \"four\"",
+        "",
+        "five"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: a no-op d0 does not replace the dot command",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "xhhd0.",
+    "expect": {
+      "lines": [
+        "ab def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: a no-op dl on an empty line then dot",
+    "lines": [
+      "abc",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdlk.",
+    "expect": {
+      "lines": [
+        "c",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: register prefix with a text object, then put",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "\"adiw$\"ap",
+    "expect": {
+      "lines": [
+        "one  threetwo"
+      ],
+      "cursor": [
+        0,
+        12
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: register prefix yank of a text object",
+    "lines": [
+      "one two three"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "\"ayiw0\"aP",
+    "expect": {
+      "lines": [
+        "twoone two three"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: visual inner parens on an empty pair",
+    "lines": [
+      "f() x"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vi(d",
+    "expect": {
+      "lines": [
+        "f) x"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: visual inner quotes on an empty pair",
+    "lines": [
+      "a \"\" b"
+    ],
+    "cursor": [
+      0,
+      2
+    ],
+    "keys": "vi\"d",
+    "expect": {
+      "lines": [
+        "a  b"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: d then i then Esc cancels",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "di<Esc>x",
+    "expect": {
+      "lines": [
+        "oe two"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  }
+]

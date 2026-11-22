@@ -18,6 +18,8 @@ const MOTIONS = new Set([
   'h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$', 'gg', 'G',
   'f', 'F', 't', 'T', ';', ',', '%', '{', '}', 'n', 'N', '*', '#', '<C-d>', '<C-u>',
 ]);
+const TEXT_OBJECTS = new Set([..."wW\"'`()b)[]{}B<>tp"].flatMap(object => ['i' + object, 'a' + object]));
+const TEXT_OBJECT_WORLDS = new Set(['library', 'echo-caves', 'last-page']);
 const FINDS = new Set(['f', 'F', 't', 'T']);
 
 interface Node {
@@ -155,13 +157,21 @@ function* operatorActions(
 }
 
 function* fieldActions(
-  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number,
+  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number, textObjects: boolean,
 ): Generator<readonly Key[], void, string | null> {
   yield* baseFieldActions(state, commands, legend, windowHeight);
   const prefixes: readonly (readonly Key[])[] = commands.includes('"') ? [[], ['"', 'a'], ['"', 'b'], ['"', '0']] : [[]];
   for (const prefix of prefixes) {
     for (const operator of ['d', 'y']) {
-      if (commands.includes(operator)) yield* operatorActions(state, commands, operator, prefix, windowHeight);
+      if (commands.includes(operator)) {
+        yield* operatorActions(state, commands, operator, prefix, windowHeight);
+        // Library and later only: bound object counts to 1–3 to keep field search finite.
+        if (textObjects) for (const object of [...new Set(commands)].filter(command => TEXT_OBJECTS.has(command)).sort()) {
+          for (let count = 1; count <= 3; count += 1) {
+            yield [...prefix, operator, ...(count === 1 ? [] : [...String(count)]), ...parseKeys(object)];
+          }
+        }
+      }
     }
     for (const command of ['dd', 'yy', 'p', 'P']) {
       if (!commands.includes(command)) continue;
@@ -257,7 +267,7 @@ export function solveStage(
       })();
     } else {
       actions = (function* () {
-        yield* fieldActions(node.state, commands, legend, windowHeight);
+        yield* fieldActions(node.state, commands, legend, windowHeight, TEXT_OBJECT_WORLDS.has(stage.world));
         if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) yield ['<CR>'];
       })();
     }

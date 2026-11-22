@@ -1,3 +1,4 @@
+import { isTextObject, textObjectRange, visualTextObjectRange } from './textobjects.js';
 import { applyTextEdits, editsSince, offsetAt } from './edits.js';
 /**
  * Engine.step: turns one key into a new state by wiring the Phase 1 modules together.
@@ -98,6 +99,12 @@ export function parseNormal(keys: readonly Key[]): Parsed {
     const motionKey = keys[inner.next];
     if (motionKey === undefined) return INCOMPLETE;
     if (motionKey === key) return { kind: 'command', ...base, id: `${key}${key}`, operator: key, operatorCount: inner.count };
+    if (motionKey === 'i' || motionKey === 'a') {
+      const object = keys[inner.next + 1];
+      if (object === undefined) return INCOMPLETE;
+      const id = motionKey + object;
+      return isTextObject(id) ? { kind: 'command', ...base, id, operator: key, operatorCount: inner.count } : INVALID;
+    }
     const motion = parseMotion(keys, inner.next);
     if (motion === 'incomplete') return INCOMPLETE;
     if (motion === 'invalid') return INVALID;
@@ -202,6 +209,30 @@ function runOperator(
   let patched = state;
   if (id === `${operator}${operator}`) {
     range = linewiseRange(state, count ?? 1);
+  } else if (isTextObject(id)) {
+    range = textObjectRange(state, id, count ?? 1);
+    if (range === null) {
+      const line = state.lines.length - 1;
+      const col = Math.max(0, (state.lines[line]?.length ?? 0) - 1);
+      const failed = /[wW]/u.test(id[1] ?? '') && (count ?? 1) > 1
+        ? { ...state, cursor: { line, col }, desiredCol: col } : state;
+      return { state: failed, error: { code: 'invalid-range', message: `No text object: ${id}` } };
+    }
+    if (!range.inclusive && range.start.line === range.end.line && range.start.col === range.end.col) {
+      patched = { ...state, cursor: range.start, desiredCol: range.start.col };
+    }
+    const multiline = range.start.line < range.end.line;
+    const throughLineEnd = range.inclusive && range.end.col >= (state.lines[range.end.line]?.length ?? 0) - 1;
+    if (multiline && (operator === 'y' || operator === 'd') && id[0] === 'i' && range.start.col === 0 && throughLineEnd && (/[wW]/u.test(id[1] ?? '') || range.end.col === (state.lines[range.end.line]?.length ?? 0))) {
+      range = { ...range, linewise: true };
+    }
+    if (multiline && operator === 'd' && id[0] === 'a' && range.start.col <= firstNonBlankCol(state.lines[range.start.line] ?? '')
+      && throughLineEnd) range = { ...range, linewise: true };
+    // ci{ on a block leaves an insertion row above the closing brace (no autoindent).
+    if (operator === 'c' && range.start.line < range.end.line && range.inclusive
+      && range.end.col === (state.lines[range.end.line]?.length ?? 0)) {
+      range = { ...range, inclusive: false };
+    }
   } else {
     // cw on a non-blank behaves like ce (:help cw).
     const onWord = /\S/.test((state.lines[state.cursor.line] ?? '')[state.cursor.col] ?? '');
@@ -213,7 +244,12 @@ function runOperator(
     patched = { ...state, ...motion.statePatch };
   }
   if (range === null) return null;
-  return fn(patched, range, register);
+  const outcome = fn(patched, range, register);
+  if (isTextObject(id) && operator === 'd' && range.start.col === 0 && range.start.line < range.end.line && !range.linewise) {
+    const col = firstNonBlankCol(outcome.state.lines[outcome.state.cursor.line] ?? '');
+    return { ...outcome, state: { ...outcome.state, cursor: { ...outcome.state.cursor, col }, desiredCol: col } };
+  }
+  return outcome;
 }
 
 /** Half-screen scrolling preserves Vim's wanted column, even on a short landing row. */
@@ -243,16 +279,20 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
     return result(clean, [], { code: 'unknown-command', message: `Unknown command: ${keys.join('')}` });
   }
   const { id, count, arg, register, operator, operatorCount } = parsed;
-  const commandId = operator !== null && id !== `${operator}${operator}` ? operator : id;
+  const commandId = operator !== null && id !== `${operator}${operator}` ? (isTextObject(id) ? operator + id : operator) : id;
   // ':' '/' '?' only open the command line; the completed command (':wq', '/') is checked in stepCommandLine.
   const opensCommandLine = id === ':' || id === '/' || id === '?';
-  if (id !== '<Esc>' && !opensCommandLine && !isAllowed(commandId, options)) return result(clean, [], notAllowed(commandId));
+  if (id !== '<Esc>' && !opensCommandLine && !isAllowed(commandId, options) && !(operator !== null && isTextObject(id) && isAllowed(operator, options) && isAllowed(id, options))) return result(clean, [], notAllowed(commandId));
 
   if (operator !== null) {
     const total = count === null && operatorCount === null ? null : Math.min((count ?? 1) * (operatorCount ?? 1), MAX_COUNT);
     const outcome = runOperator(clean, operator, id, total, arg, register);
     if (outcome === null) return result(clean);
-    const next = operator === 'y' ? outcome.state : finishChange(outcome.state, keys);
+    // A text object Vim cannot use (or an empty one) beeps: no dot command, no undo entry. Plain
+    // motions keep Vim's rule that even a no-op `d0` becomes the dot command (golden: no-op d0).
+    const skipped = isTextObject(id)
+      && (outcome.error !== null || (outcome.state.mode !== 'insert' && outcome.state.lines === clean.lines));
+    const next = operator === 'y' || skipped ? outcome.state : finishChange(outcome.state, keys);
     const motion = id === `${operator}${operator}` ? null : id;
     return result(next, [record(commandId, 'operator', keys, total, register, motion)], outcome.error);
   }
@@ -376,6 +416,19 @@ function stepVisual(state: EngineState, key: Key, options: EngineOptions | undef
   // Any other key is a motion that moves the cursor while the anchor stays put.
   const keys = [...state.pendingKeys, key];
   const { count, next } = readCount(keys, 0);
+  if (keys[next] === 'i' || keys[next] === 'a') {
+    const suffix = keys[next + 1];
+    if (suffix === undefined) return result({ ...state, pendingKeys: keys });
+    const id = (keys[next] ?? '') + suffix;
+    const clean = { ...state, pendingKeys: [] };
+    if (!isTextObject(id)) return result(clean, [], { code: 'unknown-command', message: `Unknown text object: ${id}` });
+    if (!isAllowed(id, options)) return result(clean, [], notAllowed(id));
+    const range = visualTextObjectRange(state, id, count ?? 1);
+    if (range === null) return result(clean, [], { code: 'invalid-range', message: `No text object: ${id}` });
+    const end = range.inclusive ? range.end : range.start;
+    return result({ ...clean, mode: range.linewise ? 'visual-line' : 'visual', visualAnchor: range.start,
+      cursor: end, desiredCol: end.col }, [record(id, 'motion', keys, count, null, null)]);
+  }
   if (SCROLL_COMMANDS.has(keys[next] ?? '')) {
     const id = keys[next] ?? '';
     return isAllowed(id, options) ? stepScroll(state, id, count, keys, options) : result(state, [], notAllowed(id));
