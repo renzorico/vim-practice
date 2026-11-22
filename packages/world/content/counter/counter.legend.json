@@ -1,0 +1,77 @@
+{
+  "id": "counter",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "counter-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "counter-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "counter-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "clerk-desk",
+      "walkable": true,
+      "fixed": true,
+      "label": "desk"
+    },
+    {
+      "char": "[",
+      "kind": "barrier",
+      "sprite": "crate-end",
+      "walkable": true,
+      "fixed": true,
+      "label": "crate end"
+    },
+    {
+      "char": "]",
+      "kind": "barrier",
+      "sprite": "crate-lip",
+      "walkable": false,
+      "fixed": true,
+      "label": "crate lip"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "oil",
+      "walkable": true,
+      "fixed": false,
+      "label": "oil"
+    },
+    {
+      "char": "r",
+      "kind": "object",
+      "sprite": "rope",
+      "walkable": true,
+      "fixed": false,
+      "label": "rope"
+    },
+    {
+      "char": "f",
+      "kind": "object",
+      "sprite": "fake",
+      "walkable": false,
+      "fixed": false,
+      "label": "fake crate"
+    }
+  ]
+}

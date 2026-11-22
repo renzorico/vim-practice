@@ -98,6 +98,9 @@ export type EntityKind = 'blot' | 'npc' | 'keeper' | 'dot' | 'unwriter' | 'prop'
  *   - build:  inserts `rows[n]` as a new buffer row directly above its own row each time it acts
  *             (the Mason). The entity, and everything from its row down, moves one row down.
  *             After the last row it never builds again and stands still.
+ *   - put:    inserts `text` into its own row right after its cell each time it acts, like `p`
+ *             with the entity as the cursor (the Counterfeiter). The entity stays; everything
+ *             right of it on the row moves right. A change by 'entity', on the undo stack.
  */
 export type Behaviour =
   | { readonly type: 'still' }
@@ -105,7 +108,8 @@ export type Behaviour =
   | { readonly type: 'patrol'; readonly path: readonly Position[] }
   | { readonly type: 'follow' }
   | { readonly type: 'unwrite'; readonly path: readonly Position[] }
-  | { readonly type: 'build'; readonly rows: readonly string[] };
+  | { readonly type: 'build'; readonly rows: readonly string[] }
+  | { readonly type: 'put'; readonly text: string };
 
 export interface EntitySpawn {
   readonly id: EntityId;
@@ -223,7 +227,8 @@ export interface Script {
  * (rule 3), and only then are death and clear checked.
  * A batch that contains anything other than 'set-flag' then stores a checkpoint (rule 5), so a
  * rebuilt bridge or a quest reward cannot be lost by dying. A batch of only 'set-flag' effects
- * stores none: syncing a story flag must never work as a free save.
+ * stores none: syncing a story flag must never work as a free save. A batch that leaves the
+ * player dead stores none either (as with `:w`, a save that kills you saves nothing).
  */
 export type WorldEffect =
   /** Emits 'flag-set', which is how packages/story (the owner of flags) hears about it. */
@@ -242,7 +247,12 @@ export type WorldEffect =
    * A throw-back that silently did nothing let edits skip a stage (C-4 review). If no such cell exists,
    * the effect is ignored. Emits 'player-moved' with style 'jump'.
    */
-  | { readonly type: 'move-player'; readonly to: Position };
+  | { readonly type: 'move-player'; readonly to: Position }
+  /**
+   * Takes hearts, like a hit ('player-hit' by 'effect'); at 0 the status is 'dead' and the normal
+   * retry follows. Does nothing once the stage is 'cleared'. The Counterfeiter's fuse uses it.
+   */
+  | { readonly type: 'hit'; readonly hearts: number };
 
 // ---------------------------------------------------------------------------------------------
 // Stage (static data, authored as a text map plus this record)
@@ -389,7 +399,7 @@ export type WorldEvent =
   | { readonly type: 'entity-spawned'; readonly entity: EntityId; readonly at: Position }
   | { readonly type: 'entity-removed'; readonly entity: EntityId; readonly cause: 'deleted-tile' | 'effect' | 'hit' }
   | { readonly type: 'flag-set'; readonly flag: FlagId; readonly value: boolean }
-  | { readonly type: 'player-hit'; readonly by: EntityId | 'tile'; readonly hearts: number }
+  | { readonly type: 'player-hit'; readonly by: EntityId | 'tile' | 'effect'; readonly hearts: number }
   | { readonly type: 'player-died' }
   | { readonly type: 'turn-ended'; readonly turn: number }
   | { readonly type: 'trigger-fired'; readonly trigger: TriggerId }
