@@ -54,7 +54,7 @@ it('warehouse.end precedes customs.intro, retaining story and starting Customs',
   expect(queued(session)).toEqual(['customs.intro']);
   expect(session.story.clearedStages).toContain('warehouse');
   expect(session.story.quests['port.customs']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(w => w.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs']);
+  expect(content.worlds.find(w => w.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs', 'counter']);
 });
 it('named yank preserves zero; deletion replaces unnamed, and plain p bumps free', () => {
   const yanked = oil();
@@ -121,11 +121,12 @@ it('par replays in 16 turns / three hearts, then customs.end and continuation', 
   let session = route(start(), customs.solution.join(''));
   for (let i = 0; i < 3; i++) session = controller.reduce(session, '<CR>');
   expect(session.queue[0]).toMatchObject({ cutscene: 'customs.end' });
-  session = dismiss(session);
   expect(session.world.status).toBe('cleared');
   expect(session.world.turn).toBe(16);
   expect(session.world.hearts).toBe(3);
-  expect(screen(session)).toContain('To be continued.');
+  session = controller.reduce(session, '<CR>');
+  expect(session.world.stage).toBe('counter');
+  expect(queued(session)).toEqual(['counter.intro']);
 });
 it('old vocabulary replays the 20-turn route', () => {
   const solver = sessionSolver({ sim, storyEngine, content, stage: customs, legend: customsLegend });

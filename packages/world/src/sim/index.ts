@@ -60,10 +60,10 @@ export function createWorldSim(engine: Engine): WorldSim {
         return { state: next, events };
       }
       // Earlier insert keys are recorded on the transaction's undo entry.
-      const edits = [...state.engine.undoStack.flatMap((entry, index) => {
+      const edits = [...(state.engine === pending.engine ? [] : state.engine.undoStack.flatMap((entry, index) => {
         const old = pending.engine.undoStack[index];
         return entry.edits.slice(old?.seq === entry.seq ? old.edits.length : 0);
-      }), ...result.edits];
+      })), ...result.edits];
       const commitEvents: WorldEvent[] = [];
       const candidate = changeBuffer({ ...next, engine: pending.engine, entities: pending.entities }, result.state.lines,
         legend, commitEvents, 'player', edits, result.state);

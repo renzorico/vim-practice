@@ -6,7 +6,7 @@ import { changedRows, deleteRowEdit, offsetAt, remapPosition, remapEntities } fr
 export function changeBuffer(state: WorldState, lines: readonly string[], legend: Legend, events: WorldEvent[],
   by: 'player' | 'effect' | 'entity', edits: readonly TextEdit[], engine?: EngineState): WorldState {
   const before = state.engine;
-  if (before.lines.join('\n') === lines.join('\n')) return engine === undefined ? state : { ...state, engine };
+  if (edits.length === 0 || before.lines === lines || before.lines.join('\n') === lines.join('\n')) return engine === undefined ? state : { ...state, engine };
   events.push({ type: 'rows-changed', ...changedRows(before.lines, edits), lineDelta: lines.length - before.lines.length, by });
   const entities = remapEntities(before.lines, lines, state.entities, legend, events, edits);
   if (engine !== undefined) return { ...state, engine, entities };
@@ -115,6 +115,12 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
         if (next.entities.some((entity) => entity.id === effect.entity)) events.push({ type: 'entity-removed', entity: effect.entity, cause: 'effect' });
         next = { ...next, entities: next.entities.filter((entity) => entity.id !== effect.entity) };
         break;
+      case 'hit':
+        if (next.status !== 'cleared') {
+          next = { ...next, hearts: Math.max(0, next.hearts - effect.hearts) };
+          events.push({ type: 'player-hit', by: 'effect', hearts: next.hearts });
+        }
+        break;
       case 'heal': next = { ...next, hearts: Math.min(stage.hearts, next.hearts + effect.hearts) }; break;
       case 'move-player': {
         const to = blocked(next.engine.lines, effect.to, next.entities, legend) === null ? effect.to
@@ -134,5 +140,7 @@ export function applyBatch(state: WorldState, effects: readonly WorldEffect[], s
       undoStack: [...before.undoStack, { lines: before.lines, cursor: before.cursor, seq: before.changeSeq, edits }], redoStack: [] } };
   }
   next = finish(next, stage, events);
-  return effects.some((effect) => effect.type !== 'set-flag') ? checkpoint(next, events) : next;
+  const savesCheckpoint = effects.some(effect => effect.type !== 'set-flag'
+    && (effect.type !== 'hit' || state.status !== 'cleared'));
+  return savesCheckpoint ? checkpoint(next, events) : next;
 }

@@ -10,6 +10,16 @@ export function actEntities(state: WorldState, legend: Legend, events: WorldEven
     const entity = next.entities.find((entry) => entry.id === id);
     if (entity === undefined || next.turn % entity.def.every !== 0) continue;
     const behaviour = entity.def.behaviour;
+    if (behaviour.type === 'put') {
+      const row = next.engine.lines[entity.at.line] ?? '';
+      const col = entity.at.col + 1;
+      const lines = [...next.engine.lines];
+      lines[entity.at.line] = row.slice(0, col) + behaviour.text + row.slice(col);
+      const edits = [{ start: offsetAt(next.engine.lines, { line: entity.at.line, col }),
+        removed: 0, inserted: behaviour.text }];
+      next = changeBuffer(next, lines, legend, events, 'entity', edits);
+      continue;
+    }
     if (behaviour.type === 'build') {
       const row = behaviour.rows[entity.pathIndex];
       if (row === undefined) continue;

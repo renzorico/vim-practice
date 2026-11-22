@@ -14,6 +14,7 @@ export const MAX_LINE_ROWS = 2;
 const position = z.object({ line: z.number().int(), col: z.number().int() }).strict();
 
 const behaviour = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('put'), text: z.string().min(1).refine(text => !text.includes('\n')) }).strict(),
   z.object({ type: z.literal('still') }).strict(),
   z.object({ type: z.literal('chase') }).strict(),
   z.object({ type: z.literal('patrol'), path: z.array(position) }).strict(),
@@ -38,6 +39,7 @@ const entitySpawn = z
   .strict();
 
 const worldEffect = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('hit'), hearts: z.number().int().min(1) }).strict(),
   z.object({ type: z.literal('set-flag'), flag: z.string(), value: z.boolean() }).strict(),
   z.object({ type: z.literal('set-rows'), fromLine: z.number().int(), lines: z.array(z.string()) }).strict(),
   z.object({ type: z.literal('delete-row'), line: z.number().int() }).strict(),

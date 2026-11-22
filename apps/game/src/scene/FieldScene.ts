@@ -1,3 +1,4 @@
+import { counterStamp, type CounterStamp } from './counterStamp.js';
 import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
 import { jettyDeletion, JETTY_SPLASH_FRACTION, type JettyDeletion } from './jettyDeletion.js';
 import Phaser from 'phaser';
@@ -51,6 +52,7 @@ export class FieldScene extends Phaser.Scene {
   private dust: Phaser.GameObjects.Image[] = [];
   private junk: { image: Phaser.GameObjects.Image; splash: Phaser.GameObjects.Image; at: Position }[] = [];
   private transfer: WarehouseTransfer | null = null;
+  private stamp: CounterStamp | null = null;
   private cargo: { image: Phaser.GameObjects.Image; at: Position }[] = [];
   private decorations: Phaser.GameObjects.Container | undefined;
   private decoratedStage: string | null = null;
@@ -82,7 +84,7 @@ export class FieldScene extends Phaser.Scene {
       }
       this.syncGateMarks();
       for (const cell of this.cells.values()) {
-        if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
+        if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm' || cell.sprite === 'fake')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
       }
     } });
     this.tiles = this.add.container(0, 0);
@@ -106,6 +108,7 @@ export class FieldScene extends Phaser.Scene {
       this.clearDust();
       this.clearJunk();
       this.clearTransfer();
+      this.clearStamp();
       this.cells.clear();
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -119,7 +122,7 @@ export class FieldScene extends Phaser.Scene {
     if (value) {
       this.idleFrame = 0;
       this.finish();
-      for (const cell of this.cells.values()) if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm')) cell.tile.setTexture(this.texture(cell.sprite));
+      for (const cell of this.cells.values()) if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm' || cell.sprite === 'fake')) cell.tile.setTexture(this.texture(cell.sprite));
     }
   }
 
@@ -134,6 +137,7 @@ export class FieldScene extends Phaser.Scene {
     this.clearDust();
     this.clearJunk();
     this.clearTransfer();
+    this.clearStamp();
   }
 
   present(frame: FieldFrame): void {
@@ -163,6 +167,7 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.cameras.main.setBackgroundColor(frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.stamp = this.reducedMotion ? null : counterStamp(this.previousState, frame.state, frame.events);
     this.captureTransfer(frame);
     this.captureJunk(frame);
     this.captureDust(frame);
@@ -204,6 +209,14 @@ export class FieldScene extends Phaser.Scene {
     for (const line of [1, 5]) this.decorations?.add(this.add.text(center(1), center(line) - 7, 'TALLY', {
       fontFamily: 'monospace', fontSize: '5px', color: '#18292b', backgroundColor: '#d39b69',
     }).setOrigin(0.5, 1));
+  }
+
+  private clearStamp(): void {
+    if (!this.stamp) return;
+    for (const cell of this.cells.values()) {
+      if (cell.line === this.stamp.line) { cell.tile.setAlpha(1); cell.glyph.setAlpha(1); }
+    }
+    this.stamp = null;
   }
 
   private clearTransfer(): void {
@@ -258,10 +271,10 @@ export class FieldScene extends Phaser.Scene {
     if (this.deletion || this.reducedMotion || this.previousState?.stage !== frame.state.stage) return;
     // A rejected put can land beyond the unchanged ragged row. Mark that
     // attempted cell too, rather than losing its wall feedback off the field.
-    if (['warehouse', 'customs'].includes(frame.stage.id)) {
+    if (['warehouse', 'customs', 'counter'].includes(frame.stage.id)) {
       for (const event of frame.events) {
         if (event.type !== 'bump' || this.cells.has(`${event.at.line}:${event.at.col}`)) continue;
-        this.dust.push(this.add.image(center(event.at.col), center(event.at.line), this.texture(frame.stage.id === 'customs' ? 'customs-wall' : 'warehouse-wall'))
+        this.dust.push(this.add.image(center(event.at.col), center(event.at.line), this.texture(frame.stage.id === 'counter' ? 'counter-wall' : frame.stage.id === 'customs' ? 'customs-wall' : 'warehouse-wall'))
           .setDepth(3).setTintFill(0xd39b69));
       }
     }
@@ -330,7 +343,10 @@ export class FieldScene extends Phaser.Scene {
     if (!this.player) return;
     const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
     this.cameras.main.setZoom(zoom);
-    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, zoom, this.scrollOffset);
+    // A castle keeps its keeper in view when the player and the keeper fit on one screen.
+    const keeper = this.frame.stage.type === 'castle'
+      ? this.frame.state.entities.find(entity => entity.def.kind === 'keeper')?.at : undefined;
+    const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, zoom, this.scrollOffset, keeper);
     this.cameraY = target.y;
     this.cameras.main.centerOn(target.x, target.y);
   }
@@ -367,8 +383,8 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
-        : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm') ? (this.reducedMotion ? 0 : this.idleFrame)
-        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm' || sprite === 'fake') ? (this.reducedMotion ? 0 : this.idleFrame)
+        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -527,7 +543,7 @@ export class FieldScene extends Phaser.Scene {
 
   /** One shared clock avoids a frame of scheduling overhead for every hint. */
   private play(steps: readonly AnimationStep[]): void {
-    const duration = Math.max(this.transfer ? PLAYBACK_BUDGET_MS : 0, this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
+    const duration = Math.max(this.transfer || this.stamp ? PLAYBACK_BUDGET_MS : 0, this.deletion ? PLAYBACK_BUDGET_MS : 0, this.dust.length > 0 ? 60 : 0, this.unwriting.length > 0 ? PLAYBACK_BUDGET_MS : 0, steps.reduce((longest, step) => Math.max(longest, step.end === step.start ? 0 : step.durationMs / (step.end - step.start)), 0));
     if (duration === 0) return;
     const clock = { value: 0 };
     const render = (): void => {
@@ -578,6 +594,19 @@ export class FieldScene extends Phaser.Scene {
             cell.glyph.setPosition(x, center(line));
           }
         }
+      }
+      if (this.stamp) {
+        const { line, col: start, length, entity } = this.stamp;
+        const progress = 1 - Math.pow(1 - clock.value, 3);
+        for (const [key, cell] of this.cells) {
+          const col = Number(key.split(':')[1]);
+          if (cell.line !== line || col < start) continue;
+          const x = center(col < start + length ? start - 1 : col - length) + progress * TILE_SIZE * (col < start + length ? col - start + 1 : length);
+          cell.tile.setPosition(x, center(line));
+          cell.glyph.setPosition(x, center(line));
+          if (col < start + length) { cell.tile.setAlpha(progress); cell.glyph.setAlpha(progress); }
+        }
+        this.entities.get(entity)?.setPosition(center(start - 1), center(line) + Math.sin(clock.value * Math.PI) * 3);
       }
       let cameraCell: { line: number; col: number } | undefined;
       for (const step of steps) {
@@ -633,7 +662,7 @@ export class FieldScene extends Phaser.Scene {
           else target.clearTint();
         } else if (step.type === 'bump') {
           const cell = this.cells.get(`${step.at.line}:${step.at.col}`);
-          if (progress < 1 && ['jetty', 'warehouse', 'customs'].includes(this.frame.stage.id)) cell?.tile.setTintFill(0xd39b69);
+          if (progress < 1 && ['jetty', 'warehouse', 'customs', 'counter'].includes(this.frame.stage.id)) cell?.tile.setTintFill(0xd39b69);
           target.x = center(this.frame.state.engine.cursor.col) + Math.sin(progress * Math.PI * 4) * 2;
         }
       }
@@ -646,7 +675,7 @@ export class FieldScene extends Phaser.Scene {
     this.tweens.add({
       targets: clock, value: 1, duration,
       onUpdate: render,
-      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.clearTransfer(); this.syncActors(); },
+      onComplete: () => { this.animating = false; this.clearRowEffects(); this.clearUnwriting(); this.clearDust(); this.clearJunk(); this.clearTransfer(); this.clearStamp(); this.syncActors(); },
     });
   }
 }

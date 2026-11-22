@@ -669,3 +669,36 @@ it('lights the cell which rejects a warehouse put, without cargo growth', async 
     && image.x === 15 * 16 + 8 && image.setTintFill.mock.calls.length > 0)).toBe(true);
   scene.finish();
 });
+
+it.each([false, true])('stamps and slides the clerk fake on the shared clock, finishing cleanly (reduced=%s)', async reducedMotion => {
+  const { counter, counterLegend } = await import('../play2/content.js');
+  const { COUNTER_COMMANDS } = await import('../play2/session.js');
+  const { parseKeys } = await import('@escape/engine');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: COUNTER_COMMANDS, flags: {} };
+  let state = sim.step(sim.init(counter, counterLegend, options), 'j', counter, counterLegend, options).state;
+  const initial = { state, stage: counter, legend: counterLegend, events: [], showSource: false };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  for (const key of parseKeys('"ayl')) {
+    const result = sim.step(state, key, counter, counterLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const fakeCrate = fake.images.find(image => image.texture === 'field:fake' && !image.destroy.mock.calls.length);
+  const clerk = fake.images.find(image => image.texture === 'field:counterfeiter' && !image.destroy.mock.calls.length);
+  expect(fakeCrate).toBeDefined();
+  expect(fakeCrate?.x).toBe(reducedMotion ? 40 : 24);
+  if (!reducedMotion) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    clock.targets.value = 0.5; clock.onUpdate();
+    expect(fakeCrate?.x).toBeGreaterThan(24);
+    expect(fakeCrate?.x).toBeLessThan(40);
+    expect(clerk?.y).toBeGreaterThan(24);
+    scene.finish();
+  }
+  expect(fakeCrate?.x).toBe(40);
+  expect(fakeCrate?.alpha).toBe(1);
+  expect(fake.images.find(image => image.texture === 'field:counterfeiter' && !image.destroy.mock.calls.length)?.y).toBe(24);
+  expect(state.engine.lines[1]).toBe('#|f...................');
+});

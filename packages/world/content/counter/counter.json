@@ -1,7 +1,7 @@
 {
   "id": "counter",
   "world": "copper-port",
-  "type": "field",
+  "type": "castle",
   "title": "The Counterfeiter",
   "goalText": "Fill the three crates before his ledger holds eight fakes.",
   "map": [
@@ -73,7 +73,7 @@
     },
     {
       "id": "counter.fuse",
-      "once": true,
+      "once": false,
       "on": "text",
       "anchor": "clerk",
       "text": "ffffffff"

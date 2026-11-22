@@ -60,3 +60,19 @@ it.each([384, 600, 900])('fits exactly twelve rows at field height %i', async he
   expect(6 * 16 + 8 - to.y).toBe(8 - from.y);
   expect(cameraTarget(map, view, { line: 36, col: 5 }, zoom, offset).y).toBe((37 - 6) * 16);
 });
+
+it('keeps a castle keeper on screen when the player and the keeper fit in one view', () => {
+  // 40 x 9 cells of 16 px; a 320 px wide view at zoom 1 shows 20 cells.
+  const map = { width: 40, height: 9 };
+  const view = { width: 320, height: 144 };
+  const player = { line: 7, col: 18 };
+  const keeper = { line: 1, col: 1 };
+  const followed = cameraTarget(map, view, player, 1);
+  const kept = cameraTarget(map, view, player, 1, 0, keeper);
+  expect(followed.x).toBe(18.5 * 16);
+  // Both stay at least one cell inside the view.
+  expect(kept.x - 160).toBeLessThanOrEqual(keeper.col * 16);
+  expect(kept.x + 160).toBeGreaterThanOrEqual((player.col + 1) * 16 + 16);
+  // Too far apart to share a view: the camera follows the player as before.
+  expect(cameraTarget(map, view, { line: 7, col: 35 }, 1, 0, keeper).x).toBe(cameraTarget(map, view, { line: 7, col: 35 }, 1).x);
+});

@@ -1,4 +1,4 @@
-import { createEngine, type EngineState, type Position } from '@escape/engine';
+import { createEngine, type EngineState, type Position, type TextEdit } from '@escape/engine';
 import type { WorldEvent, WorldState } from '@escape/world';
 
 export interface WarehouseTransfer {
@@ -12,21 +12,19 @@ const engine = createEngine();
 /** Presentation asks the Vim engine for exact ranges; no motion rules live here. */
 export function warehouseTransfer(before: WorldState | undefined, after: WorldState,
   events: readonly WorldEvent[]): WarehouseTransfer | null {
-  if (!before || !['warehouse', 'customs'].includes(before.stage) || after.stage !== before.stage) return null;
+  if (!before || !['warehouse', 'customs', 'counter'].includes(before.stage) || after.stage !== before.stage) return null;
   const command = events.find(event => event.type === 'command')?.command;
-  if (!command || command.id !== 'y' && command.id !== 'p') return null;
+  const repeatedPut = command?.id === '.' && before.engine.lastChange?.at(-1) === 'p';
+  if (!command || command.id !== 'y' && command.id !== 'p' && !repeatedPut) return null;
   const yanking = command.id === 'y';
   let field: EngineState = { ...before.engine, pendingKeys: [] };
-  let edits = after.engine.undoStack.at(-1)?.edits ?? [];
-  if (yanking) {
-    // d and y share the same range in Vim. Replay only to obtain TextEdits.
-    edits = [];
-    const operator = command.keys.indexOf('y');
-    for (const [index, key] of command.keys.entries()) {
-      const result = engine.step(field, index === operator ? 'd' : key);
-      field = result.state;
-      edits = [...edits, ...result.edits];
-    }
+  const edits: TextEdit[] = [];
+  // d and y share a range. Replay puts too: an entity's put may be the newest undo entry.
+  const operator = command.keys.indexOf('y');
+  for (const [index, key] of command.keys.entries()) {
+    const result = engine.step(field, yanking && index === operator ? 'd' : key);
+    field = result.state;
+    edits.push(...result.edits);
   }
   const cells: { at: Position; char: string }[] = [];
   let text = before.engine.lines.join('\n');

@@ -1,3 +1,4 @@
+import { CounterGauge } from './CounterGauge.js';
 import { YankedSlot } from './YankedSlot.js';
 import { createEngine } from '@escape/engine';
 import { ScriptPanel } from './ScriptPanel.js';
@@ -43,10 +44,11 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.title}</h1>
+      {stage.id === 'counter' && <CounterGauge world={world} />}
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field">
-      {['warehouse', 'customs'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id === 'customs'} />}
+      {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
@@ -105,8 +107,9 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['gates.met-shut'] ? ['%'] : []),
     ...(flags['gates.asked'] ? ['Ctrl-d', 'Ctrl-u'] : []),
     ...(flags['jetty.asked'] ? ['d', 'db'] : []),
-    ...(['warehouse', 'customs'].includes(stageId) ? ['y', 'yw', 'p'] : []),
-    ...(stageId === 'customs' ? ['"', '"a', '"0'] : [])];
+    ...(['warehouse', 'customs', 'counter'].includes(stageId) ? ['y', 'yw', 'p'] : []),
+    ...(stageId === 'counter' ? ['8p'] : []),
+    ...(['customs', 'counter'].includes(stageId) ? ['"', '"a', '"0'] : [])];
 }
 
 export function pendingKeyLabel(keys: readonly string[]): string {
