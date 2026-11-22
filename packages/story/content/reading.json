@@ -1,0 +1,213 @@
+{
+  "worlds": [],
+  "openingStage": "reading",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "library.reading",
+      "world": "library",
+      "title": "The reading room",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "chains",
+          "objective": "Lift the chains off the reading room floor.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "reading.chains-gone",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "folio",
+          "objective": "Talk to the reader at the far end.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "reading"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "reading.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The reading room. Chains across the floor,\neach one held by a pair of shackles."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Folio. Reader. The contract says no one\nreads here, so I am chained to my chair."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Don't hunt for the shackle. Stand anywhere\nin the chain: da( takes it, shackles and all."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Mine is different. Leave the shackle,\ntake the chain: di(. I may want it back."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "reading.nested",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Open! ...open."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: the room is clear. A chain in\na chain? d2a( takes both at once."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "reading.folio-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Chains first. Anywhere inside, da(."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "reading.folio-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Free hands. And an open shackle,\nin case I need to be stubborn again."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "The archive is next. The contract filed\nthe wrong paragraph in the middle of it."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "reading.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "reading.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Past the reading room, the archive.\nShelves of paragraphs, blank rows between."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "reading.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "stacks"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "library.reading"
+        }
+      ]
+    },
+    {
+      "id": "reading.nested",
+      "when": {
+        "type": "trigger",
+        "trigger": "reading.chains-gone"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "reading.nested"
+        }
+      ]
+    },
+    {
+      "id": "reading.chains-gone",
+      "when": {
+        "type": "trigger",
+        "trigger": "reading.chains-gone"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "reading.chains-gone",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "reading.folio-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "reading.talk-folio"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "reading.folio-wait"
+        }
+      ],
+      "unless": "reading.chains-gone"
+    },
+    {
+      "id": "reading.folio-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "reading.talk-folio"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "reading.folio-through"
+        }
+      ],
+      "onlyIf": "reading.chains-gone"
+    },
+    {
+      "id": "reading.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "reading"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "reading.end"
+        }
+      ]
+    }
+  ]
+}

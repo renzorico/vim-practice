@@ -572,7 +572,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · F-3: The Reading Room (stage 5-2)
+**Who:** Opus (design, sim proof, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** One long floor row with chains held by shackles, real brackets: `w` lands inside a chain and `da(` takes it with both shackles; a chain in a chain goes with `d2a(`; Folio's own chain is `di(`, leaving the open shackle `()`. One text trigger on the door post checks the whole row. Par 6 (`w da( w d2a( w di( <CR>`); without bracket objects 9 (`%` + `d%`, `dt)`). New: `READING_COMMANDS`, Folio, reading room sprites, chain clatter.
+
+**What the checks caught:** Codex stopped on three things. The shackles were authored as `object`, against the contract (punctuation is `barrier`): the legend is fixed (the same mistake as the Stacks gap: the design lead now checks tile kinds before handing over content). Two tests had wrong expectations: `da(` on Folio's chain is cancelled by the sim (his cell would slide under the cursor), which is the right outcome, and Quire's closing lines play before the stacks cutscene. Codex also doubted the solver bound; `solveStage` does build moves from the given vocabulary, so the bound stands (the wall-time assertion was dropped as flaky). Sonnet: 0 blocking. Browser: 6 turns, 3 hearts, no console errors. Known: Dot's `d2a(` line plays after the room is clear, too late to help (parking lot).
+
+**Lesson:** Check content against the contract's tile-kind convention before writing a brief: the linter catches it, but only after a builder has spent a run on it.
+
+---
+
 ## Parking lot
+- Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).
 - Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

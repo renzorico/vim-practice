@@ -35,7 +35,7 @@
     },
     {
       "char": "(",
-      "kind": "object",
+      "kind": "barrier",
       "sprite": "shackle-open-left",
       "walkable": true,
       "fixed": false,
@@ -43,7 +43,7 @@
     },
     {
       "char": ")",
-      "kind": "object",
+      "kind": "barrier",
       "sprite": "shackle-open-right",
       "walkable": true,
       "fixed": false,

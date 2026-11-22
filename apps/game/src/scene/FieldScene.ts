@@ -255,8 +255,8 @@ export class FieldScene extends Phaser.Scene {
     for (const [offset, char] of [...this.deletion.junk].entries()) {
       const at = { line: this.deletion.line, col: this.deletion.col + offset };
       this.junk.push({ at,
-        image: this.add.image(center(at.col), center(at.line), this.texture(frame.stage.id === 'stacks' ? char === 'd' ? 'library-dust' : 'shelf-gap' : char === 'c' ? 'crates' : 'nets')).setDepth(3),
-        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture(frame.stage.id === 'stacks' ? 'dust-puff' : 'splash')).setDepth(3).setAlpha(0),
+        image: this.add.image(center(at.col), center(at.line), this.texture(frame.stage.id === 'reading' ? char === 'c' ? 'chain' : char === '(' ? 'shackle-open-left' : 'shackle-open-right' : frame.stage.id === 'stacks' ? char === 'd' ? 'library-dust' : 'shelf-gap' : char === 'c' ? 'crates' : 'nets')).setDepth(3),
+        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture(frame.stage.id === 'reading' ? 'chain-clatter' : frame.stage.id === 'stacks' ? 'dust-puff' : 'splash')).setDepth(3).setAlpha(0),
       });
     }
   }
