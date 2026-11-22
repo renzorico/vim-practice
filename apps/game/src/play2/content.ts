@@ -1,3 +1,5 @@
+import harbourJson from '../../../../packages/world/content/harbour/harbour.json';
+import harbourStoryJson from '../../../../packages/story/content/harbour.json';
 import counterJson from '../../../../packages/world/content/counter/counter.json';
 import counterLegendJson from '../../../../packages/world/content/counter/counter.legend.json';
 import counterStoryJson from '../../../../packages/story/content/counter.json';
@@ -90,7 +92,10 @@ export const customs = parseStage(customsJson);
 export const customsLegend = parseLegend(customsLegendJson);
 export const counter = parseStage(counterJson);
 export const counterLegend = parseLegend(counterLegendJson);
-export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }, { stage: canopy, legend: canopyLegend }, { stage: glades, legend: gladesLegend }, { stage: gates, legend: gatesLegend }, { stage: manifest, legend: manifestLegend }, { stage: jetty, legend: portLegend }, { stage: warehouse, legend: warehouseLegend }, { stage: customs, legend: customsLegend }, { stage: counter, legend: counterLegend }];
+// Best known route, replayed with the engine; optimality is unproven.
+export const harbour = parseStage(harbourJson);
+export const harbourLegend = quarryLegend;
+export const stages = [{ stage, legend }, { stage: lowlands, legend: lowlandsLegend }, { stage: lighthouse, legend: lighthouseLegend }, { stage: quarry, legend: quarryLegend }, { stage: cut, legend: cutLegend }, { stage: shaft, legend: shaftLegend }, { stage: ledger, legend: ledgerLegend }, { stage: canopy, legend: canopyLegend }, { stage: glades, legend: gladesLegend }, { stage: gates, legend: gatesLegend }, { stage: manifest, legend: manifestLegend }, { stage: jetty, legend: portLegend }, { stage: warehouse, legend: warehouseLegend }, { stage: customs, legend: customsLegend }, { stage: counter, legend: counterLegend }, { stage: harbour, legend: harbourLegend }];
 
 // Validate the original JSON, rather than assigning Zod's inferred optional `undefined`
 // properties to the stricter contract. Bundled JSON cannot contain undefined values.
@@ -100,10 +105,10 @@ function assertStoryJson(value: unknown): asserts value is StoryContent {
 const bundledStory: unknown = {
   ...storyJson,
   worlds: [...storyJson.worlds, ...lowlandsStoryJson.worlds, ...quarryStoryJson.worlds, ...canopyStoryJson.worlds, ...jettyStoryJson.worlds],
-  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes, ...canopyStoryJson.cutscenes, ...gladesStoryJson.cutscenes, ...gatesStoryJson.cutscenes, ...manifestStoryJson.cutscenes, ...jettyStoryJson.cutscenes, ...warehouseStoryJson.cutscenes, ...customsStoryJson.cutscenes, ...counterStoryJson.cutscenes],
-  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests, ...canopyStoryJson.quests, ...gladesStoryJson.quests, ...gatesStoryJson.quests, ...manifestStoryJson.quests, ...jettyStoryJson.quests, ...warehouseStoryJson.quests, ...customsStoryJson.quests, ...counterStoryJson.quests],
-  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues, ...canopyStoryJson.dialogues, ...gladesStoryJson.dialogues, ...gatesStoryJson.dialogues, ...manifestStoryJson.dialogues, ...jettyStoryJson.dialogues, ...warehouseStoryJson.dialogues, ...customsStoryJson.dialogues, ...counterStoryJson.dialogues],
-  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions, ...canopyStoryJson.reactions, ...gladesStoryJson.reactions, ...gatesStoryJson.reactions, ...manifestStoryJson.reactions, ...jettyStoryJson.reactions, ...warehouseStoryJson.reactions, ...customsStoryJson.reactions, ...counterStoryJson.reactions],
+  cutscenes: [...storyJson.cutscenes, ...lighthouseStoryJson.cutscenes, ...quarryStoryJson.cutscenes, ...cutStoryJson.cutscenes, ...shaftStoryJson.cutscenes, ...ledgerStoryJson.cutscenes, ...canopyStoryJson.cutscenes, ...gladesStoryJson.cutscenes, ...gatesStoryJson.cutscenes, ...manifestStoryJson.cutscenes, ...jettyStoryJson.cutscenes, ...warehouseStoryJson.cutscenes, ...customsStoryJson.cutscenes, ...counterStoryJson.cutscenes, ...harbourStoryJson.cutscenes],
+  quests: [...storyJson.quests, ...lowlandsStoryJson.quests, ...quarryStoryJson.quests, ...cutStoryJson.quests, ...shaftStoryJson.quests, ...ledgerStoryJson.quests, ...canopyStoryJson.quests, ...gladesStoryJson.quests, ...gatesStoryJson.quests, ...manifestStoryJson.quests, ...jettyStoryJson.quests, ...warehouseStoryJson.quests, ...customsStoryJson.quests, ...counterStoryJson.quests, ...harbourStoryJson.quests],
+  dialogues: [...storyJson.dialogues, ...lowlandsStoryJson.dialogues, ...lighthouseStoryJson.dialogues, ...quarryStoryJson.dialogues, ...cutStoryJson.dialogues, ...shaftStoryJson.dialogues, ...ledgerStoryJson.dialogues, ...canopyStoryJson.dialogues, ...gladesStoryJson.dialogues, ...gatesStoryJson.dialogues, ...manifestStoryJson.dialogues, ...jettyStoryJson.dialogues, ...warehouseStoryJson.dialogues, ...customsStoryJson.dialogues, ...counterStoryJson.dialogues, ...harbourStoryJson.dialogues],
+  reactions: [...storyJson.reactions, ...lowlandsStoryJson.reactions, ...lighthouseStoryJson.reactions, ...quarryStoryJson.reactions, ...cutStoryJson.reactions, ...shaftStoryJson.reactions, ...ledgerStoryJson.reactions, ...canopyStoryJson.reactions, ...gladesStoryJson.reactions, ...gatesStoryJson.reactions, ...manifestStoryJson.reactions, ...jettyStoryJson.reactions, ...warehouseStoryJson.reactions, ...customsStoryJson.reactions, ...counterStoryJson.reactions, ...harbourStoryJson.reactions],
 };
 assertStoryJson(bundledStory);
 export const content = bundledStory;

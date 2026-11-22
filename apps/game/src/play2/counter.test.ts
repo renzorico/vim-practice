@@ -98,7 +98,8 @@ it('clear wins when the last crate fills on the eighth fake; statue D lights onl
   session = dismiss(session);
   expect(session.world.hearts).toBe(3);
   expect(session.story.statues).toContain('D');
-  expect(screen(session)).toContain('To be continued.');
+  expect(session.world.stage).toBe('harbour');
+  expect(session.world.script?.id).toBe('harbour.book');
 });
 it('clerk blocks walking and jumps; fixed samples cannot be deleted; only castle vocabulary is accepted', () => {
   for (const input of ['k', '2G', 'yy', 'P', 'D', 'cw']) {
@@ -125,7 +126,7 @@ it('customs ending leads into counter, keeping story and starting the castle que
   const progress = readProgress(() => storage, stages.map(s => s.stage.id));
   if (!progress) throw new Error('Missing save');
   expect(controller.resume(progress).world.stage).toBe('counter');
-  expect(content.worlds.find(w => w.id === 'copper-port')).toMatchObject({ castle: 'counter', statue: 'D', stages: ['jetty', 'warehouse', 'customs', 'counter'] });
+  expect(content.worlds.find(w => w.id === 'copper-port')).toMatchObject({ castle: 'counter', statue: 'D', stages: ['jetty', 'warehouse', 'customs', 'counter', 'harbour'] });
 });
 it('bounded old-command search finds no solution in 3 turns / 50 expansions', () => {
   const solver = sessionSolver({ sim, storyEngine, content, stage: counter, legend: counterLegend });

@@ -1,3 +1,4 @@
+import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
 import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
@@ -37,7 +38,7 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
   'shelf-top': OIL_STENCIL, 'shelf-middle': OIL_STENCIL, 'shelf-bottom': ROPE_STENCIL, 'counter-end': COUNTER_END,
   boards: BOARDS, 'port-water': PORT_WATER, 'pier-post': PIER_POST, 'port-ladder': PORT_LADDER,
   warehouse: WAREHOUSE, crates: CRATES, nets: NETS, cart: CART, bitt: BITT, ream: REAM, splash: SPLASH,
-  semi: SEMI,
+  semi: SEMI, cleat: CLEAT,
   'gate-glint': GATE_GLINT, heartwood: HEARTWOOD, hollow: HOLLOW, 'gate-open': GATE_OPEN, 'gate-close': GATE_CLOSE, ope: OPE, shut: SHUT,
   moss: MOSS, 'fern-fronds': FERNS, bramble: BRAMBLE, clearing: CLEARING, pilcrow: PILCROW,
   rope: ROPE, stump: STUMP, 'glade-lamp-lit': GLADE_LAMP_LIT, 'lamp-out': GLADE_LAMP_OUT,

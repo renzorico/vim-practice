@@ -8,7 +8,8 @@
         "jetty",
         "warehouse",
         "customs",
-        "counter"
+        "counter",
+        "harbour"
       ],
       "castle": "counter",
       "statue": "D"

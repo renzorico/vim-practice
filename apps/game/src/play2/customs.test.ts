@@ -54,7 +54,7 @@ it('warehouse.end precedes customs.intro, retaining story and starting Customs',
   expect(queued(session)).toEqual(['customs.intro']);
   expect(session.story.clearedStages).toContain('warehouse');
   expect(session.story.quests['port.customs']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(w => w.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs', 'counter']);
+  expect(content.worlds.find(w => w.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs', 'counter', 'harbour']);
 });
 it('named yank preserves zero; deletion replaces unnamed, and plain p bumps free', () => {
   const yanked = oil();
