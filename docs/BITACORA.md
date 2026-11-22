@@ -550,10 +550,19 @@ Tags: `#design` `#gates`
 **What the checks caught:** In the engine, before the brief: `P` did not win while the order went above CRATES (`gg3jP` and `gg2jp` cost the same), so it moved to the very top. Sonnet: 0 blocking; the "different order" test is weak and the start reaction's `unlock-stage` follows the Manifest's pattern. Browser: the route solves, the ending plays to "To be continued", no console errors (synthetic keys faster than about 100 ms apart were dropped by the script panel: a test-harness limit, not a player one).
 
 **Lesson:** A command only teaches if the map makes it win: design the one spot where the old tool costs more.
+## 2026-11-23 · F-1: Text objects in the engine and the solver (World 5 opens)
+**Who:** Opus (engine survey, brief, golden check, review fix), Codex (build), Sonnet (review).
+
+**What:** Text objects after `d`/`c`/`y` and in `v`/`V`: `iw aw iW aW`, quotes, `( [ { <` pairs (with `b`/`B` aliases), `it at`, `ip ap`; counts as Vim (`2daw`, `d2aw`, `d2i(`); `.` repeat; a failed object is an engine error with no change. `CommandRecord`: id `diw`, motion `iw`. Solver: `d`/`y` with objects, counts 1-3, gated on the Library and later. 391 Neovim goldens. Suite 38 s to 32 s.
+
+**What the checks caught:** Survey before the brief: no object parsed at all, and `viw` gave a wrong result. Golden check: regenerated with `--force`, byte-identical. Sonnet (0 blocking): the "no change, no dot command" rule Codex added for failed objects applied to every `d`; Neovim (new golden) makes even a no-op `d0` the dot command, so the rule is now scoped to text objects. Added goldens for `"adiw`/`"ayiw`, `vi(`/`vi"` on empty pairs and `di<Esc>`.
+
+**Lesson:** When a rule is added for a new case, golden-test it on an old case too: the engine change was right for objects and wrong for motions.
 
 ---
 
 ## Parking lot
+- Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
 - Tauri desktop build (fixes `<C-w>` in browsers)
