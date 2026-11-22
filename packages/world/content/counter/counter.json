@@ -1,0 +1,133 @@
+{
+  "id": "counter",
+  "world": "copper-port",
+  "type": "castle",
+  "title": "The Counterfeiter",
+  "goalText": "Fill the three crates before his ledger holds eight fakes.",
+  "map": [
+    "######################",
+    "#|...................",
+    "#.###",
+    "#o###",
+    "#.###",
+    "#r###",
+    "#.###",
+    "#.[]..[]..[]#",
+    "#############"
+  ],
+  "legend": "counter",
+  "start": {
+    "line": 2,
+    "col": 1
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "clerk",
+      "kind": "keeper",
+      "sprite": "counterfeiter",
+      "at": {
+        "line": 1,
+        "col": 1
+      },
+      "behaviour": {
+        "type": "put",
+        "text": "f"
+      },
+      "every": 2,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "crates",
+      "kind": "prop",
+      "sprite": "crate-row",
+      "at": {
+        "line": 7,
+        "col": 2
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "counter.talk-clerk",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "clerk"
+      }
+    },
+    {
+      "id": "counter.done",
+      "once": true,
+      "on": "text",
+      "anchor": "crates",
+      "text": "oooooooo]..[rrrrrrrr]..[oooorrrr]#"
+    },
+    {
+      "id": "counter.fuse",
+      "once": false,
+      "on": "text",
+      "anchor": "clerk",
+      "text": "ffffffff"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "counter.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 12,
+  "solution": [
+    "j",
+    "\"",
+    "a",
+    "y",
+    "l",
+    "2",
+    "j",
+    "\"",
+    "b",
+    "y",
+    "l",
+    "2",
+    "j",
+    "f",
+    "[",
+    "\"",
+    "a",
+    "8",
+    "p",
+    "f",
+    "[",
+    "\"",
+    "b",
+    "8",
+    "p",
+    "f",
+    "[",
+    "\"",
+    "a",
+    "4",
+    "p",
+    "\"",
+    "b",
+    "4",
+    "p"
+  ],
+  "hints": [
+    "A count before p puts it that many times: \"a8p puts what \"a holds, eight times.",
+    "Yank both on the way down: \"ayl on the oil, \"byl on the rope. Then the crates: \"a8p, \"b8p, \"a4p, \"b4p."
+  ]
+}

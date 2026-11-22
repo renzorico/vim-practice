@@ -86,3 +86,11 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @media (prefers-reduced-motion: reduce) {
   .yanked-slot__cargo[data-changed="true"], .yanked-slot__cargo[data-changed="true"] .register-row__current, .yanked-slot__cargo[data-changed="true"] .register-row__old { animation: none; }
 }
+
+.counter-gauge { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text); font: 13px var(--font-mono); }
+.counter-gauge__slots { display: flex; gap: 3px; }
+.counter-gauge__slots i { width: 12px; height: 16px; border: 1px solid var(--text-soft); }
+.counter-gauge__slots i[data-filled="true"] { background: #d39b69; border-color: #d39b69; }
+.counter-gauge[data-full="true"] { animation: ledger-filed 180ms ease-out 2; }
+@keyframes ledger-filed { 50% { color: #ffe8b2; opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .counter-gauge[data-full="true"] { animation: none; } }

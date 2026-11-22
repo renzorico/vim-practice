@@ -49,7 +49,7 @@ it('opens Copper Port after every manifest ending beat, keeping the story and st
   expect(session.world.stage).toBe('jetty');
   expect(session.story.clearedStages).toContain('manifest');
   expect(session.story.quests['port.jetty']).toEqual({ step: 0, done: false });
-  expect(content.worlds).toContainEqual({ id: 'copper-port', order: 4, name: 'Copper Port', stages: ['jetty', 'warehouse', 'customs'], castle: null, statue: null });
+  expect(content.worlds).toContainEqual({ id: 'copper-port', order: 4, name: 'Copper Port', stages: ['jetty', 'warehouse', 'customs', 'counter'], castle: 'counter', statue: 'D' });
 });
 it('introduces the ferry, then teaches d and db on the first interaction', () => {
   expect(controller.init().queue[0]).toMatchObject({ dialogue: 'jetty.intro' });

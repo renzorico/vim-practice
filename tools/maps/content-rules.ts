@@ -131,6 +131,7 @@ export function checkEffectReferences(stage: Stage, legend?: Legend): LintIssue[
         case 'set-rows':
         case 'spawn':
         case 'heal':
+        case 'hit':
           return [];
       }
     }),

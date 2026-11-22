@@ -7,10 +7,11 @@
       "stages": [
         "jetty",
         "warehouse",
-        "customs"
+        "customs",
+        "counter"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "counter",
+      "statue": "D"
     }
   ],
   "openingStage": "jetty",

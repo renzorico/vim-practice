@@ -32,6 +32,7 @@ export const GATES_COMMANDS = [...GLADES_COMMANDS, '%', '<C-d>', '<C-u>'] as con
 export const PORT_COMMANDS = [...GATES_COMMANDS, 'd'] as const;
 export const WAREHOUSE_COMMANDS = [...PORT_COMMANDS, 'y', 'p'] as const;
 export const CUSTOMS_COMMANDS = [...WAREHOUSE_COMMANDS, '"'] as const;
+export const COUNTER_COMMANDS = CUSTOMS_COMMANDS;
 /** Taught in the ledger (2-4) only; the field stages before it must not learn them early. */
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
@@ -39,7 +40,7 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
@@ -76,7 +77,9 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       for (const effect of result.effects) {
         switch (effect.type) {
           case 'world':
-            effects.push(...effect.effects);
+            const delayed = effect.effects.filter(inner => inner.type === 'hit' && queue.length > 0);
+            next = { ...next, deferredEffects: [...next.deferredEffects, ...delayed] };
+            effects.push(...effect.effects.filter(inner => !delayed.includes(inner)));
             for (const inner of effect.effects) {
               if (inner.type === 'set-flag') flags[inner.flag] = inner.value;
             }
@@ -162,7 +165,14 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     if (current.index + 1 < length) {
       return { ...session, queue: [{ ...current, index: current.index + 1 }, ...session.queue.slice(1)] };
     }
-    const next = { ...session, queue: session.queue.slice(1), lastEvents: [] };
+    let next: Session = { ...session, queue: session.queue.slice(1), lastEvents: [] };
+    // A narrated hit resolves after its lines; a clear queued first wins the race.
+    if (next.queue.length === 0 && next.deferredEffects.length > 0) {
+      const stageEntry = entry(next.world.stage);
+      const applied = sim.apply(next.world, next.deferredEffects, stageEntry.stage, stageEntry.legend);
+      next = settle({ ...next, deferredEffects: [], world: applied.state, lastEvents: applied.events },
+        storyEngine.onEvents(next.story, applied.events, content));
+    }
     if (current.type === 'teach') return transition(settle(next, storyEngine.learn(next.story, current.skill, content)));
     return transition(presentEnd(settle(next, storyEngine.apply(next.story, then, content))));
   }
@@ -222,8 +232,11 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       ? [{ type: 'bump', reason: 'edge', at: world.engine.cursor }] : stepped.events;
     // Rejected commands and unfinished keys cannot change story conditions.
     if (stepped.events.every(event => event.type === 'bump' || event.type === 'engine-error')) return { ...session, keys: session.keys + 1, world, lastEvents: events };
-    const next = settle({ ...session, keys: session.keys + 1, world, lastEvents: events },
-      storyEngine.onEvents(session.story, stepped.events, content));
+    // Only these events can change a StoryCondition; movement and row hints cannot.
+    const storyEvents = stepped.events.filter(event => ['trigger-fired', 'flag-set', 'stage-cleared', 'script-solved'].includes(event.type));
+    const updated = { ...session, keys: session.keys + 1, world, lastEvents: events };
+    const next = storyEvents.length === 0 ? updated
+      : settle(updated, storyEngine.onEvents(session.story, storyEvents, content));
     return transition(presentEnd(next));
   }
   return { init, resume, reduce };

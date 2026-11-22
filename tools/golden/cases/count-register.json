@@ -1,0 +1,354 @@
+[
+  {
+    "name": "count before put",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayl8\"ap",
+    "expect": {
+      "lines": [
+        "aaaaaaaaabcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count after put",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayl\"a8p",
+    "expect": {
+      "lines": [
+        "aaaaaaaaabcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count before yank",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3\"ayl\"ap",
+    "expect": {
+      "lines": [
+        "aabcbcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count before line delete",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2\"bdd\"bp",
+    "expect": {
+      "lines": [
+        "third",
+        "abcdefghij",
+        "second",
+        "fourth"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "counts around register",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayl2\"a3p",
+    "expect": {
+      "lines": [
+        "aaaaaaabcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "repeat prefixed put",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayl4\"ap.",
+    "expect": {
+      "lines": [
+        "aaaaaaaaabcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "undo prefixed put",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "\"ayl8\"apu",
+    "expect": {
+      "lines": [
+        "abcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "counted operator motion",
+    "lines": [
+      "abcdefghij",
+      "second",
+      "third",
+      "fourth"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2\"ay2l\"ap",
+    "expect": {
+      "lines": [
+        "aabcdbcdefghij",
+        "second",
+        "third",
+        "fourth"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "count before register on insert",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3\"aix<Esc>",
+    "expect": {
+      "lines": [
+        "xxxabc"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "find a quote is still a find",
+    "lines": [
+      "say \"hi\" now",
+      "second"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "f\"",
+    "expect": {
+      "lines": [
+        "say \"hi\" now",
+        "second"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "till a quote is still a till",
+    "lines": [
+      "say \"hi\" now",
+      "second"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "t\"",
+    "expect": {
+      "lines": [
+        "say \"hi\" now",
+        "second"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "replace with a quote is still a replace",
+    "lines": [
+      "say \"hi\" now",
+      "second"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "r\"",
+    "expect": {
+      "lines": [
+        "\"ay \"hi\" now",
+        "second"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "the unnamed register named explicitly",
+    "lines": [
+      "say \"hi\" now",
+      "second"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "yl\"\"p",
+    "expect": {
+      "lines": [
+        "ssay \"hi\" now",
+        "second"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "a count then a lone quote waits",
+    "lines": [
+      "say \"hi\" now",
+      "second"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "3\"",
+    "expect": {
+      "lines": [
+        "say \"hi\" now",
+        "second"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

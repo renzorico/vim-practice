@@ -1,0 +1,234 @@
+{
+  "worlds": [],
+  "openingStage": "counter",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "port.counterfeiter",
+      "world": "copper-port",
+      "title": "The Counterfeiter",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "crates",
+          "objective": "Fill the three crates before his ledger fills.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "counter"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "counter.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The counting house. A clerk at his desk,\ncopying. Three empty crates below."
+        },
+        {
+          "speaker": "npc",
+          "name": "Clerk",
+          "text": "Fakes. One every two turns.\nWhen my ledger holds eight, I file it."
+        },
+        {
+          "speaker": "npc",
+          "name": "Clerk",
+          "text": "Then the port believes my count,\nnot yours. Fill those crates first."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Eight! ...eight."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: a count before p puts it that\nmany times. \"a8p puts \"a eight times."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "counter.talk",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Clerk",
+          "text": "Eight oil. Eight rope. Four and four.\nI copy faster than you count."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "counter.fuse",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Clerk",
+          "text": "Eight. Filed."
+        },
+        {
+          "speaker": "system",
+          "text": "The port takes his count over yours."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "counter.done",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Clerk",
+          "text": "Eight oil. Eight rope. Four and four.\n...Real ones. Where did you get real ones?"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "counter.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Yank both on the way down: \"ayl, \"byl.\nThen \"a8p, \"b8p, \"a4p, \"b4p."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "counter.end",
+      "beats": [
+        {
+          "type": "title",
+          "text": "The clerk reads the crates, then his ledger."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Clerk",
+            "text": "I lost the row that said which were real.\nSo I copied everything. You copied the truth."
+          }
+        },
+        {
+          "type": "title",
+          "text": "The Scribe is in another buffer."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Clerk",
+            "text": "She came for my ledger, before the Flicker.\nLeft one letter on the desk: D."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Copy. ...copy."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "light-statue",
+          "letter": "D"
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "counter.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "customs"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "port.counterfeiter"
+        }
+      ]
+    },
+    {
+      "id": "counter.done",
+      "when": {
+        "type": "trigger",
+        "trigger": "counter.done"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "counter.done"
+        },
+        {
+          "type": "set-flag",
+          "flag": "counter.through",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "counter.fuse",
+      "when": {
+        "type": "trigger",
+        "trigger": "counter.fuse"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "counter.fuse"
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "hit",
+              "hearts": 3
+            }
+          ]
+        }
+      ],
+      "unless": "counter.through"
+    },
+    {
+      "id": "counter.talk",
+      "when": {
+        "type": "trigger",
+        "trigger": "counter.talk-clerk"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "counter.talk"
+        }
+      ]
+    },
+    {
+      "id": "counter.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "counter"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "counter.end"
+        }
+      ]
+    }
+  ]
+}

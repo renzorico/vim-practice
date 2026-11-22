@@ -3,8 +3,8 @@ import { applyTextEdits, editsSince, offsetAt } from './edits.js';
  * Engine.step: turns one key into a new state by wiring the Phase 1 modules together.
  *
  * Normal-mode keys accumulate in state.pendingKeys until they form a complete command:
- *   ["x] [count] command
- *   ["x] [count] operator [count] (motion | same operator)
+ *   [count] ["x] [count] command
+ *   [count] ["x] [count] operator [count] (motion | same operator)
  * Each module stays ignorant of the others; this file is the only place that knows them all.
  */
 import { enterCommandLine, enterInsert, enterVisual, exitToNormal, handleCommandLineKey, handleInsertKey } from './modes/index.js';
@@ -73,17 +73,22 @@ function parseMotion(keys: readonly Key[], index: number): { id: string; arg: st
   return arg === undefined ? 'incomplete' : { id, arg };
 }
 
+function readCommandPrefix(keys: readonly Key[]): { register: string | null; count: number | null; next: number } | null {
+  const leading = readCount(keys, 0);
+  if (keys[leading.next] !== '"') return { register: null, ...leading };
+  const register = keys[leading.next + 1];
+  if (register === undefined) return null;
+  const trailing = readCount(keys, leading.next + 2);
+  const count = leading.count === null && trailing.count === null ? null
+    : Math.min((leading.count ?? 1) * (trailing.count ?? 1), MAX_COUNT);
+  return { register, count, next: trailing.next };
+}
+
+
 export function parseNormal(keys: readonly Key[]): Parsed {
-  let index = 0;
-  let register: string | null = null;
-  if (keys[0] === '"') {
-    const name = keys[1];
-    if (name === undefined) return INCOMPLETE;
-    register = name;
-    index = 2;
-  }
-  const { count, next } = readCount(keys, index);
-  index = next;
+  const prefix = readCommandPrefix(keys);
+  if (prefix === null) return INCOMPLETE;
+  const { register, count, next: index } = prefix;
   const key = keys[index];
   if (key === undefined) return INCOMPLETE;
   const base = { register, count, arg: null, operator: null, operatorCount: null } as const;
@@ -308,7 +313,7 @@ function repeatLastChange(state: EngineState, keys: readonly Key[], options: Eng
 /** Keys typed in this insert session, after the command that started it (e.g. "3iab<Esc>" -> ['a','b']). */
 function insertedKeys(state: EngineState): { count: number; typed: readonly Key[] } {
   const change = state.changeInProgress ?? [];
-  const { count, next } = readCount(change, change[0] === '"' ? 2 : 0);
+  const { count, next } = readCommandPrefix(change) ?? { count: null, next: 0 };
   const command = change[next];
   if (command === undefined || !INSERT_KEYS.has(command)) return { count: 1, typed: [] };
   return { count: count ?? 1, typed: change.slice(next + 1) };

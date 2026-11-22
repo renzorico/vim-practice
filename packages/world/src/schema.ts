@@ -52,6 +52,7 @@ export const LegendSchema = z
   .transform(({ emptyRow, ...rest }) => ({ ...rest, ...(emptyRow === undefined ? {} : { emptyRow }) }));
 
 const behaviour = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('put'), text: z.string().min(1).refine(text => !text.includes('\n')) }).strict(),
   z.object({ type: z.literal('build'), rows: z.array(z.string()) }).strict(),
   z.object({ type: z.literal('still') }).strict(),
   z.object({ type: z.literal('chase') }).strict(),
@@ -124,6 +125,7 @@ const textTrigger = z
 const trigger = z.union([enterTrigger, interactTrigger, textTrigger]);
 
 const worldEffect = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('hit'), hearts: z.number().int().min(1) }).strict(),
   z.object({ type: z.literal('set-flag'), flag: z.string(), value: z.boolean() }).strict(),
   z.object({ type: z.literal('set-rows'), fromLine: NON_NEGATIVE_INT, lines: z.array(z.string()) }).strict(),
   z.object({ type: z.literal('delete-row'), line: NON_NEGATIVE_INT }).strict(),

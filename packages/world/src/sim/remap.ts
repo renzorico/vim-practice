@@ -38,6 +38,10 @@ export function mapOffset(offset: number, edits: readonly TextEdit[]): number | 
 export function remapPosition(before: readonly string[], after: readonly string[], at: Position,
   edits: readonly TextEdit[], emptyRow = false): Position | null {
   let offset: number | null = offsetAt(before, at);
+  if (!emptyRow) {
+    const mapped = mapOffset(offset, edits);
+    return mapped === null ? null : positionAt(after, mapped);
+  }
   let text = before.join('\n');
   for (const edit of edits) {
     const onEmptyRow = emptyRow && (offset === 0 || text[offset - 1] === '\n')
@@ -62,6 +66,18 @@ export function remapPosition(before: readonly string[], after: readonly string[
 
 /** Bounds in pre-edit numbering; inserted text maps back to its insertion boundary. */
 export function changedRows(before: readonly string[], edits: readonly TextEdit[]) {
+  const only = edits.length === 1 ? edits[0] : undefined;
+  if (only !== undefined) {
+    const lineAt = (offset: number): number => {
+      let line = 0;
+      while (line < before.length - 1 && offset > (before[line]?.length ?? 0)) {
+        offset -= (before[line]?.length ?? 0) + 1;
+        line += 1;
+      }
+      return line;
+    };
+    return { fromLine: lineAt(only.start), toLine: lineAt(only.start + only.removed) };
+  }
   let earliest = Infinity;
   let latest = 0;
   const previous: TextEdit[] = [];
@@ -94,12 +110,23 @@ export function deleteRowEdit(lines: readonly string[], line: number): readonly 
 }
 
 export function fixedChanged(before: readonly string[], after: readonly string[], legend: Legend, edits: readonly TextEdit[]): boolean {
+  if (edits.length === 0) return false;
   if (legend.emptyRow?.fixed) {
     for (const [line, row] of before.entries()) {
       if (row !== '') continue;
       const mapped = remapPosition(before, after, { line, col: 0 }, edits, true);
       if (mapped === null || after[mapped.line] !== '') return true;
     }
+  }
+  const only = edits.length === 1 ? edits[0] : undefined;
+  if (only !== undefined) {
+    if (only.removed === 0) return false;
+    const removed = before.join('\n').slice(only.start, only.start + only.removed);
+    for (let index = 0; index < removed.length; index += 1) {
+      const char = removed[index];
+      if (char !== '\n' && tile(legend, char).fixed && only.inserted[index] !== char) return true;
+    }
+    return false;
   }
   const text = before.join('\n');
   const result = after.join('\n');

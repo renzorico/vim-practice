@@ -531,6 +531,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-22 · E-5: The Counterfeiter (stage 4-4, World 4's castle)
+**Who:** Opus (design, sim proof with the clerk emulated, contract, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** The clerk copies a fake crate after himself every 2 turns (new behaviour `put`); at eight fakes he files his count and the attempt is lost (new story-driven effect `hit` 3, then the normal retry). Before that, fill three crates on one row: 8 oil, 8 rope, 4 and 4. Counts on `p` are the lesson: `"ayl` and `"byl` on the way down, then `"a8p "b8p "a4p "b4p`. Par 12 (6 fakes); with `.` 14; without registers 18, so the fuse (turn 16) wins. One `text` trigger covers all three crates so a retry cannot leave a stale story flag. Engine: a count before a register (`8"ap`, `3"ayl`) as in Vim, with Neovim goldens. HUD ledger gauge; statue D; the copper-port world gets its castle.
+
+**What the checks caught:** In the sim, before the brief: a chasing clerk was no pressure (every `p` moves you along the growing shelf); per-crate story flags would survive a death. Codex: `restore` keeps fired triggers, so a `once` fuse would never fire on attempt 2 (the brief was wrong): the fuse is repeatable, and the first firing kills, so there is no double hit; the stage type is `castle`. Sonnet (0 blocking): on the winning turn the fuse line still queued after the win: the fuse reaction now has `unless counter.through`, with a test; the old-commands bound ran 3.6 M steps near its 5 s timeout: now 3 turns / 50 expansions, 1.3 s; the 9 golden cases were not proven against Neovim: regenerated with `--force` (all unchanged), plus 5 cases that `f"`, `t"`, `r"`, `""p` and a lone `3"` still parse as before. Browser: the camera followed the player only, so the clerk was off screen: in a castle the camera now shifts sideways to keep the keeper in view when both fit (never vertically: `<C-d>` scrolling is a lesson). Accepted: `u` takes back the clerk's puts, at one turn each.
+
+**Lesson:** A pressure mechanic must be checked against what the lesson's own commands do to the player: a put moves you, so a chaser cannot catch someone who is putting.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

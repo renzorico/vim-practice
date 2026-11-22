@@ -1,3 +1,4 @@
+import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
 import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
 import { BOARDS, PORT_WATER, PIER_POST, PORT_LADDER, WAREHOUSE, CRATES, NETS, CART, BITT, REAM, SPLASH } from './port.js';
@@ -27,6 +28,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'counter-floor': COUNTER_FLOOR, 'counter-wall': COUNTER_WALL, 'clerk-desk': CLERK_DESK,
+  'crate-row': CRATE_ROW, fake: FAKE, counterfeiter: COUNTERFEITER,
   'customs-floor': CUSTOMS_FLOOR, 'customs-wall': CUSTOMS_WALL, 'customs-post': CUSTOMS_POST,
   'crate-end': CRATE_END, 'crate-lip': CRATE_LIP, crate: CRATE_MARK, post: CUSTOMS_POST, tare: TARE,
   'warehouse-floor': WAREHOUSE_FLOOR, 'warehouse-wall': WAREHOUSE_WALL,
