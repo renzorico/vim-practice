@@ -46,3 +46,50 @@ export const QUIRE: PixelSprite = { palette, frames: [[
   '....AAAAFA......',
   '....KK.KK.......',
 ]] };
+
+const parquet = (x: number, y: number, variant = 0): string =>
+  y % 8 === 7 || (x + (y < 8 ? variant * 4 : 8 - variant * 4)) % 16 === 0 ? 'K'
+    : y % 4 === 0 ? 'L' : 'O';
+export const READING_FLOOR: PixelSprite = { palette, frames: [0, 1].map(variant =>
+  surface((x, y) => parquet(x, y, variant))) };
+export const READING_WALL = art((x, y) => {
+  if (y >= 3 && y <= 6 && x >= 4 && x <= 11) return y === 6 ? 'F' : 'B';
+  if (x === 7 && y > 6 && y < 11) return 'F';
+  return x === 1 || x === 14 || y === 13 ? 'L' : x === 2 || y === 14 ? 'K' : 'O';
+});
+export const READING_POST = art((x, y) => x >= 4 && x <= 11
+  ? y === 2 || y === 13 ? 'F' : x === 4 || x === 11 ? 'K' : x === 6 ? 'L' : 'O' : parquet(x, y));
+export const READING_DOOR = art((x, y) => x <= 2 || y <= 1 ? 'L'
+  : x === 3 || y === 2 ? 'F' : x === 12 && y === 9 ? 'F' : x % 4 === 0 ? 'K' : 'O');
+const shackle = (right: boolean): PixelSprite => art((x, y) => {
+  const across = right ? 15 - x : x;
+  if ((across === 3 || across === 4) && (y === 3 || y === 12)) return 'F';
+  const ring = ((across - 8) / 5) ** 2 + ((y - 7.5) / 5.5) ** 2;
+  return across <= 8 && ring >= 0.5 && ring <= 1.25 ? across % 2 ? 'E' : 'D' : parquet(x, y);
+});
+export const SHACKLE_LEFT = shackle(false);
+export const SHACKLE_RIGHT = shackle(true);
+export const CHAIN = art((x, y) => {
+  const ring = ((x % 8 - 3.5) / 3.5) ** 2 + ((y - 8) / 2.5) ** 2;
+  return ring >= 0.35 && ring <= 1.4 ? y < 8 ? 'E' : 'D' : parquet(x, y);
+});
+export const CHAIN_CLATTER = art((x, y) => (x * 3 + y * 5) % 13 < 2
+  && x > 1 && x < 14 && y > 2 && y < 14 ? y % 2 ? 'E' : 'F' : '.');
+export const FOLIO: PixelSprite = { palette, frames: [[
+  '...LOOOOOOOL....',
+  '...LOKKKKOOL....',
+  '...LOKDDKOOL....',
+  '...LOssssOOL....',
+  '...LOsKssOOL....',
+  '...LOssssOOL....',
+  '...LOOBBOOOL....',
+  '...LOBVBOOOL....',
+  '...LOBVBOOOL....',
+  '...LsBVBBsDL....',
+  '...LVVVKVVVL....',
+  '...LVHVKVHVL....',
+  '...LOOBBBOOL....',
+  '...LOOBBBOOL....',
+  '...L.K..K..L....',
+  '...K.K..K..K....',
+]] };

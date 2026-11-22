@@ -1,0 +1,61 @@
+{
+  "id": "reading",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "library-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "reading-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "library-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "reading-post",
+      "walkable": true,
+      "fixed": true,
+      "label": "post"
+    },
+    {
+      "char": "(",
+      "kind": "barrier",
+      "sprite": "shackle-open-left",
+      "walkable": true,
+      "fixed": false,
+      "label": "shackle"
+    },
+    {
+      "char": ")",
+      "kind": "barrier",
+      "sprite": "shackle-open-right",
+      "walkable": true,
+      "fixed": false,
+      "label": "shackle"
+    },
+    {
+      "char": "c",
+      "kind": "object",
+      "sprite": "chain",
+      "walkable": true,
+      "fixed": false,
+      "label": "chain"
+    }
+  ]
+}

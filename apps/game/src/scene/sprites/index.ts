@@ -1,4 +1,4 @@
-import { GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
+import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, SHACKLE_RIGHT, CHAIN, CHAIN_CLATTER, FOLIO, GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
 import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
@@ -30,6 +30,9 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'reading-floor': READING_FLOOR, 'reading-wall': READING_WALL, 'reading-post': READING_POST,
+  'reading-door': READING_DOOR, 'shackle-open-left': SHACKLE_LEFT, 'shackle-open-right': SHACKLE_RIGHT,
+  chain: CHAIN, 'chain-clatter': CHAIN_CLATTER, folio: FOLIO,
   gallery: GALLERY, 'library-wall': LIBRARY_WALL, 'shelf-post': SHELF_POST, 'shelf-gap': SHELF_GAP,
   book: BOOK, 'library-dust': LIBRARY_DUST, 'dust-puff': DUST_PUFF, quire: QUIRE,
   'counter-floor': COUNTER_FLOOR, 'counter-wall': COUNTER_WALL, 'clerk-desk': CLERK_DESK,
