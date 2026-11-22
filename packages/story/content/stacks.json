@@ -1,0 +1,375 @@
+{
+  "worlds": [
+    {
+      "id": "library",
+      "order": 5,
+      "name": "The Library",
+      "stages": [
+        "stacks"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "openingStage": "stacks",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "library.stacks",
+      "world": "library",
+      "title": "The stacks",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "dust",
+          "objective": "Dust the three shelves.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "stacks.dusted",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "quire",
+          "objective": "Tell the librarian.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "stacks"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "stacks.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The Library. Chains on the doors,\ndust on the shelves."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "Quire. Librarian. Or I was, before the\ncontract. Now I may not touch a book."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "Dust got shelved between the books.\nWhole words of it. Three shelves."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "daw deletes a word, wherever you stand\nin it, and the space after it too."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "diw takes only the word and leaves\nthe gap. The shelf will know."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "stacks.down",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Down! ...down."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: one shelf down, and .\ndoes the same daw again."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.knows-dot",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.dusted",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "Clean. Every shelf, one word at a time."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "stacks.quire-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "Three shelves. Land in the dust, daw."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "stacks.quire-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "The contract says I may not dust.\nIt doesn't say you can't."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "The reading room is chained, bracket to\nbracket. Bring your %."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "stacks.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Past the stacks, the reading room.\nChains across the floor, ( to )."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "stacks.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "harbour"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "library.stacks"
+        }
+      ]
+    },
+    {
+      "id": "stacks.down-1",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-1"
+      },
+      "once": false,
+      "unless": "stacks.knows-dot",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "stacks.down"
+        }
+      ]
+    },
+    {
+      "id": "stacks.down-2",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-2"
+      },
+      "once": false,
+      "unless": "stacks.knows-dot",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "stacks.down"
+        }
+      ]
+    },
+    {
+      "id": "stacks.shelf-1",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-1"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.shelf-1",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.shelf-2",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-2"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.shelf-2",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.shelf-3",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-3"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.shelf-3",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.upper-1",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.shelf-1",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.shelf-2",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.upper",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.upper-2",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.shelf-2",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.shelf-1",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.upper",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.dusted-upper",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.upper",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.shelf-3",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.dusted",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.dusted-3",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.shelf-3",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.upper",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.dusted",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.dusted",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.dusted",
+        "value": true
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "stacks.dusted"
+        }
+      ]
+    },
+    {
+      "id": "stacks.quire-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.talk-quire"
+      },
+      "once": false,
+      "unless": "stacks.dusted",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "stacks.quire-wait"
+        }
+      ]
+    },
+    {
+      "id": "stacks.quire-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.talk-quire"
+      },
+      "once": false,
+      "onlyIf": "stacks.dusted",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "stacks.quire-through"
+        }
+      ]
+    },
+    {
+      "id": "stacks.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "stacks"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "stacks.end"
+        }
+      ]
+    }
+  ]
+}

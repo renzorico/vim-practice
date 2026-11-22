@@ -1,0 +1,61 @@
+{
+  "id": "stacks",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "library-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "gallery",
+      "walkable": true,
+      "fixed": true,
+      "label": "gallery"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "library-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "shelf-post",
+      "walkable": true,
+      "fixed": true,
+      "label": "shelf post"
+    },
+    {
+      "char": "b",
+      "kind": "object",
+      "sprite": "book",
+      "walkable": true,
+      "fixed": true,
+      "label": "books"
+    },
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "shelf-gap",
+      "walkable": true,
+      "fixed": false,
+      "label": "gap"
+    },
+    {
+      "char": "d",
+      "kind": "object",
+      "sprite": "dust",
+      "walkable": true,
+      "fixed": false,
+      "label": "dust"
+    }
+  ]
+}

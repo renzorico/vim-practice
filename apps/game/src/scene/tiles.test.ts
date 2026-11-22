@@ -34,3 +34,11 @@ it('draws one clearing cell, with unwritten paper filling the rest of the empty 
   expect(tileGrid(['ooo', ''], legend)).toEqual([['stone', 'stone', 'stone'], ['grass', 'blank', 'blank']]);
   expect(tileGrid([''], legend)).toEqual([['grass']]);
 });
+
+it('draws actual shelf spaces as gaps and only missing columns as unwritten paper', async () => {
+  const { stacksLegend } = await import('../play2/content.js');
+  expect(tileGrid(['b d ', 'b'], stacksLegend)).toEqual([
+    ['book', 'shelf-gap', 'library-dust', 'shelf-gap'],
+    ['book', 'blank', 'blank', 'blank'],
+  ]);
+});
