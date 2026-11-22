@@ -542,6 +542,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · E-6: The Harbourmaster's Ledger (stage 4-5), World 4 complete
+**Who:** Opus (design, engine proof, brief, browser check), Codex (build), Sonnet (review).
+
+**What:** World 4's text stage. The clerk's ledger is still the port's word: `ct,` renames the keeper, `G dd gg P` pins the Lighthouse order on top (only `P` can put above the first line), `ddp` sorts the crates, `cw` then `b .` turns "copied" into "real" three times (the words share a column on purpose: `.` repeats the whole change), `C` rewrites line tails, `yyp` + `ct,` adds a ship. Par 100 (Codex found `3wct,rope boat`, 4 keys under the brief's 104); the World 1-4 tools without `c`, `C`, `P`, `yy` need 133. New: `HARBOUR_COMMANDS`, Cleat the harbourmaster, "End of World 4."
+
+**What the checks caught:** In the engine, before the brief: `P` did not win while the order went above CRATES (`gg3jP` and `gg2jp` cost the same), so it moved to the very top. Sonnet: 0 blocking; the "different order" test is weak and the start reaction's `unlock-stage` follows the Manifest's pattern. Browser: the route solves, the ending plays to "To be continued", no console errors (synthetic keys faster than about 100 ms apart were dropped by the script panel: a test-harness limit, not a player one).
+
+**Lesson:** A command only teaches if the map makes it win: design the one spot where the old tool costs more.
+
+---
+
 ## Parking lot
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

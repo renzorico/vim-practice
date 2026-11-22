@@ -48,7 +48,7 @@ it('enters the warehouse after jetty.end, keeping story and starting its quest',
   expect(session.queue[0]).toMatchObject({ dialogue: 'warehouse.intro' });
   expect(session.story.clearedStages).toContain('jetty');
   expect(session.story.quests['port.warehouse']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(world => world.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs', 'counter']);
+  expect(content.worlds.find(world => world.id === 'copper-port')?.stages).toEqual(['jetty', 'warehouse', 'customs', 'counter', 'harbour']);
 });
 it('yw costs a turn, preserves the tally and copies only its four oil jars', () => {
   const initial = move(start(), 1, 2);

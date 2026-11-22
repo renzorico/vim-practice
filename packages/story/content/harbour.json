@@ -1,0 +1,133 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "port.ledger",
+      "world": "copper-port",
+      "title": "The harbour ledger",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "ledger",
+          "objective": "Set the harbour ledger right.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "harbour"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "harbour.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "counter"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "port.ledger"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "harbour"
+        }
+      ]
+    },
+    {
+      "id": "harbour.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "harbour"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "harbour.end"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "harbour.intro",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Cleat",
+          "text": "Harbourmaster. This ledger is the port's\nword. Right now it's the clerk's word."
+        },
+        {
+          "speaker": "npc",
+          "name": "Cleat",
+          "text": "It says he keeps it. Says the crates are\ncopied. Says no ship is coming."
+        },
+        {
+          "speaker": "npc",
+          "name": "Cleat",
+          "text": "And the Lighthouse order's at the bottom,\nunder everything. It goes on top."
+        },
+        {
+          "speaker": "system",
+          "text": "c is d that leaves you typing: cw changes\na word, ct, up to a comma, C to the end."
+        },
+        {
+          "speaker": "system",
+          "text": "P puts above the cursor. yy copies a line."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "harbour.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Cleat",
+            "text": "Real crates. A ferry today. Rope for the\nLighthouse. The port's word again."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Ream",
+            "text": "And the clerk? He's copying the ledger.\nThe right one, this time."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Change! ...change."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Past the harbour, a library with its doors\nchained. Every chain is a contract."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 4."
+          }
+        }
+      ],
+      "then": []
+    }
+  ]
+}
