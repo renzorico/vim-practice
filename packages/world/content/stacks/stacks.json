@@ -1,0 +1,139 @@
+{
+  "id": "stacks",
+  "world": "library",
+  "type": "field",
+  "title": "The Stacks",
+  "goalText": "Dust the three shelves and tell the librarian.",
+  "map": [
+    "|=================|",
+    "|bbb bbbb ddddd bb|",
+    "|bb bbb dddd bbbbb|",
+    "|b bbb dddddd bbbb|",
+    "#######=###########"
+  ],
+  "legend": "stacks",
+  "start": {
+    "line": 0,
+    "col": 12
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "quire",
+      "kind": "npc",
+      "sprite": "quire",
+      "at": {
+        "line": 4,
+        "col": 7
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "shelf-1",
+      "kind": "prop",
+      "sprite": "shelf-end",
+      "at": {
+        "line": 1,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "shelf-2",
+      "kind": "prop",
+      "sprite": "shelf-end",
+      "at": {
+        "line": 2,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "shelf-3",
+      "kind": "prop",
+      "sprite": "shelf-end",
+      "at": {
+        "line": 3,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "stacks.talk-quire",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "quire"
+      }
+    },
+    {
+      "id": "stacks.shelf-1",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-1",
+      "text": "bbb bbbb bb|"
+    },
+    {
+      "id": "stacks.shelf-2",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-2",
+      "text": "bb bbb bbbbb|"
+    },
+    {
+      "id": "stacks.shelf-3",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-3",
+      "text": "b bbb bbbb|"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "stacks.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 6,
+  "solution": [
+    "j",
+    "d",
+    "a",
+    "w",
+    "j",
+    ".",
+    "j",
+    ".",
+    "<CR>"
+  ],
+  "hints": [
+    "daw deletes the word you stand in, wherever you are in it, and the space after it.",
+    "diw leaves the space behind: two gaps where the shelf wants one. j, then . repeats daw."
+  ]
+}
