@@ -1,0 +1,107 @@
+{
+  "id": "notary",
+  "world": "library",
+  "type": "castle",
+  "title": "The Notary",
+  "goalText": "Open the three vault locks before the Notary signs seven clauses.",
+  "map": [
+    "#|...........",
+    ".######.#####",
+    ".[kkk]......#",
+    ".############",
+    ".{kkk}......#",
+    ".############",
+    ".<w>wwww</w>.#",
+    "##############"
+  ],
+  "legend": "notary",
+  "start": {
+    "line": 1,
+    "col": 0
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "notary",
+      "kind": "keeper",
+      "sprite": "notary",
+      "at": {
+        "line": 0,
+        "col": 1
+      },
+      "behaviour": {
+        "type": "put",
+        "text": "\"s\" "
+      },
+      "every": 2,
+      "damage": 0,
+      "solid": true
+    },
+    {
+      "id": "vault",
+      "kind": "prop",
+      "sprite": "vault-door",
+      "at": {
+        "line": 2,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "notary.open",
+      "once": true,
+      "on": "text",
+      "anchor": "vault",
+      "text": "......#\n.############\n.......#\n.############\n.<w></w>.#"
+    },
+    {
+      "id": "notary.fuse",
+      "once": false,
+      "on": "text",
+      "anchor": "notary",
+      "text": "\"s\" \"s\" \"s\" \"s\" \"s\" \"s\" \"s\" "
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "notary.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 11,
+  "solution": [
+    "j",
+    "w",
+    "d",
+    "a",
+    "[",
+    "0",
+    "2",
+    "j",
+    "w",
+    "d",
+    "a",
+    "{",
+    "0",
+    "2",
+    "j",
+    "w",
+    "d",
+    "i",
+    "t"
+  ],
+  "hints": [
+    "da[ opens a lock from anywhere inside it; da{ breaks a seal. dit empties a tag and keeps the tag.",
+    "0 takes you back to the stair, 2j down one vault. w lands inside the next lock."
+  ]
+}
