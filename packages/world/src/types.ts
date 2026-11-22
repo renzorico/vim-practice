@@ -165,6 +165,9 @@ export interface Area {
  *               entity's cell, on its row, are exactly `text` (World 4: cargo on a shelf). The
  *               anchor is remapped with the text like any entity, so the check follows edits.
  *               A removed anchor never fires. Matches only at turn end, never mid-command.
+ *               `text` may contain '\n' (World 5: paragraphs): then it is compared with the
+ *               buffer text (rows joined by '\n') right after the anchor's cell, across rows, so
+ *               one anchor can check the order of whole blocks of rows below it.
  */
 export type InteractTarget =
   | { readonly type: 'area'; readonly area: Area }

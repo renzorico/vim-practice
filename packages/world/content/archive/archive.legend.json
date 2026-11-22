@@ -1,0 +1,69 @@
+{
+  "id": "archive",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "library-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "emptyRow": {
+    "char": " ",
+    "kind": "ground",
+    "sprite": "archive-aisle",
+    "walkable": true,
+    "fixed": false,
+    "label": "aisle"
+  },
+  "tiles": [
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "archive-rail",
+      "walkable": true,
+      "fixed": true,
+      "label": "rail"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "archive-post",
+      "walkable": true,
+      "fixed": true,
+      "label": "post"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "library-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "a",
+      "kind": "object",
+      "sprite": "atlas-shelf",
+      "walkable": true,
+      "fixed": false,
+      "label": "atlases"
+    },
+    {
+      "char": "b",
+      "kind": "object",
+      "sprite": "bible-shelf",
+      "walkable": true,
+      "fixed": false,
+      "label": "bibles"
+    },
+    {
+      "char": "x",
+      "kind": "object",
+      "sprite": "misfiled-shelf",
+      "walkable": true,
+      "fixed": false,
+      "label": "misfiled"
+    }
+  ]
+}
