@@ -1,0 +1,165 @@
+{
+  "id": "study",
+  "world": "echo-caves",
+  "type": "text",
+  "title": "The Scribe's Study",
+  "goalText": "Strike the shelf column, mark every entry found, star the index, and keep only the final draft.",
+  "autoScript": "study.book",
+  "map": [
+    " "
+  ],
+  "legend": "quarry",
+  "start": {
+    "line": 0,
+    "col": 0
+  },
+  "hearts": 3,
+  "entities": [],
+  "triggers": [],
+  "scripts": [
+    {
+      "id": "study.book",
+      "title": "The Scribe's index",
+      "goalText": "Strike the shelf column, mark every entry found, star the index, and keep only the final draft.",
+      "startLines": [
+        "THE SCRIBE'S INDEX",
+        "",
+        "ink   | shelf 3 | lost",
+        "map   | shelf 1 | lost",
+        "key   | shelf 2 | lost",
+        "lamp  | shelf 4 | lost",
+        "oil   | shelf 6 | lost",
+        "rope  | shelf 5 | lost",
+        "chalk | shelf 8 | lost",
+        "quill | shelf 7 | lost",
+        "",
+        "draft: the Last Page",
+        "draft: the Last Page",
+        "draft: the Last Page",
+        "final: the Last Page"
+      ],
+      "startCursor": {
+        "line": 0,
+        "col": 0
+      },
+      "goals": [
+        {
+          "type": "transform",
+          "targetLines": [
+            "THE SCRIBE'S INDEX",
+            "",
+            "* ink   | found",
+            "* map   | found",
+            "* key   | found",
+            "* lamp  | found",
+            "* oil   | found",
+            "* rope  | found",
+            "* chalk | found",
+            "* quill | found",
+            "",
+            "final: the Last Page"
+          ]
+        }
+      ],
+      "par": 37,
+      "solution": [
+        "2",
+        "j",
+        "f",
+        "|",
+        "<C-v>",
+        "7",
+        "j",
+        "9",
+        "l",
+        "d",
+        "$",
+        "b",
+        "<C-v>",
+        "7",
+        "j",
+        "$",
+        "c",
+        "f",
+        "o",
+        "u",
+        "n",
+        "d",
+        "<Esc>",
+        "0",
+        "<C-v>",
+        "7",
+        "j",
+        "I",
+        "*",
+        " ",
+        "<Esc>",
+        "}",
+        "j",
+        "V",
+        "2",
+        "j",
+        "d"
+      ],
+      "hints": [
+        "<C-v> selects a block: 7j takes the column down all eight rows, 9l across. d deletes the whole block.",
+        "In a block, $ reaches every line's end: $c changes the end of every row at once.",
+        "<C-v> then I types the same thing at the start of every row of the block. V selects whole lines."
+      ],
+      "effects": []
+    }
+  ],
+  "clear": [
+    {
+      "type": "script-solved",
+      "script": "study.book"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 0,
+  "solution": [
+    "2",
+    "j",
+    "f",
+    "|",
+    "<C-v>",
+    "7",
+    "j",
+    "9",
+    "l",
+    "d",
+    "$",
+    "b",
+    "<C-v>",
+    "7",
+    "j",
+    "$",
+    "c",
+    "f",
+    "o",
+    "u",
+    "n",
+    "d",
+    "<Esc>",
+    "0",
+    "<C-v>",
+    "7",
+    "j",
+    "I",
+    "*",
+    " ",
+    "<Esc>",
+    "}",
+    "j",
+    "V",
+    "2",
+    "j",
+    "d"
+  ],
+  "hints": [
+    "<C-v> selects a block: 7j takes the column down all eight rows, 9l across. d deletes the whole block.",
+    "In a block, $ reaches every line's end: $c changes the end of every row at once.",
+    "<C-v> then I types the same thing at the start of every row of the block. V selects whole lines."
+  ]
+}
