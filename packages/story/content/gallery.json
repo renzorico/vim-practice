@@ -6,12 +6,12 @@
     {
       "id": "caves.gallery",
       "world": "echo-caves",
-      "title": "The echo gallery",
+      "title": "Follow the echoed words",
       "kind": "main",
       "steps": [
         {
           "id": "follow",
-          "objective": "Follow the echoed words.",
+          "objective": "Stand on a word and press * to jump to its next copy. Then w to the next word, and * again.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gallery"
@@ -27,7 +27,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The echo gallery. Words carved in sealed\nchambers, and every word said twice."
+          "text": "The echo gallery: words carved in sealed rooms,\nand every word said twice. Follow them."
         },
         {
           "speaker": "npc",
@@ -35,13 +35,8 @@
           "text": "...ink. ...ink."
         },
         {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Again! ...again."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: * finds the next whole word\nlike the one you stand on. # goes back."
+          "speaker": "scribe",
+          "text": "Note: * jumps to the next copy of the\nword you stand on. # jumps back."
         }
       ],
       "then": []
@@ -52,7 +47,7 @@
         {
           "speaker": "npc",
           "name": "Echo",
-          "text": "Ink, map, key. Her three words.\nShe said them on her way down."
+          "text": "Ink, map, key. The Scribe's three words,\nsaid on the way down."
         },
         {
           "speaker": "npc",

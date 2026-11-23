@@ -198,6 +198,6 @@
     "l"
   ],
   "hints": [
-    "Mira's trick: a number before l.\n30l crosses the road in one move."
+    "Blots step when you step. Type 30l to cross\nthe road in one move."
   ]
 }

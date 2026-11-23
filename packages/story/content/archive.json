@@ -6,12 +6,12 @@
     {
       "id": "library.archive",
       "world": "library",
-      "title": "The archive",
+      "title": "File the archive",
       "kind": "main",
       "steps": [
         {
           "id": "file",
-          "objective": "File the misfiled block and copy the atlases.",
+          "objective": "Move the misfiled shelf after the bibles (dap, then p), and copy the atlases by the door (yap, P).",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "archive"
@@ -27,31 +27,17 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The archive. Shelves of paragraphs,\nan aisle between each one."
+          "text": "The Archive. Each shelf is a block of rows,\nwith an empty row between shelves."
         },
         {
           "speaker": "npc",
           "name": "Index",
-          "text": "Index. Archivist. You are standing in a\nparagraph that the contract misfiled."
+          "text": "Oh good, hands. I'm Index. The shelf you're on\nis misfiled. It goes after the bibles."
         },
         {
           "speaker": "npc",
           "name": "Index",
-          "text": "It goes after the bibles. dap lifts the\nwhole paragraph, aisle and all."
-        },
-        {
-          "speaker": "npc",
-          "name": "Index",
-          "text": "And the contract wants a copy of the atlases\nby the door. yap, then P above the rail."
-        },
-        {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Para! ...graph."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: ip is the paragraph alone,\nap takes the blank row after it too."
+          "text": "dap lifts the whole shelf, empty row and all.\nThen copy the atlases: yap, P above the rail."
         }
       ],
       "then": []
@@ -62,7 +48,7 @@
         {
           "speaker": "npc",
           "name": "Index",
-          "text": "Atlases, bibles, the misfiled, and a copy\nby the door. In order, for once."
+          "text": "Atlases, bibles, the misfiled shelf, and a copy\nby the door. In order, for once."
         }
       ],
       "then": []

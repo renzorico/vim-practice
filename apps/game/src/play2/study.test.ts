@@ -55,7 +55,7 @@ it('enters study after the castle ending, keeping statue A, flags, and the new m
   expect(session.story.clearedStages).toContain('labyrinth');
   expect(session.story.unlockedStages).toContain('study');
   expect(session.story.quests['caves.study']).toEqual({ step: 0, done: false });
-  expect(storyEngine.objectives(session.story, content)).toContain("Set the Scribe's index right.");
+  expect(storyEngine.objectives(session.story, content)).toContain('Fix the index: cut the shelf column, change lost to found, star every row (Ctrl-v), keep only the final draft.');
   expect(keys(session, SHORTER).story.quests['caves.study']).toEqual({ step: 1, done: true });
 });
 
@@ -146,12 +146,12 @@ it('shows the index beside its target and the visual lesson keys', () => {
 
 it('keeps the exact study story and presents End of World 6 before the Last Page', () => {
   expect(content.dialogues.find(item => item.id === 'study.intro')?.lines.map(line => line.text)).toEqual([
-    "The Scribe's study. A desk, a lamp,\nan empty chair.", '...lost. ...lost. ...lost.', 'Block! ...block.',
-    'Dot means: Ctrl-v selects a block.\nEvery row at once.',
+    "The Scribe's study: a desk, a lamp, a chair.\nThe index on the desk says 'lost' everywhere.", '...lost. ...lost. ...lost.',
+    'Note: Ctrl-v selects a block of columns, across\nevery row. Then d, c or I act on all of it.',
   ]);
   const ending = content.cutscenes.find(item => item.id === 'study.end')!;
   expect(ending.beats).toEqual([
-    { type: 'line', line: { speaker: 'system', text: 'Every entry found. Under the last line,\nin her hand:' } },
+    { type: 'line', line: { speaker: 'system', text: "Every entry found. Under the last line,\nin the Scribe's hand:" } },
     { type: 'line', line: { speaker: 'system', text: "'Recover. I'll be on the last page.'" } },
     { type: 'line', line: { speaker: 'npc', name: 'Echo', text: '...last page. ...last page.' } },
     { type: 'line', line: { speaker: 'npc', name: 'Dot', text: 'Go! ...go.' } },

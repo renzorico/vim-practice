@@ -746,6 +746,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-5: The game's text, rewritten
+**Who:** Renzo (played it: "texts are kind of non-sense and not relatable"), Opus (brief, review), Sonnet (rewrite).
+
+**What:** Every dialogue, quest title, objective and hint in `packages/story/content` and the stage `hints`, rewritten to rules in the brief: each box gives a goal, a key, a character beat or a joke; goals name what is on screen; keys are taught as see, key, result; intros have at most three boxes before you can move. The "Dot means:" device is gone: the Scribe's notes (`Note:`) explain, and Dot keeps one-or-two-word echoes where they read as callbacks. Named people got a want and a habit (Wren apologises, Foreman Ash is dry, the Elder fears being "unsaved"). Plot, cast, twist seeds, ids, triggers and the fixed lines (E325, "The Scribe is in another buffer.", `"folio.txt" 4096L written`) are unchanged. 56 files, 493 lines out, 363 in.
+
+**What the checks caught:** The builder could not run tests; the orchestrator ran them (typecheck, 4,266 tests, build). Key instructions the builder was unsure about (Shaft `10dd`, Glades `{`, Gates `%`, Customs `"0p`, Labyrinth `?x`) were checked against each stage's `solution`.
+
+**Lesson:** Text is a mechanic: an instruction box is only as good as the key it names. Check every one against the replayed solution.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

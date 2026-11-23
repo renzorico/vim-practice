@@ -21,12 +21,12 @@
     {
       "id": "caves.mouth",
       "world": "echo-caves",
-      "title": "The mouth",
+      "title": "Light the crystals",
       "kind": "main",
       "steps": [
         {
           "id": "crystals",
-          "objective": "Light the crystals, deepest first.",
+          "objective": "Light the three sealed crystals, deepest first: ?x then Enter, then n.",
           "completeWhen": {
             "type": "flag",
             "flag": "mouth.top",
@@ -36,7 +36,7 @@
         },
         {
           "id": "echo",
-          "objective": "Find the echo.",
+          "objective": "Talk to the Echo beside the top crystal. Press Enter next to it.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "mouth"
@@ -52,7 +52,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Echo Caves. Dark past arm's reach.\nSomewhere below, the Scribe's study."
+          "text": "The Echo Caves. Too dark to see anything, and\nthe crystals are sealed in the rock."
         },
         {
           "speaker": "npc",
@@ -60,17 +60,8 @@
           "text": "...study. ...study."
         },
         {
-          "speaker": "system",
-          "text": "The crystals are sealed in the rock.\nYou can't walk to them, or even see them."
-        },
-        {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Search! ...search."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: ?x then Enter finds the last x\nbehind you. n finds the next one."
+          "speaker": "scribe",
+          "text": "Note: ?x then Enter searches backward for an x\n(a crystal). n repeats it: the next one up."
         }
       ],
       "then": []
@@ -122,12 +113,12 @@
         {
           "speaker": "npc",
           "name": "Echo",
-          "text": "You found me without seeing me.\nThat's how she found things too."
+          "text": "You found me without seeing me. That's how\nthe Scribe found things too."
         },
         {
           "speaker": "npc",
           "name": "Echo",
-          "text": "Her words echo all through the gallery.\nFollow the right one."
+          "text": "The Scribe's words echo through the gallery.\nFollow the right one."
         }
       ],
       "then": [

@@ -9,7 +9,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
+          "text": "Climb in big moves: 8k goes up 8 rows at once.\nw and 0 jump along a row."
         }
       ],
       "then": []
@@ -19,7 +19,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Inside, the stairs climb into the dark.\nAt the top, someone is weeping."
+          "text": "Inside the Lighthouse. Climb the stairs to the\ntop: someone up there is crying."
         }
       ],
       "then": []
@@ -29,7 +29,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Above you, a hooded shape. Below you,\nthe floor begins to vanish. Climb!"
+          "text": "The Unwriter! It deletes the floor under you,\nrow by row. Climb! Counts help: 8k = 8 up."
         }
       ],
       "then": [
@@ -169,12 +169,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Who's there? He took a row of my light.\nI can't see the words to light it.",
+          "text": "Who's there?... He took a row of my light.\nI can't read the words to light the lamp.",
           "name": "The Lamplighter"
         },
         {
           "speaker": "npc",
-          "text": "Tilde? Then read them to me. Quick!\nThere. There... it catches.",
+          "text": "Tilde?... Then read them to me. Quick!\nThere... there... it catches. Thank you.",
           "name": "The Lamplighter"
         }
       ],
@@ -253,7 +253,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "The Scribe came here three nights ago.\nWrote something on my wall. Look.",
+            "text": "The Scribe stayed here three nights ago...\nCarved a line in my wall. Look.",
             "name": "The Lamplighter"
           }
         },
@@ -265,7 +265,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "Means nothing to me. Maybe to you.\nThe road goes on, past the sea.",
+            "text": "Means nothing to me... Maybe to you.\nThe road goes on, past the sea.",
             "name": "The Lamplighter"
           }
         },

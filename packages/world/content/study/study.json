@@ -100,9 +100,9 @@
         "d"
       ],
       "hints": [
-        "<C-v> selects a block: 7j takes the column down all eight rows, 9l across. d deletes the whole block.",
-        "In a block, $ reaches every line's end: $c changes the end of every row at once.",
-        "<C-v> then I types the same thing at the start of every row of the block. V selects whole lines."
+        "Ctrl-v starts a block: 7j takes it down all eight rows, 9l across. d deletes the block.",
+        "In a block, $ reaches every row's end: then c changes the end of every row at once.",
+        "Ctrl-v, then I types the same thing at the start of every row of the block. V selects whole rows."
       ],
       "effects": []
     }
@@ -154,8 +154,8 @@
     "d"
   ],
   "hints": [
-    "<C-v> selects a block: 7j takes the column down all eight rows, 9l across. d deletes the whole block.",
-    "In a block, $ reaches every line's end: $c changes the end of every row at once.",
-    "<C-v> then I types the same thing at the start of every row of the block. V selects whole lines."
+    "Ctrl-v starts a block: 7j takes it down all eight rows, 9l across. d deletes the block.",
+    "In a block, $ reaches every row's end: then c changes the end of every row at once.",
+    "Ctrl-v, then I types the same thing at the start of every row of the block. V selects whole rows."
   ]
 }

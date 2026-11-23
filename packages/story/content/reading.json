@@ -6,12 +6,12 @@
     {
       "id": "library.reading",
       "world": "library",
-      "title": "The reading room",
+      "title": "Unchain the reading room",
       "kind": "main",
       "steps": [
         {
           "id": "chains",
-          "objective": "Lift the chains off the reading room floor.",
+          "objective": "Lift the three chains: stand inside each and press da(. Use d2a( for the nested one.",
           "completeWhen": {
             "type": "flag",
             "flag": "reading.chains-gone",
@@ -21,7 +21,7 @@
         },
         {
           "id": "folio",
-          "objective": "Talk to the reader at the far end.",
+          "objective": "Talk to Folio at the far end. Press Enter next to Folio.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "reading"
@@ -37,22 +37,17 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The reading room. Chains across the floor,\neach one held by a pair of shackles."
+          "text": "The reading room. Chains lie across the floor,\neach held by a pair of shackles, ( and )."
         },
         {
           "speaker": "npc",
           "name": "Folio",
-          "text": "Folio. Reader. The contract says no one\nreads here, so I am chained to my chair."
+          "text": "Folio, reader, chained to my chair. Stand in a\nchain and press da(: chain and shackles go."
         },
         {
           "speaker": "npc",
           "name": "Folio",
-          "text": "Don't hunt for the shackle. Stand anywhere\nin the chain: da( takes it, shackles and all."
-        },
-        {
-          "speaker": "npc",
-          "name": "Folio",
-          "text": "Mine is different. Leave the shackle,\ntake the chain: di(. I may want it back."
+          "text": "The last chain is mine: use di(. It takes the\nchain and leaves the shackle. I may need it."
         }
       ],
       "then": []
@@ -61,13 +56,13 @@
       "id": "reading.nested",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Note: a chain inside a chain? d2a( takes both.\nThe whole room is clear after that."
+        },
+        {
           "speaker": "npc",
           "name": "Dot",
           "text": "Open! ...open."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: the room is clear. A chain in\na chain? d2a( takes both at once."
         }
       ],
       "then": []
@@ -94,7 +89,7 @@
         {
           "speaker": "npc",
           "name": "Folio",
-          "text": "The archive is next. The contract filed\nthe wrong paragraph in the middle of it."
+          "text": "The archive is next. The contract misfiled a\nwhole shelf in the middle of it."
         }
       ],
       "then": [
@@ -114,7 +109,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Past the reading room, the archive.\nShelves of paragraphs, blank rows between."
+            "text": "Past the reading room, the archive: shelves of\nrows, with an empty row between shelves."
           }
         }
       ],

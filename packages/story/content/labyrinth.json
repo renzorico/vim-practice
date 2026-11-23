@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "levers",
-          "objective": "Pull the three levers and get back to the stair.",
+          "objective": "Mark the stair (ma). Pull levers x, y, z with ?x, ?y, ?z and Enter. Return with `a.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "labyrinth"
@@ -27,7 +27,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The labyrinth. Darker still. Somewhere\nabove, hooves. Getting closer."
+          "text": "The labyrinth. Hooves above, getting closer.\nPull three levers, then return to the stair."
         },
         {
           "speaker": "npc",
@@ -35,13 +35,8 @@
           "text": "...behind you. ...always behind you."
         },
         {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Back! ...back."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: ? searches backwards.\nMark the stair first: ma."
+          "speaker": "scribe",
+          "text": "Note: ? searches backward. First mark the stair\nwith ma: `a brings you home later."
         }
       ],
       "then": []
@@ -106,7 +101,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "ma on the stair. Then ?x, ?y, ?z:\nthe real rune is always behind you. `a."
+          "text": "Mark the stair: ma. Then ?x Enter, ?y Enter, ?z\nEnter: the real rune is behind you. Home: `a."
         }
       ],
       "then": []
@@ -129,7 +124,7 @@
           "line": {
             "speaker": "npc",
             "name": "Echo",
-            "text": "...the Minotaur never caught her either.\nShe never walked. She searched."
+            "text": "...the Minotaur never caught the Scribe either.\nThe Scribe never walked. Only searched."
           }
         },
         {

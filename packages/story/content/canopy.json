@@ -20,12 +20,12 @@
     {
       "id": "wordwood.ferry",
       "world": "wordwood",
-      "title": "The canopy road",
+      "title": "Cross the canopy",
       "kind": "main",
       "steps": [
         {
           "id": "canopy",
-          "objective": "Cross the canopy.",
+          "objective": "Cross the cut bridges. f and a letter jumps to it: fH reaches the ladder.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "canopy.tier-c"
@@ -34,7 +34,7 @@
         },
         {
           "id": "lift",
-          "objective": "Take the lift down.",
+          "objective": "Walk to the lift at the end and press Enter next to it.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "canopy"
@@ -50,11 +50,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "West of the Quarry, the Wordwood.\nA forest grown from words."
+          "text": "The Wordwood, a forest grown from words. The\nUnwriter cut the bridges. Cross the canopy."
         },
         {
           "speaker": "system",
-          "text": "The road runs through the branches.\nThe rope bridges are cut."
+          "text": "Don't walk the gaps. Talk to Fern: she knows a\nfaster way across."
         }
       ],
       "then": []
@@ -69,17 +69,17 @@
         },
         {
           "speaker": "npc",
-          "text": "Up here we don't walk. We find.\nf and a letter: you're on the next one.",
+          "text": "Up here we don't walk the gaps. f and a letter\njumps you to the next one on your row.",
           "name": "Fern"
         },
         {
           "speaker": "npc",
-          "text": "See the ladder at the far end? fH.\nThe gaps don't matter. Only where you land.",
+          "text": "See the ladder at the far end? Press fH. The\ngaps don't matter, only where you land.",
           "name": "Fern"
         },
         {
           "speaker": "npc",
-          "text": "Knots work too. f* to the next knot,\nand ; finds the one after that.",
+          "text": "Knots work too: f* jumps to the next knot (*),\nand ; repeats the find for the one after.",
           "name": "Fern"
         }
       ],
@@ -96,7 +96,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "The Unwriter cut every bridge. Didn't\nlook down once. I don't think it could.",
+          "text": "The Unwriter cut every bridge and never looked\ndown. I don't think it could. Press fH, child.",
           "name": "Fern"
         }
       ],
@@ -106,13 +106,13 @@
       "id": "canopy.tier-b",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Note: , repeats your last f backward. ; repeats\nit forward. Overshot? Press , to step back."
+        },
+        {
           "speaker": "npc",
           "text": "Back! ...back.",
           "name": "Dot"
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: , runs your last find\nbackwards. ; runs it forwards again."
         }
       ],
       "then": [
@@ -138,7 +138,7 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Thorns past the gap. f@ would land you\nin them. t stops one short: t@."
+          "text": "Note: thorns (@) past the gap. f@ lands you in\nthem. t@ stops one tile short. Use t@."
         }
       ],
       "then": [
@@ -164,7 +164,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Don't walk the gaps. f jumps to a letter:\nfH for the ladder, t@ to stop short."
+          "text": "Don't walk the gaps. f then a letter jumps: fH\nfor the ladder, t@ to stop before the thorns."
         }
       ],
       "then": []
@@ -178,7 +178,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Below the canopy, the glades.\nSomething down there is counting paragraphs."
+            "text": "Below the canopy, the glades. Something down\nthere is counting. Out loud."
           }
         }
       ],

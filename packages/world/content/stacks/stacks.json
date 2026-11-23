@@ -133,7 +133,7 @@
     "<CR>"
   ],
   "hints": [
-    "daw deletes the word you stand in, wherever you are in it, and the space after it.",
-    "diw leaves the space behind: two gaps where the shelf wants one. j, then . repeats daw."
+    "Stand anywhere in a dust word and press daw: it deletes the word and the space after it.",
+    "Use daw, not diw: diw leaves a double gap. Then j, and . repeats daw on the next shelf."
   ]
 }

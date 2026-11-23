@@ -6,12 +6,12 @@
     {
       "id": "port.counterfeiter",
       "world": "copper-port",
-      "title": "The Counterfeiter",
+      "title": "Beat the clerk's count",
       "kind": "main",
       "steps": [
         {
           "id": "crates",
-          "objective": "Fill the three crates before his ledger fills.",
+          "objective": "Fill the three crates: eight oil, eight rope, then four of each. Use a count with p.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "counter"
@@ -27,26 +27,16 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The counting house. A clerk at his desk,\ncopying. Three empty crates below."
+          "text": "The counting house. A clerk makes a fake every\ntwo turns. Fill the three crates before eight."
         },
         {
-          "speaker": "npc",
-          "name": "Clerk",
-          "text": "Fakes. One every two turns.\nWhen my ledger holds eight, I file it."
-        },
-        {
-          "speaker": "npc",
-          "name": "Clerk",
-          "text": "Then the port believes my count,\nnot yours. Fill those crates first."
+          "speaker": "scribe",
+          "text": "Note: a count before p puts it that many times:\n\"a8p puts what register a holds, eight times."
         },
         {
           "speaker": "npc",
           "name": "Dot",
           "text": "Eight! ...eight."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: a count before p puts it that\nmany times. \"a8p puts \"a eight times."
         }
       ],
       "then": []
@@ -93,7 +83,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Yank both on the way down: \"ayl, \"byl.\nThen \"a8p, \"b8p, \"a4p, \"b4p."
+          "text": "Yank both on the way down: \"ayl, then \"byl.\nAt the crates: \"a8p, \"b8p, \"a4p, \"b4p."
         }
       ],
       "then": []
@@ -124,7 +114,7 @@
           "line": {
             "speaker": "npc",
             "name": "Clerk",
-            "text": "She came for my ledger, before the Flicker.\nLeft one letter on the desk: D."
+            "text": "The Scribe came for my ledger, before the\nFlicker. Left one letter on the desk: D."
           }
         },
         {

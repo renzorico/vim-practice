@@ -119,6 +119,6 @@
     "<CR>"
   ],
   "hints": [
-    "Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter."
+    "Climb in big moves: 8k goes up 8 rows at once.\nw and 0 jump along a row."
   ]
 }

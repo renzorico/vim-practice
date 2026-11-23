@@ -4,12 +4,12 @@
     {
       "id": "quarry.cut",
       "world": "quarry",
-      "title": "A cry in the Cut",
+      "title": "Open the cage",
       "kind": "main",
       "steps": [
         {
           "id": "ledge",
-          "objective": "Get past the Blots on the ledge.",
+          "objective": "Cross the ledge. Stand on it: dd deletes the Blots' row, u brings the ledge back.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "cut.far"
@@ -18,7 +18,7 @@
         },
         {
           "id": "dot",
-          "objective": "Open the cage at the end of the ledge.",
+          "objective": "Walk to the cage at the end of the ledge. Press Enter next to it.",
           "completeWhen": {
             "type": "flag",
             "flag": "cut.dot-free",
@@ -35,7 +35,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Below the road, the Cut: one ledge\nover a long drop. Something is crying."
+          "text": "The Cut: a ledge over a long drop. Someone is\ncrying at the far end. Cross it."
         }
       ],
       "then": []
@@ -45,15 +45,15 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "dd deletes the line you stand on,\nand everything on it."
+          "text": "Note: dd deletes the row you stand on, and\neverything on it. Blots included."
         },
         {
           "speaker": "scribe",
-          "text": "Cut too much? u undoes your last change.\nThe land comes back. What you cut does not."
+          "text": "Note: u undoes your last change. The ledge\ncomes back. The Blots do not."
         },
         {
           "speaker": "scribe",
-          "text": "Three of them sit on the cage itself.\nYou cannot step through that. Delete it."
+          "text": "Three Blots sit on the cage. Delete their row\nwith dd, then press u to rebuild the ledge."
         }
       ],
       "then": [
@@ -74,7 +74,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Blots pour onto the ledge.\nThey crawl toward you, along your line."
+          "text": "Blots pour onto the ledge, crawling along your\nrow. Delete the row (dd), then undo (u)."
         }
       ],
       "then": [
@@ -167,7 +167,7 @@
         },
         {
           "speaker": "system",
-          "text": "You open the cage. A small ink dot\nhops out and looks up at you."
+          "text": "The cage opens. A small ink dot hops out\nand looks up at you."
         },
         {
           "speaker": "npc",
@@ -215,7 +215,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "dd from the ledge's west end deletes\nthe Blots' line. u brings the ledge back."
+          "text": "Stand on the ledge, press dd to wipe the Blots\nin your row, then u to bring the ledge back."
         }
       ],
       "then": []
@@ -225,7 +225,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Dot follows you down into the Quarry.\nBelow, the sound of stone on stone."
+          "text": "Dot hops after you. Below, the sound of stone\non stone: someone still building."
         }
       ],
       "then": []

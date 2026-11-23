@@ -133,7 +133,7 @@
     "<CR>"
   ],
   "hints": [
-    "Stay on your row. dd brings the shaft up to you.",
-    "3dd once, then . repeats it."
+    "Stay at the lip. 10dd deletes 10 rows: the shaft rises to you.",
+    "Or 3dd once, then press . to repeat it."
   ]
 }

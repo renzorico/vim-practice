@@ -97,7 +97,7 @@ it('the 15-turn Archive route loses on turn 14, repeats its fuse line, and retri
     const dead = dismiss(fused);
     expect(dead.world.hearts).toBe(0);
     expect(dead.world.status).toBe('dead');
-    expect(markup(dead)).toContain('From inside: da[');
+    expect(markup(dead)).toContain('Inside the lock: da[');
     attempt = controller.reduce(dead, 'j');
     expect(attempt.world.engine.lines).toEqual(notary.map);
     expect(attempt.world.turn).toBe(0);

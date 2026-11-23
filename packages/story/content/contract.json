@@ -4,12 +4,12 @@
     {
       "id": "library.contract",
       "world": "library",
-      "title": "The founding contract",
+      "title": "Rewrite the contract",
       "kind": "main",
       "steps": [
         {
           "id": "contract",
-          "objective": "Rewrite the founding contract.",
+          "objective": "Rewrite the contract: change names inside quotes (ci\"), words inside brackets (ci(), strike Clause 3 (dap), sign it (cit).",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "contract"
@@ -60,7 +60,7 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "The founding contract. Every chain in the\nLibrary was written here first."
+          "text": "The founding contract. Our chains began here.\nTime to rewrite it."
         },
         {
           "speaker": "npc",
@@ -70,11 +70,7 @@
         {
           "speaker": "npc",
           "name": "Index",
-          "text": "One clause goes entirely. dap.\nAnd sign it. Not the Notary. You."
-        },
-        {
-          "speaker": "system",
-          "text": "The whole contract sits inside <contract>.\nStand on the tag you mean before cit."
+          "text": "One clause goes: dap. Sign it yourself: stand on\n<name> before cit, or it rewrites everything."
         }
       ],
       "then": []

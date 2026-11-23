@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "mason",
-          "objective": "Get down to the Mason.",
+          "objective": "Reach the Mason at the bottom. Don't climb: stand at the lip and use dd with a count, like 10dd.",
           "completeWhen": {
             "type": "flag",
             "flag": "shaft.mason-cured",
@@ -28,7 +28,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The road ends at a shaft. Far below,\nsomeone is laying stone, row on row."
+          "text": "The shaft: far below, someone lays stone, row on\nrow. Walk down to the lip (jj) and look."
         }
       ],
       "then": []
@@ -42,17 +42,13 @@
           "name": "The Mason"
         },
         {
-          "speaker": "system",
-          "text": "Climb down and his mortar throws you\nback. Stay up here. Bring the shaft to you."
+          "speaker": "scribe",
+          "text": "Note: dd deletes your row, so the shaft rises\nto you. . repeats it: dd once, then . again."
         },
         {
           "speaker": "npc",
           "text": "Again! ...again!",
           "name": "Dot"
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: . repeats your last change.\n3dd once, then . as often as you like."
         }
       ],
       "then": [
@@ -175,7 +171,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Wet mortar! It flings you back up.\nDon't climb down. Delete your way down."
+          "text": "Wet mortar! It flings you back up.\nDon't climb. Use dd to pull the shaft up."
         }
       ],
       "then": []
@@ -185,7 +181,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "You came down. Nobody comes down.",
+          "text": "You came down?... Nobody comes down.",
           "name": "The Mason"
         },
         {
@@ -200,7 +196,7 @@
         },
         {
           "speaker": "system",
-          "text": "You tell him what you have seen: a lamp\nrelit, a road reopened, a cage opened."
+          "text": "You tell him what you did: a lamp lit, a\nroad cleared, a cage opened."
         },
         {
           "speaker": "npc",
@@ -221,7 +217,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "dd brings the shaft up to you. Count:\n2dd swallows a Blot below you. . repeats."
+          "text": "Stay at the lip. 10dd deletes 10 rows and the\nshaft rises. Then Enter at the Mason."
         }
       ],
       "then": []
@@ -338,7 +334,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "The Scribe came through here. Carved\nsomething in my bottom stone. Look.",
+            "text": "The Scribe came through. Carved something\nin my bottom stone. Look.",
             "name": "The Mason"
           }
         },

@@ -4,12 +4,12 @@
     {
       "id": "quarry.ledger",
       "world": "quarry",
-      "title": "The Mason's ledger",
+      "title": "Fix the Mason's ledger",
       "kind": "main",
       "steps": [
         {
           "id": "ledger",
-          "objective": "Set the Mason's ledger right.",
+          "objective": "Fix the ledger: strike every wall, mark the crew paid, add a door at the end.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "ledger"
@@ -60,17 +60,17 @@
         {
           "speaker": "npc",
           "name": "The Mason",
-          "text": "My ledger. Every line of it wrong.\nWalls I never needed. A crew never paid."
+          "text": "My ledger is wrong. Strike out the walls, mark\nthe crew paid, and add a door at the end."
         },
         {
           "speaker": "npc",
           "name": "The Mason",
-          "text": "Two new tricks. o opens a new line below\nand lets you write. Esc when you're done."
+          "text": "o opens a row below: type, then press Esc.\nD cuts from the cursor to the end of a row."
         },
         {
           "speaker": "npc",
           "name": "The Mason",
-          "text": "D cuts a line from the cursor to its end.\nThe rest you know: dd, x, r, and the dot."
+          "text": "The rest you know: dd, x, r, and the dot.\nWalls I know. Doors, I'm still learning."
         }
       ],
       "then": [

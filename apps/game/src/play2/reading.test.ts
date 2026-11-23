@@ -108,7 +108,7 @@ it.each([false, true])('shows each Folio line exclusively when chains-gone=%s', 
   expect(session.story.flags['reading.through'] === true).toBe(gone);
   if (gone) {
     expect(session.queue[0]).toMatchObject({ cutscene: 'reading.end' });
-    expect(screen(session)).toContain('Past the reading room, the archive.\nShelves of paragraphs, blank rows between.');
+    expect(screen(session)).toContain('Past the reading room, the archive: shelves of\nrows, with an empty row between shelves.');
     expect(screen(controller.reduce(session, '<CR>'))).toContain('To be continued.');
   }
 });

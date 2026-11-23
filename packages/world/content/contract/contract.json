@@ -237,7 +237,7 @@
       "hints": [
         "ci\" changes what is inside the quotes: from the line start it finds the first quoted words. . repeats it on the next seal.",
         "ci( changes inside the outer brackets when you stand on the outer (; ct) would stop at the inner ).",
-        "dap strikes a whole clause paragraph. cip rewrites a paragraph and keeps the blank row after it.",
+        "dap strikes a whole clause and its empty row. cip rewrites a clause's rows and keeps the empty row after them.",
         "The whole contract is inside <contract>. Stand on <name> before cit, or cit rewrites everything."
       ],
       "effects": []
@@ -420,7 +420,7 @@
   "hints": [
     "ci\" changes what is inside the quotes: from the line start it finds the first quoted words. . repeats it on the next seal.",
     "ci( changes inside the outer brackets when you stand on the outer (; ct) would stop at the inner ).",
-    "dap strikes a whole clause paragraph. cip rewrites a paragraph and keeps the blank row after it.",
+    "dap strikes a whole clause and its empty row. cip rewrites a clause's rows and keeps the empty row after them.",
     "The whole contract is inside <contract>. Stand on <name> before cit, or cit rewrites everything."
   ]
 }

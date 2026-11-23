@@ -172,7 +172,7 @@
     "$"
   ],
   "hints": [
-    "Each stone is a word. w leaps over blank.",
-    "The jetty is one line. $ reaches its end."
+    "Stand on a stone and press w to hop to the next.",
+    "On the jetty, press $ to jump to the door."
   ]
 }

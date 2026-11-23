@@ -4,12 +4,12 @@
     {
       "id": "wordwood.manifest",
       "world": "wordwood",
-      "title": "The ferry manifest",
+      "title": "Fix the ferry manifest",
       "kind": "main",
       "steps": [
         {
           "id": "manifest",
-          "objective": "Set the ferry manifest right.",
+          "objective": "Fix the manifest: the title, the twins, the rope, the ink and the notes.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "manifest"
@@ -60,21 +60,17 @@
         {
           "speaker": "npc",
           "name": "Semi",
-          "text": "Ferry's ready. Manifest isn't.\nI don't sail on a wrong manifest."
+          "text": "Ferry's ready. The manifest isn't, and I don't\nsail on a wrong one. Fix it, please."
         },
         {
           "speaker": "npc",
           "name": "Semi",
-          "text": "Title's misspelt. Twins aren't listed.\nRope's short. And someone wrote in ink."
+          "text": "Fix the title (one o too many), add the twins\nto the passengers, make the rope 4 coils."
         },
         {
           "speaker": "npc",
           "name": "Semi",
-          "text": "Ink's banned on the water. Strike it.\nAnd the notes say last checked: never."
-        },
-        {
-          "speaker": "system",
-          "text": "Everything you learned in the Wordwood\nworks on text: f ; t % } G."
+          "text": "Strike the ink: it's banned on the water.\nAnd set 'Last checked' to today."
         }
       ],
       "then": []

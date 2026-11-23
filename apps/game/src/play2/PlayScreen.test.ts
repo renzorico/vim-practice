@@ -16,7 +16,7 @@ it('renders the story objective rather than the stage goal', () => {
     session, stage, legend, content, showSource: false,
     objectives: storyEngine.objectives(session.story, content), onAdvance: () => {},
   }));
-  expect(html).toContain('Talk to the Elder. Stand next to him, press Enter.');
+  expect(html).toContain('Walk to the Elder (h j k l). Stand next to him, press Enter.');
 });
 it('shows the authored death hint and any-key recovery', () => {
   const session = controller.init(false);
@@ -25,7 +25,7 @@ it('shows the authored death hint and any-key recovery', () => {
     stage, legend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
   expect(html).toContain('You were unwritten.');
-  expect(html).toContain('30l crosses the road in one move.');
+  expect(html).toContain('Type 30l: one move');
   expect(html).toContain('Press any key to return');
 });
 it('shows keys and hearts on clear, with no unteachable best score', () => {
@@ -62,7 +62,7 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
     session: { ...session, world: { ...session.world, stage: 'lighthouse', status: 'dead', hearts: 0 } },
     stage: lighthouse, legend: lighthouseLegend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
-  expect(dead).toContain('Fewer, bigger moves: counts, w and 0.\nOutclimb the Unwriter.');
+  expect(dead).toContain('Climb in big moves: 8k goes up 8 rows at once.\nw and 0 jump along a row.');
   const talking = renderToStaticMarkup(createElement(PlayScreen, {
     session: { ...session, queue: [{ type: 'dialogue', dialogue: 'lighthouse.lamplighter', index: 0 }] },
     stage: lighthouse, legend: lighthouseLegend, content, showSource: false, objectives: [], onAdvance: () => {},
@@ -74,7 +74,7 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
 it('reveals Quarry keycaps from flags and selects its authored death hint', () => {
   expect(learnedKeycaps({ 'quarry.knows-x': true }).slice(-2)).toEqual(['x', '4x']);
   expect(learnedKeycaps({ 'quarry.knows-r': true }).slice(-2)).toEqual(['r', '5r=']);
-  expect(deathHint(content, 'quarry-road')).toBe('Count the water, plus your own stone.\n5r= lays five planks in one move.');
+  expect(deathHint(content, 'quarry-road')).toBe('Rubble: stand in front, press 4x. River: stand\non the bank, press 5r= for planks.');
   expect(deathHint(content, 'unknown')).toBe(deathHint(content, 'margin'));
 });
 
