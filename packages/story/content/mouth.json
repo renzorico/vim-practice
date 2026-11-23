@@ -5,7 +5,8 @@
       "order": 6,
       "name": "The Echo Caves",
       "stages": [
-        "mouth"
+        "mouth",
+        "gallery"
       ],
       "castle": null,
       "statue": null

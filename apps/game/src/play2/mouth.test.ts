@@ -14,7 +14,7 @@ vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
 const dependencies = { sim, storyEngine, content, stage: mouth, legend: mouthLegend };
-const controller = createSession({ ...dependencies, stages });
+const controller = createSession({ ...dependencies, stages: stages.filter(entry => entry.stage.id !== 'gallery') });
 function dismiss(session: Session): Session {
   let next = session;
   for (let count = 0; next.queue.length; count++) {
@@ -98,7 +98,7 @@ it('Continue restores the Mouth and lists the sixth world', () => {
   expect(controller.resume(progress).world.stage).toBe('mouth');
   expect(controller.resume(progress).story).toEqual(session.stageEntry.story);
   expect(content.worlds.find(world => world.id === 'echo-caves')).toEqual({
-    id: 'echo-caves', order: 6, name: 'The Echo Caves', stages: ['mouth'], castle: null, statue: null,
+    id: 'echo-caves', order: 6, name: 'The Echo Caves', stages: ['mouth', 'gallery'], castle: null, statue: null,
   });
 });
 it('lints and replays every bundled stage', () => {

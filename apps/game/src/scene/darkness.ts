@@ -6,7 +6,7 @@ export interface Darkness {
   readonly lights: readonly Position[];
 }
 /** Dark stages and their sight radius (World 6 field stages add theirs here). */
-export const DARK_STAGES: Readonly<Record<string, number>> = { mouth: 3 };
+export const DARK_STAGES: Readonly<Record<string, number>> = { mouth: 3, gallery: 3 };
 
 /**
  * A stage's lights: every single-cell `enter` trigger, lit once the story has set the flag of the

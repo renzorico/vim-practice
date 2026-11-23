@@ -1,3 +1,4 @@
+import { ECHO_RUNES } from './gallery.js';
 import { CAVE_FLOOR, CAVE_ROCK, CRYSTAL_LEDGE, CRYSTAL_DARK, CRYSTAL_LIT, ECHO } from './mouth.js';
 import { TAG_LABEL, SEAL_RIBBON, VAULT_FLOOR, VAULT_WALL, NOTARY_DESK, CLAUSE_QUOTE, CLAUSE_TEXT, CLAUSE_GAP, LOCK_LEFT, LOCK_RIGHT, SEAL_LEFT, SEAL_RIGHT, KEYS, TAG_OPEN, TAG_CLOSE, TAG_SLASH, WAX, VAULT_DOOR, LOCK_SHARDS, WAX_MELT, NOTARY } from './notary.js';
 import { ATLAS_SHELF, BIBLE_SHELF, MISFILED_SHELF, ARCHIVE_AISLE, ARCHIVE_RAIL, ARCHIVE_POST, CATALOGUE, FILED_STAMP, INDEX } from './library.js';
@@ -33,6 +34,7 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  ...ECHO_RUNES,
   'cave-floor': CAVE_FLOOR, 'cave-rock': CAVE_ROCK, 'crystal-ledge': CRYSTAL_LEDGE,
   'crystal-dark': CRYSTAL_DARK, 'crystal-lit': CRYSTAL_LIT, echo: ECHO,
   'tag-label': TAG_LABEL, 'seal-ribbon': SEAL_RIBBON,

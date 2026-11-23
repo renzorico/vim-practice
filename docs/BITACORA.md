@@ -635,6 +635,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · G-3: The Echo Gallery (stage 6-2)
+**Who:** Opus (design, sim proof, brief, review fix, browser check), Codex (build), Sonnet (review).
+
+**What:** Sealed chambers of carved words; each chamber names the next word. `*` searches the whole word under the cursor, so it skips decoys that contain it (`inkwell`, `maps`, `keys`); on the `=` before a word, `*` takes the next keyword on the line (Vim). Par 6 (`* w * w * e <CR>`); `/ink<CR>` stops on the decoy first. Dark, via `DARK_STAGES`. New: `GALLERY_COMMANDS` (`* #`), carved-letter tiles.
+
+**What the checks caught:** Sonnet (0 blocking): a full-vocabulary solver test guarded every assertion with `if (result)` and so asserted nothing at its bound: removed (par is proven on the focused vocabulary). Browser: 6 turns, 3 hearts, no console errors.
+
+**Lesson:** A test whose assertions all sit behind a condition the run never meets is not a test.
+
+---
+
 ## Parking lot
 - Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
 - Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.
