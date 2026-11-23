@@ -1,7 +1,7 @@
 import type { Stage } from '@escape/world';
 import type { Session } from './session.js';
 import { starsFor } from './progress.js';
-import { solutionCaps } from './feedback.js';
+import { isScoredStage, solutionCaps } from './feedback.js';
 
 export function StageClearCard({ session, stage, onContinue, onReplay }: {
   readonly session: Session; readonly stage: Stage;
@@ -11,7 +11,7 @@ export function StageClearCard({ session, stage, onContinue, onReplay }: {
   const stars = starsFor(turns, stage.parTurns);
   return <section className="play-panel stage-clear" role="dialog" aria-modal="true" aria-labelledby="clear-title">
     <h2 id="clear-title">{stage.title} cleared</h2>
-    {stage.type !== 'text' && <><p className="stage-clear__stars" aria-label={`${stars} of 3 stars`}>
+    {isScoredStage(stage) && <><p className="stage-clear__stars" aria-label={`${stars} of 3 stars`}>
       <span aria-hidden="true">{[1, 2, 3].map(star => <svg key={star} viewBox="0 0 24 24"
         className={star > stars ? 'stage-clear__empty' : undefined}>
         <path d="m12 2 3 6.5 7 .9-5.1 5 1.3 7.1L12 18l-6.2 3.5 1.3-7.1-5.1-5 7-.9Z"
@@ -20,7 +20,7 @@ export function StageClearCard({ session, stage, onContinue, onReplay }: {
     </p>
     <p>Turns: {turns} · par {stage.parTurns}</p></>}
     <p>{session.world.hearts} of {stage.hearts} hearts left.</p>
-    {stage.type !== 'text' && (turns <= stage.parTurns ? <p>Par route found.</p> : <div className="stage-clear__route">
+    {isScoredStage(stage) && (turns <= stage.parTurns ? <p>Par route found.</p> : <div className="stage-clear__route">
       <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{key}</kbd>)}</div>
     </div>)}
     <div className="stage-clear__actions">

@@ -5,6 +5,8 @@ import { createWorldSim, type BumpReason, type Legend, type Stage, type WorldEve
 import { stageCommands, type Session, type SessionStage } from './session.js';
 import { darknessAlpha, darknessFor } from '../scene/darkness.js';
 
+export { UNSCORED_STAGES, isScoredStage } from './stageScoring.js';
+
 export const BUMP_LINES: Readonly<Record<BumpReason, string>> = {
   wall: 'Blocked: a wall.',
   'solid-entity': 'Blocked: someone is here.',

@@ -60,7 +60,7 @@ it('renders the HUD par and dims it only after par', () => {
 it('groups engine-parsed commands into caps for a search, Enter and a count', () => {
   const examples = [
     { ...gallery, solution: ['*', 'w', '/', 'i', 'n', 'k', '<CR>', 'e', '<CR>'] },
-    { ...stage, solution: ['3', 'l', '<CR>'] },
+    { ...stage, id: 'scored-fixture', solution: ['3', 'l', '<CR>'] },
     { ...lowlands, solution: ['w', 'e', '<CR>'] },
   ];
   const expected = [['*', 'w', '/ink<CR>', 'e', '<CR>'], ['3l', '<CR>'], ['w', 'e', '<CR>']];
@@ -190,4 +190,13 @@ it('replays Shaft with entry quests and stage-cleared reactions firing once agai
   expect(second.story.firedReactions).toEqual(first.story.firedReactions);
   expect(second.story.clearedStages).toEqual(first.story.clearedStages);
   expect(second.story.firedReactions.filter(id => id === 'shaft.cleared')).toHaveLength(1);
+});
+
+
+it('shows only a clear and hearts on the Margin card', () => {
+  const session = game.init(false);
+  const html = renderToStaticMarkup(createElement(StageClearCard, { session, stage, onContinue: () => {}, onReplay: () => {} }));
+  expect(html).toContain('cleared');
+  expect(html).toContain('hearts left');
+  expect(html).not.toMatch(/par|stars|Turns:/);
 });

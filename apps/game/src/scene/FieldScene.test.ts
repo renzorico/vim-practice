@@ -21,7 +21,7 @@ const fake = vi.hoisted(() => {
   });
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
-    strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
+    pixels: new Map<string, number[][]>(), strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
     scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
@@ -39,10 +39,13 @@ vi.mock('phaser', () => ({ default: {
         const result = fake.object().setPosition(x, y); result.texture = 'rectangle'; fake.images.push(result); return result;
       },
     };
-    make = { graphics: () => ({ fillStyle() { return this; }, fillRect() { return this; },
-      generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }),
+    make = { graphics: () => {
+      const pixels: number[][] = [];
+      return { fillStyle() { return this; }, fillRect(...rect: number[]) { pixels.push(rect); return this; },
+        generateTexture: (key: string) => { fake.textures.add(key); fake.pixels.set(key, pixels); }, destroy: vi.fn() };
+    },
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
-    textures = { exists: (key: string) => fake.textures.has(key),
+    textures = { exists: vi.fn((key: string) => fake.textures.has(key)),
       createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
     cameras = { main: { setBackgroundColor() { return this; }, setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn, getWorldPoint: (x: number, y: number) => ({ x, y }) } };
     tweens = { killAll: fake.killAll, add: fake.tween };
@@ -66,7 +69,7 @@ const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
 ] };
 
 beforeEach(() => {
-  vi.clearAllMocks(); fake.scale.width = 900; fake.scale.height = 600; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear();
+  vi.clearAllMocks(); fake.scale.width = 900; fake.scale.height = 600; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear(); fake.pixels.clear();
 });
 describe('FieldScene without canvas', () => {
   it('centres the fixture and recomputes camera bounds after resize and buffer edits', () => {
@@ -1267,4 +1270,105 @@ it('keeps landing text objects when a new marker list has equal contents', () =>
   scene.present({ ...frame, markers: [{ key: 'e', at }] });
   expect(fake.texts).toHaveLength(count + 1);
   expect(labels?.removeAll).toHaveBeenCalledOnce();
+});
+
+
+describe('first-minute guidance', () => {
+  it.each(['normal', 'insert', 'operator-pending'] as const)('draws the %s cursor under the sprite', mode => {
+    const scene = new FieldScene({ ...frame, state: { ...frame.state, engine: { ...frame.state.engine, mode } } }, false);
+    scene.create();
+    const cursor = fake.images.find(image => image.texture.startsWith(`guidance:${mode}:`));
+    const player = fake.images.find(image => image.texture === 'field:player');
+    expect(cursor).toMatchObject({ x: player?.x, y: player?.y, depth: 1.9, visible: true });
+    const pixels = fake.pixels.get(cursor?.texture ?? '');
+    expect(pixels).toEqual(mode === 'insert' ? [[0, 0, 2, 16]] : mode === 'operator-pending'
+      ? [[1, 14, 14, 1]] : [[1, 1, 14, 1], [1, 14, 14, 1], [1, 1, 1, 14], [14, 1, 1, 14]]);
+  });
+  it('blinks 600ms on, 400ms off; movement resets it and reduced motion stays on', () => {
+    const scene = new FieldScene(frame, false); scene.create();
+    const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+    scene.update(599, 599); expect(cursor?.visible).toBe(true);
+    scene.update(600, 1); expect(cursor?.visible).toBe(false);
+    scene.update(1000, 400); expect(cursor?.visible).toBe(true);
+    scene.update(1700, 700); expect(cursor?.visible).toBe(false);
+    scene.present(moving); expect(cursor?.visible).toBe(true);
+    scene.update(2400, 700); expect(cursor?.visible).toBe(false);
+    scene.setReducedMotion(true); scene.update(3100, 700); expect(cursor?.visible).toBe(true);
+  });
+  it('follows the drawn player through carry-over rather than the logical destination', () => {
+    const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
+    const config = fake.tween.mock.calls[0]?.[0];
+    config.targets.value = 0.3; config.onUpdate();
+    const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+    const player = fake.images.find(image => image.texture.startsWith('field:player'));
+    expect(cursor?.x).toBe(player?.x); expect(cursor?.y).toBe(player?.y);
+    expect(cursor?.x).not.toBe(40 * 16 + 8);
+    scene.present({ ...moving, state: { ...moving.state, turn: 2 } });
+    expect(cursor?.x).toBe(player?.x);
+  });
+  it('hides the cursor for cutscenes and text stages', () => {
+    const scene = new FieldScene(frame, false); scene.create();
+    const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+    scene.present({ ...frame, hideCursor: true }); expect(cursor?.visible).toBe(false);
+    scene.present({ ...frame, stage: { ...frame.stage, type: 'text' } }); expect(cursor?.visible).toBe(false);
+  });
+  it('bobs an objective arrow, keeps it still for reduced motion and suppresses it in darkness or overlays', () => {
+    const target = { line: 2, col: 4 };
+    const scene = new FieldScene({ ...frame, objectiveTarget: target }, false); scene.create();
+    const arrow = fake.images.find(image => image.texture.startsWith('guidance:arrow:'));
+    expect(arrow).toMatchObject({ x: 72, y: 24, visible: true });
+    scene.update(250, 250); expect(arrow?.y).toBe(26);
+    scene.setReducedMotion(true); scene.update(500, 250); expect(arrow?.y).toBe(24);
+    scene.present({ ...frame, objectiveTarget: target, hideObjective: true }); expect(arrow?.visible).toBe(false);
+    scene.present({ ...frame, objectiveTarget: target, stage: { ...frame.stage, id: 'mouth' } }); expect(arrow?.visible).toBe(false);
+    scene.present({ ...frame, objectiveTarget: target, stage: { ...frame.stage, type: 'text' } }); expect(arrow?.visible).toBe(false);
+  });
+  it('pins offscreen targets to the viewport edge and points toward them', () => {
+    const scene = new FieldScene({ ...frame, objectiveTarget: { line: 2, col: 100 } }, true); scene.create();
+    const arrow = fake.images.find(image => image.texture.startsWith('guidance:arrow:'));
+    expect(arrow?.x).toBeLessThan(100 * 16);
+    expect(arrow?.setAngle).toHaveBeenLastCalledWith(expect.any(Number));
+    expect(arrow?.setAngle.mock.calls.at(-1)?.[0]).toBeLessThan(-80);
+  });
+});
+
+it('caches guidance textures and changes the cursor texture only with its mode', () => {
+  const scene = new FieldScene({ ...frame, objectiveTarget: { line: 2, col: 4 } }, true); scene.create();
+  const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+  const exists = scene.textures.exists;
+  vi.mocked(exists).mockClear();
+  scene.update(16, 16); scene.update(32, 16);
+  expect(cursor?.setTexture).not.toHaveBeenCalled();
+  expect(exists).not.toHaveBeenCalled();
+  const insert = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, mode: 'insert' as const } } };
+  scene.present(insert);
+  expect(cursor?.setTexture).toHaveBeenCalledOnce();
+  scene.update(48, 16);
+  expect(cursor?.setTexture).toHaveBeenCalledOnce();
+  vi.mocked(exists).mockClear();
+  scene.present(frame);
+  expect(cursor?.setTexture).toHaveBeenCalledTimes(2);
+  expect(vi.mocked(exists).mock.calls.filter(([key]) => key.startsWith('guidance:'))).toEqual([]);
+});
+
+it('syncs the cursor after actor idle updates', () => {
+  const scene = new FieldScene(frame, false); scene.create();
+  const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+  const player = fake.images.find(image => image.texture.startsWith('field:player'));
+  if (!player) throw new Error('Missing player');
+  player.setTexture.mockImplementation(function (value: string) {
+    player.texture = value;
+    player.y += 1;
+    return player;
+  });
+  scene.update(16, 16);
+  expect(cursor?.y).toBe(player.y);
+});
+
+it.each(['dead', 'cleared'] as const)('hides the cursor when the world is %s', status => {
+  const scene = new FieldScene(frame, true); scene.create();
+  const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+  scene.present({ ...frame, state: { ...frame.state, status } });
+  scene.update(16, 16);
+  expect(cursor?.visible).toBe(false);
 });

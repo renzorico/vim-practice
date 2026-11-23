@@ -4,7 +4,7 @@ import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
 import { createSession } from './session.js';
 import { content, stage, legend, stages } from './content.js';
-import { clearProgress, PROGRESS_KEY, readProgress, saveProgress, type ProgressStorage } from './progress.js';
+import { recordBest, clearProgress, PROGRESS_KEY, readProgress, saveProgress, type ProgressStorage } from './progress.js';
 
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), stage, legend, stages, content });
 function memory() {
@@ -43,4 +43,12 @@ it('ignores invalid JSON, invalid story shapes and unknown stage IDs', () => {
     store.setItem(PROGRESS_KEY, text);
     expect(readProgress(() => store, ['margin', 'lowlands'])).toBeNull();
   }
+});
+
+it('does not record bests for hubs or text stages, preserving existing records', () => {
+  const best = { lowlands: { turns: 3, stars: 3 as const } };
+  for (const { stage } of stages.filter(({ stage }) => stage.id === 'margin' || stage.type === 'text')) {
+    expect(recordBest(best, stage.id, 1, stage.parTurns)).toBe(best);
+  }
+  expect(recordBest(best, 'lowlands', 2, 6).lowlands).toEqual({ turns: 2, stars: 3 });
 });
