@@ -1,0 +1,131 @@
+{
+  "worlds": [],
+  "openingStage": "gallery",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "caves.gallery",
+      "world": "echo-caves",
+      "title": "The echo gallery",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "follow",
+          "objective": "Follow the echoed words.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "gallery"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "gallery.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The echo gallery. Words carved in sealed\nchambers, and every word said twice."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...ink. ...ink."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Again! ...again."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: * finds the next whole word\nlike the one you stand on. # goes back."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "gallery.talk",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "Ink, map, key. Her three words.\nShe said them on her way down."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "Below is the labyrinth. Something lives\nthere that doesn't like being looked for."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gallery.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "gallery.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Below the gallery, the paths fork and fork.\nYou'll want to remember where you've been."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "gallery.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "mouth"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "caves.gallery"
+        }
+      ]
+    },
+    {
+      "id": "gallery.talk",
+      "when": {
+        "type": "trigger",
+        "trigger": "gallery.talk-echo"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gallery.talk"
+        }
+      ]
+    },
+    {
+      "id": "gallery.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "gallery"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "gallery.end"
+        }
+      ]
+    }
+  ]
+}

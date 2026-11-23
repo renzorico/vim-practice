@@ -889,3 +889,23 @@ it('pulses a newly lit crystal for 150 ms and settles it on the next key', async
   expect(pulse.targets.setScale).toHaveBeenLastCalledWith(1);
   expect(pulse.targets.alpha).toBe(1);
 });
+
+it('draws distinct carved gallery letters and keeps distant chambers dark after a search jump', async () => {
+  const { gallery, galleryLegend } = await import('../play2/content.js');
+  const { GALLERY_COMMANDS } = await import('../play2/session.js');
+  const { darknessFor } = await import('./darkness.js');
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(gallery, galleryLegend, { learnedCommands: GALLERY_COMMANDS, flags: {} });
+  const initial = { state, stage: gallery, legend: galleryLegend, events: [], showSource: false,
+    darkness: darknessFor(gallery, {})! };
+  const scene = new FieldScene(initial, true); scene.create();
+  const at = (letter: string, line: number, col: number) => fake.images.find(image =>
+    image.texture.startsWith(`field:echo-rune-${letter}`) && image.x === col * 16 + 8 && image.y === line * 16 + 8);
+  expect(at('i', 1, 2)?.alpha).toBe(1);
+  expect(at('n', 1, 3)?.alpha).toBe(1);
+  expect(at('k', 7, 2)?.alpha).toBe(0);
+  const jumped = sim.step(state, '*', gallery, galleryLegend, { learnedCommands: GALLERY_COMMANDS, flags: {} });
+  scene.present({ ...initial, state: jumped.state, events: jumped.events });
+  expect(at('i', 3, 2)?.alpha).toBe(1);
+  expect(at('k', 7, 2)?.alpha).toBe(0);
+});
