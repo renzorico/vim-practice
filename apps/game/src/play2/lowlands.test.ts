@@ -121,7 +121,7 @@ it('advances the Lighthouse quest and enters the castle after its ending', () =>
   expect(ended.world.engine.cursor).toEqual({ line: 25, col: 10 });
   expect(controller.reduce(ended, 'l').queue).toEqual([]);
 });
-it('holds story world effects while dead and applies them immediately after restore', () => {
+it('holds story world effects while dead and drops them on restore: the dying turn is undone (S-1)', () => {
   const authored = { ...content,
     dialogues: content.dialogues.map(dialogue => dialogue.id === 'margin.intro'
       ? { ...dialogue, then: [{ type: 'world' as const, effects: [
@@ -140,7 +140,10 @@ it('holds story world effects while dead and applies them immediately after rest
   const restored = game.reduce(held, 'l');
   expect(restored.deferredEffects).toEqual([]);
   expect(restored.world.status).toBe('playing');
-  expect(restored.world.entities.some(entity => entity.id === 'bram')).toBe(false);
+  // Back to the last checkpoint, story included: the lethal batch and its reaction never happened.
+  expect(restored.world.entities.some(entity => entity.id === 'bram')).toBe(true);
+  expect(restored.story.flags['dead-reward']).not.toBe(true);
+  expect(restored.world.flags['dead-reward']).not.toBe(true);
 });
 
 it('Margin solver solution enters Lowlands and starts its quest', () => {

@@ -698,10 +698,23 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · S-1: Story state is saved with the world
+**Who:** Renzo (asked for it), Opus (design, contract, build, browser check), Sonnet (review).
+
+**What:** Dying (or `:e!`) now sends the player back to the last save, story included, as MASTERPLAN 3.4 says. Contract: `Checkpoint` also holds flags, solved scripts and fired triggers, and `restore` brings them back (it used to keep them); the `:w` checkpoint is stored after the turn's triggers ("the very end of that turn"). Session: `storyCheckpoint` is taken at stage entry and whenever the world stores a checkpoint, restored with it (learned skills excepted), and the world's flags are re-synced from it. `RESTART_ON_RETRY` is gone: the Labyrinth and the Last Page reset through the general rule.
+
+**What the checks caught:** A first, story-only restore failed: the world kept its fired triggers, so a retried lever never fired again; the contract itself said restore keeps them. Sonnet: effects deferred in the dying turn were still applied after the restore, so their reactions (now un-fired) would run them twice: dropped; the `:w` checkpoint was taken before the turn's triggers, so a same-turn trigger sat outside the save while the story counted it: moved after; a debug log line in a test: removed. Browser: Labyrinth fuse death, retry at 0/6 prints with 3 hearts, the first lever works again.
+
+**Behaviour change (accepted):** in stages without a `:w`, a death reverts everything since stage entry: once-only hints and dialogues replay, lamps and levers must be redone. Playtest it.
+
+**Lesson:** A rule that holds in one layer and not the other is worse than either rule: restore everything together, or nothing.
+
+---
+
 ## Parking lot
 - Engine undo parity: `di"` on `""`, `dit` on `<a></a>`, and `dh`/`db` near column 0 do not make Neovim's empty undo entry; cursor after undoing `cit`/`cat` is the original position, Neovim's is the change start (Sonnet's probes in P-1: turn each into a golden).
 - Script panel: narrow-width layout only tested with mocks; check `min-width: 0` on the panel's grid ancestors in a real browser.
-- Session (priority): story flags survive a death and `:e!` (world checkpoint restore). `RESTART_ON_RETRY` covers labyrinth and last-page. Generic fix: checkpoint story state with the world, then drop the set.
+- Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

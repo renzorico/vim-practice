@@ -11,6 +11,12 @@ export interface Session {
   readonly keys: number;
   readonly world: WorldState;
   readonly story: StoryState;
+  /**
+   * The story as it was when the world stored its current checkpoint (stage entry, `:w`, a
+   * checkpointing effect batch). A death retry or `:e!` restores both together, so story flags
+   * can never outlive the world state they describe (BITACORA E-5, G-5, H-1).
+   */
+  readonly storyCheckpoint: StoryState;
   readonly queue: readonly Presentation[];
   readonly lastEvents: readonly WorldEvent[];
 }
@@ -54,12 +60,6 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
 };
 const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { 'last-page': LAST_PAGE_COMMANDS, study: STUDY_COMMANDS, labyrinth: LABYRINTH_COMMANDS, marked: MARKED_COMMANDS, gallery: GALLERY_COMMANDS, mouth: MOUTH_COMMANDS, contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
-/**
- * Stages whose puzzle state lives in story flags (chained levers): a retry must restart the stage
- * from its entry story, because story flags survive a world checkpoint restore (BITACORA E-5, G-5).
- * A generic fix (story state checkpointed with the world) is parked; add stages here until then.
- */
-const RESTART_ON_RETRY: ReadonlySet<string> = new Set(['labyrinth', 'last-page']);
 
 export function resultData(session: Session) {
   return { keys: session.keys, turns: session.world.turn, hearts: session.world.hearts };
@@ -142,9 +142,10 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     const session: Session = {
       stageEntry: { stage: current.stage.id, story },
       keys, deferredEffects: [], world: sim.init(current.stage, current.legend, options(story, current.stage)),
-      story, lastEvents: [], queue: !show ? [] : introType === 'cutscene' ? [{ type: 'cutscene', cutscene: intro, index: 0 }] : [{ type: 'dialogue', dialogue: intro, index: 0 }],
+      story, storyCheckpoint: story, lastEvents: [], queue: !show ? [] : introType === 'cutscene' ? [{ type: 'cutscene', cutscene: intro, index: 0 }] : [{ type: 'dialogue', dialogue: intro, index: 0 }],
     };
-    const ready = saveOnStageEntry(settle(session, opening));
+    const settled = settle(session, opening);
+    const ready = saveOnStageEntry({ ...settled, storyCheckpoint: settled.story });
     // Lessons and the finale reveal replay from entry on Continue, so an
     // interrupted introduction cannot skip its teaching or terminal beat.
     return show && (current.stage.type === 'text' || introType === 'cutscene') ? { ...ready,
@@ -200,19 +201,38 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return transition(presentEnd(settle(next, storyEngine.apply(next.story, then, content))));
   }
 
+  /**
+   * World and story back to the last checkpoint, together. The world's flags are re-synced from
+   * the restored story (a `:w` on the turn a trigger fired stores the world before the story has
+   * answered), as a flag-only batch, which never stores a checkpoint.
+   */
+  function restoreCheckpoint(session: Session): Session {
+    const restored = sim.restore(session.world);
+    // Learned skills are Vim progress, not stage progress: they survive a restore.
+    const story = { ...session.storyCheckpoint, learnedSkills: session.story.learnedSkills };
+    const current = entry(restored.state.stage);
+    const names = new Set([...Object.keys(story.flags), ...Object.keys(restored.state.flags)]);
+    const sync: WorldEffect[] = [...names].flatMap(flag => (story.flags[flag] ?? false) === (restored.state.flags[flag] ?? false)
+      ? [] : [{ type: 'set-flag' as const, flag, value: story.flags[flag] ?? false }]);
+    const synced = sync.length === 0 ? restored : sim.apply(restored.state, sync, current.stage, current.legend);
+    return { ...session, story, world: synced.state, lastEvents: restored.events };
+  }
+
+  /** Keep the story snapshot in step with the world's checkpoint. */
+  function track(before: Session, after: Session): Session {
+    if (after.world.stage !== before.world.stage || after.world.checkpoint === before.world.checkpoint) return after;
+    return { ...after, storyCheckpoint: after.story };
+  }
+
   function reduce(session: Session, key: Key): Session {
+    return track(session, step(session, key));
+  }
+
+  function step(session: Session, key: Key): Session {
     if (session.world.status === 'dead') {
-      if (RESTART_ON_RETRY.has(session.world.stage)) {
-        return { ...enter(entry(session.world.stage), session.stageEntry.story, session.keys, false),
-          lastEvents: [{ type: 'checkpoint-restored' }] };
-      }
-      const restored = sim.restore(session.world);
-      let next = { ...session, deferredEffects: [], world: restored.state, lastEvents: restored.events };
-      if (session.deferredEffects.length > 0) {
-        const current = entry(next.world.stage);
-        const applied = sim.apply(next.world, session.deferredEffects, current.stage, current.legend);
-        next = { ...next, world: applied.state, lastEvents: [...next.lastEvents, ...applied.events] };
-      }
+      // Effects deferred in the dying turn belong to reactions the restored story has not fired
+      // yet: drop them, or they would land twice (S-1 review).
+      const next = { ...restoreCheckpoint(session), deferredEffects: [] };
       return transition(settle(next, storyEngine.onEvents(next.story, next.lastEvents, content)));
     }
     if (session.queue.length > 0) {
@@ -231,13 +251,9 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     // :e! is the game's checkpoint restore; Vim parsing up to Enter stays in the engine.
     if (key === '<CR>' && session.world.script === null
       && session.world.engine.mode === 'command-line' && session.world.engine.commandLine === ':e!') {
-      if (RESTART_ON_RETRY.has(session.world.stage)) {
-        return { ...enter(current, session.stageEntry.story, session.keys + 1, false),
-          lastEvents: [{ type: 'checkpoint-restored' }] };
-      }
-      const restored = sim.restore(session.world);
-      return settle({ ...session, keys: session.keys + 1, world: { ...restored.state, engine: { ...restored.state.engine, scroll: 0 } }, lastEvents: restored.events },
-        storyEngine.onEvents(session.story, restored.events, content));
+      const restored = restoreCheckpoint(session);
+      return settle({ ...restored, keys: session.keys + 1, world: { ...restored.world, engine: { ...restored.world.engine, scroll: 0 } } },
+        storyEngine.onEvents(restored.story, restored.lastEvents, content));
     }
     // The engine gates the completed operator, but register selection is a prefix.
     // Gate only the prefix here; quoted find/replace targets remain ordinary data.
