@@ -1,0 +1,77 @@
+{
+  "id": "labyrinth",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "cave-rock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "cave-rock",
+      "walkable": false,
+      "fixed": true,
+      "label": "rock"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "cave-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "crystal-ledge",
+      "walkable": true,
+      "fixed": true,
+      "label": "ledge"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "minotaur-lair",
+      "walkable": true,
+      "fixed": true,
+      "label": "lair"
+    },
+    {
+      "char": "M",
+      "kind": "object",
+      "sprite": "hoofprint",
+      "walkable": false,
+      "fixed": false,
+      "label": "hoofprint"
+    },
+    {
+      "char": "x",
+      "kind": "object",
+      "sprite": "rune-lever",
+      "walkable": true,
+      "fixed": true,
+      "label": "rune"
+    },
+    {
+      "char": "y",
+      "kind": "object",
+      "sprite": "rune-lever",
+      "walkable": true,
+      "fixed": true,
+      "label": "rune"
+    },
+    {
+      "char": "z",
+      "kind": "object",
+      "sprite": "rune-lever",
+      "walkable": true,
+      "fixed": true,
+      "label": "rune"
+    }
+  ]
+}
