@@ -31,7 +31,10 @@ const moveRight: MotionFn = (state, count) => {
   const length = lineAt(state, state.cursor.line).length;
   // An operator may reach the end-of-line position (`dl` on the last character).
   const maxCol = isOperatorPending(state) ? length : lastCol(lineAt(state, state.cursor.line));
-  if (state.cursor.col >= maxCol) return null;
+  if (state.cursor.col >= maxCol) {
+    // dl on an empty line is a valid empty delete, with an undo and dot entry.
+    return isOperatorPending(state) && length === 0 ? charwise(state.cursor, false) : null;
+  }
   return charwise({ line: state.cursor.line, col: Math.min(maxCol, state.cursor.col + count) }, false);
 };
 

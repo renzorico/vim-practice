@@ -18,6 +18,11 @@ export function pushUndo(state: EngineState): EngineState {
   };
 }
 
+/** Empty deletes consume an undo step without creating a new text version. */
+export function pushEmptyUndo(state: EngineState): EngineState {
+  return { ...pushUndo(state), changeSeq: state.changeSeq, modified: state.modified };
+}
+
 export function failure(state: EngineState, message: string): CommandOutcome {
   const error: EngineError = { code: 'invalid-range', message };
   return { state, error };
@@ -137,7 +142,8 @@ function operatorDelete(state: EngineState, range: Range, register: RegisterName
   }
   const region = resolveCharRegion(state.lines, range);
   if (isEmptyRegion(region)) {
-    return success(state);
+    // Vim records an empty delete so one undo consumes it before older edits.
+    return success(pushEmptyUndo(state));
   }
   return success(deleteCharRegion(state, region, register, false));
 }

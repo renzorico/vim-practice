@@ -103,10 +103,15 @@ describe('operator d', () => {
     expect(out.state.registers['"']).toEqual(charwise('a\n\n'));
   });
 
-  it('does nothing for an empty exclusive region (dl on an empty line)', () => {
+  it('records an empty undo entry for an empty exclusive region (dl on an empty line)', () => {
     const start = state(['', 'x']);
     const out = operators.d(start, charRange(0, 0, 0, 0, false), null);
-    expect(out.state).toBe(start);
+    expect(out.state.lines).toBe(start.lines);
+    expect(out.state.registers).toBe(start.registers);
+    expect(out.state.undoStack).toEqual([{ lines: start.lines, cursor: start.cursor, seq: 0, edits: [] }]);
+    expect(start.undoStack).toEqual([]);
+    expect(out.state.modified).toBe(start.modified);
+    expect(out.state.changeSeq).toBe(start.changeSeq);
     expect(out.error).toBeNull();
   });
 
@@ -315,10 +320,15 @@ describe('x and X', () => {
     expect(cursorOf(out)).toEqual([0, 1]);
   });
 
-  it('x on an empty line does nothing', () => {
+  it('x on an empty line records an empty undo entry', () => {
     const start = state(['', 'b']);
     const out = simple('x', start);
-    expect(out.state).toBe(start);
+    expect(out.state.lines).toBe(start.lines);
+    expect(out.state.registers).toBe(start.registers);
+    expect(out.state.undoStack).toEqual([{ lines: start.lines, cursor: start.cursor, seq: 0, edits: [] }]);
+    expect(start.undoStack).toEqual([]);
+    expect(out.state.modified).toBe(start.modified);
+    expect(out.state.changeSeq).toBe(start.changeSeq);
     expect(out.error).toBeNull();
   });
 

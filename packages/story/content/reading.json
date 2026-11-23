@@ -140,7 +140,7 @@
       "id": "reading.nested",
       "when": {
         "type": "trigger",
-        "trigger": "reading.chains-gone"
+        "trigger": "reading.first-gone"
       },
       "once": true,
       "then": [
