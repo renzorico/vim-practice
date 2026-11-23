@@ -14,7 +14,7 @@ import { readProgress, saveProgress } from './progress.js';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
-const controller = createSession({ sim, storyEngine, content, stages: stages.filter(entry => !['reading', 'archive'].includes(entry.stage.id)), stage: stacks, legend: stacksLegend });
+const controller = createSession({ sim, storyEngine, content, stages: stages.filter(entry => !['reading', 'archive', 'notary'].includes(entry.stage.id)), stage: stacks, legend: stacksLegend });
 function dismiss(session: Session): Session {
   let next = session;
   for (let count = 0; next.queue.length; count += 1) {
@@ -52,7 +52,7 @@ it('enters stacks after all harbour.end lines, keeping story and starting the Li
   expect(session.story.clearedStages).toContain('harbour');
   expect(session.story.quests['library.stacks']).toEqual({ step: 0, done: false });
   expect(content.worlds.find(world => world.id === 'library')).toEqual({
-    id: 'library', order: 5, name: 'The Library', stages: ['stacks', 'reading', 'archive'], castle: null, statue: null,
+    id: 'library', order: 5, name: 'The Library', stages: ['stacks', 'reading', 'archive', 'notary'], castle: 'notary', statue: 'Q',
   });
 });
 it('drops into the middle of dust, then daw and dot align all three shelves', () => {

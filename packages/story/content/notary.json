@@ -1,0 +1,209 @@
+{
+  "worlds": [],
+  "openingStage": "notary",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "library.notary",
+      "world": "library",
+      "title": "The Notary",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "open",
+          "objective": "Open the vault before he signs seven clauses.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "notary"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "notary.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The vault. A desk at the top, a stair\ndown the side, three locks below."
+        },
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "Notary. Everything here is in order.\nI keep it in order. Clause by clause."
+        },
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "Every two turns, another clause. At seven\nthe vault is mine, and stays shut."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Inside! ...inside."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: a[ is the lock with its\nbrackets, a{ the seal, it a tag's inside."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "notary.fuse",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "Seven. Signed and sealed."
+        },
+        {
+          "speaker": "system",
+          "text": "The vault door settles into its frame."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "notary.open",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "Unlocked. Unsealed. Emptied.\nNone of that was in the contract."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "notary.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "From inside: da[, then 0 2j w da{,\nthen 0 2j w dit. Don't count brackets."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "notary.end",
+      "beats": [
+        {
+          "type": "title",
+          "text": "The vault stands open. One clause on the\nwall, older than all of his."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Notary",
+            "text": "In case of loss, recover. Her hand.\nThe Scribe's. Before the Flicker."
+          }
+        },
+        {
+          "type": "title",
+          "text": "The Scribe is in another buffer."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Notary",
+            "text": "She left a letter on my desk: Q.\nI filed it under quit. I was wrong."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Recover. ...recover."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "light-statue",
+          "letter": "Q"
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "notary.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "archive"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "library.notary"
+        }
+      ]
+    },
+    {
+      "id": "notary.open",
+      "when": {
+        "type": "trigger",
+        "trigger": "notary.open"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "notary.open"
+        },
+        {
+          "type": "set-flag",
+          "flag": "notary.through",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "notary.fuse",
+      "when": {
+        "type": "trigger",
+        "trigger": "notary.fuse"
+      },
+      "once": false,
+      "unless": "notary.through",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "notary.fuse"
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "hit",
+              "hearts": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notary.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "notary"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "notary.end"
+        }
+      ]
+    }
+  ]
+}

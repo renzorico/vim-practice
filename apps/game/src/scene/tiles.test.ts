@@ -42,3 +42,14 @@ it('draws actual shelf spaces as gaps and only missing columns as unwritten pape
     ['book', 'blank', 'blank', 'blank'],
   ]);
 });
+
+it('keeps tag labels after melting wax and draws seal keys as ribbon', async () => {
+  const { notary, notaryLegend } = await import('../play2/content.js');
+  const grid = tileGrid(notary.map, notaryLegend);
+  expect(grid[2]?.slice(2, 5)).toEqual(['keys', 'keys', 'keys']);
+  expect(grid[4]?.slice(2, 5)).toEqual(['seal-ribbon', 'seal-ribbon', 'seal-ribbon']);
+  expect(grid[6]?.slice(2, 11)).toEqual(['tag-label', 'tag-close', 'wax', 'wax', 'wax', 'wax', 'tag-open', 'tag-slash', 'tag-label']);
+  const empty = tileGrid(['.<w></w>.#'], notaryLegend)[0];
+  expect(empty).not.toContain('wax');
+  expect(empty?.filter(sprite => sprite === 'tag-label')).toHaveLength(2);
+});

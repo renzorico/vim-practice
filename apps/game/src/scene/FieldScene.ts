@@ -135,6 +135,7 @@ export class FieldScene extends Phaser.Scene {
     if (!this.ready || !this.animating) return;
     this.animating = false;
     this.tweens.killAll();
+    this.clearStamp();
     this.syncActors();
     this.clearRowEffects();
     this.clearUnwriting();
@@ -253,6 +254,7 @@ export class FieldScene extends Phaser.Scene {
     for (const cell of this.cells.values()) {
       if (cell.line === this.stamp.line) { cell.tile.setAlpha(1); cell.glyph.setAlpha(1); }
     }
+    if (this.frame.stage.id === 'notary') this.entities.get(this.stamp.entity)?.setAngle(0);
     this.stamp = null;
   }
 
@@ -292,8 +294,8 @@ export class FieldScene extends Phaser.Scene {
     for (const [offset, char] of [...this.deletion.junk].entries()) {
       const at = { line: this.deletion.line, col: this.deletion.col + offset };
       this.junk.push({ at,
-        image: this.add.image(center(at.col), center(at.line), this.texture(frame.stage.id === 'reading' ? char === 'c' ? 'chain' : char === '(' ? 'shackle-open-left' : 'shackle-open-right' : frame.stage.id === 'stacks' ? char === 'd' ? 'library-dust' : 'shelf-gap' : char === 'c' ? 'crates' : 'nets')).setDepth(3),
-        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture(frame.stage.id === 'reading' ? 'chain-clatter' : frame.stage.id === 'stacks' ? 'dust-puff' : 'splash')).setDepth(3).setAlpha(0),
+        image: this.add.image(center(at.col), center(at.line), this.texture(frame.stage.id === 'notary' ? frame.legend.tiles.find(tile => tile.char === char)?.sprite ?? 'unknown' : frame.stage.id === 'reading' ? char === 'c' ? 'chain' : char === '(' ? 'shackle-open-left' : 'shackle-open-right' : frame.stage.id === 'stacks' ? char === 'd' ? 'library-dust' : 'shelf-gap' : char === 'c' ? 'crates' : 'nets')).setDepth(3),
+        splash: this.add.image(center(at.col), center(at.line) + 5, this.texture(frame.stage.id === 'notary' ? /^w+$/.test(this.deletion.junk) ? 'wax-melt' : 'lock-shards' : frame.stage.id === 'reading' ? 'chain-clatter' : frame.stage.id === 'stacks' ? 'dust-puff' : 'splash')).setDepth(3).setAlpha(0),
       });
     }
   }
@@ -422,7 +424,7 @@ export class FieldScene extends Phaser.Scene {
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm' || sprite === 'fake') ? (this.reducedMotion ? 0 : this.idleFrame)
         : sprite === 'book' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 3
-        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor' || sprite === 'vault-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -597,7 +599,10 @@ export class FieldScene extends Phaser.Scene {
         for (const cell of this.junk) {
           const dust = this.frame.stage.id === 'stacks';
           cell.image.setPosition(center(cell.at.col), center(cell.at.line) + tip * (dust ? -4 : 8)).setAlpha(1 - tip);
-          cell.image.setAngle(dust ? 0 : tip * 35);
+          // Wax is what melts; keys and ribbon shatter. Read the deleted text, not a map row.
+          const wax = this.frame.stage.id === 'notary' && /^w+$/.test(this.deletion.junk);
+          cell.image.setAngle(dust || wax ? 0 : tip * (this.frame.stage.id === 'notary' && cell.at.col % 2 === 0 ? -35 : 35));
+          if (wax) cell.image.setScale(1 + tip * 0.3, 1 - tip * 0.8);
           if (dust) cell.splash.setScale(1 + tip * 0.5);
           cell.splash.setAlpha(Math.sin(tip * Math.PI));
         }
@@ -647,7 +652,9 @@ export class FieldScene extends Phaser.Scene {
           cell.glyph.setPosition(x, center(line));
           if (col < start + length) { cell.tile.setAlpha(progress); cell.glyph.setAlpha(progress); }
         }
-        this.entities.get(entity)?.setPosition(center(start - 1), center(line) + Math.sin(clock.value * Math.PI) * 3);
+        const actor = this.entities.get(entity);
+        actor?.setPosition(center(start - 1), center(line) + Math.sin(clock.value * Math.PI) * 3);
+        if (this.frame.stage.id === 'notary') actor?.setAngle(Math.sin(clock.value * Math.PI * 2) * 9);
       }
       if (this.archiveFold) {
         for (const cell of this.foldedRows) {

@@ -1,0 +1,133 @@
+{
+  "id": "notary",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "vault-wall",
+    "walkable": false,
+    "fixed": true,
+    "label": "wall"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "vault-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "vault-wall",
+      "walkable": false,
+      "fixed": true,
+      "label": "wall"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "notary-desk",
+      "walkable": true,
+      "fixed": true,
+      "label": "desk"
+    },
+    {
+      "char": "\"",
+      "kind": "barrier",
+      "sprite": "clause-quote",
+      "walkable": true,
+      "fixed": false,
+      "label": "clause"
+    },
+    {
+      "char": "s",
+      "kind": "object",
+      "sprite": "clause-text",
+      "walkable": true,
+      "fixed": false,
+      "label": "clause"
+    },
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "clause-gap",
+      "walkable": true,
+      "fixed": false,
+      "label": "gap"
+    },
+    {
+      "char": "[",
+      "kind": "barrier",
+      "sprite": "lock-left",
+      "walkable": true,
+      "fixed": false,
+      "label": "lock"
+    },
+    {
+      "char": "]",
+      "kind": "barrier",
+      "sprite": "lock-right",
+      "walkable": true,
+      "fixed": false,
+      "label": "lock"
+    },
+    {
+      "char": "{",
+      "kind": "barrier",
+      "sprite": "seal-left",
+      "walkable": true,
+      "fixed": false,
+      "label": "seal"
+    },
+    {
+      "char": "}",
+      "kind": "barrier",
+      "sprite": "seal-right",
+      "walkable": true,
+      "fixed": false,
+      "label": "seal"
+    },
+    {
+      "char": "<",
+      "kind": "barrier",
+      "sprite": "tag-open",
+      "walkable": true,
+      "fixed": false,
+      "label": "tag"
+    },
+    {
+      "char": ">",
+      "kind": "barrier",
+      "sprite": "tag-close",
+      "walkable": true,
+      "fixed": false,
+      "label": "tag"
+    },
+    {
+      "char": "/",
+      "kind": "barrier",
+      "sprite": "tag-slash",
+      "walkable": true,
+      "fixed": false,
+      "label": "tag"
+    },
+    {
+      "char": "k",
+      "kind": "object",
+      "sprite": "keys",
+      "walkable": true,
+      "fixed": false,
+      "label": "keys"
+    },
+    {
+      "char": "w",
+      "kind": "object",
+      "sprite": "wax",
+      "walkable": true,
+      "fixed": false,
+      "label": "wax"
+    }
+  ]
+}

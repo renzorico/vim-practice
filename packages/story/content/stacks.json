@@ -7,10 +7,11 @@
       "stages": [
         "stacks",
         "reading",
-        "archive"
+        "archive",
+        "notary"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "notary",
+      "statue": "Q"
     }
   ],
   "openingStage": "stacks",

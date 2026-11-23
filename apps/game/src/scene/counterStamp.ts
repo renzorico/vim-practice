@@ -8,8 +8,8 @@ export interface CounterStamp {
 /** Entity edits can accompany a player put: keep both motions on the shared clock. */
 export function counterStamp(before: WorldState | undefined, after: WorldState,
   events: readonly WorldEvent[]): CounterStamp | null {
-  if (!before || before.stage !== 'counter' || after.stage !== before.stage || after.turn !== before.turn + 1) return null;
-  const clerk = after.entities.find(entity => entity.id === 'clerk');
+  if (!before || !['counter', 'notary'].includes(before.stage) || after.stage !== before.stage || after.turn !== before.turn + 1) return null;
+  const clerk = after.entities.find(entity => entity.id === (after.stage === 'notary' ? 'notary' : 'clerk'));
   if (!clerk || clerk.def.behaviour.type !== 'put'
     || !events.some(event => event.type === 'rows-changed' && event.by === 'entity' && event.fromLine === clerk.at.line)) return null;
   return { entity: clerk.id, line: clerk.at.line, col: clerk.at.col + 1, length: clerk.def.behaviour.text.length };

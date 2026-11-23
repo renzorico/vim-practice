@@ -14,7 +14,7 @@ import { readProgress, saveProgress } from './progress.js';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
-const controller = createSession({ sim, storyEngine, content, stages: stages.filter(entry => entry.stage.id !== 'archive'), stage: reading, legend: readingLegend });
+const controller = createSession({ sim, storyEngine, content, stages: stages.filter(entry => !['archive', 'notary'].includes(entry.stage.id)), stage: reading, legend: readingLegend });
 function dismiss(session: Session): Session {
   let next = session;
   for (let count = 0; next.queue.length; count += 1) {
@@ -41,7 +41,7 @@ it('enters reading after stacks.end, keeping story and starting the quest', () =
   expect(queued(next)).toEqual(['reading.intro']);
   expect(next.story.clearedStages).toContain('stacks');
   expect(next.story.quests['library.reading']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(world => world.id === 'library')?.stages).toEqual(['stacks', 'reading', 'archive']);
+  expect(content.worlds.find(world => world.id === 'library')?.stages).toEqual(['stacks', 'reading', 'archive', 'notary']);
 });
 it('w lands on links; da( removes both shackles and leaves the cursor on floor', () => {
   const inside = keys(start(), 'w');
