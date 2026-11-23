@@ -1,0 +1,45 @@
+{
+  "id": "mouth",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "cave-rock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "cave-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "cave-rock",
+      "walkable": false,
+      "fixed": true,
+      "label": "rock"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "crystal-ledge",
+      "walkable": true,
+      "fixed": true,
+      "label": "ledge"
+    },
+    {
+      "char": "x",
+      "kind": "object",
+      "sprite": "crystal-dark",
+      "walkable": true,
+      "fixed": true,
+      "label": "crystal"
+    }
+  ]
+}
