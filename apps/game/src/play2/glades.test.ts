@@ -11,7 +11,7 @@ import { createSession, GLADES_COMMANDS, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, pendingKeyLabel, PlayScreen } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
-import { animationSteps, PLAYBACK_BUDGET_MS } from '../scene/animate.js';
+import { animationSteps } from '../scene/animate.js';
 import { tileGrid } from '../scene/tiles.js';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -99,13 +99,13 @@ it('learner route clears with three hearts, eight turns and the ending', () => {
 it('walking through the third thicket costs a heart', () => {
   expect(keys(start(), '}}j2l').world.hearts).toBeLessThan(3);
 });
-it('long jumps reach both ends within the animation budget', () => {
+it('long jumps reach both ends within the 360 ms jump cap', () => {
   const floor = keys(start(), 'G');
   expect(floor.world.engine.cursor).toEqual({ line: 17, col: 0 });
   const top = keys(floor, 'gg');
   expect(top.world.engine.cursor).toEqual({ line: 0, col: 0 });
   for (const session of [floor, top]) {
-    expect(animationSteps(session.lastEvents).find(step => step.type === 'jump')?.durationMs).toBeLessThanOrEqual(PLAYBACK_BUDGET_MS);
+    expect(animationSteps(session.lastEvents).find(step => step.type === 'jump')?.durationMs).toBe(360);
   }
 });
 it('HUD teaches paragraphs immediately and twins after their flags; g is pending', () => {
