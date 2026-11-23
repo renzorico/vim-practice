@@ -22,7 +22,7 @@ interface ScriptPanelProps {
 
 export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPanelProps) {
   const target = script.goals.find(goal => goal.type === 'transform');
-  return <section className="script-panel" aria-label={script.title}>
+  return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
       <h2>{script.title}</h2>
       <p className="script-goal">{script.goalText}</p>
@@ -36,7 +36,7 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
         </output>
       </div>
       {target && <aside className="script-target" aria-label="Target text">
-        <h3>{script.id === 'manifest.book' ? 'The manifest should read:' : 'The ledger should read:'}</h3>
+        <h3>{script.id === 'contract.book' ? 'The contract should read:' : script.id === 'manifest.book' ? 'The manifest should read:' : 'The ledger should read:'}</h3>
         <ol>{target.targetLines.map((line, index) => {
           const matches = engine.lines[index] === line;
           return <li key={index} data-matched={matches}>

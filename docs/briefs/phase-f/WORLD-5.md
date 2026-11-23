@@ -14,7 +14,7 @@ Twist seed: a clause in the founding contract is in the Scribe's hand: "In case 
 | 5-2 The Reading Room | `di(`, `da(`, `i[`/`a[`, `i{`/`a{` | Chains are bracket pairs `(...)` across the floor. `%` (World 3) finds the partner; `da(` removes the chain and its locks in one go from anywhere inside. Nested chains: `d2a(`. | F-1 |
 | 5-3 The Archive | `dap`, `yap` + `p`, `ip` | Paragraphs are blocks of rows between blank rows (World 3's `{ }`). A wrong block sits in the middle of the archive: `dap` lifts it whole, `p` puts it in its place (rows, so World 4 rule 5 applies: rows that will be put start walkable). | F-1 |
 | 5-4 The Notary (castle) | `a[`, `a{`, `it`; World 5 under pressure | The Notary signs a clause every 2 turns (World 4's `put`); at seven the vault is lost. Three locks below: `da[`, `da{`, `dit` from inside. Par 11; without these objects 15 (fuse at 14). Fighting him was tried and dropped: `da"` loses to his signing rate, and `dt.` would wipe all clauses with World 4 tools. Statue Q. | F-4 |
-| 5-5 The Founding Contract (text) | `ci"`, `ci(`, `cit`, `cap`; all of World 5 | The contract is text in quotes, parentheses and tags. `ci"` rewrites a clause without touching its quotes; `cit` the content of a tag; `dap` strikes a paragraph. Names the Minotaur. | F-1 |
+| 5-5 The Founding Contract (text) | `ci"`, `ci(`, `ci[`, `cit`, `cip`, `dap`, `.` | The contract inside `<contract>`: `ci"` + `.` on three seals, `ci(` on nested brackets, `cit` only from the right tag (the trap), `dap` strikes a clause, `cip` names the Minotaur. 167 keys vs 189 without text objects. | F-5 |
 
 ## Rules (carried over, plus what World 4 showed)
 1. Progression on stage-cleared or flag reactions; clear follows an entity or flag.

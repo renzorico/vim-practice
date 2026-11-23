@@ -51,7 +51,8 @@ it('opens the three locks in 11 turns with 3 hearts and 5 clauses', () => {
   expect(session.story.statues).not.toContain('Q');
   const end = dismiss(session);
   expect(end.story.statues).toContain('Q');
-  expect(markup(end)).toContain('To be continued.');
+  expect(end.world.stage).toBe('contract');
+  expect(end.world.script?.id).toBe('contract.book');
 });
 
 it('lands inside locks; deletes around brackets, inside tags, but leaves [] with di[', () => {
@@ -151,7 +152,7 @@ it('archive ending enters Notary with story and quest; Continue restores the cas
   expect(resumed.world.engine.lines).toEqual(notary.map);
   expect(dismiss(route(dismiss(resumed), notary.solution)).story.quests['library.notary']?.done).toBe(true);
   expect(content.worlds.find(world => world.id === 'library')).toMatchObject({
-    stages: ['stacks', 'reading', 'archive', 'notary'], castle: 'notary', statue: 'Q',
+    stages: ['stacks', 'reading', 'archive', 'notary', 'contract'], castle: 'notary', statue: 'Q',
   });
 });
 

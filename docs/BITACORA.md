@@ -605,7 +605,20 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · F-6: The Founding Contract (stage 5-5), World 5 complete
+**Who:** Opus (design, engine proof, brief, review fix, browser check), Codex (build), Sonnet (review).
+
+**What:** World 5's text stage: the contract every chain came from, all inside `<contract>`. `ci"` + `.` on three seals, `ci(` on nested brackets (`ct)` stops at the inner one), `ci[`, `dap` strikes a clause, `cit` from the `<name>` tag only (from outside it rewrites the whole body: the trap), `cip` names the Minotaur for World 6. Par 163 (Codex found `3G$` for the second party, 4 under the brief); 189 without text objects. "End of World 5."
+
+**What the checks caught:** In the engine, before the brief: `.` repeats the last change, so the seals had to follow the first `ci"` directly (after `cit`, `j.` re-ran `cit` and rewrote the contract); `gg` keeps the column, so `0` before `f`; my key tokenizer read `<citTilde<Esc>` as one key (fixed: only `<Esc>` is special). Sonnet: the trap test asserted the engine's output for `cit` on a multi-line tag, which differs from Neovim (Neovim joins the tags): the test now asserts only the lesson, and the gap is parked. Browser: route solves, ending plays, no console errors; long lines clip at the panel edge (parked).
+
+**Lesson:** A test must never pin an engine result that Neovim contradicts: assert the lesson and park the gap.
+
+---
+
 ## Parking lot
+- Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
+- Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.
 - Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).
 - Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
 Ideas that are out of v1 scope, kept so they are not lost:
