@@ -266,13 +266,13 @@ describe('saves, triggers, scripts and ending', () => {
     expect(result.state.checkpoint.turn).toBe(0);
     expect(result.events.some((event) => event.type === 'checkpoint-saved')).toBe(false);
   });
-  it('restore keeps flags, solved scripts and fired triggers', () => {
+  it('restore brings back the flags, solved scripts and fired triggers of the checkpoint (S-1)', () => {
     const initial = sim.init(FIXTURE_STAGE, legend, options);
     const state = { ...initial, flags: { story: true }, solvedScripts: { spell: ['done'] }, firedTriggers: ['once'], hearts: 0 };
     const restored = sim.restore(state).state;
-    expect(restored.flags).toEqual(state.flags);
-    expect(restored.solvedScripts).toEqual(state.solvedScripts);
-    expect(restored.firedTriggers).toEqual(state.firedTriggers);
+    expect(restored.flags).toEqual(initial.flags);
+    expect(restored.solvedScripts).toEqual({});
+    expect(restored.firedTriggers).toEqual([]);
     expect(restored.hearts).toBe(3);
   });
   it('flag-only batches do not save', () => {
@@ -325,11 +325,12 @@ describe('saves, triggers, scripts and ending', () => {
     expect(result.state.script).toBeNull();
     expect(result.state.engine.quitRequested).toBe(true);
   });
-  it('fires an enter trigger once and retains it on restore', () => {
+  it('fires an enter trigger once; restoring to a checkpoint before it lets it fire again (S-1)', () => {
     const result = run('7l');
     expect(result.state.firedTriggers).toContain('at-save-stone');
     const restored = sim.restore(result.state).state;
-    expect(keysFrom(restored, '7l').events.filter((event) => event.type === 'trigger-fired')).toHaveLength(0);
+    expect(restored.firedTriggers).not.toContain('at-save-stone');
+    expect(keysFrom(restored, '7l').events.filter((event) => event.type === 'trigger-fired')).toHaveLength(1);
   });
   it('stage-cleared fires once; apply still works afterwards', () => {
     const value = stage({ clear: [{ type: 'flag', flag: 'done' }] });

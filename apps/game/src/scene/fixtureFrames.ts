@@ -10,7 +10,7 @@ export const FIXTURE_INITIAL_STATE: WorldState = {
   stage: FIXTURE_STAGE.id, engine: initialEngine, script: null, pending: null,
   entities, hearts: FIXTURE_STAGE.hearts, turn: 0, status: 'playing', flags: {},
   solvedScripts: {}, firedTriggers: [],
-  checkpoint: { engine: initialEngine, entities, hearts: FIXTURE_STAGE.hearts, turn: 0 },
+  checkpoint: { engine: initialEngine, entities, hearts: FIXTURE_STAGE.hearts, turn: 0, flags: {}, solvedScripts: {}, firedTriggers: [] },
 };
 
 /** Authored animation samples, not a simulation or a second implementation of Vim. */

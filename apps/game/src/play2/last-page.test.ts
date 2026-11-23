@@ -125,15 +125,23 @@ it('keeps the supplied map and legend free of lint errors', () => {
   expect(lintStage(lastPage, lastPageLegend)).toEqual([]);
 });
 
-it(':e! after the page is whole restarts the finale: torn page, the Unwriter back, doors closed', () => {
-  // The finale's state lives in story flags (last.whole), which a world checkpoint restore keeps:
-  // last-page is in RESTART_ON_RETRY (Sonnet, H-1 review).
+it(':e! after the page is whole keeps it whole: the repair was saved when the Unwriter was removed (S-1)', () => {
+  // The whole-page batch removes the Unwriter, which stores a checkpoint; story and world restore together.
   const whole = dismiss(keys(start(), 'fOxpujfhudawjuddpu'));
   expect(whole.story.flags['last.whole']).toBe(true);
   expect(whole.world.entities.some(entity => entity.id === 'unwriter')).toBe(false);
-  const restarted = dismiss(keys(whole, ':e!<CR>'));
-  expect(restarted.world.stage).toBe('last-page');
-  expect(restarted.story.flags['last.whole']).not.toBe(true);
-  expect(restarted.world.entities.some(entity => entity.id === 'unwriter')).toBe(true);
-  expect(restarted.world.engine.lines[1]).toBe('E325: ATTENTOIN');
+  const restored = dismiss(keys(whole, ':e!<CR>'));
+  expect(restored.world.stage).toBe('last-page');
+  expect(restored.story.flags['last.whole']).toBe(true);
+  expect(restored.world.flags['last.whole']).toBe(true);
+  expect(restored.world.entities.some(entity => entity.id === 'unwriter')).toBe(false);
+  expect(restored.world.engine.lines[1]).toBe('E325: ATTENTION');
+});
+
+it(':e! before the page is whole restores a torn, unrepaired page and closed doors (S-1)', () => {
+  const partial = dismiss(keys(start(), 'fOxpu'));
+  const restored = dismiss(keys(partial, ':e!<CR>'));
+  expect(restored.world.engine.lines[1]).toBe('E325: ATTENTOIN');
+  expect(restored.story.flags['last.whole']).not.toBe(true);
+  expect(restored.world.entities.some(entity => entity.id === 'unwriter')).toBe(true);
 });

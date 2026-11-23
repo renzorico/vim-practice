@@ -61,7 +61,8 @@ export function finish(state: WorldState, stage: Stage, events: WorldEvent[]): W
 export function checkpoint(state: WorldState, events: WorldEvent[]): WorldState {
   if (state.status === 'dead') return state;
   events.push({ type: 'checkpoint-saved' });
-  return { ...state, checkpoint: { engine: state.engine, entities: state.entities, hearts: state.hearts, turn: state.turn } };
+  return { ...state, checkpoint: { engine: state.engine, entities: state.entities, hearts: state.hearts, turn: state.turn,
+    flags: state.flags, solvedScripts: state.solvedScripts, firedTriggers: state.firedTriggers } };
 }
 
 export function applyBatch(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend,

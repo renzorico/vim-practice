@@ -18,7 +18,7 @@ export function createWorldSim(engine: Engine): WorldSim {
         .map((def) => ({ id: def.id, def, at: def.at, pathIndex: 0 }));
       const state: WorldState = { stage: stage.id, engine: field, entities, script: null, pending: null, hearts: stage.hearts,
         turn: 0, status: 'playing', flags: { ...options.flags }, solvedScripts: {}, firedTriggers: [],
-        checkpoint: { engine: field, entities, hearts: stage.hearts, turn: 0 } };
+        checkpoint: { engine: field, entities, hearts: stage.hearts, turn: 0, flags: { ...options.flags }, solvedScripts: {}, firedTriggers: [] } };
       return stage.autoScript === undefined ? state : openScript(state, stage.autoScript, stage, engine);
     },
     step(state, key, stage, legend, options) {
@@ -83,7 +83,6 @@ export function createWorldSim(engine: Engine): WorldSim {
         to: next.engine.cursor, style: commands.some(isWalk) ? 'walk' : 'jump' });
       next = actEntities({ ...next, turn: state.turn + 1 }, legend, events);
       next = finish(next, stage, events);
-      if (next.status === 'playing' && commands.some((command) => SAVE_COMMANDS.includes(command.id))) next = checkpoint(next, events);
       if (next.status !== 'dead') {
         for (const trigger of stage.triggers) {
           const anchor = trigger.on === 'text' ? next.entities.find(entity => entity.id === trigger.anchor) : undefined;
@@ -98,6 +97,9 @@ export function createWorldSim(engine: Engine): WorldSim {
           }
         }
       }
+      // The save is the very end of the turn (rule 5): after the triggers, so a checkpoint never
+      // misses a trigger that fired on the same turn as `:w` (S-1 review).
+      if (next.status === 'playing' && commands.some((command) => SAVE_COMMANDS.includes(command.id))) next = checkpoint(next, events);
       events.push({ type: 'turn-ended', turn: next.turn });
       return { state: next, events };
     },

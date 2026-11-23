@@ -93,7 +93,8 @@ it.each(['11l9x', '12x'])('restores the cut after overcounting %s without losing
   expect(restored.world.hearts).toBe(3);
   expect(restored.world.turn).toBe(0);
   expect(restored.world.pending).toBeNull();
-  expect(restored.story).toEqual(command.story);
+  // S-1: :e! restores the story with the world (flags set after the last save revert).
+  expect(restored.story).toEqual({ ...command.storyCheckpoint, learnedSkills: command.story.learnedSkills });
   expect(restored.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
 });
 it('teaches retry as the last line of Ash’s first dialogue', () => {

@@ -348,6 +348,10 @@ export interface Checkpoint {
   readonly entities: readonly Entity[];
   readonly hearts: number;
   readonly turn: number;
+  /** Progress is part of the save too: dying sends you back to your last `:w` (MASTERPLAN 3.4). */
+  readonly flags: Readonly<Record<FlagId, boolean>>;
+  readonly solvedScripts: Readonly<Record<ScriptId, readonly string[]>>;
+  readonly firedTriggers: readonly TriggerId[];
 }
 
 export interface WorldState {
@@ -514,7 +518,9 @@ export interface WorldSim {
   apply(state: WorldState, effects: readonly WorldEffect[], stage: Stage, legend: Legend): WorldStepResult;
   /**
    * Back to the last checkpoint, with status 'playing'. Works from 'dead' and from 'playing' (the
-   * player asks to retry); does nothing once 'cleared'. Flags, solved scripts and fired triggers are kept.
+   * player asks to retry); does nothing once 'cleared'. Everything the checkpoint holds comes back:
+   * buffer, entities, hearts, turn, flags, solved scripts and fired triggers (S-1: progress after
+   * the last save is lost, as MASTERPLAN 3.4 says; the app restores the story's state with it).
    */
   restore(state: WorldState): WorldStepResult;
 }
