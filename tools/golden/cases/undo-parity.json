@@ -1,0 +1,322 @@
+[
+  {
+    "name": "empty quotes then undo keeps the x",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjlldi\"u",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty tag then undo keeps the x",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjllditu",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty parens then undo keeps the x",
+    "lines": [
+      "ab",
+      "f()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjlldi(u",
+    "expect": {
+      "lines": [
+        "b",
+        "f()"
+      ],
+      "cursor": [
+        1,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty brackets then undo keeps the x",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjldi[u",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dh at column 0 then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xdhu",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dh from column 3 then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "xdhu",
+    "expect": {
+      "lines": [
+        "abcdef"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "db from column 3 then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "xdbu",
+    "expect": {
+      "lines": [
+        "abcdef"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "db on an empty line then undo",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "xjdbu",
+    "expect": {
+      "lines": [
+        "abc ef",
+        ""
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "d0 from mid line then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "d0u",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cit over lines then undo cursor",
+    "lines": [
+      "<contract>",
+      "one",
+      "two",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      1
+    ],
+    "keys": "citZ<Esc>u",
+    "expect": {
+      "lines": [
+        "<contract>",
+        "one",
+        "two",
+        "</contract>"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "cat over lines then undo cursor",
+    "lines": [
+      "x",
+      "<b>",
+      "one",
+      "</b>",
+      "y"
+    ],
+    "cursor": [
+      2,
+      1
+    ],
+    "keys": "catZ<Esc>u",
+    "expect": {
+      "lines": [
+        "x",
+        "<b>",
+        "one",
+        "</b>",
+        "y"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit then dot then undo",
+    "lines": [
+      "<a>one</a> <a>two</a>"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ditw.u",
+    "expect": {
+      "lines": [
+        "<a></a> <a>two</a>"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dh at column 0 then dot",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xdh.",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "db at line start then undo",
+    "lines": [
+      "abc",
+      "def"
+    ],
+    "cursor": [
+      1,
+      0
+    ],
+    "keys": "xdbu",
+    "expect": {
+      "lines": [
+        "abc",
+        "ef"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]
