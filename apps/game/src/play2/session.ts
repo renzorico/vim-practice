@@ -307,5 +307,8 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       : settle(updated, storyEngine.onEvents(session.story, storyEvents, content));
     return transition(presentEnd(next));
   }
-  return { init, resume, reduce };
+  function startAt(stageId: string, story: StoryState): Session {
+    return enter(entry(stageId), story);
+  }
+  return { init, resume, startAt, reduce };
 }

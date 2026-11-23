@@ -215,14 +215,14 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(savedProgress().story.ending).toBeNull();
   dismiss();
   expect(savedProgress().story.ending).toBe('recover');
-  key('Enter'); // title
-  key('j'); key('Enter');
+  key('Enter'); // title; New game is selected after recovery
+  key('Enter');
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'margin' });
 });
 function dismiss(): void {
-  for (let lines = 0; (session().queue.length || session().clearCard) && (session().clearCard || session().queue[0]?.type !== 'ending') && lines < 100; lines += 1) key('Enter');
+  for (let lines = 0; !stageMenuProps(appTree) && (session().queue.length || session().clearCard) && (session().clearCard || session().queue[0]?.type !== 'ending') && lines < 100; lines += 1) key('Enter');
 }
 function play(input: readonly string[]): void {
   for (const value of input) {
@@ -240,10 +240,11 @@ function enterLowlands(): void {
 }
 it('saves the entry story on New game and the actual Margin-to-Lowlands change only', () => {
   flush(); key('Enter');
-  expect(savedProgress()).toEqual({ stage: 'margin', story: session().story });
+  expect(savedProgress()).toEqual({ stage: 'margin', story: session().story, entries: { margin: session().story } });
   play(stage.solution); dismiss();
   const entryStory = session().story;
-  expect(savedProgress()).toEqual({ stage: 'lowlands', story: entryStory, best: session().stageEntry.best });
+  expect(savedProgress()).toMatchObject({ stage: 'lowlands', story: entryStory, best: session().stageEntry.best });
+  expect(Object.keys(savedProgress().entries ?? {})).toEqual(['margin', 'lowlands']);
   play([...'9l']); dismiss();
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(savedProgress().story.flags['lowlands.knows-w']).toBeUndefined();
@@ -337,14 +338,16 @@ it('shows saved total stars on the title after a reload', () => {
 
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
-  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'lowlands', story: { ...createStoryEngine().init(content),
-    flags: { 'lowlands.knows-w': true } }, best }));
-  flush(); key('j'); key('Enter');
+  values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
+  flush(); key('j'); key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
   expect(savedProgress().best).toEqual(best);
-  expect(savedProgress().stage).toBe('margin');
+  expect(savedProgress()).toEqual({ stage: 'margin', story: session().stageEntry.story, best,
+    entries: { margin: session().stageEntry.story } });
+  reload(); openStageMenu();
+  key('j'); expect(stageMenuProps(appTree)?.selected).toBe('margin');
 });
 
 function soundProps(node: ReactNode): { enabled: boolean; onToggle: () => void; compact: boolean } | undefined {
@@ -410,4 +413,104 @@ it('passes the current reduced-motion preference into movement cue timing', () =
   key('9'); key('l');
   const movement = play.mock.calls.flatMap(call => call[0]).find(cue => cue.kind === 'step');
   expect(movement?.pulsesMs).toEqual([0, 0, 0, 0, 0]);
+});
+
+function appHtml(): string {
+  return renderToStaticMarkup(appTree);
+}
+function stageMenuProps(node: ReactNode): { selected: string | null; onSelect: (id: string) => void } | undefined {
+  if (!isValidElement<{ selected?: string | null; onSelect?: (id: string) => void }>(node)) return;
+  if (node.props.onSelect) return { selected: node.props.selected ?? null, onSelect: node.props.onSelect };
+}
+function reachedSave(): Progress {
+  const story = createStoryEngine().init(content);
+  return { stage: 'quarry-road', story: { ...story, learnedSkills: ['w', 'e'] },
+    entries: { margin: story, lowlands: story, 'quarry-road': story },
+    best: { lowlands: { turns: 999, stars: 1 } } };
+}
+function openStageMenu(): void { key('j'); key('Enter'); }
+it('Stages skips locked rows in both directions and Escape or q returns to title', () => {
+  values.set(PROGRESS_KEY, JSON.stringify(reachedSave()));
+  flush(); openStageMenu();
+  expect(stageMenuProps(appTree)?.selected).toBe('margin');
+  key('j'); expect(stageMenuProps(appTree)?.selected).toBe('lowlands');
+  key('j'); expect(stageMenuProps(appTree)?.selected).toBe('quarry-road');
+  key('j'); expect(stageMenuProps(appTree)?.selected).toBe('quarry-road');
+  key('k'); expect(stageMenuProps(appTree)?.selected).toBe('lowlands');
+  key('Escape'); expect(appHtml()).toContain('Start game');
+  key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
+  key('q'); expect(appHtml()).toContain('Start game');
+});
+it('an earlier stage starts from its entry, improves best and returns to Stages without moving Continue', () => {
+  const saved = reachedSave();
+  values.set(PROGRESS_KEY, JSON.stringify(saved));
+  flush(); openStageMenu(); key('j'); key('Enter'); dismiss();
+  expect(session().world.stage).toBe('lowlands');
+  expect(session().story.learnedSkills).toEqual(saved.story.learnedSkills);
+  expect(session().world.engine.cursor).toEqual(lowlands.start);
+  play(lowlands.solution); dismiss();
+  expect(stageMenuProps(appTree)?.selected).toBe('lowlands');
+  expect(savedProgress().stage).toBe('quarry-road');
+  expect(savedProgress().best?.lowlands?.turns).toBeLessThan(999);
+  expect(savedProgress().entries).toEqual(saved.entries);
+  key('Escape'); key('k'); key('Enter');
+  expect(session().world.stage).toBe('quarry-road');
+});
+it('mouse selection of the furthest stage continues the story after its clear card', () => {
+  values.set(PROGRESS_KEY, JSON.stringify(reachedSave()));
+  flush(); openStageMenu();
+  stageMenuProps(appTree)?.onSelect('quarry-road'); flush(); dismiss();
+  expect(session().world.stage).toBe('quarry-road');
+  play(quarry.solution); dismiss();
+  expect(session().world.stage).toBe('cut');
+  expect(savedProgress().stage).toBe('cut');
+  expect(savedProgress().entries?.cut).toBeDefined();
+});
+it('an old save can replay the Margin without changing Continue, then acquires its current entry', () => {
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'lowlands', story: createStoryEngine().init(content) }));
+  flush(); openStageMenu();
+  expect(stageMenuProps(appTree)?.selected).toBe('margin');
+  key('Enter');
+  expect(session().world.stage).toBe('margin');
+  expect(session().story).toEqual(session().stageEntry.story);
+  play(stage.solution); dismiss();
+  expect(stageMenuProps(appTree)?.selected).toBe('margin');
+  expect(savedProgress().stage).toBe('lowlands');
+  expect(savedProgress().entries).toBeUndefined();
+  key('Escape'); key('k'); key('Enter');
+  expect(Object.keys(savedProgress().entries ?? {})).toEqual(['lowlands']);
+});
+
+it('the furthest stage uses the real saved story just like Continue, rather than its canonical entry', () => {
+  const original = reachedSave();
+  const saved = { ...original, story: { ...original.story, flags: { 'quarry-road.intro-seen': true, 'saved-progress': true } } };
+  values.set(PROGRESS_KEY, JSON.stringify(saved));
+  flush(); key('Enter');
+  const continuedStory = session().story;
+  // Stage entry can settle story reactions; compare with the actual Continue path.
+  values.set(PROGRESS_KEY, JSON.stringify(saved));
+  reload(); openStageMenu();
+  stageMenuProps(appTree)?.onSelect('quarry-road'); flush();
+  expect(session().story).toEqual(continuedStory);
+  expect(savedProgress().story).toEqual(continuedStory);
+  expect(savedProgress().entries).toEqual(saved.entries);
+});
+it('replaying Last Page from a finished recover save preserves its ending through returning and reloading', () => {
+  const story = createStoryEngine().init(content);
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'last-page', story, entries: { 'last-page': story } }));
+  flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
+  expect(savedProgress().story.ending).toBe('recover');
+  const finished = values.get(PROGRESS_KEY);
+  key('Enter'); key('k'); key('Enter');
+  stageMenuProps(appTree)?.onSelect('last-page'); flush();
+  expect(session().world.stage).toBe('last-page');
+  expect(session().story.ending).toBeNull();
+  key('Escape'); reload();
+  expect(savedProgress().story.ending).toBe('recover');
+  expect(values.get(PROGRESS_KEY)).toBe(finished);
+  // Completing the replay also leaves the finished save untouched.
+  key('k'); key('Enter');
+  stageMenuProps(appTree)?.onSelect('last-page'); flush();
+  dismiss(); play(lastPage.solution); dismiss();
+  expect(values.get(PROGRESS_KEY)).toBe(finished);
 });
