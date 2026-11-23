@@ -801,6 +801,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-10: Stage select
+**Who:** Opus (brief, browser check), Codex (build), Sonnet (review).
+
+**What:** The title has a Stages menu: every stage grouped by world, with its stars (or "-" when unscored or not yet played), selectable once reached (`j`/`k` skip locked rows, Enter plays, Esc or `q` return). The save stores each stage's entry story the first time it is reached (`entries`, optional, write-once, filtered to known stage ids); playing an earlier stage starts from that entry with the current skills and best, and its clear card returns to Stages. Continue's furthest progress is never rewritten by a replay; the furthest stage plays exactly like Continue, and a finished game stays finished. The Margin is always playable. New game keeps `best` and starts `entries` over.
+
+**What the checks caught:** Sonnet found New game carrying the old run's entries, and picking the furthest stage after the recover ending replacing the finished story (Continue would then resume the Last Page). Fixed with tests. The browser showed the Margin locked for saves made before entries existed. `glades-finalize` peak memory unchanged (4.42 GB): the Session gained only a `startAt` function.
+
+**Lesson:** Every new way into a stage is a new way to overwrite the save: test each entry path against a finished game.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

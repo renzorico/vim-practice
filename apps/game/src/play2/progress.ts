@@ -6,7 +6,8 @@ import type { StoryState } from '@escape/story';
 export const PROGRESS_KEY = 'unsaved.progress.v1';
 export interface BestResult { readonly turns: number; readonly stars: 1 | 2 | 3 }
 export type StageBests = Readonly<Record<string, BestResult>>;
-export interface Progress { readonly best?: StageBests; readonly stage: string; readonly story: StoryState; readonly previous?: Progress }
+export type StageEntries = Readonly<Record<string, StoryState>>;
+export interface Progress { readonly entries?: StageEntries; readonly best?: StageBests; readonly stage: string; readonly story: StoryState; readonly previous?: Progress }
 export interface ProgressStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -21,7 +22,7 @@ const storySchema = z.object({
 }).strict();
 const bestSchema = z.record(z.object({ turns: z.number().int().nonnegative(), stars: z.union([z.literal(1), z.literal(2), z.literal(3)]) }).strict());
 const entrySchema = z.object({ stage: z.string(), story: storySchema, best: bestSchema.optional() }).strict();
-const progressSchema = entrySchema.extend({ previous: entrySchema.optional() }).strict();
+const progressSchema = entrySchema.extend({ previous: entrySchema.optional(), entries: z.record(storySchema).optional() }).strict();
 
 // Resolve storage inside the guard: even reading window.localStorage can throw.
 export function readProgress(storage: () => ProgressStorage, stageIds: readonly string[]): Progress | null {
@@ -33,6 +34,7 @@ export function readProgress(storage: () => ProgressStorage, stageIds: readonly 
       || (parsed.data.previous && !stageIds.includes(parsed.data.previous.stage))) return null;
     return { stage: parsed.data.stage, story: parsed.data.story,
       ...(parsed.data.best ? { best: parsed.data.best } : {}),
+      ...(parsed.data.entries ? { entries: Object.fromEntries(Object.entries(parsed.data.entries).filter(([id]) => stageIds.includes(id))) } : {}),
       ...(parsed.data.previous ? { previous: { stage: parsed.data.previous.stage, story: parsed.data.previous.story,
         ...(parsed.data.previous.best ? { best: parsed.data.previous.best } : {}) } } : {}) };
   } catch { return null; } // Storage is optional; blocked or corrupt saves mean a fresh game.
@@ -52,7 +54,8 @@ export function endingProgress(progress: Progress, story: StoryState): Progress 
   if (story.ending === 'delete') return { ...(progress.previous ?? { stage: 'study', story: withoutFinale({
     ...progress.story, ending: null,
     flags: { ...progress.story.flags, 'study.intro-seen': false },
-  }) }), ...(progress.best ? { best: progress.best } : {}) };
+  }) }), ...(progress.best ? { best: progress.best } : {}),
+    ...(progress.entries ? { entries: progress.entries } : {}) };
   return progress;
 }
 
@@ -77,4 +80,19 @@ export function recordBest(best: StageBests = {}, stage: string, turns: number, 
   const previous = best[stage];
   if (previous && previous.turns <= turns) return best;
   return { ...best, [stage]: { turns, stars: starsFor(turns, par) } };
+}
+
+/** Canonical starts belong to the save, never the solver's Session graph. */
+export function storeStageEntry(progress: Progress, stageId: string, story: StoryState): Progress {
+  if (progress.entries?.[stageId]) return progress;
+  return { ...progress, entries: { ...progress.entries, [stageId]: story } };
+}
+
+/** Replays can improve records without moving Continue away from the story. */
+export function updateProgress(saved: Progress | null, entry: Progress, replay: boolean): Progress {
+  if (replay && saved) {
+    return !entry.best || saved.best === entry.best ? saved : { ...saved, best: entry.best };
+  }
+  if (saved?.stage === entry.stage && saved.story === entry.story && saved.best === entry.best) return storeStageEntry(saved, entry.stage, entry.story);
+  return storeStageEntry({ ...entry, ...(saved?.entries ? { entries: saved.entries } : {}) }, entry.stage, entry.story);
 }

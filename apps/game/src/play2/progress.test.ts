@@ -4,7 +4,7 @@ import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
 import { createSession } from './session.js';
 import { content, stage, legend, stages } from './content.js';
-import { recordBest, clearProgress, PROGRESS_KEY, readProgress, saveProgress, type ProgressStorage } from './progress.js';
+import { storeStageEntry, updateProgress, recordBest, clearProgress, PROGRESS_KEY, readProgress, saveProgress, type Progress, type ProgressStorage } from './progress.js';
 
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), stage, legend, stages, content });
 function memory() {
@@ -51,4 +51,44 @@ it('does not record bests for hubs or text stages, preserving existing records',
     expect(recordBest(best, stage.id, 1, stage.parTurns)).toBe(best);
   }
   expect(recordBest(best, 'lowlands', 2, 6).lowlands).toEqual({ turns: 2, stars: 3 });
+});
+
+it('stores three canonical entries once and loads them through the strict schema', () => {
+  const story = controller.init().story;
+  let progress: Progress = { stage: 'lighthouse', story };
+  for (const id of ['margin', 'lowlands', 'lighthouse']) progress = storeStageEntry(progress, id, story);
+  const original = progress;
+  progress = storeStageEntry(progress, 'lowlands', { ...story, flags: { changed: true } });
+  expect(progress).toBe(original);
+  expect(Object.keys(progress.entries ?? {})).toEqual(['margin', 'lowlands', 'lighthouse']);
+  const store = memory();
+  saveProgress(() => store, progress);
+  expect(readProgress(() => store, stages.map(item => item.stage.id))).toEqual(progress);
+});
+it('old saves have no invented entries and malformed entries are rejected', () => {
+  const store = memory();
+  const progress = { stage: 'margin', story: controller.init().story };
+  saveProgress(() => store, progress);
+  expect(readProgress(() => store, ['margin'])?.entries).toBeUndefined();
+  for (const entries of [{ margin: { ...progress.story, extra: true } }, { margin: null }, []]) {
+    store.setItem(PROGRESS_KEY, JSON.stringify({ ...progress, entries }));
+    expect(readProgress(() => store, ['margin'])).toBeNull();
+  }
+});
+it('replay bests improve without replacing Continue or its entries', () => {
+  const story = controller.init().story;
+  const saved = storeStageEntry({ stage: 'lighthouse', story }, 'lowlands', story);
+  const best = recordBest({}, 'lowlands', 1, 1);
+  const improved = updateProgress(saved, { stage: 'lowlands', story, best }, true);
+  expect(improved).toEqual({ ...saved, best });
+  expect(improved.entries).toBe(saved.entries);
+  expect(updateProgress(improved, { stage: 'lowlands', story, best }, true)).toBe(improved);
+});
+
+it('drops unknown stage entry keys while keeping known entries and the rest of the save', () => {
+  const store = memory();
+  const story = controller.init().story;
+  const progress = { stage: 'lowlands', story, entries: { margin: story, lowlands: story, unknown: story } };
+  saveProgress(() => store, progress);
+  expect(readProgress(() => store, ['margin', 'lowlands'])).toEqual({ ...progress, entries: { margin: story, lowlands: story } });
 });
