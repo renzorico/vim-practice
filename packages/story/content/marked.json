@@ -1,0 +1,260 @@
+{
+  "worlds": [],
+  "openingStage": "marked",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "caves.marked",
+      "world": "echo-caves",
+      "title": "The marked way",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "fetch",
+          "objective": "Bring the Echo a crystal and lamp oil.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "marked.both",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "echo",
+          "objective": "Give them to the Echo.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "marked"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "marked.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "A fork in the tunnel. Rock all round,\nand pockets sealed inside it."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...crystal. ...oil. ...and back."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Here! ...here."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: ma marks this spot.\n`a brings you back to it, from anywhere."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "marked.got-crystal",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "A crystal, warm in your hand."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "marked.got-oil",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Lamp oil. Enough for a long dark."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "marked.echo-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...crystal. ...oil. Mark, then go."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "marked.echo-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "Light, and oil to keep it. Now you can\nface the labyrinth."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "It hunts by walking. You don't have to."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "marked.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "marked.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Below, the labyrinth. Something heavy\nis walking its corridors."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "marked.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "gallery"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "caves.marked"
+        }
+      ]
+    },
+    {
+      "id": "marked.crystal",
+      "when": {
+        "type": "trigger",
+        "trigger": "marked.crystal"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "marked.got-crystal"
+        },
+        {
+          "type": "set-flag",
+          "flag": "marked.crystal",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "marked.oil",
+      "when": {
+        "type": "trigger",
+        "trigger": "marked.oil"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "marked.got-oil"
+        },
+        {
+          "type": "set-flag",
+          "flag": "marked.oil",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "marked.echo-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "marked.talk-echo"
+      },
+      "unless": "marked.both",
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "marked.echo-wait"
+        }
+      ]
+    },
+    {
+      "id": "marked.echo-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "marked.talk-echo"
+      },
+      "onlyIf": "marked.both",
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "marked.echo-through"
+        }
+      ]
+    },
+    {
+      "id": "marked.both-crystal",
+      "when": {
+        "type": "flag",
+        "flag": "marked.crystal",
+        "value": true
+      },
+      "onlyIf": "marked.oil",
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "marked.both",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "marked.both-oil",
+      "when": {
+        "type": "flag",
+        "flag": "marked.oil",
+        "value": true
+      },
+      "onlyIf": "marked.crystal",
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "marked.both",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "marked.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "marked"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "marked.end"
+        }
+      ]
+    }
+  ]
+}

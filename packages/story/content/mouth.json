@@ -6,7 +6,8 @@
       "name": "The Echo Caves",
       "stages": [
         "mouth",
-        "gallery"
+        "gallery",
+        "marked"
       ],
       "castle": null,
       "statue": null
