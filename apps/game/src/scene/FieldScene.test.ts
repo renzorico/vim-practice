@@ -850,3 +850,42 @@ it.each([false, true])('renders Notary signing, lock shards and wax melting, wit
   expect(state.engine.lines[6]).toBe('.<w></w>.#');
   expect(fake.images.some(image => image.texture === 'field:unknown')).toBe(false);
 });
+
+it('hides distant Mouth tiles, source glyphs and Echo, while lit crystals keep their neighbours visible', async () => {
+  const { mouth, mouthLegend } = await import('../play2/content.js');
+  const { MOUTH_COMMANDS } = await import('../play2/session.js');
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(mouth, mouthLegend, { learnedCommands: MOUTH_COMMANDS, flags: {} });
+  const initial = { state, stage: mouth, legend: mouthLegend, events: [], showSource: true,
+    darkness: { radius: 3, lights: [] } };
+  const scene = new FieldScene(initial, true); scene.create();
+  const at = (texture: string, line: number, col: number) => fake.images.find(image =>
+    image.texture.startsWith(texture) && image.x === col * 16 + 8 && image.y === line * 16 + 8 && !image.destroy.mock.calls.length);
+  expect(at('field:cave-floor', 1, 1)?.alpha).toBe(1);
+  expect(at('field:cave-floor', 1, 4)?.alpha).toBe(0.35);
+  expect(at('field:crystal-dark', 5, 14)?.alpha).toBe(0);
+  expect(at('glyph:120', 5, 14)?.alpha).toBe(0);
+  expect(at('field:echo', 1, 15)?.alpha).toBe(0);
+  const lit = { ...state, flags: { ...state.flags, 'mouth.deep': true } };
+  scene.present({ ...initial, state: lit, darkness: { radius: 3, lights: [{ line: 5, col: 14 }] } });
+  expect(at('field:crystal-lit', 5, 14)?.alpha).toBe(1);
+  expect(at('field:crystal-ledge', 5, 13)?.alpha).toBe(0.65);
+  expect(at('field:crystal-dark', 3, 13)?.alpha).toBe(0);
+  expect(at('field:echo', 1, 15)?.alpha).toBe(0);
+});
+
+it('pulses a newly lit crystal for 150 ms and settles it on the next key', async () => {
+  const { mouth, mouthLegend } = await import('../play2/content.js');
+  const { MOUTH_COMMANDS } = await import('../play2/session.js');
+  const state = createWorldSim(createEngine()).init(mouth, mouthLegend, { learnedCommands: MOUTH_COMMANDS, flags: {} });
+  const initial = { state, stage: mouth, legend: mouthLegend, events: [], showSource: false,
+    darkness: { radius: 3, lights: [] } };
+  const scene = new FieldScene(initial, false); scene.create();
+  scene.present({ ...initial, state: { ...state, flags: { 'mouth.deep': true } },
+    darkness: { radius: 3, lights: [{ line: 5, col: 14 }] } });
+  const pulse = fake.tween.mock.calls.at(-1)?.[0];
+  expect(pulse).toMatchObject({ duration: 75, yoyo: true, scaleX: 1.2, scaleY: 1.2 });
+  scene.finish();
+  expect(pulse.targets.setScale).toHaveBeenLastCalledWith(1);
+  expect(pulse.targets.alpha).toBe(1);
+});

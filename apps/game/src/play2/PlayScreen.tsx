@@ -1,3 +1,4 @@
+import { darknessFor } from '../scene/darkness.js';
 import { NotaryGauge } from './NotaryGauge.js';
 import { CounterGauge } from './CounterGauge.js';
 import { YankedSlot } from './YankedSlot.js';
@@ -39,6 +40,8 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
   const cutscene = presentation?.type === 'cutscene'
     ? content.cutscenes.find(item => item.id === presentation.cutscene) : undefined;
   const result = resultData(session);
+  const activeEngine = world.script?.engine ?? world.engine;
+  const darkness = darknessFor(stage, world.flags);
   const script = stage.scripts.find(item => item.id === world.script?.id
     || (scriptStamp && world.solvedScripts[item.id] !== undefined));
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
@@ -52,12 +55,12 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
     <div className="play-field">
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
-      keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView state={world} events={session.lastEvents} stage={stage}
+      keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
       legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys">{pendingKeyLabel((world.script?.engine ?? world.engine).pendingKeys)}</output>
+      <output aria-label="Pending keys">{activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys)}</output>
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
     </footer>
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
@@ -90,6 +93,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
 }
 
 export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true, stageId = ''): readonly string[] {
+  if (stageId === 'mouth') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', 'w', 'b', 'u'];
   if (stageId === 'contract') return ['h', 'j', 'k', 'l', '0', 'gg', 'G', 'f', '}', 'ci"', 'ci(', 'ci[', 'cit', 'cip', 'dap', '.', 'u', '<Esc>'];
   if (stageId === 'notary') return ['h', 'j', 'k', 'l', '0', '2j', 'w', 'da[', 'da{', 'dit', 'u', '<C-r>'];
   if (stageId === 'archive') return ['h', 'j', 'k', 'l', '}', '{', 'gg', 'G', 'dap', 'yap', 'p', 'P', 'u', '<C-r>'];

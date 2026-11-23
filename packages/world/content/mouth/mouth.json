@@ -1,0 +1,120 @@
+{
+  "id": "mouth",
+  "world": "echo-caves",
+  "type": "field",
+  "title": "The Mouth",
+  "goalText": "Light the crystals from the deepest up, then find the echo.",
+  "map": [
+    "###################",
+    "#.......####=x=.###",
+    "#.#####.###########",
+    "#.#####...##=x=####",
+    "#.#########.#######",
+    "#...........#=x=###",
+    "###################"
+  ],
+  "legend": "mouth",
+  "start": {
+    "line": 1,
+    "col": 1
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "echo",
+      "kind": "npc",
+      "sprite": "echo",
+      "at": {
+        "line": 1,
+        "col": 15
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "mouth.talk-echo",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "echo"
+      }
+    },
+    {
+      "id": "mouth.deep",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 14
+        },
+        "to": {
+          "line": 5,
+          "col": 14
+        }
+      }
+    },
+    {
+      "id": "mouth.middle",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 3,
+          "col": 13
+        },
+        "to": {
+          "line": 3,
+          "col": 13
+        }
+      },
+      "onlyIf": "mouth.deep"
+    },
+    {
+      "id": "mouth.top",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 13
+        },
+        "to": {
+          "line": 1,
+          "col": 13
+        }
+      },
+      "onlyIf": "mouth.middle"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "mouth.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 4,
+  "solution": [
+    "?",
+    "x",
+    "<CR>",
+    "n",
+    "n",
+    "l",
+    "<CR>"
+  ],
+  "hints": [
+    "?x then Enter searches backwards for a crystal: from the mouth it wraps round to the deepest one.",
+    "n repeats the search in the same direction: the next crystal up. You can't see them. Search can."
+  ]
+}
