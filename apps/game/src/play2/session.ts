@@ -41,6 +41,7 @@ export const NOTARY_COMMANDS = [...ARCHIVE_COMMANDS, 'i[', 'a[', 'i{', 'a{', 'iB
 export const MOUTH_COMMANDS = [...NOTARY_COMMANDS, '/', '?', 'n', 'N'] as const;
 export const GALLERY_COMMANDS = [...MOUTH_COMMANDS, '*', '#'] as const;
 export const MARKED_COMMANDS = [...GALLERY_COMMANDS, 'm', '`', "'"] as const;
+export const LABYRINTH_COMMANDS = MARKED_COMMANDS;
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const HARBOUR_COMMANDS = [...COUNTER_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>', 'c', 'C', 'P', 'yy'] as const;
@@ -49,8 +50,14 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { marked: MARKED_COMMANDS, gallery: GALLERY_COMMANDS, mouth: MOUTH_COMMANDS, contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { labyrinth: LABYRINTH_COMMANDS, marked: MARKED_COMMANDS, gallery: GALLERY_COMMANDS, mouth: MOUTH_COMMANDS, contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
+/**
+ * Stages whose puzzle state lives in story flags (chained levers): a retry must restart the stage
+ * from its entry story, because story flags survive a world checkpoint restore (BITACORA E-5, G-5).
+ * A generic fix (story state checkpointed with the world) is parked; add stages here until then.
+ */
+const RESTART_ON_RETRY: ReadonlySet<string> = new Set(['labyrinth']);
 
 export function resultData(session: Session) {
   return { keys: session.keys, turns: session.world.turn, hearts: session.world.hearts };
@@ -188,6 +195,10 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
 
   function reduce(session: Session, key: Key): Session {
     if (session.world.status === 'dead') {
+      if (RESTART_ON_RETRY.has(session.world.stage)) {
+        return { ...enter(entry(session.world.stage), session.stageEntry.story, session.keys, false),
+          lastEvents: [{ type: 'checkpoint-restored' }] };
+      }
       const restored = sim.restore(session.world);
       let next = { ...session, deferredEffects: [], world: restored.state, lastEvents: restored.events };
       if (session.deferredEffects.length > 0) {
@@ -213,6 +224,10 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     // :e! is the game's checkpoint restore; Vim parsing up to Enter stays in the engine.
     if (key === '<CR>' && session.world.script === null
       && session.world.engine.mode === 'command-line' && session.world.engine.commandLine === ':e!') {
+      if (RESTART_ON_RETRY.has(session.world.stage)) {
+        return { ...enter(current, session.stageEntry.story, session.keys + 1, false),
+          lastEvents: [{ type: 'checkpoint-restored' }] };
+      }
       const restored = sim.restore(session.world);
       return settle({ ...session, keys: session.keys + 1, world: { ...restored.state, engine: { ...restored.state.engine, scroll: 0 } }, lastEvents: restored.events },
         storyEngine.onEvents(session.story, restored.events, content));

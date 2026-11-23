@@ -923,3 +923,25 @@ it('draws an amber flag from engine marks and clears it when marks disappear', (
   expect(container?.removeAll).toHaveBeenLastCalledWith(true);
   expect(container?.add).toHaveBeenCalledTimes(1);
 });
+
+it('draws the labyrinth lair and three rune variants, lights only pulled levers, and never draws the Minotaur', async () => {
+  const { labyrinth, labyrinthLegend } = await import('../play2/content.js');
+  const { darknessFor } = await import('./darkness.js');
+  const state = createWorldSim(createEngine()).init(labyrinth, labyrinthLegend, { learnedCommands: [], flags: {} });
+  const initial = { state, stage: labyrinth, legend: labyrinthLegend, events: [], showSource: true,
+    darkness: darknessFor(labyrinth, {})! };
+  const scene = new FieldScene(initial, true);
+  scene.create();
+  const at = (texture: string, line: number, col: number) => fake.images.find(image =>
+    image.texture === texture && image.x === col * 16 + 8 && image.y === line * 16 + 8);
+  expect(at('field:minotaur-lair', 0, 1)).toBeDefined();
+  expect(fake.images.some(image => image.texture.startsWith('field:minotaur:') || image.texture === 'field:minotaur')).toBe(false);
+  expect(at('field:rune-lever-x', 4, 8)?.alpha).toBe(0);
+  expect(at('field:rune-lever-y', 2, 9)).toBeDefined();
+  expect(at('field:rune-lever-z', 8, 2)).toBeDefined();
+  const flags = { 'labyrinth.x': true };
+  scene.present({ ...initial, state: { ...state, flags }, darkness: darknessFor(labyrinth, flags)! });
+  expect(at('field:rune-lever-x-lit', 4, 8)?.alpha).toBe(1);
+  expect(at('field:rune-lever-x', 2, 2)).toBeDefined();
+  expect(fake.images.some(image => image.texture === 'field:minotaur')).toBe(false);
+});

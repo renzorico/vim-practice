@@ -98,7 +98,7 @@ it('Continue restores the Mouth and lists the sixth world', () => {
   expect(controller.resume(progress).world.stage).toBe('mouth');
   expect(controller.resume(progress).story).toEqual(session.stageEntry.story);
   expect(content.worlds.find(world => world.id === 'echo-caves')).toEqual({
-    id: 'echo-caves', order: 6, name: 'The Echo Caves', stages: ['mouth', 'gallery', 'marked'], castle: null, statue: null,
+    id: 'echo-caves', order: 6, name: 'The Echo Caves', stages: ['mouth', 'gallery', 'marked', 'labyrinth'], castle: 'labyrinth', statue: 'A',
   });
 });
 it('lints and replays every bundled stage', () => {

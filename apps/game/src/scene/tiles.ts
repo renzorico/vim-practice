@@ -10,6 +10,7 @@ export function tileGrid(lines: WorldState['engine']['lines'], legend: Legend): 
     row === '' && col === 0 && legend.emptyRow !== undefined ? legend.emptyRow.sprite : col >= row.length ? 'blank'
       : legend.id === 'notary' && row[col] === 'w' && row.lastIndexOf('<', col) > row.lastIndexOf('>', col) ? 'tag-label'
       : legend.id === 'notary' && row[col] === 'k' && row.lastIndexOf('{', col) > row.lastIndexOf('}', col) ? 'seal-ribbon'
+      : legend.id === 'labyrinth' && sprites.get(row.charAt(col)) === 'rune-lever' ? `rune-lever-${row.charAt(col)}`
       : legend.id === 'gallery' && sprites.get(row.charAt(col)) === 'echo-rune' ? `echo-rune-${row.charAt(col)}`
       : sprites.get(row.charAt(col)) ?? legend.fallback.sprite));
 }

@@ -1,0 +1,289 @@
+{
+  "worlds": [],
+  "openingStage": "labyrinth",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "caves.labyrinth",
+      "world": "echo-caves",
+      "title": "The Minotaur",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "levers",
+          "objective": "Pull the three levers and get back to the stair.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "labyrinth"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "labyrinth.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The labyrinth. Darker still. Somewhere\nabove, hooves. Getting closer."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...behind you. ...always behind you."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Back! ...back."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: ? searches backwards.\nMark the stair first: ma."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.lever-x",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The first lever drops. Far off, a grind."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.lever-y",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The second lever. The grind gets louder."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.lever-z",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The third. Now home, before he finds you."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.home",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The stair shudders. A way down opens\nbehind it, and the hooves stop."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.fuse",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Hooves, right behind you. He found you."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...walked too far. ...too far."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "labyrinth.death-hint",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "ma on the stair. Then ?x, ?y, ?z:\nthe real rune is always behind you. `a."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "labyrinth.end",
+      "beats": [
+        {
+          "type": "title",
+          "text": "Behind the stair, a door. On it, carved:"
+        },
+        {
+          "type": "title",
+          "text": "The Scribe is in another buffer."
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Echo",
+            "text": "...the Minotaur never caught her either.\nShe never walked. She searched."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "One letter under the carving: A."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Almost. ...almost."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "light-statue",
+          "letter": "A"
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "labyrinth.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "marked"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "caves.labyrinth"
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.x",
+      "when": {
+        "type": "trigger",
+        "trigger": "labyrinth.x"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "labyrinth.lever-x"
+        },
+        {
+          "type": "set-flag",
+          "flag": "labyrinth.x",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.y",
+      "when": {
+        "type": "trigger",
+        "trigger": "labyrinth.y"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "labyrinth.lever-y"
+        },
+        {
+          "type": "set-flag",
+          "flag": "labyrinth.y",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.z",
+      "when": {
+        "type": "trigger",
+        "trigger": "labyrinth.z"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "labyrinth.lever-z"
+        },
+        {
+          "type": "set-flag",
+          "flag": "labyrinth.z",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.home",
+      "when": {
+        "type": "trigger",
+        "trigger": "labyrinth.home"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "labyrinth.home"
+        },
+        {
+          "type": "set-flag",
+          "flag": "labyrinth.through",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.fuse",
+      "when": {
+        "type": "trigger",
+        "trigger": "labyrinth.fuse"
+      },
+      "once": false,
+      "unless": "labyrinth.through",
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "labyrinth.fuse"
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "hit",
+              "hearts": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "labyrinth.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "labyrinth"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "labyrinth.end"
+        }
+      ]
+    }
+  ]
+}

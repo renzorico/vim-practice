@@ -657,7 +657,20 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · G-5: The Minotaur (stage 6-4, World 6's castle)
+**Who:** Opus (design, sim proof, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** The labyrinth, darker than the caves above. The Minotaur is never seen: his hoofprints fill the top row (`put` "M" every 2 turns); at six he finds you (`hit` 3). Three rune levers sit in sealed chambers; each has a false copy ahead, and the real one lies behind you, so `?` beats `/`. `ma` on the stair, `?x ?y ?z`, `` `a `` home. Par 5 (2 prints); with `/`+`n` 8; fuse at 12. Being stuck in a chamber without a mark ends in the fuse and a clean retry. Statue A.
+
+**What the checks caught:** First prototype (a patrolling Minotaur with decoys) was weak pressure in a turn-based game: dropped. Codex: the levers are chained through story flags, which survive a death (the E-5 trap, in the design lead's own brief): a retry here restarts the stage from its entry story. Sonnet: that was hard-coded on the stage id in the shared retry path: now an explicit `RESTART_ON_RETRY` set with the reason, and the generic fix parked; a test pinned a solver step limit: removed. Browser: 5 turns, 3 hearts, statue A, no console errors.
+
+**Lesson:** Puzzle state that must reset on death belongs in the world, not in story flags; until the session checkpoints story too, say so where the exception lives.
+
+---
+
 ## Parking lot
+- Session: story flags survive a death (world checkpoint restore). Stages whose puzzle lives in flags need `RESTART_ON_RETRY` (labyrinth). Generic fix: checkpoint story state with the world.
+- Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).
 - Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
 - Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.
 - Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).

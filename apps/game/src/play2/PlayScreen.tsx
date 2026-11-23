@@ -1,3 +1,4 @@
+import { HoofprintGauge } from './HoofprintGauge.js';
 import { darknessFor } from '../scene/darkness.js';
 import { NotaryGauge } from './NotaryGauge.js';
 import { CounterGauge } from './CounterGauge.js';
@@ -50,6 +51,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       <h1>{stage.title}</h1>
       {stage.id === 'counter' && <CounterGauge world={world} />}
       {stage.id === 'notary' && <NotaryGauge world={world} />}
+      {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field">
@@ -93,6 +95,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
 }
 
 export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true, stageId = ''): readonly string[] {
+  if (stageId === 'labyrinth') return learnedKeycaps(flags, false, 'marked');
   if (stageId === 'marked') return [...learnedKeycaps(flags, false, 'gallery'), 'ma', '`a', "'a"];
   if (stageId === 'gallery') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', '*', '#', 'w', 'b', 'e', 'u'];
   if (stageId === 'mouth') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', 'w', 'b', 'u'];
