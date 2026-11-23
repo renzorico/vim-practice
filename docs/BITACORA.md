@@ -668,6 +668,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · G-6: The Scribe's Study (stage 6-5), World 6 complete
+**Who:** Opus (design, engine proof, brief, fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** The Scribe's study, without the Scribe. Her index is a table of eight rows: `<C-v>7j9ld` strikes the shelf column, `<C-v>7j$cfound<Esc>` marks every row found, `<C-v>7jI* <Esc>` stars them, and the drafts of the Last Page go. Par 35 (Codex: `w` for `$b`, `3dd` for `V2jd`); 81 without visual mode. Her note under the index points to the Last Page. "End of World 6."
+
+**What the checks caught:** In the engine, before the brief: a block of `9l` spans ten columns, so the per-row route needs `d10l`; with few rows `cw` + `j.` keeps up with block mode, so the index has eight rows. Codex stopped on story validation: one ending line was too long for the box: split into two beats, wording kept; then the stage-list and full-game tests were updated for the new stage. Sonnet: 0 blocking. Browser: the index solves with real Ctrl-v key presses, ending to "To be continued", no console errors.
+
+**Lesson:** Write dialogue to the box width: the validator measures it, and a builder cannot reflow the design lead's words.
+
+---
+
 ## Parking lot
 - Session: story flags survive a death (world checkpoint restore). Stages whose puzzle lives in flags need `RESTART_ON_RETRY` (labyrinth). Generic fix: checkpoint story state with the world.
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).

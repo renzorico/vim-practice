@@ -1,0 +1,127 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "caves.study",
+      "world": "echo-caves",
+      "title": "The Scribe's study",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "index",
+          "objective": "Set the Scribe's index right.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "study"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "study.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "labyrinth"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "caves.study"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "study"
+        }
+      ]
+    },
+    {
+      "id": "study.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "study"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "study.end"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "study.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The Scribe's study. A desk, a lamp,\nan empty chair."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...lost. ...lost. ...lost."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Block! ...block."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: Ctrl-v selects a block.\nEvery row at once."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "study.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Every entry found. Under the last line,\nin her hand:"
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "'Recover. I'll be on the last page.'"
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Echo",
+            "text": "...last page. ...last page."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Go! ...go."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 6."
+          }
+        }
+      ],
+      "then": []
+    }
+  ]
+}
