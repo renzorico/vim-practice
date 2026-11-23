@@ -1,8 +1,11 @@
+import { useSound } from './audio/hooks.js';
+import { SoundButton } from './audio/SoundButton.js';
 import { useScriptStamp } from './play2/useScriptStamp.js';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
+import { shouldLeaveToBrowser } from './input/capture.js';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
@@ -31,6 +34,7 @@ export function App() {
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
   const [choice, setChoice] = useState(0);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
+  const sound = useSound(session, started);
   const scriptStamp = useScriptStamp(session);
   const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
   const canContinue = saved !== null && saved.story.ending !== 'recover';
@@ -56,7 +60,9 @@ export function App() {
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
       if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
-      const wakeKey = [...event.key].length === 1 || event.key === 'Enter';
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const browserKey = shouldLeaveToBrowser(event.key, target, true);
+      const wakeKey = !browserKey && ([...event.key].length === 1 || event.key === 'Enter');
       const blockedRepeat = event.repeat && (event.key === 'Enter' || event.key === ' '
         || session.world.status === 'dead' || terminal);
       if (blockedRepeat && wakeKey) {
@@ -69,7 +75,7 @@ export function App() {
           else if (event.key === 'k') setChoice(0);
           else if (event.key === 'Enter') choose(canContinue && choice === 0);
         } else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
-      } else if (started && event.key === 'Tab') {
+      } else if (started && event.key === 'Tab' && !browserKey) {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
       }
     };
@@ -102,10 +108,11 @@ export function App() {
       {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
       <button aria-current={choice === (canContinue ? 1 : 0) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
     </nav>
+    <SoundButton enabled={sound.enabled} onToggle={sound.toggle} />
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
   </main>;
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
-  return <PlayScreen session={session} stage={current.stage} legend={current.legend} content={content}
+  return <PlayScreen soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
     objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />;
 }

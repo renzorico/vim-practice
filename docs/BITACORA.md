@@ -779,6 +779,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-8: Sound
+**Who:** Opus (brief, browser check), Codex (build), Sonnet (review).
+
+**What:** Every turn now sounds like what happened, all synthesized with Web Audio (no files, no dependency): steps (capped), a jump whose pitch rises with distance and a landing timed to P-4's jump duration, bump and fixed-stone knocks, delete crunch, put pop, undo and redo swishes, hit, death, a clear jingle, a trigger chime and a search miss. A pure `cuesFor(events)` picks at most three cues per turn by priority (jump and landing count as one). Dialogue blips every three revealed characters with a pitch per speaker (one per line with reduced motion; none for system lines; a paper rustle for the Scribe's notes); the stage-clear card chimes once per star. Sound is on at low volume, toggled on the title and by a footer speaker button, saved in `localStorage`; no letter key mutes (every letter is Vim).
+
+**What the checks caught:** Sonnet found the sound buttons kept focus after a click, so the next Enter toggled sound instead of starting the game or advancing a dialogue; the first cue after the first key was lost while the audio context resumed; an old-Safari `resume()` could mute the whole session; cue offsets ignored reduced motion. All fixed with tests. In the browser: one context, every oscillator started was disconnected, no errors.
+
+**Lesson:** A button you click keeps the keyboard: in a keyboard-only game, controls must not take focus from the mouse.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

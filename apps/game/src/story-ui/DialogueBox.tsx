@@ -1,3 +1,4 @@
+import { useDialogueSound } from '../audio/hooks.js';
 import { useEffect, useState } from 'react';
 import { Portrait } from '../scene/sprites/Portrait.js';
 import { speakerAccent } from '../scene/sprites/portraits/speakers.js';
@@ -21,7 +22,7 @@ const REVEAL_INTERVAL_MS = 1000 / CHARACTERS_PER_SECOND;
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /** Cosmetic timer only: it never captures a key or calls the session. */
-function RevealedText({ text }: { readonly text: string }) {
+function RevealedText({ text, speaker }: { readonly text: string; readonly speaker: string }) {
   const [shown, setShown] = useState(0);
   const [reduced, setReduced] = useState(() =>
     typeof window === 'undefined' || !window.matchMedia || window.matchMedia(REDUCED_MOTION_QUERY).matches);
@@ -44,6 +45,7 @@ function RevealedText({ text }: { readonly text: string }) {
     return () => window.clearInterval(timer);
   }, [text, reduced]);
   const visible = reduced ? text.length : shown;
+  useDialogueSound(speaker, visible, reduced);
   return <>
     <span className="dialogue__accessible" aria-live="polite" aria-atomic="true">{text}</span>
     <span aria-hidden="true">{text.slice(0, visible)}<span className="dialogue__unrevealed">{text.slice(visible)}</span></span>
@@ -82,7 +84,7 @@ function DialogueLine({ line, mood, onAdvance }: {
     <div className={`dialogue dialogue--${line.speaker}`} role="dialog" aria-label={name || 'Message'}>
       <Portrait sprite={speaker} mood={mood} />
       {name !== '' && <div className="dialogue__name" style={{ color: speakerAccent(speaker) }}>{name}</div>}
-      <p className="dialogue__text"><RevealedText text={line.text} /></p>
+      <p className="dialogue__text"><RevealedText text={line.text} speaker={speaker} /></p>
       {onAdvance ? <button type="button" className="dialogue__hint" onClick={onAdvance}>
         <kbd className="keycap">Enter</kbd> to go on
       </button> : <div className="dialogue__hint"><kbd className="keycap">Enter</kbd> to go on</div>}
