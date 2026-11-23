@@ -687,13 +687,21 @@ Tags: `#design` `#gates`
 **What the checks caught:** Sonnet (0 blocking, about 120 extra Neovim probes): the panel scrolled after paint (one frame off-screen): now a layout effect. Parked: empty objects (`di"` on `""`, `dit` on `<a></a>`) and `dh`/`db` near column 0 still differ from Neovim on `u`; the cursor after undoing `cit`/`cat` lands at the original position, not the change start; the panel's narrow-width layout is only tested with mocks; the Reading Room hint is missed if the nested chain goes first (by design).
 
 **Lesson:** Parity work finds more parity work: pin every reviewer probe as a golden before calling a family done.
+## 2026-11-23 · H-1: The Last Page (the finale) and the endings
+**Who:** Renzo (chose the undo-timing finale), Opus (design, sim proof, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** The finale is the E325 dialog, damaged: a typo, a doubled word, two swapped lines. The Unwriter tears the doors row off every third turn; `u` brings it back only when his tear is the most recent change, so the rhythm is `u` right after he tears, then two turns of repair. When the page is whole (a multi-row text trigger) he stops: the Scribe is reading. R then `:w` writes the file: `"folio.txt" 4096L written`, "You are not erased. You are written.", UNSAVED, and a finished save (New game only). D folds back: Continue restores the Study. Q and A return the dialog; O and E are not hinged yet. Par 15. `:w` now works in every field stage, as MASTERPLAN says.
+
+**What the checks caught:** In the sim, before the brief: `u` undoes the player's own repair when it is more recent (the heart of the finale, kept); a tear on the `:w` turn would spoil the `saved` clear, so the Unwriter is removed once the page is whole. Sonnet: the finale's state lives in story flags, so `:e!` or a death after the page was whole kept the doors open on a torn page (the E-5/G-5 class, a third time): `last-page` joins `RESTART_ON_RETRY`, with a test; the glyph texture was swapped for every cell on every render in every stage: now only when it changes; the delete fallback could carry the finale's flags back to the Study: stripped. Browser: both endings played end to end, no console errors.
+
+**Lesson:** The third time a class of bug appears, fix the class: story state must be checkpointed with the world (parked as the next session task).
 
 ---
 
 ## Parking lot
 - Engine undo parity: `di"` on `""`, `dit` on `<a></a>`, and `dh`/`db` near column 0 do not make Neovim's empty undo entry; cursor after undoing `cit`/`cat` is the original position, Neovim's is the change start (Sonnet's probes in P-1: turn each into a golden).
 - Script panel: narrow-width layout only tested with mocks; check `min-width: 0` on the panel's grid ancestors in a real browser.
-- Session: story flags survive a death (world checkpoint restore). Stages whose puzzle lives in flags need `RESTART_ON_RETRY` (labyrinth). Generic fix: checkpoint story state with the world.
+- Session (priority): story flags survive a death and `:e!` (world checkpoint restore). `RESTART_ON_RETRY` covers labyrinth and last-page. Generic fix: checkpoint story state with the world, then drop the set.
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts

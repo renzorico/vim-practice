@@ -1,0 +1,335 @@
+{
+  "worlds": [
+    {
+      "id": "last-page",
+      "order": 7,
+      "name": "The Last Page",
+      "stages": [
+        "last-page"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "quests": [
+    {
+      "id": "last.page",
+      "world": "last-page",
+      "title": "The Last Page",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "write",
+          "objective": "Repair the page, choose, and write it.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "last-page"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "last.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "study"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "last.page"
+        }
+      ]
+    },
+    {
+      "id": "last.whole",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.whole"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.whole"
+        },
+        {
+          "type": "world",
+          "effects": [
+            {
+              "type": "remove-entity",
+              "entity": "unwriter"
+            }
+          ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "last.whole",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "last.door-r",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-r"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.door-r"
+        },
+        {
+          "type": "set-flag",
+          "flag": "last.recover",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "last.door-d",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-d"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "last.delete"
+        }
+      ]
+    },
+    {
+      "id": "last.door-q",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-q"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.dialog-returns"
+        }
+      ]
+    },
+    {
+      "id": "last.door-a",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-a"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.dialog-returns"
+        }
+      ]
+    },
+    {
+      "id": "last.door-o",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-o"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.not-yet"
+        }
+      ]
+    },
+    {
+      "id": "last.door-e",
+      "when": {
+        "type": "trigger",
+        "trigger": "last.door-e"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "last.not-yet"
+        }
+      ]
+    },
+    {
+      "id": "last.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "last-page"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "last.recover"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "last.whole",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The page is whole. The grey thing stops.\nThe Scribe is reading every word."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "last.door-r",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Recover. The Scribe's finger moves to R.\nNow write it, so it stays: :w"
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "last.dialog-returns",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Nothing is decided.\nThe dialog returns."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "last.not-yet",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "That door is drawn, but not yet hinged."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "last-page.intro",
+      "beats": [
+        {
+          "type": "terminal",
+          "lines": [
+            "E325: ATTENTION",
+            "Found a swap file by the name \".folio.txt.swp\"",
+            "[O]pen Read-Only, (E)dit anyway, (R)ecover, (D)elete it, (Q)uit, (A)bort:"
+          ]
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "The Scribe is back. The file is open.\nAnd the page you stand on is a question."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Attention. ...attention."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Something grey is tearing at the bottom\nof the page. Tidying up."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "u brings back what it tears. But u takes\nback the last change, whoever made it."
+          }
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "last.recover",
+      "beats": [
+        {
+          "type": "terminal",
+          "lines": [
+            "\"folio.txt\" 4096L written"
+          ]
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Saved. ...saved."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "You are not erased. You are written."
+          }
+        },
+        {
+          "type": "title",
+          "text": "UNSAVED"
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Thank you for playing."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "ending",
+          "ending": "recover"
+        }
+      ]
+    },
+    {
+      "id": "last.delete",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Delete. The page folds back to the Margin."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "The Elder stands alone at the festival,\nwaiting for a ferry that was never written."
+          }
+        }
+      ],
+      "then": [
+        {
+          "type": "ending",
+          "ending": "delete"
+        }
+      ]
+    }
+  ]
+}

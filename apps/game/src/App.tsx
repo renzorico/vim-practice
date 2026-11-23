@@ -6,7 +6,7 @@ import { createStoryEngine } from '@escape/story';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
-import { clearProgress, readProgress, saveProgress, type Progress } from './play2/progress.js';
+import { clearProgress, endingProgress, readProgress, saveProgress, type Progress } from './play2/progress.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
@@ -29,9 +29,11 @@ export function App() {
   const [choice, setChoice] = useState(0);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
   const scriptStamp = useScriptStamp(session);
+  const ending = session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
+  const canContinue = saved !== null && saved.story.ending !== 'recover';
   const terminal = session.world.status === 'cleared' && session.queue.length === 0;
   const choose = useCallback((continueGame: boolean) => {
-    if (continueGame && saved) dispatch({ type: 'continue', progress: saved });
+    if (continueGame && saved && canContinue) dispatch({ type: 'continue', progress: saved });
     else {
       clearProgress(storage);
       setSaved(null);
@@ -39,13 +41,13 @@ export function App() {
     }
     setShowSource(false);
     setStarted(true);
-  }, [saved]);
+  }, [saved, canContinue]);
   const onKey = useCallback((key: Key) => {
     if (!started || scriptStamp) return;
     if (key === '<Tab>') { setShowSource(true); return; }
-    if (terminal && key === '<CR>') { setStarted(false); setChoice(0); return; }
+    if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(0); return; }
     dispatch(key);
-  }, [started, terminal, scriptStamp]);
+  }, [started, terminal, ending, scriptStamp]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true,
     enabled: started && session.world.status !== 'dead' });
@@ -61,9 +63,9 @@ export function App() {
       if ((!started || session.world.status === 'dead') && wakeKey) {
         event.preventDefault(); event.stopImmediatePropagation();
         if (!started) {
-          if (event.key === 'j') setChoice(saved ? 1 : 0);
+          if (event.key === 'j') setChoice(canContinue ? 1 : 0);
           else if (event.key === 'k') setChoice(0);
-          else if (event.key === 'Enter') choose(saved !== null && choice === 0);
+          else if (event.key === 'Enter') choose(canContinue && choice === 0);
         } else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
       } else if (started && event.key === 'Tab') {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
@@ -71,13 +73,17 @@ export function App() {
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [started, session.world.status, terminal, saved, choice, choose]);
+  }, [started, session.world.status, terminal, saved, canContinue, choice, choose]);
   useEffect(() => {
-    if (!started || saved === session.stageEntry) return;
-    const progress = session.stageEntry;
+    if (!started) return;
+    const progress = endingProgress(session.stageEntry, session.story);
+    if (saved === progress || (saved?.story === progress.story && saved?.stage === progress.stage)) return;
     saveProgress(storage, progress);
     setSaved(progress);
-  }, [started, session, saved]);
+  }, [started, session, saved, ending]);
+  useEffect(() => {
+    if (started && ending === 'delete') { setStarted(false); setChoice(0); }
+  }, [started, ending]);
   useEffect(() => {
     const release = (event: KeyboardEvent): void => {
       if (event.key === 'Tab') { event.preventDefault(); setShowSource(false); }
@@ -90,8 +96,8 @@ export function App() {
   if (!started) return <main className="play-title">
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
-      {saved && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
-      <button aria-current={choice === (saved ? 1 : 0) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
+      {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
+      <button aria-current={choice === (canContinue ? 1 : 0) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
     </nav>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
   </main>;
