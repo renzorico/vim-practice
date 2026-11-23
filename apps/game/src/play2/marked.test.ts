@@ -134,7 +134,7 @@ it('offers marks immediately, rejects ma in gallery, and restores marked on Cont
   const progress = readProgress(() => storage, stages.map(entry => entry.stage.id));
   if (!progress) throw new Error('Missing save');
   expect(controller.resume(progress).world.stage).toBe('marked');
-  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked', 'labyrinth']);
+  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked', 'labyrinth', 'study']);
 });
 it('lints marked and replays every bundled stage', () => {
   expect(lintStage(marked, markedLegend)).toEqual([]);

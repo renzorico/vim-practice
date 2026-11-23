@@ -36,7 +36,7 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
         </output>
       </div>
       {target && <aside className="script-target" aria-label="Target text">
-        <h3>{script.id === 'contract.book' ? 'The contract should read:' : script.id === 'manifest.book' ? 'The manifest should read:' : 'The ledger should read:'}</h3>
+        <h3>{script.id === 'study.book' ? 'The index should read:' : script.id === 'contract.book' ? 'The contract should read:' : script.id === 'manifest.book' ? 'The manifest should read:' : 'The ledger should read:'}</h3>
         <ol>{target.targetLines.map((line, index) => {
           const matches = engine.lines[index] === line;
           return <li key={index} data-matched={matches}>

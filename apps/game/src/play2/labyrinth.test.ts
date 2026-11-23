@@ -50,7 +50,8 @@ it('replays ma ?x ?y ?z `a in five turns, three hearts and two prints; A lights 
   expect(result.story.statues).not.toContain('A');
   const end = dismiss(result);
   expect(end.story.statues).toContain('A');
-  expect(markup(end)).toContain('To be continued.');
+  expect(end.world.stage).toBe('study');
+  expect(end.world.script?.id).toBe('study.book');
 });
 it('clears with forward search plus n in eight turns and four prints', () => {
   const result = route(start(), parseKeys('ma/x<CR>n/y<CR>n/z<CR>n`a'));
@@ -172,7 +173,7 @@ it('marked leads into labyrinth, keeping story and starting the main quest; Cont
   const end = dismiss(route(session, labyrinth.solution));
   expect(end.story.quests['caves.labyrinth']?.done).toBe(true);
   expect(content.worlds.find(world => world.id === 'echo-caves')).toMatchObject({
-    stages: ['mouth', 'gallery', 'marked', 'labyrinth'], castle: 'labyrinth', statue: 'A',
+    stages: ['mouth', 'gallery', 'marked', 'labyrinth', 'study'], castle: 'labyrinth', statue: 'A',
   });
 });
 it('inherits the marked commands and keycaps, uses darker caves, and supplies distinct rune art', () => {
