@@ -1,0 +1,75 @@
+{
+  "id": "gallery",
+  "world": "echo-caves",
+  "type": "field",
+  "title": "The Echo Gallery",
+  "goalText": "Follow the echoed words to the end of the gallery.",
+  "map": [
+    "##################",
+    "#=ink=######=inkwell=#",
+    "##################",
+    "#=ink=map=###=maps=#",
+    "##################",
+    "#=map=key=###=keys=#",
+    "##################",
+    "#=key=.=#",
+    "##################"
+  ],
+  "legend": "gallery",
+  "start": {
+    "line": 1,
+    "col": 2
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "echo",
+      "kind": "npc",
+      "sprite": "echo",
+      "at": {
+        "line": 7,
+        "col": 5
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "gallery.talk-echo",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "echo"
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "gallery.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 6,
+  "solution": [
+    "*",
+    "w",
+    "*",
+    "w",
+    "*",
+    "e",
+    "<CR>"
+  ],
+  "hints": [
+    "* searches for the whole word under the cursor: it skips inkwell and finds the next ink.",
+    "Each chamber names the next word. w onto it, then * again. # goes back if you overshoot."
+  ]
+}

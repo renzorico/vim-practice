@@ -1,0 +1,125 @@
+{
+  "id": "gallery",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "cave-rock",
+    "walkable": false,
+    "fixed": true,
+    "label": "rock"
+  },
+  "tiles": [
+    {
+      "char": "#",
+      "kind": "barrier",
+      "sprite": "cave-rock",
+      "walkable": false,
+      "fixed": true,
+      "label": "rock"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "crystal-ledge",
+      "walkable": true,
+      "fixed": true,
+      "label": "ledge"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "cave-floor",
+      "walkable": true,
+      "fixed": true,
+      "label": "floor"
+    },
+    {
+      "char": "i",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "n",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "k",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "w",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "e",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "l",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "m",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "a",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "p",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "s",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    },
+    {
+      "char": "y",
+      "kind": "object",
+      "sprite": "echo-rune",
+      "walkable": true,
+      "fixed": true,
+      "label": "carved letter"
+    }
+  ]
+}
