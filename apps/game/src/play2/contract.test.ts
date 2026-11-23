@@ -146,7 +146,7 @@ it('Continue restores contract with its introduction and statue Q', () => {
 });
 
 it('shows a Library parchment contract, target, existing portrait, and its lesson keys', () => {
-  expect(screen(controller.init())).toContain('<svg width="64" height="64"');
+  expect(screen(controller.init())).toContain('<svg width="96" height="96"');
   const html = screen(start());
   expect(html).toContain('script-panel--contract');
   expect(html).toContain('The contract should read:');

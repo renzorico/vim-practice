@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, K: '#261e20', O: '#563929', L: '#8a6241',
@@ -28,24 +29,7 @@ export const DUST_PUFF = art((x, y) => {
   const radius = (x - 7.5) ** 2 + (y - 7.5) ** 2;
   return radius < 42 && (x * 3 + y * 7) % 5 < 2 ? (y % 2 ? 'E' : 'D') : '.';
 });
-export const QUIRE: PixelSprite = { palette, frames: [[
-  '................',
-  '......DDD.......',
-  '.....DEEDD......',
-  '....DssssD......',
-  '....sKKsKK......',
-  '.....ssssF......',
-  '.....KssKF......',
-  '....AAVAAF......',
-  '...AAVVAAA......',
-  '...AVVAAAAA.....',
-  '...sVsAAAs......',
-  '....VVVVVV......',
-  '....AAAAFA......',
-  '....AAAFKF......',
-  '....AAAAFA......',
-  '....KK.KK.......',
-]] };
+export const QUIRE: PixelSprite = CHARACTER_FIELDS.quire;
 
 const parquet = (x: number, y: number, variant = 0): string =>
   y % 8 === 7 || (x + (y < 8 ? variant * 4 : 8 - variant * 4)) % 16 === 0 ? 'K'
@@ -75,24 +59,7 @@ export const CHAIN = art((x, y) => {
 });
 export const CHAIN_CLATTER = art((x, y) => (x * 3 + y * 5) % 13 < 2
   && x > 1 && x < 14 && y > 2 && y < 14 ? y % 2 ? 'E' : 'F' : '.');
-export const FOLIO: PixelSprite = { palette, frames: [[
-  '...LOOOOOOOL....',
-  '...LOKKKKOOL....',
-  '...LOKDDKOOL....',
-  '...LOssssOOL....',
-  '...LOsKssOOL....',
-  '...LOssssOOL....',
-  '...LOOBBOOOL....',
-  '...LOBVBOOOL....',
-  '...LOBVBOOOL....',
-  '...LsBVBBsDL....',
-  '...LVVVKVVVL....',
-  '...LVHVKVHVL....',
-  '...LOOBBBOOL....',
-  '...LOOBBBOOL....',
-  '...L.K..K..L....',
-  '...K.K..K..K....',
-]] };
+export const FOLIO: PixelSprite = CHARACTER_FIELDS.folio;
 
 // One continuous shelf per paragraph: no vertical dividers between its cells.
 const archiveShelf = (pixel: (x: number, y: number) => string): PixelSprite => art((x, y) =>
@@ -117,21 +84,4 @@ export const CATALOGUE = art((x, y) => x === 0 || x === 15 || y === 0 || y === 1
   : x === 7 || y % 5 === 0 ? 'L' : y % 5 === 2 && x % 8 >= 2 && x % 8 <= 5 ? 'F' : 'O');
 export const FILED_STAMP = art((x, y) => y > 10 && y < 14 && x > 2 && x < 14 ? 'A'
   : y === 10 && x > 1 && x < 15 ? 'K' : y >= 5 && y <= 9 && x >= 6 && x <= 9 ? 'L' : 'V');
-export const INDEX: PixelSprite = { palette, frames: [[
-  '................',
-  '................',
-  '.....BBBB.......',
-  '....BBBBBB......',
-  '....FFFFFF......',
-  '.....ssss.......',
-  '.....sKss.......',
-  '.....ssss.......',
-  '....BBVBBB......',
-  '....BBVBBB......',
-  '...sBBVBBs......',
-  '..LOOOOOOOOL....',
-  '..LOFLOFLOFL....',
-  '..LOOLOOLOOL....',
-  '..LOFLOFLOFL....',
-  '..KKKKKKKKKK....',
-]] };
+export const INDEX: PixelSprite = CHARACTER_FIELDS.index;

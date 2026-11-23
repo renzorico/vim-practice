@@ -39,13 +39,13 @@ it('shows keys and hearts on clear, with no unteachable best score', () => {
   expect(html).toContain('3 of 3 hearts left.');
   expect(html).not.toContain('best');
 });
-it('renders Mira’s portrait from the same sprite grid as the field', () => {
+it('renders Mira’s dedicated 32px portrait at 96px', () => {
   const session = controller.init(false);
   const html = renderToStaticMarkup(createElement(PlayScreen, {
     session: { ...session, queue: [{ type: 'dialogue', dialogue: 'margin.mira', index: 0 }] },
     stage, legend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
-  expect(html).toContain('<svg width="64" height="64"');
+  expect(html).toContain('<svg width="96" height="96"');
   expect(html).toContain('Mira');
 });
 
@@ -68,7 +68,7 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
     stage: lighthouse, legend: lighthouseLegend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
   expect(talking).toContain('The Lamplighter');
-  expect(talking).toContain('<svg width="64" height="64"');
+  expect(talking).toContain('<svg width="96" height="96"');
 });
 
 it('reveals Quarry keycaps from flags and selects its authored death hint', () => {

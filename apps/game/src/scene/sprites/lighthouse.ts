@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, v: '#382d4d', V: '#584266', n: '#10121e', f: '#c5b79f', q: '#e9cc82' };
@@ -7,12 +8,7 @@ export const UNWRITER: PixelSprite = { palette, frames: [[
   '...vvVVVVVVvf...', '...v.VVVVVVff...', '.....vVVVVv.f...', '.....vVVVVv.f...',
   '....vVVVVVVvf...', '....vvvvvvvvf...', '...vvvvvvvvvf...', '...vv.vvv.vvf...',
 ]] };
-export const LAMPLIGHTER: PixelSprite = { palette, frames: [[
-  '................', '......bbbb......', '.....bwwwwb.....', '.....bssssb.....',
-  '......sksk......', '......wwww......', '......wwww......', '.....bbbbbb.....',
-  '....bbbbbbbb....', '....sbbbbbbst...', '.....bbbbbb.TTT.', '.....bbbbbb.TkT.',
-  '......b..b..TTT.', '......b..b......', '.....kk..kk.....', '................',
-]] };
+export const LAMPLIGHTER: PixelSprite = CHARACTER_FIELDS.lamplighter;
 export const STONE_FLOOR: PixelSprite = { palette, frames: [[
   'bbbbbbbbbbbbbbbb', 'bffffffffffffffb', 'bffffffffffffffb', 'bffffffffffbfffb',
   'bffffffffffffffb', 'bffffffffffffffb', 'bffffffffffffffb', 'bbbbbbbbbbbbbbbb',
