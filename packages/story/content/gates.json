@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "shut",
-          "objective": "Talk to the gatekeeper.",
+          "objective": "Talk to Shut, the keeper asleep at the foot of the tree. Press Enter next to him.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.met-shut",
@@ -19,7 +19,7 @@
         },
         {
           "id": "ope",
-          "objective": "Find the other gatekeeper.",
+          "objective": "Find Ope, Shut's twin at the top. Stand on the ) next to Shut and press %.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.asked",
@@ -29,7 +29,7 @@
         },
         {
           "id": "lamp-a",
-          "objective": "Light the lower trunk lamp.",
+          "objective": "Light the lower lamp in the trunk. Ctrl-d drops half a screen.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-a",
@@ -39,7 +39,7 @@
         },
         {
           "id": "lamp-b",
-          "objective": "Light the upper trunk lamp.",
+          "objective": "Light the upper lamp. Ctrl-u climbs half a screen.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-b",
@@ -49,7 +49,7 @@
         },
         {
           "id": "tell",
-          "objective": "Tell Shut what you lit.",
+          "objective": "Go back down to Shut and tell him about the lamps. G jumps to the last row.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.shut-ready",
@@ -59,7 +59,7 @@
         },
         {
           "id": "open",
-          "objective": "Go back up to Ope.",
+          "objective": "Go back up to Ope: stand on the ) next to Shut and press %.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gates"
@@ -75,7 +75,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A hollow tree, taller than the canopy.\nA gate at its foot. A keeper asleep on it."
+          "text": "A hollow tree, taller than the canopy. At its\nfoot, a gate and a sleeping keeper."
         }
       ],
       "then": []
@@ -95,7 +95,7 @@
         },
         {
           "speaker": "npc",
-          "text": "Don't believe me? Stand on my mark\nand press %. It goes nowhere. You'll see.",
+          "text": "Don't believe me? Stand on the ) next to me and\npress %. Go on. Nothing will happen.",
           "name": "Shut"
         }
       ],
@@ -123,7 +123,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The top of the tree. % found the\nmark's partner. So there is one."
+          "text": "The top. % jumped from Shut's ) to this ( : its\npartner. So there is another keeper."
         }
       ],
       "then": []
@@ -147,12 +147,12 @@
           "name": "Ope"
         },
         {
-          "speaker": "system",
-          "text": "The trunk is hollow, with a landing every\nhalf screen. Ctrl-d drops half a screen."
+          "speaker": "scribe",
+          "text": "Note: Ctrl-d drops half a screen, Ctrl-u climbs\nhalf a screen. The landings sit that far apart."
         },
         {
           "speaker": "system",
-          "text": "Ctrl-u climbs half a screen.\nStand over the hollow first."
+          "text": "The trunk is hollow. Stand over the hollow\nfirst, then press Ctrl-d."
         }
       ],
       "then": [
@@ -313,7 +313,7 @@
         },
         {
           "speaker": "system",
-          "text": "You tell him what you have seen: a lamp\nrelit, a road reopened, two lamps in a trunk."
+          "text": "You tell him what you did: a lamp lit, a road\ncleared, two lamps in a hollow trunk."
         },
         {
           "speaker": "npc",
@@ -334,11 +334,11 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "A sealed room, and you are in it. % took\nyou to this mark's partner, not the nearest."
+          "text": "Note: a sealed room, and you're inside it. %\njumps to the partner of the mark you stand on."
         },
         {
           "speaker": "scribe",
-          "text": "Brackets nest. The inner pair closes\nfirst. % again, and you are out."
+          "text": "Brackets nest: the inner pair closes first.\nStand on the ( here, press %, and you're out."
         }
       ],
       "then": []
@@ -358,7 +358,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Watch the Blot on the landing. Drop when\nit steps aside: Ctrl-u, then Ctrl-d again."
+          "text": "Blot on the landing! Wait for it to step aside,\nthen Ctrl-u or Ctrl-d to cross half a screen."
         }
       ],
       "then": []

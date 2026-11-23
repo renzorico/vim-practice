@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "oil",
-          "objective": "Clear the nets and fill the first crate with oil.",
+          "objective": "Clear the nets, then put oil in the first crate. Copy with yw, paste with \"0p.",
           "completeWhen": {
             "type": "flag",
             "flag": "customs.oil",
@@ -21,7 +21,7 @@
         },
         {
           "id": "mixed",
-          "objective": "Fill the second crate: oil, then rope.",
+          "objective": "Put oil, then rope, in the second crate. Keep the rope safe with \"byw, paste it with \"bp.",
           "completeWhen": {
             "type": "flag",
             "flag": "customs.mixed",
@@ -31,7 +31,7 @@
         },
         {
           "id": "tare",
-          "objective": "Report to the customs officer.",
+          "objective": "Talk to Tare, the customs officer. Press Enter next to Tare.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "customs"
@@ -52,22 +52,17 @@
         {
           "speaker": "npc",
           "name": "Tare",
-          "text": "Tare. Customs. Nothing leaves without\nthe right cargo in the right crate."
+          "text": "Tare, customs. First crate: oil. Second crate:\noil, then rope. The nets block the first one."
         },
         {
           "speaker": "npc",
           "name": "Tare",
-          "text": "First crate: oil. Somebody dumped nets\nin front of it. Clear them."
+          "text": "Delete the nets first (db). Then copy the oil\nwith yw and put it in with p. Cleared."
         },
         {
           "speaker": "npc",
           "name": "Tare",
-          "text": "Second crate: oil, then rope.\nThe rope rack is down by you."
-        },
-        {
-          "speaker": "npc",
-          "name": "Tare",
-          "text": "A register is a named hold. \"b before\nyw yanks into b. \"bp puts it back."
+          "text": "A register is a named hold: \"b before yw yanks\ninto b, \"bp puts it back. Rope's down by you."
         }
       ],
       "then": []
@@ -76,17 +71,17 @@
       "id": "customs.nets-gone",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Note: d keeps what it deletes, so p would now\nput the nets back. Not what you want."
+        },
+        {
           "speaker": "npc",
-          "name": "Dot",
-          "text": "Gone! ...gone."
+          "text": "Gone! ...gone.",
+          "name": "Dot"
         },
         {
-          "speaker": "system",
-          "text": "Dot means: d keeps what it deletes.\np would put the nets now."
-        },
-        {
-          "speaker": "system",
-          "text": "\"0 keeps your last yank, whatever\nyou delete after it. \"0p puts it."
+          "speaker": "scribe",
+          "text": "Note: \"0 keeps your last yank, whatever you\ndelete after it. \"0p puts it."
         }
       ],
       "then": []
@@ -130,12 +125,12 @@
         {
           "speaker": "npc",
           "name": "Tare",
-          "text": "Clean work. You kept the yank\nwhile the nets went over."
+          "text": "Clean work. You kept your copy safe while the\nnets went overboard. Cleared."
         },
         {
           "speaker": "npc",
           "name": "Tare",
-          "text": "The copies on Ream's shelves came through\nhere. The clerk kept the yank too."
+          "text": "The copies on Ream's shelves came through\nhere. The clerk learned to copy too."
         },
         {
           "speaker": "npc",

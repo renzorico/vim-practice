@@ -47,9 +47,9 @@ it('keeps Vim linewise quote behavior: first nonblank is rock, so the jump bumps
 it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive Echo states', (first, second) => {
   let session = start();
   expect(lines('marked.intro')).toEqual([
-    'A fork in the tunnel. Rock all round,\nand pockets sealed inside it.',
-    '...crystal. ...oil. ...and back.', 'Here! ...here.',
-    'Dot means: ma marks this spot.\n`a brings you back to it, from anywhere.',
+    'A fork in the tunnel. A crystal and lamp oil sit\nsealed in the rock. Mark the fork first.',
+    '...crystal. ...oil. ...and back.',
+    'Note: ma marks this spot. `a brings you back\nto it from anywhere. Mark the fork first.',
   ]);
   for (const item of [null, first, second]) {
     if (item) session = dismiss(keys(session, `/${item}<CR>`));

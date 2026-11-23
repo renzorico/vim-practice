@@ -6,12 +6,12 @@
     {
       "id": "caves.marked",
       "world": "echo-caves",
-      "title": "The marked way",
+      "title": "Fetch crystal and oil",
       "kind": "main",
       "steps": [
         {
           "id": "fetch",
-          "objective": "Bring the Echo a crystal and lamp oil.",
+          "objective": "Mark the fork (ma). Search with / for the crystal (x) and the oil (o), then `a to come back.",
           "completeWhen": {
             "type": "flag",
             "flag": "marked.both",
@@ -21,7 +21,7 @@
         },
         {
           "id": "echo",
-          "objective": "Give them to the Echo.",
+          "objective": "Give them to the Echo: stand next to it and press Enter.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "marked"
@@ -37,7 +37,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A fork in the tunnel. Rock all round,\nand pockets sealed inside it."
+          "text": "A fork in the tunnel. A crystal and lamp oil sit\nsealed in the rock. Mark the fork first."
         },
         {
           "speaker": "npc",
@@ -45,13 +45,8 @@
           "text": "...crystal. ...oil. ...and back."
         },
         {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Here! ...here."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: ma marks this spot.\n`a brings you back to it, from anywhere."
+          "speaker": "scribe",
+          "text": "Note: ma marks this spot. `a brings you back\nto it from anywhere. Mark the fork first."
         }
       ],
       "then": []

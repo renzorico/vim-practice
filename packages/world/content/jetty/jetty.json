@@ -126,7 +126,7 @@
     "<CR>"
   ],
   "hints": [
-    "d deletes; the motion after it says how far. db: back to the start of the word behind you.",
-    "Stand just past a pile, then db. . repeats it."
+    "d deletes and the key after says how far. db deletes back to the start of the word behind you: one pile.",
+    "Stand just past a pile and press db. Then b, and . repeats the db on the next pile."
   ]
 }

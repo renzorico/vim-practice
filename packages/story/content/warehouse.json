@@ -6,12 +6,12 @@
     {
       "id": "port.warehouse",
       "world": "copper-port",
-      "title": "The warehouse",
+      "title": "Stock the shelves",
       "kind": "main",
       "steps": [
         {
           "id": "stock",
-          "objective": "Copy the tally onto the three shelves.",
+          "objective": "Copy oil onto the top and middle shelves, rope onto the bottom. y copies, p pastes.",
           "completeWhen": {
             "type": "flag",
             "flag": "warehouse.stocked",
@@ -21,7 +21,7 @@
         },
         {
           "id": "ream",
-          "objective": "Report to the quartermaster.",
+          "objective": "Talk to Ream, the quartermaster. Stand next to him, press Enter.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "warehouse"
@@ -37,27 +37,17 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The warehouse. Two tally racks,\nthree bare shelves."
+          "text": "The warehouse. Oil on the top rack, rope on the\nbottom, and three bare shelves to stock."
         },
         {
           "speaker": "npc",
           "name": "Ream",
-          "text": "One of each, on the tally. All the stock\nthe port has left. The tally stays put."
+          "text": "Copy, don't carry. y yanks: it copies and takes\nnothing. yw copies one word, like oooo."
         },
         {
           "speaker": "npc",
           "name": "Ream",
-          "text": "So you copy it. y yanks: it copies\nand takes nothing. yw copies one word."
-        },
-        {
-          "speaker": "npc",
-          "name": "Ream",
-          "text": "p puts it back, just after you.\nStand on a shelf's [ and p."
-        },
-        {
-          "speaker": "npc",
-          "name": "Ream",
-          "text": "Oil on the top shelf and the middle one.\nRope on the bottom. Then come and see me."
+          "text": "p puts it just after you. Stand on a shelf's [\nand press p. Oil: top, middle. Rope: bottom."
         }
       ],
       "then": []
@@ -66,13 +56,13 @@
       "id": "warehouse.still",
       "lines": [
         {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Still! ...still."
+          "speaker": "scribe",
+          "text": "Note: the yank stays put. Press p again and the\nsame thing goes down again."
         },
         {
-          "speaker": "system",
-          "text": "Dot means: the yank is still there.\np again puts the same thing again."
+          "speaker": "npc",
+          "text": "Still! ...still.",
+          "name": "Dot"
         }
       ],
       "then": [

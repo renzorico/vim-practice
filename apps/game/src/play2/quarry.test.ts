@@ -100,7 +100,7 @@ it.each(['11l9x', '12x'])('restores the cut after overcounting %s without losing
 it('teaches retry as the last line of Ash’s first dialogue', () => {
   expect(content.dialogues.find(dialogue => dialogue.id === 'quarry.ash')?.lines.at(-1)).toEqual({
     speaker: 'npc', name: 'Foreman Ash',
-    text: 'Cut too much? :e! puts the quarry back\nthe way it was. No shame in it.',
+    text: "Cut too much? :e! puts the whole quarry back.\nNo shame in it. I've done it twice. Today.",
   });
 });
 it('clears at the remapped gate after shortening all three old clear rows', () => {

@@ -4,12 +4,12 @@
     {
       "id": "caves.study",
       "world": "echo-caves",
-      "title": "The Scribe's study",
+      "title": "Fix the Scribe's index",
       "kind": "main",
       "steps": [
         {
           "id": "index",
-          "objective": "Set the Scribe's index right.",
+          "objective": "Fix the index: cut the shelf column, change lost to found, star every row (Ctrl-v), keep only the final draft.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "study"
@@ -59,7 +59,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Scribe's study. A desk, a lamp,\nan empty chair."
+          "text": "The Scribe's study: a desk, a lamp, a chair.\nThe index on the desk says 'lost' everywhere."
         },
         {
           "speaker": "npc",
@@ -67,13 +67,8 @@
           "text": "...lost. ...lost. ...lost."
         },
         {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Block! ...block."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: Ctrl-v selects a block.\nEvery row at once."
+          "speaker": "scribe",
+          "text": "Note: Ctrl-v selects a block of columns, across\nevery row. Then d, c or I act on all of it."
         }
       ],
       "then": []
@@ -87,7 +82,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Every entry found. Under the last line,\nin her hand:"
+            "text": "Every entry found. Under the last line,\nin the Scribe's hand:"
           }
         },
         {

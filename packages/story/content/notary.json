@@ -6,12 +6,12 @@
     {
       "id": "library.notary",
       "world": "library",
-      "title": "The Notary",
+      "title": "Open the vault",
       "kind": "main",
       "steps": [
         {
           "id": "open",
-          "objective": "Open the vault before he signs seven clauses.",
+          "objective": "Open the three locks before seven clauses: da[ on the lock, da{ on the seal, dit on the tag.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "notary"
@@ -27,26 +27,16 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The vault. A desk at the top, a stair\ndown the side, three locks below."
+          "text": "The vault: a desk at the top, a stair down the\nside, three locks below. The Notary is signing."
         },
         {
           "speaker": "npc",
           "name": "Notary",
-          "text": "Notary. Everything here is in order.\nI keep it in order. Clause by clause."
+          "text": "Notary. Everything in order: a clause every two\nturns. At seven, the vault stays shut for good."
         },
         {
-          "speaker": "npc",
-          "name": "Notary",
-          "text": "Every two turns, another clause. At seven\nthe vault is mine, and stays shut."
-        },
-        {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Inside! ...inside."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: a[ is the lock with its\nbrackets, a{ the seal, it a tag's inside."
+          "speaker": "scribe",
+          "text": "Note: da[ opens a lock, da{ breaks a seal, dit\nempties a tag. Stand anywhere inside each."
         }
       ],
       "then": []
@@ -82,7 +72,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "From inside: da[, then 0 2j w da{,\nthen 0 2j w dit. Don't count brackets."
+          "text": "Inside the lock: da[. Then 0 2j w, da{ for the\nseal. Again 0 2j w, then dit for the tag."
         }
       ],
       "then": []
@@ -101,7 +91,7 @@
           "line": {
             "speaker": "npc",
             "name": "Notary",
-            "text": "In case of loss, recover. Her hand.\nThe Scribe's. Before the Flicker."
+            "text": "In case of loss, recover. The Scribe's own hand.\nBefore the Flicker."
           }
         },
         {
@@ -113,7 +103,7 @@
           "line": {
             "speaker": "npc",
             "name": "Notary",
-            "text": "She left a letter on my desk: Q.\nI filed it under quit. I was wrong."
+            "text": "The Scribe left a letter on my desk: Q. I\nfiled it under quit. I was wrong."
           }
         },
         {

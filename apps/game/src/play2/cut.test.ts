@@ -42,7 +42,7 @@ it('the note teaches dd and u keycaps on dismissal', () => {
   const reading = keys(start(), '2j2l<CR>');
   expect(reading.queue[0]).toMatchObject({ dialogue: 'cut.note' });
   expect(content.dialogues.find(dialogue => dialogue.id === 'cut.note')?.lines[2]).toEqual({
-    speaker: 'scribe', text: 'Three of them sit on the cage itself.\nYou cannot step through that. Delete it.',
+    speaker: 'scribe', text: 'Three Blots sit on the cage. Delete their row\nwith dd, then press u to rebuild the ledge.',
   });
   const read = dismiss(reading);
   expect(read.story.flags['cut.knows-dd']).toBe(true);

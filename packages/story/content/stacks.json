@@ -21,12 +21,12 @@
     {
       "id": "library.stacks",
       "world": "library",
-      "title": "The stacks",
+      "title": "Dust the shelves",
       "kind": "main",
       "steps": [
         {
           "id": "dust",
-          "objective": "Dust the three shelves.",
+          "objective": "Dust the three shelves. Stand on a dust word, press daw. Then j and . for the next shelf.",
           "completeWhen": {
             "type": "flag",
             "flag": "stacks.dusted",
@@ -36,7 +36,7 @@
         },
         {
           "id": "quire",
-          "objective": "Tell the librarian.",
+          "objective": "Talk to Quire, the librarian. Stand next to Quire, press Enter.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "stacks"
@@ -52,27 +52,17 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Library. Chains on the doors,\ndust on the shelves."
+          "text": "The Library: chained doors, dusty shelves. Dust\nhas been shelved between the books."
         },
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Quire. Librarian. Or I was, before the\ncontract. Now I may not touch a book."
+          "text": "Quire, librarian. The contract says I may not\ntouch a book, so I can't dust. You can."
         },
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Dust got shelved between the books.\nWhole words of it. Three shelves."
-        },
-        {
-          "speaker": "npc",
-          "name": "Quire",
-          "text": "daw deletes a word, wherever you stand\nin it, and the space after it too."
-        },
-        {
-          "speaker": "npc",
-          "name": "Quire",
-          "text": "diw takes only the word and leaves\nthe gap. The shelf will know."
+          "text": "Stand on a dust word and press daw: it deletes\nthe word and the space after it. Three shelves."
         }
       ],
       "then": []
@@ -81,13 +71,13 @@
       "id": "stacks.down",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Note: after daw, j moves one shelf down and .\nrepeats your last change: the same daw again."
+        },
+        {
           "speaker": "npc",
           "name": "Dot",
           "text": "Down! ...down."
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: one shelf down, and .\ndoes the same daw again."
         }
       ],
       "then": [
@@ -115,7 +105,7 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Three shelves. Land in the dust, daw."
+          "text": "Three shelves. Stand on a dust word, press daw.\nI'm not allowed to, you see."
         }
       ],
       "then": []

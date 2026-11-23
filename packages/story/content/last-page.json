@@ -20,7 +20,7 @@
       "steps": [
         {
           "id": "write",
-          "objective": "Repair the page, choose, and write it.",
+          "objective": "Repair the typos before the grey thing tears the page. Then stand on R and type :w.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "last-page"
@@ -193,7 +193,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Recover. The Scribe's finger moves to R.\nNow write it, so it stays: :w"
+          "text": "Recover. The Scribe's finger moves to R.\nNow write it so it stays: :w then Enter."
         }
       ],
       "then": []
@@ -235,7 +235,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "The Scribe is back. The file is open.\nAnd the page you stand on is a question."
+            "text": "The Scribe is back. Something grey is tearing\nthe page. Tidying up. u brings the rows back."
           }
         },
         {
@@ -244,20 +244,6 @@
             "speaker": "npc",
             "name": "Dot",
             "text": "Attention. ...attention."
-          }
-        },
-        {
-          "type": "line",
-          "line": {
-            "speaker": "system",
-            "text": "Something grey is tearing at the bottom\nof the page. Tidying up."
-          }
-        },
-        {
-          "type": "line",
-          "line": {
-            "speaker": "system",
-            "text": "u brings back what it tears. But u takes\nback the last change, whoever made it."
           }
         }
       ],

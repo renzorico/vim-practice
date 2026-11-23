@@ -21,12 +21,12 @@
     {
       "id": "port.jetty",
       "world": "copper-port",
-      "title": "The jetty",
+      "title": "Clear the jetty",
       "kind": "main",
       "steps": [
         {
           "id": "bitt",
-          "objective": "Talk to the dockhand.",
+          "objective": "Talk to Bitt, the dockhand, next to you. Press Enter.",
           "completeWhen": {
             "type": "flag",
             "flag": "jetty.asked",
@@ -36,7 +36,7 @@
         },
         {
           "id": "clear",
-          "objective": "Clear the boards for the cart.",
+          "objective": "Delete the nets and crates. Stand just past a pile and press db.",
           "completeWhen": {
             "type": "flag",
             "flag": "jetty.clear",
@@ -46,7 +46,7 @@
         },
         {
           "id": "ream",
-          "objective": "Report to the quartermaster.",
+          "objective": "Go up the ladder to Ream, the quartermaster. Press Enter next to him.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "jetty"
@@ -62,11 +62,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Copper Port. The ferry leaves you at\nthe far end of the jetty."
+          "text": "Copper Port. The ferry drops you at the end of\nthe jetty. Crates and nets block the boards."
         },
         {
           "speaker": "system",
-          "text": "Between you and the quay: crates and\nnets, dumped on the boards."
+          "text": "Bitt, the dockhand, is right here. Talk to him:\nstand next to him, press Enter."
         }
       ],
       "then": []
@@ -86,17 +86,17 @@
         },
         {
           "speaker": "npc",
-          "text": "Don't x it. From the boards you'd x the\nboards, and those are nailed down.",
+          "text": "Don't press x: you'd delete the board you stand\non. Those are nailed down.",
           "name": "Bitt"
         },
         {
           "speaker": "npc",
-          "text": "d deletes. What comes after says how far.\nb: back to the start of the word behind.",
+          "text": "d deletes, and the key after says how far. b is\nback to the start of a word: a pile is a word.",
           "name": "Bitt"
         },
         {
           "speaker": "npc",
-          "text": "Stand just past a pile and db.\nThe boards slide right up to you.",
+          "text": "Stand just past a pile and press db. The boards\nslide right up to you.",
           "name": "Bitt"
         }
       ],
@@ -118,7 +118,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Just past the pile, then db.\nA pile is one word. b finds its start.",
+          "text": "Stand just past a pile, then db. Don't stop at\nthe first pile: there are two.",
           "name": "Bitt"
         }
       ],
@@ -128,13 +128,13 @@
       "id": "jetty.again",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Note: . repeats your last change. After db,\n. is another db: use it on the next pile."
+        },
+        {
           "speaker": "npc",
           "text": "Again! ...again.",
           "name": "Dot"
-        },
-        {
-          "speaker": "system",
-          "text": "Dot means: . repeats your last change.\nAfter db, . is another db."
         }
       ],
       "then": [

@@ -223,7 +223,7 @@
     "<CR>"
   ],
   "hints": [
-    "f and a character jumps to the next one on your row. fH: the ladder.",
-    ", repeats your last f backwards. t stops one short: t@."
+    "Press f then a letter to jump to it on your row. fH reaches the ladder.",
+    "Press , to repeat your last f backward. t@ stops one tile before a thorn."
   ]
 }
