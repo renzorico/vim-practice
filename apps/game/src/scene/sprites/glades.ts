@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, M: '#526749', L: '#a9c478', B: '#233c32', o: '#9aa19b', O: '#656f71', Y: '#ffe6a2' };
@@ -22,17 +23,7 @@ export const CLEARING = art(surface((x, y) => {
   if ((x === 2 && y === 3) || (x === 13 && y === 12)) return 'w';
   return (x * 7 + y * 11) % 19 < 3 ? 'a' : 'L';
 }));
-export const PILCROW = art(surface((x, y) => {
-  if (y === 14 && (x === 5 || x === 10)) return 'y';
-  if ((x - 8) ** 2 / 1.1 + (y - 8) ** 2 > 40) return '.';
-  if (x >= 10 && y >= 9) return x === 10 || y === 9 ? 'T' : y % 2 ? 'w' : 'b';
-  if (y >= 4 && y <= 7 && x >= 3 && x <= 12) {
-    if (y === 4 || y === 7 || x === 3 || x === 7 || x === 8 || x === 12) return 'k';
-    return (x === 5 || x === 10) && y === 6 ? 'k' : 'w';
-  }
-  if (x === 8 && y === 8) return 'y';
-  return x < 4 || x > 11 ? 'O' : 'o';
-}));
+export const PILCROW = CHARACTER_FIELDS.pilcrow;
 export const ROPE = art(surface((x, y) => {
   if ((x - 8) ** 2 + (y - 3) ** 2 < 10) return x === 8 ? 'k' : 'O';
   if (y === 10 || y === 11) return 'T';

@@ -97,7 +97,7 @@ it('Continue restores the manifest editor and retained story', () => {
   expect(continued.story).toEqual(edited.story);
 });
 it('shows the target beside the editor, Semi portrait and the six World 3 keys', () => {
-  expect(screen(controller.init())).toContain('<svg width="64" height="64"');
+  expect(screen(controller.init())).toContain('<svg width="96" height="96"');
   const html = screen(start());
   expect(html).toContain('The manifest should read:');
   expect(html).toContain('aria-label="Target text"');

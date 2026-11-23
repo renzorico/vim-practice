@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, K: '#18292b', C: '#ad704b', c: '#d39b69', W: '#d6c6a0',
@@ -17,11 +18,4 @@ export const CRATE_MARK = art((x, y) => {
   const letters = ['WWW..W..WW.', 'W.W.WWW.W.W', 'W.W..W..WW.', 'WWW.....W.W'];
   return letters[y - 6]?.[x - 5] === 'W' ? 'W' : '.';
 });
-export const TARE = art((x, y) => {
-  if (y >= 13) return y === 13 ? 'c' : 'C'; // Booth counter.
-  if (y >= 1 && y <= 4 && x >= 3 && x <= 12) return y === 2 && x === 8 ? 'c' : y === 4 ? 'K' : 'V';
-  if (y >= 5 && y <= 8 && x >= 5 && x <= 10) return y === 6 && (x === 6 || x === 9) ? 'K' : 'W';
-  if (y >= 9 && y <= 12 && x >= 3 && x <= 12) return x === 8 ? 'c' : 'V';
-  if (x >= 13 && y >= 9 && y <= 12) return y === 12 ? 'K' : 'B'; // Rubber stamp.
-  return '.';
-});
+export const TARE = CHARACTER_FIELDS.tare;

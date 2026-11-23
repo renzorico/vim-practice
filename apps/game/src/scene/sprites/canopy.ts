@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, S: '#91bbc1', B: '#507d86', L: '#355e58', N: '#263c3d' };
@@ -37,12 +38,7 @@ export const THORNS = art(surface((x, y) => {
 }));
 export const PLATFORM = art(surface((x, y) =>
   y < 3 || y > 12 ? air(x, y) : y % 4 === 0 ? 'T' : x === 2 || x === 13 ? 'k' : 't'));
-export const FERN = art([
-  '................','......GGGG......','.....GGggGG.....','....GGggggGG....',
-  '....GGssssGG....','....GGskskGG....','.....GssssG.....','....ggGGGGttt...',
-  '...ggggggtTtTt..','...sgggggtTtTt..','....ggggggttt...', '.....GGGGGG.....',
-  '.....TT.TT......','.....TT.TT......','....kkk.kkk.....','................',
-]);
+export const FERN = CHARACTER_FIELDS.fern;
 export const KNOTHOLE = art(surface((x, y) => {
   const radius = (x - 8) ** 2 / 1.4 + (y - 8) ** 2;
   if (radius < 12) return y < 8 ? 'w' : 'c';

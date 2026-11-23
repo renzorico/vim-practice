@@ -757,6 +757,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-7: Characters (portraits with moods, distinct sprites, livelier dialogue)
+**Who:** Renzo (played it: "characters are too plain"), Opus (brief, browser check), Codex (build).
+
+**What:** 27 new 32x32 portraits drawn as pixel strings, shown at 96 px in the dialogue box: 19 main characters with three moods (neutral, worried, glad), 8 villagers with one. A pure `moodFor` picks the mood from an override table, then words of loss or threat, then gladness. Field sprites redrawn so no two speakers share a body; Tilde got a scarf (the `~`) that flutters. The dialogue box shows each speaker's name in their accent colour and reveals text at 60 characters a second as a visual layer only: Enter advances exactly as before, screen readers get the full line at once, reduced motion shows it all.
+
+**What the checks caught:** Rebased onto P-5's rewritten text, five mood tests pinned moods of the old wording; updated to the new lines (each checked by reading it). A rendered grid of all 65 portrait frames in the browser: readable and distinct, moods subtle (mostly the mouth).
+
+**Lesson:** Render the whole cast side by side before judging pixel art; one portrait at a time hides look-alikes.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

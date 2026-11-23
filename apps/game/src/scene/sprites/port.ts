@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const palette = { ...PALETTE, K: '#18292b', V: '#153e43', v: '#28636a', F: '#65a09a',
@@ -47,28 +48,7 @@ export const CART = art((x, y) => {
   }
   return (x === 4 || x === 11) && y < 5 ? 'C' : '.';
 });
-export const BITT = art((x, y) => {
-  const rope = (x - 11) ** 2 + (y - 9) ** 2;
-  if (rope >= 4 && rope <= 10 && x >= 9) return 'N';
-  if (y >= 13 && (x === 4 || x === 9)) return 'K';
-  if (y >= 8 && y <= 13 && x >= 3 && x <= 10) return x === 3 || x === 10 ? 'V' : 'v';
-  if (y >= 2 && y <= 7 && x >= 4 && x <= 10) {
-    if (y <= 3) return x % 2 === 0 ? 'C' : 'B';
-    if (y === 5 && (x === 5 || x === 9)) return 'K';
-    return y === 7 ? 'B' : 's';
-  }
-  return '.';
-});
-export const REAM = art((x, y) => {
-  if (x === 11 && y >= 3 && y <= 6) return 'y'; // pencil
-  if (y === 15 && (x === 6 || x === 9)) return 'K';
-  if (y >= 8 && y <= 14 && x >= 5 && x <= 10) return x === 5 || x === 10 ? 'V' : 'N';
-  if (x >= 10 && x <= 13 && y >= 9 && y <= 12) return x === 10 || y === 9 ? 'C' : 'B'; // ledger
-  if (y >= 1 && y <= 7 && x >= 5 && x <= 10) {
-    if (y <= 2) return 'B';
-    return y === 4 && (x === 6 || x === 9) ? 'K' : 's';
-  }
-  return '.';
-});
+export const BITT = CHARACTER_FIELDS.bitt;
+export const REAM = CHARACTER_FIELDS.ream;
 export const SPLASH = art((x, y) => y >= 10 && y <= 13 && x >= 2 && x <= 13
   || y >= 6 && y < 10 && (x === 3 || x === 12) ? 'F' : '.');

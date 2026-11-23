@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const art = (...frames: string[][]): PixelSprite => ({ palette: PALETTE, frames });
@@ -18,18 +19,8 @@ export const TENT = art(surface((x, y) => {
   if (x < 8 - y / 2 || x > 8 + y / 2) return 't';
   return x > 6 && x < 10 && y > 7 ? 'T' : x < 8 ? 'w' : 'b';
 }));
-export const ASH = art([
-  '................','.....TTTT.......','....TssssT......','....kyyyyk......',
-  '....kskssk......','.....ssss.......','....tttttt......','...tttTtttt..bb.',
-  '..ttttTtttt.bbb.','..ssttTttss..T..','....ttTtt....T..','....ttttt....T..',
-  '....TT.TT....T..','....TT.TT....T..','...kkk.kkk......','................',
-]);
-export const KIT = art([
-  '................','................','.....GGGG.......','....GGGGGGG.....',
-  '.....sssss......','.....sksks......','......sss.......','.....ggggg......',
-  '....ggggggg.....','...ttgggggtt....','...ttgggggtt....','.....TTTTT......',
-  '.....TT.TT......','....kkk.kkk.....','................','................',
-]);
+export const ASH = CHARACTER_FIELDS.ash;
+export const KIT = CHARACTER_FIELDS.kit;
 export const CRACK = art(surface((x, y) => {
   const seam = 7 + Math.floor(y / 3) % 3;
   return x === seam ? 'w' : Math.abs(x - seam) < 2 ? 'k' : y % 5 === 0 ? 'T' : 'b';

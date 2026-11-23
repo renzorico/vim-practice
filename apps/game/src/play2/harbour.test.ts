@@ -105,7 +105,7 @@ it('Continue restores the harbour editor and retained story', () => {
   expect(continued.story).toEqual(edited.story);
 });
 it('shows the target beside the editor, Cleat portrait and the World 4 keys', () => {
-  expect(screen(controller.init())).toContain('<svg width="64" height="64"');
+  expect(screen(controller.init())).toContain('<svg width="96" height="96"');
   const html = screen(start());
   expect(html).toContain('The ledger should read:');
   expect(html).toContain('aria-label="Target text"');

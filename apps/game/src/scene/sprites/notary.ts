@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 // Library stone, parchment, brass and sealing wax.
@@ -53,21 +54,4 @@ export const VAULT_DOOR = art((x, y) => x < 2 || x > 13 || y < 2 ? 'O'
 export const LOCK_SHARDS = art((x, y) => x > 1 && x < 14 && y > 2 && y < 14
   && (x * 3 + y * 5) % 13 < 2 ? y % 2 ? 'E' : 'F' : '.');
 export const WAX_MELT = art((x, y) => y > 10 && y < 15 && x > 2 && x < 14 ? y === 11 ? 'r' : 'A' : '.');
-export const NOTARY: PixelSprite = { palette, frames: [[
-  '................',
-  '......DDD.......',
-  '.....DssD.......',
-  '.....EKKE.......',
-  '.....ssss.......',
-  '......ss........',
-  '.....KVVK.......',
-  '.....KKKK....V..',
-  '.....KKKK...V...',
-  '....sKKKKs.F....',
-  '...FAKKKK.F.....',
-  '...AAKKKK.......',
-  '.....KKKK.......',
-  '.....KKKK.......',
-  '.....K..K.......',
-  '....KK..KK......',
-]] };
+export const NOTARY: PixelSprite = CHARACTER_FIELDS.notary;

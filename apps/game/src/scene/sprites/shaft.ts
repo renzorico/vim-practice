@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
 const pixels = (pixel: (x: number, y: number) => string): string[] =>
@@ -12,24 +13,7 @@ export const SCAFFOLD: PixelSprite = { palette: PALETTE, frames: [pixels((x, y) 
   if (y < 10) return y % 4 === 0 || x === 1 || x === 14 ? 'T' : 't';
   return y === 10 || (x + y) % 11 === 0 ? 'k' : 'b';
 })] };
-export const MASON: PixelSprite = { palette: PALETTE, frames: [[
-  '.....bbbbbb.....',
-  '....bbbbbbbb....',
-  '....bssssssb....',
-  '....sskssks.....',
-  '....ssssssss....',
-  '....bbbbbbbb....',
-  '....bbwbwbbb....',
-  '..tttbbbbtttt...',
-  '.tssTttttTssst..',
-  '.tssTttttTsssbb.',
-  '..ssTtTTtTssbbb.',
-  '....TtTTtT...b..',
-  '....TttttT...t..',
-  '....TTTTTT......',
-  '....kk..kk......',
-  '...kkk..kkk.....',
-]] };
+export const MASON: PixelSprite = CHARACTER_FIELDS.mason;
 
 // Transparent highlights preserve the mortar beneath and mark its slippery diagonal grain.
 export const WET_SHEEN: PixelSprite = { palette: { ...PALETTE, m: '#8196a2' }, frames: [pixels((x, y) =>

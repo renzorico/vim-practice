@@ -1,17 +1,8 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
-export const WREN: PixelSprite = { palette: PALETTE, frames: [[
-  '................', '.......GG.......', '......GGGG......', '.....GGggGG..t..',
-  '.....GssssG...t.', '.....GskskG...t.', '......ssss....t.', '.....GGggGG...t.',
-  '....GGggggGG..t.', '....sGggggGs.t..', '.....GGggGG.t...', '......GttG......',
-  '......g..g......', '.....kk..kk.....', '................', '................',
-]] };
-export const GULL: PixelSprite = { palette: PALETTE, frames: [[
-  '................', '................', '......yyyy......', '.....yyyyyy.....',
-  '....yyyyyyyy....', '......ssss......', '......skss......', '......sssstt....',
-  '.....yyyyyy.t...', '....yyyyyyyy....', '....syyyyyys....', '.....yyyyyy.....',
-  '......b..b......', '.....kk..kk.....', '................', '................',
-]] };
+export const WREN: PixelSprite = CHARACTER_FIELDS.wren;
+export const GULL: PixelSprite = CHARACTER_FIELDS.gull;
 export const NOTE: PixelSprite = { palette: PALETTE, frames: [[
   '................', '.......TT.......', '...wwwwttwwww...', '...wwwwwwwwww...',
   '...wTTTTTTwww...', '...wwwwwwwwww...', '...wTTTTTTTww...', '...wwwwwwwwww...',

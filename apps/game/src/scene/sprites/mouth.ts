@@ -1,3 +1,4 @@
+import { CHARACTER_FIELDS } from './characters.js';
 import type { PixelSprite } from './sprite.js';
 const palette = { '.': 'transparent', k: '#0b0a12', d: '#171522', s: '#292637',
   m: '#3e3a50', v: '#695182', V: '#ac79e5', w: '#e7ceff', a: '#dba55d' };
@@ -18,14 +19,7 @@ function crystal(lit: boolean): PixelSprite {
 }
 export const CRYSTAL_DARK = crystal(false);
 export const CRYSTAL_LIT = crystal(true);
-export const ECHO = art((x, y) => {
-  if (y >= 2 && y <= 8 && (x - 8) ** 2 + (y - 5) ** 2 < 15) {
-    if (y >= 6 && x >= 7 && x <= 8) return 'k';
-    return (x + y) % 3 === 0 ? '.' : 'w';
-  }
-  if (y >= 9 && y <= 14 && Math.abs(x - 8) < 3 + (y - 9) / 2) return (x + y) % 3 === 0 ? '.' : 'v';
-  return '.';
-});
+export const ECHO = CHARACTER_FIELDS.echo;
 
 /** Clay jar with a narrow neck and an amber oil glint. */
 export const LAMP_OIL = art((x, y) => {
