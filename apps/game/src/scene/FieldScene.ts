@@ -1,3 +1,4 @@
+import { darknessAlpha, stageLights, type Darkness } from './darkness.js';
 import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
 import { counterStamp, type CounterStamp } from './counterStamp.js';
 import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
@@ -19,6 +20,7 @@ export interface FieldFrame {
   readonly legend: Legend;
   readonly stage: Stage;
   readonly showSource: boolean;
+  readonly darkness?: Darkness;
   readonly registerTarget?: { readonly x: number; readonly y: number };
   readonly hazards?: readonly Area[];
 }
@@ -35,6 +37,7 @@ const LONG_JUMP_ARC_SCALE = 0.5;
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
   private ready = false;
+  private pulsing = new Set<Phaser.GameObjects.Image>();
   private animating = false;
   private reducedMotion: boolean;
   private tiles: Phaser.GameObjects.Container | undefined;
@@ -132,9 +135,11 @@ export class FieldScene extends Phaser.Scene {
 
   /** Called for every key, including unfinished commands: nothing can queue behind typing. */
   finish(): void {
-    if (!this.ready || !this.animating) return;
+    if (!this.ready || (!this.animating && this.pulsing.size === 0)) return;
     this.animating = false;
     this.tweens.killAll();
+    for (const tile of this.pulsing) tile.setScale(1);
+    this.pulsing.clear();
     this.clearStamp();
     this.syncActors();
     this.clearRowEffects();
@@ -163,7 +168,7 @@ export class FieldScene extends Phaser.Scene {
     else if (scroll) this.scrollOffset = center(this.previousState.engine.cursor.line) - this.cameraY;
     // Jumps and restores (:e!, death) recentre; walking keeps the row the last scroll left.
     else if (!frame.events.some(event => event.type === 'command')
-      || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}'].includes(event.command.id))) this.scrollOffset = 0;
+      || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}', '/', '?', 'n', 'N'].includes(event.command.id))) this.scrollOffset = 0;
     this.frame = frame;
     if (!this.ready) return;
     for (const event of frame.events) {
@@ -172,7 +177,7 @@ export class FieldScene extends Phaser.Scene {
         if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
       }
     }
-    this.cameras.main.setBackgroundColor(frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
     this.stamp = this.reducedMotion ? null : counterStamp(this.previousState, frame.state, frame.events);
     this.captureTransfer(frame);
     this.captureJunk(frame);
@@ -199,6 +204,15 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.play(animationSteps(frame.events, this.reducedMotion, frame.state.pending !== null));
+    if (!this.reducedMotion && frame.darkness) for (const crystal of stageLights(frame.stage)) {
+      if (!frame.state.flags[crystal.flag] || previous.flags[crystal.flag]) continue;
+      const tile = this.cells.get(`${crystal.at.line}:${crystal.at.col}`)?.tile;
+      if (tile) {
+        this.pulsing.add(tile);
+        this.tweens.add({ targets: tile, scaleX: 1.2, scaleY: 1.2, duration: 75, yoyo: true,
+          onComplete: () => { tile.setScale(1); this.pulsing.delete(tile); } });
+      }
+    }
   }
 
   private syncWarehouseDecorations(): void {
@@ -419,12 +433,13 @@ export class FieldScene extends Phaser.Scene {
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
       const key = `${line}:${col}`;
       const char = this.frame.state.engine.lines[line]?.charAt(col) ?? '';
+      if (sprite === 'crystal-dark' && stageLights(this.frame.stage).some(crystal => crystal.at.line === line && crystal.at.col === col && this.frame.state.flags[crystal.flag])) sprite = 'crystal-lit';
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm' || sprite === 'fake') ? (this.reducedMotion ? 0 : this.idleFrame)
         : sprite === 'book' ? ((line * 73856093 ^ col * 19349663) >>> 0) % 3
-        : (sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor' || sprite === 'vault-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
+        : (sprite === 'cave-floor' || sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor' || sprite === 'vault-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -563,6 +578,21 @@ export class FieldScene extends Phaser.Scene {
     }
     this.positionCamera();
     this.positionDanger();
+    this.syncDarkness();
+  }
+
+  private syncDarkness(): void {
+    if (!this.frame.darkness) return;
+    for (const [key, cell] of this.cells) {
+      const at = { line: cell.line, col: Number(key.split(':')[1]) };
+      const alpha = darknessAlpha(at, this.frame.state.engine.cursor, this.frame.darkness);
+      cell.tile.setAlpha(alpha);
+      cell.glyph.setAlpha(alpha);
+    }
+    for (const entity of this.frame.state.entities) {
+      const alpha = darknessAlpha(entity.at, this.frame.state.engine.cursor, this.frame.darkness);
+      this.entities.get(entity.id)?.setAlpha(alpha * (entity.def.sprite === 'echo' ? 0.55 : 1));
+    }
   }
 
   private positionDanger(): void {

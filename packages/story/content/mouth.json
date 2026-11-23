@@ -1,0 +1,270 @@
+{
+  "worlds": [
+    {
+      "id": "echo-caves",
+      "order": 6,
+      "name": "The Echo Caves",
+      "stages": [
+        "mouth"
+      ],
+      "castle": null,
+      "statue": null
+    }
+  ],
+  "openingStage": "mouth",
+  "openingQuests": [],
+  "quests": [
+    {
+      "id": "caves.mouth",
+      "world": "echo-caves",
+      "title": "The mouth",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "crystals",
+          "objective": "Light the crystals, deepest first.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "mouth.top",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "echo",
+          "objective": "Find the echo.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "mouth"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "mouth.intro",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The Echo Caves. Dark past arm's reach.\nSomewhere below, the Scribe's study."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...study. ...study."
+        },
+        {
+          "speaker": "system",
+          "text": "The crystals are sealed in the rock.\nYou can't walk to them, or even see them."
+        },
+        {
+          "speaker": "npc",
+          "name": "Dot",
+          "text": "Search! ...search."
+        },
+        {
+          "speaker": "system",
+          "text": "Dot means: ?x then Enter finds the last x\nbehind you. n finds the next one."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "mouth.lit-deep",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The deepest crystal wakes."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "mouth.lit-middle",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The middle crystal answers it."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "mouth.lit-top",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The top crystal. And beside it, someone."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "mouth.echo-wait",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "...deepest first. ...deepest first."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "mouth.echo-through",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "You found me without seeing me.\nThat's how she found things too."
+        },
+        {
+          "speaker": "npc",
+          "name": "Echo",
+          "text": "Her words echo all through the gallery.\nFollow the right one."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "mouth.through",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "mouth.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Past the mouth, the echo gallery.\nThe same word, over and over, in the dark."
+          }
+        }
+      ],
+      "then": []
+    }
+  ],
+  "reactions": [
+    {
+      "id": "mouth.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "contract"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "caves.mouth"
+        }
+      ]
+    },
+    {
+      "id": "mouth.deep",
+      "when": {
+        "type": "trigger",
+        "trigger": "mouth.deep"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "mouth.lit-deep"
+        },
+        {
+          "type": "set-flag",
+          "flag": "mouth.deep",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "mouth.middle",
+      "when": {
+        "type": "trigger",
+        "trigger": "mouth.middle"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "mouth.lit-middle"
+        },
+        {
+          "type": "set-flag",
+          "flag": "mouth.middle",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "mouth.top",
+      "when": {
+        "type": "trigger",
+        "trigger": "mouth.top"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "mouth.lit-top"
+        },
+        {
+          "type": "set-flag",
+          "flag": "mouth.top",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "mouth.echo-wait",
+      "when": {
+        "type": "trigger",
+        "trigger": "mouth.talk-echo"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "mouth.echo-wait"
+        }
+      ],
+      "unless": "mouth.top"
+    },
+    {
+      "id": "mouth.echo-through",
+      "when": {
+        "type": "trigger",
+        "trigger": "mouth.talk-echo"
+      },
+      "once": false,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "mouth.echo-through"
+        }
+      ],
+      "onlyIf": "mouth.top"
+    },
+    {
+      "id": "mouth.end",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "mouth"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "mouth.end"
+        }
+      ]
+    }
+  ]
+}

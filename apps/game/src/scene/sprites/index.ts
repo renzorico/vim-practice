@@ -1,3 +1,4 @@
+import { CAVE_FLOOR, CAVE_ROCK, CRYSTAL_LEDGE, CRYSTAL_DARK, CRYSTAL_LIT, ECHO } from './mouth.js';
 import { TAG_LABEL, SEAL_RIBBON, VAULT_FLOOR, VAULT_WALL, NOTARY_DESK, CLAUSE_QUOTE, CLAUSE_TEXT, CLAUSE_GAP, LOCK_LEFT, LOCK_RIGHT, SEAL_LEFT, SEAL_RIGHT, KEYS, TAG_OPEN, TAG_CLOSE, TAG_SLASH, WAX, VAULT_DOOR, LOCK_SHARDS, WAX_MELT, NOTARY } from './notary.js';
 import { ATLAS_SHELF, BIBLE_SHELF, MISFILED_SHELF, ARCHIVE_AISLE, ARCHIVE_RAIL, ARCHIVE_POST, CATALOGUE, FILED_STAMP, INDEX } from './library.js';
 import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, SHACKLE_RIGHT, CHAIN, CHAIN_CLATTER, FOLIO, GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
@@ -32,6 +33,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'cave-floor': CAVE_FLOOR, 'cave-rock': CAVE_ROCK, 'crystal-ledge': CRYSTAL_LEDGE,
+  'crystal-dark': CRYSTAL_DARK, 'crystal-lit': CRYSTAL_LIT, echo: ECHO,
   'tag-label': TAG_LABEL, 'seal-ribbon': SEAL_RIBBON,
   'vault-floor': VAULT_FLOOR,
   'vault-wall': VAULT_WALL,

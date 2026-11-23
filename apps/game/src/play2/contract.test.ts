@@ -156,7 +156,7 @@ it('shows a Library parchment contract, target, existing portrait, and its lesso
   expect(learnedKeycaps({}, true, 'contract')).toEqual(expect.arrayContaining(['ci"', 'ci(', 'ci[', 'cit', 'cip', 'dap', '.']));
 });
 
-it('presents the exact ending including End of World 5 before To be continued', () => {
+it('presents the exact ending including End of World 5 before entering the Mouth', () => {
   let session = keys(start(), SHORTER);
   const ending = content.cutscenes.find(item => item.id === 'contract.end')!;
   for (const beat of ending.beats) {
@@ -165,8 +165,10 @@ it('presents the exact ending including End of World 5 before To be continued', 
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
-  expect(session.world.stage).toBe('contract');
-  expect(screen(session)).toContain('To be continued.');
+  expect(session.world.stage).toBe('mouth');
+  expect(session.story.clearedStages).toContain('contract');
+  expect(session.story.quests['caves.mouth']).toEqual({ step: 0, done: false });
+  expect(session.queue[0]).toMatchObject({ dialogue: 'mouth.intro' });
 });
 
 it('validates content and replays every bundled stage with its own commands', () => {

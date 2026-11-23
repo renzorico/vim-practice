@@ -624,6 +624,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · G-2: The Mouth (stage 6-1), World 6 opens
+**Who:** Opus (design, sim proof, brief, review fixes, browser check), Codex (build), Sonnet (review).
+
+**What:** The Echo Caves begin in the dark: only cells near the player are drawn (Manhattan radius 3, faded edge; drawing only, the sim is unchanged). Three crystals sit in sealed pockets (a walking reachability check proves it); they light from the deepest up. `?x<CR>` wraps back to the deepest, `n` climbs to the next, `l` and `<CR>` to the Echo. Par 4. New: `MOUTH_COMMANDS` (`/ ? n N`), the echo-caves world, darkness, crystals, the Echo.
+
+**What the checks caught:** In the sim, before the brief: a counted `w` also reaches the crystals in one turn (they are the only word characters); accepted, because a player cannot count words in the dark. Sonnet (0 blocking): a test pinned the solver's failure on the full vocabulary (it would break when the solver improves): removed, par stays proven on the focused vocabulary; the crystal cells were hard-coded in the scene: lights now come from the stage's single-cell `enter` triggers; darkness was wired to the Mouth only: a `DARK_STAGES` table lets the next caves reuse it. Browser: 4 turns, 3 hearts, no console errors.
+
+**Lesson:** A test asserts behaviour, never the current limit of a tool.
+
+---
+
 ## Parking lot
 - Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
 - Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.
