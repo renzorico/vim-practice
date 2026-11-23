@@ -15,7 +15,7 @@ import { bufferSize, cameraTarget } from '../scene/camera.js';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
-const controller = createSession({ sim, storyEngine, content, stages, stage: archive, legend: archiveLegend });
+const controller = createSession({ sim, storyEngine, content, stages: stages.filter(entry => entry.stage.id !== 'notary'), stage: archive, legend: archiveLegend });
 const oldCommands = [...READING_COMMANDS, 'P', 'yy'];
 function dismiss(session: Session): Session {
   let next = session;
@@ -43,7 +43,7 @@ it('enters archive only after reading.end, preserving story and starting its que
   expect(session.story.clearedStages).toContain('reading');
   expect(session.story.flags['reading.through']).toBe(true);
   expect(session.story.quests['library.archive']).toEqual({ step: 0, done: false });
-  expect(content.worlds.find(world => world.id === 'library')?.stages).toEqual(['stacks', 'reading', 'archive']);
+  expect(content.worlds.find(world => world.id === 'library')?.stages).toEqual(['stacks', 'reading', 'archive', 'notary']);
 });
 it('lifts the misfiled paragraph from its middle, files it and copies atlases with an aisle', () => {
   const lifted = keys(start(), 'dap');

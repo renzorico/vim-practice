@@ -1,3 +1,4 @@
+import { TAG_LABEL, SEAL_RIBBON, VAULT_FLOOR, VAULT_WALL, NOTARY_DESK, CLAUSE_QUOTE, CLAUSE_TEXT, CLAUSE_GAP, LOCK_LEFT, LOCK_RIGHT, SEAL_LEFT, SEAL_RIGHT, KEYS, TAG_OPEN, TAG_CLOSE, TAG_SLASH, WAX, VAULT_DOOR, LOCK_SHARDS, WAX_MELT, NOTARY } from './notary.js';
 import { ATLAS_SHELF, BIBLE_SHELF, MISFILED_SHELF, ARCHIVE_AISLE, ARCHIVE_RAIL, ARCHIVE_POST, CATALOGUE, FILED_STAMP, INDEX } from './library.js';
 import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, SHACKLE_RIGHT, CHAIN, CHAIN_CLATTER, FOLIO, GALLERY, LIBRARY_WALL, SHELF_POST, SHELF_GAP, BOOK, DUST as LIBRARY_DUST, DUST_PUFF, QUIRE } from './library.js';
 import { CLEAT } from './harbour.js';
@@ -31,6 +32,26 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'tag-label': TAG_LABEL, 'seal-ribbon': SEAL_RIBBON,
+  'vault-floor': VAULT_FLOOR,
+  'vault-wall': VAULT_WALL,
+  'notary-desk': NOTARY_DESK,
+  'clause-quote': CLAUSE_QUOTE,
+  'clause-text': CLAUSE_TEXT,
+  'clause-gap': CLAUSE_GAP,
+  'lock-left': LOCK_LEFT,
+  'lock-right': LOCK_RIGHT,
+  'seal-left': SEAL_LEFT,
+  'seal-right': SEAL_RIGHT,
+  'keys': KEYS,
+  'tag-open': TAG_OPEN,
+  'tag-close': TAG_CLOSE,
+  'tag-slash': TAG_SLASH,
+  'wax': WAX,
+  'vault-door': VAULT_DOOR,
+  'lock-shards': LOCK_SHARDS,
+  'wax-melt': WAX_MELT,
+  'notary': NOTARY,
   'atlas-shelf': ATLAS_SHELF, 'bible-shelf': BIBLE_SHELF, 'misfiled-shelf': MISFILED_SHELF,
   'archive-aisle': ARCHIVE_AISLE, 'archive-rail': ARCHIVE_RAIL, 'archive-post': ARCHIVE_POST,
   catalogue: CATALOGUE, 'filed-stamp': FILED_STAMP, index: INDEX,

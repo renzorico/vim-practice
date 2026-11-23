@@ -1,3 +1,4 @@
+import { NotaryGauge } from './NotaryGauge.js';
 import { CounterGauge } from './CounterGauge.js';
 import { YankedSlot } from './YankedSlot.js';
 import { createEngine } from '@escape/engine';
@@ -45,6 +46,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
     <header className="play-header">
       <h1>{stage.title}</h1>
       {stage.id === 'counter' && <CounterGauge world={world} />}
+      {stage.id === 'notary' && <NotaryGauge world={world} />}
       <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
     </header>
     <div className="play-field">
@@ -88,6 +90,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
 }
 
 export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true, stageId = ''): readonly string[] {
+  if (stageId === 'notary') return ['h', 'j', 'k', 'l', '0', '2j', 'w', 'da[', 'da{', 'dit', 'u', '<C-r>'];
   if (stageId === 'archive') return ['h', 'j', 'k', 'l', '}', '{', 'gg', 'G', 'dap', 'yap', 'p', 'P', 'u', '<C-r>'];
   if (stageId === 'reading') return ['h', 'j', 'k', 'l', 'w', 'b', 'e', '%', 'da(', 'di(', 'd2a(', '.', 'u', '<C-r>'];
   if (stageId === 'stacks') return ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'd', 'diw', 'daw', '.', 'u', '<C-r>'];

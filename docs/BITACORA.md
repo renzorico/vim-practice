@@ -594,6 +594,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · F-5: The Notary (stage 5-4, World 5's castle)
+**Who:** Opus (design, sim proof, brief, review fix, browser check), Codex (build), Sonnet (review).
+
+**What:** The vault. The Notary signs a clause `"s" ` after himself every 2 turns (World 4's `put`); at seven the attempt is lost (`hit` 3). Three locks by the stair: `da[`, `da{`, `dit` from inside, `0 2j w` between them. One multi-row text trigger on the vault anchor checks all three. Par 11 (5 clauses); without these objects 15, and the fuse fires at 14. HUD clause gauge, statue Q, the library's castle.
+
+**What the checks caught:** In the sim, before the brief: fighting him with `da"` loses to his signing rate, and `dt.` would wipe all his clauses with World 4 tools, so his row is out of reach and the castle is about the locks. Sonnet (0 blocking): the wax-melt effect and the seal-ribbon tile were chosen by hard-coded map rows; both now read the content (the deleted text, the enclosing braces). Browser: 11 turns, 3 hearts, the ending and statue Q, no console errors.
+
+**Lesson:** Scene code keyed on map coordinates breaks silently on the next map edit; key it on the text.
+
+---
+
 ## Parking lot
 - Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).
 - Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.

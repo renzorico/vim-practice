@@ -794,3 +794,59 @@ it.each([false, true])('folds Archive rows before sliding, unfolds puts and clea
   scene.finish();
   expect(fake.images.filter(image => !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
 });
+
+it.each([false, true])('renders Notary signing, lock shards and wax melting, with reduced motion=%s', async reduced => {
+  const { notary, notaryLegend } = await import('../play2/content.js');
+  const { NOTARY_COMMANDS } = await import('../play2/session.js');
+  const { parseKeys } = await import('@escape/engine');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: NOTARY_COMMANDS, flags: {} };
+  let state = sim.init(notary, notaryLegend, options);
+  const initial = { state, stage: notary, legend: notaryLegend, events: [], showSource: true };
+  const scene = new FieldScene(initial, reduced); scene.create();
+  for (const sprite of ['vault-door', 'notary', 'vault-floor', 'vault-wall', 'notary-desk', 'lock-left', 'seal-left', 'tag-open', 'keys', 'wax']) {
+    expect(fake.images.some(image => image.texture === 'field:' + sprite), sprite).toBe(true);
+  }
+  for (const key of parseKeys('jw')) {
+    const result = sim.step(state, key, notary, notaryLegend, options);
+    state = result.state;
+    scene.present({ ...initial, ...result });
+  }
+  const quote = fake.images.find(image => image.texture === 'field:clause-quote' && !image.destroy.mock.calls.length);
+  const actor = fake.images.find(image => image.texture === 'field:notary' && !image.destroy.mock.calls.length);
+  expect(quote?.x).toBe(reduced ? 40 : 24);
+  if (!reduced) {
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    clock.targets.value = 0.25; clock.onUpdate();
+    expect(actor?.setAngle).toHaveBeenLastCalledWith(9);
+  }
+  scene.finish();
+  expect(quote?.x).toBe(40);
+  if (!reduced) expect(actor?.setAngle).toHaveBeenLastCalledWith(0);
+  const advance = (input: string) => {
+    for (const key of parseKeys(input)) {
+      const result = sim.step(state, key, notary, notaryLegend, options);
+      state = result.state;
+      scene.present({ ...initial, ...result });
+    }
+  };
+  advance('da[');
+  if (!reduced) {
+    expect(fake.images.some(image => image.texture === 'field:lock-shards')).toBe(true);
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    expect(clock.duration).toBeLessThanOrEqual(90);
+    clock.targets.value = 0.2; clock.onUpdate();
+  }
+  scene.finish();
+  advance('02jwda{02jwdit');
+  if (!reduced) {
+    expect(fake.images.some(image => image.texture === 'field:wax-melt')).toBe(true);
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    clock.targets.value = 0.2; clock.onUpdate();
+    const wax = fake.images.filter(image => image.texture === 'field:wax').at(-1);
+    expect(wax?.setScale).toHaveBeenCalled();
+  }
+  scene.finish();
+  expect(state.engine.lines[6]).toBe('.<w></w>.#');
+  expect(fake.images.some(image => image.texture === 'field:unknown')).toBe(false);
+});
