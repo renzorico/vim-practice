@@ -48,7 +48,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
 }
 export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
-  useStarChimes(Boolean(session.clearCard && !scriptStamp && stage.type !== 'text'), starsFor(world.turn, stage.parTurns));
+  useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
   const reason = useBlockedReason(session.lastEvents);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
