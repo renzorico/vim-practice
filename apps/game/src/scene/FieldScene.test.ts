@@ -15,6 +15,7 @@ const fake = vi.hoisted(() => {
     setFlipX: vi.fn().mockReturnThis(),
     setDisplaySize: vi.fn().mockReturnThis(), setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
     setOrigin: vi.fn().mockReturnThis(), setTintFill: vi.fn().mockReturnThis(), clearTint: vi.fn().mockReturnThis(),
+    addAt: vi.fn().mockReturnThis(), setTint: vi.fn().mockReturnThis(),
     add: vi.fn().mockReturnThis(), removeAll: vi.fn(), destroy: vi.fn(),
     setStroke: vi.fn().mockReturnThis(),
   });
@@ -52,6 +53,9 @@ vi.mock('phaser', () => ({ default: {
 } }));
 import { FieldScene } from './FieldScene.js';
 import { createEngine } from '@escape/engine';
+import { createStoryEngine } from '@escape/story';
+import { createSession } from '../play2/session.js';
+import { content } from '../play2/content.js';
 import { lastPage, lastPageLegend } from '../play2/content.js';
 import { LAST_PAGE_COMMANDS, QUARRY_COMMANDS } from '../play2/session.js';
 import { quarry, quarryLegend, lighthouse, lighthouseLegend, cut, cutLegend, shaft, shaftLegend } from '../play2/content.js';
@@ -85,7 +89,7 @@ describe('FieldScene without canvas', () => {
   it('uses one clock for a forty-cell walk', () => {
     const scene = new FieldScene(frame, false); scene.create(); scene.present(moving);
     expect(fake.tween).toHaveBeenCalledTimes(1);
-    expect(fake.tween.mock.calls[0]?.[0]).toMatchObject({ duration: 90 });
+    expect(fake.tween.mock.calls[0]?.[0]).toMatchObject({ duration: 420 });
   });
   it('places actors over transparent glyph images and caches glyph textures', () => {
     const scene = new FieldScene(frame, false); scene.create();
@@ -164,7 +168,7 @@ it('keeps ghosts visible through movement and fades after the move span', () => 
   const ghost = fake.images.filter(image => image.texture === 'field:blot').at(-1);
   const config = fake.tween.mock.calls[0]?.[0];
   config.targets.value = 0.325; config.onUpdate();
-  expect(ghost?.alpha).toBe(1); expect(ghost?.x).toBe(224);
+  expect(ghost?.alpha).toBe(1); expect(ghost?.x).toBe(220);
   config.targets.value = 0.825; config.onUpdate();
   expect(ghost?.alpha).toBeCloseTo(0.5); expect(ghost?.x).toBe(216);
 });
@@ -217,7 +221,7 @@ it('draws each tab as a single source arrow', () => {
   expect(fake.fillText).not.toHaveBeenCalledWith('\t', 8, 8);
 });
 
-it('retains a deleted row as ghosts and wipes left to right within 90 ms, then cleans up', () => {
+it('retains a deleted row as ghosts and wipes left to right within 180 ms, then cleans up', () => {
   const scene = new FieldScene(frame, false); scene.create();
   scene.present({ ...frame, state: { ...frame.state, engine: {
     ...frame.state.engine, lines: frame.state.engine.lines.slice(0, -1),
@@ -225,7 +229,7 @@ it('retains a deleted row as ghosts and wipes left to right within 90 ms, then c
   const ghosts = fake.images.filter(image => image.depth === 1 && image.y === 56);
   expect(ghosts).toHaveLength(16);
   const config = fake.tween.mock.calls[0]?.[0];
-  expect(config.duration).toBe(90);
+  expect(config.duration).toBe(180);
   config.targets.value = 0.5; config.onUpdate();
   expect(ghosts[0]?.alpha).toBe(0);
   expect(ghosts.at(-1)?.alpha).toBe(1);
@@ -300,7 +304,7 @@ it.each([
     expect(tile?.texture).toMatch(new RegExp(`^field:${sprite}`));
   }
   const clock = fake.tween.mock.calls.at(-1)?.[0];
-  expect(clock.duration).toBeLessThanOrEqual(90);
+  expect(clock.duration).toBeLessThanOrEqual(180);
   if (removed) {
     clock.targets.value = 59 / clock.duration; clock.onUpdate();
     for (const image of dust) expect(image.destroy).not.toHaveBeenCalled();
@@ -365,7 +369,7 @@ it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after t
     scene.present({ ...result, stage, legend: tiles, showSource: true });
   }
   const clock = fake.tween.mock.calls.at(-1)?.[0];
-  expect(clock.duration).toBeLessThanOrEqual(90);
+  expect(clock.duration).toBeLessThanOrEqual(180);
   clock.targets.value = 0.5; clock.onUpdate();
   const shifted = fake.images.filter(image => image.texture === 'field:stone' && image.destroy.mock.calls.length === 0);
   expect(shifted.some(image => image.y % 16 !== 8)).toBe(true);
@@ -472,10 +476,10 @@ it('renders Glades terrain and actors and follows G and gg over all eighteen row
     }
     scene.present({ ...initial, ...jumped });
     const playback = fake.tween.mock.calls.at(-1)?.[0];
-    expect(playback.duration).toBeLessThanOrEqual(90);
-    playback.targets.value = 0.5; playback.onUpdate();
-    expect(fake.centerOn).toHaveBeenLastCalledWith(72, 144);
-    expect(player?.y).toBe(136); // half-height arc, eight pixels above the ground midpoint
+    expect(playback.duration).toBeLessThanOrEqual(360);
+    playback.targets.value = (playback.duration - 90) / (2 * playback.duration); playback.onUpdate();
+    expect(fake.centerOn).toHaveBeenLastCalledWith(72, keys[0] === 'G' ? 212 : 76);
+    expect(player?.y).toBeCloseTo(134); // long vertical jumps flatten the capped arc to ten pixels
     playback.targets.value = 1; playback.onUpdate(); scene.finish();
     expect(player?.y).toBe(jumped.state.engine.cursor.line * 16 + 8);
     expect(fake.centerOn).toHaveBeenLastCalledWith(72, keys[0] === 'G' ? 238 : 50);
@@ -495,7 +499,7 @@ it('blinks between real bracket partners, cuts the camera and settles on interru
   const jumped = sim.step(state, '%', gates, gatesLegend, options);
   scene.present({ ...initial, ...jumped });
   const playback = fake.tween.mock.calls.at(-1)?.[0];
-  expect(playback.duration).toBe(60);
+  expect(playback.duration).toBe(360);
   playback.targets.value = 0.25; playback.onUpdate();
   expect(player?.y).toBe(36 * 16 + 8);
   expect(player?.alpha).toBe(0.5);
@@ -557,7 +561,7 @@ it.each([false, true])('tips Jetty junk, splashes, then slides the row and actor
     expect(junk).toHaveLength(6);
     expect(splashes).toHaveLength(6);
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     expect(player?.x).toBe(20 * 16 + 8);
     expect(post?.x).toBe(29 * 16 + 8);
     const movingBitt = fake.images.filter(image => image.texture === 'field:bitt' && !image.destroy.mock.calls.length)[0];
@@ -644,14 +648,14 @@ it.each([false, true])('draws warehouse cargo, stencils, tally plates and remote
   expect(lip).toBeDefined();
   if (!reducedMotion) {
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     clock.targets.value = 0.5; clock.onUpdate();
     expect(lip?.x).toBe(13 * 16 + 8);
     scene.finish();
   }
   expect(lip?.x).toBe(15 * 16 + 8);
   expect(result.state.engine.lines[1]).toBe('#[oooo]___[oooo]#');
-  expect(fake.images.filter(image => !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
+  expect(fake.images.filter(image => image.visible && !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
 });
 it('lights the cell which rejects a warehouse put, without cargo growth', async () => {
   const { warehouse, warehouseLegend } = await import('../play2/content.js');
@@ -691,7 +695,7 @@ it.each([false, true])('stamps and slides the clerk fake on the shared clock, fi
   expect(fakeCrate?.x).toBe(reducedMotion ? 40 : 24);
   if (!reducedMotion) {
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     clock.targets.value = 0.5; clock.onUpdate();
     expect(fakeCrate?.x).toBeGreaterThan(24);
     expect(fakeCrate?.x).toBeLessThan(40);
@@ -730,7 +734,7 @@ it.each([false, true])('renders shelf spaces, posts and Quire; puffs dust before
   } else {
     expect(puffs).toHaveLength(6);
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     const post = fake.images.find(image => image.texture === 'field:shelf-post'
       && image.y === 24 && image.x === (stacks.map[1]!.length - 1) * 16 + 8 && !image.destroy.mock.calls.length);
     const originalX = post?.x;
@@ -768,7 +772,7 @@ it.each([false, true])('folds Archive rows before sliding, unfolds puts and clea
   const bible = fake.images.find(image => image.texture === 'field:bible-shelf' && !image.destroy.mock.calls.length);
   if (!reducedMotion) {
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     expect(bible?.y).toBe(9 * 16 + 8);
     clock.targets.value = 0.2; clock.onUpdate();
     expect(ghosts[0]?.alpha).toBeLessThan(1);
@@ -786,14 +790,14 @@ it.each([false, true])('folds Archive rows before sliding, unfolds puts and clea
   }
   if (!reducedMotion) {
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     const shelf = fake.images.find(image => image.texture === 'field:misfiled-shelf' && !image.destroy.mock.calls.length);
     expect(shelf?.setScale).toHaveBeenLastCalledWith(1, 0);
     clock.targets.value = 0.5; clock.onUpdate();
     expect(shelf?.setScale).toHaveBeenLastCalledWith(1, 0.875);
   }
   scene.finish();
-  expect(fake.images.filter(image => !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
+  expect(fake.images.filter(image => image.visible && !image.destroy.mock.calls.length).every(image => image.alpha === 1)).toBe(true);
 });
 
 it.each([false, true])('renders Notary signing, lock shards and wax melting, with reduced motion=%s', async reduced => {
@@ -835,7 +839,7 @@ it.each([false, true])('renders Notary signing, lock shards and wax melting, wit
   if (!reduced) {
     expect(fake.images.some(image => image.texture === 'field:lock-shards')).toBe(true);
     const clock = fake.tween.mock.calls.at(-1)?.[0];
-    expect(clock.duration).toBeLessThanOrEqual(90);
+    expect(clock.duration).toBeLessThanOrEqual(180);
     clock.targets.value = 0.2; clock.onUpdate();
   }
   scene.finish();
@@ -962,4 +966,272 @@ it('draws the Last Page as ink without Source, boxes repaired doors, and shows a
     { type: 'rows-changed', fromLine: 6, toLine: 6, lineDelta: -1, by: 'entity' },
   ] });
   expect(fake.images.some(image => image.texture === 'field:page-smear' && image.visible)).toBe(true);
+});
+
+// Small real-engine field: input and world events remain authoritative in these regressions.
+function feelField(reducedMotion = false, map = Array.from({ length: 12 }, () => 'oooo')) {
+  const stage = { ...FIXTURE_STAGE, map,
+    start: { line: 0, col: 0 }, entities: [], triggers: [], scripts: [],
+    clear: [{ type: 'flag' as const, flag: 'never' }] };
+  const options = { learnedCommands: ['h', 'j', 'l', 'G', 'gg', 'w', 'f', 'd', 'dd', 'x', 'i', 'c', 'cw', 'ciw', ':e!'], flags: {} };
+  const sim = createWorldSim(createEngine());
+  let state = sim.init(stage, FIXTURE_LEGEND, options);
+  const initial = { state, stage, legend: FIXTURE_LEGEND, events: [], showSource: false };
+  const scene = new FieldScene(initial, reducedMotion); scene.create();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const key = (input: string): void => {
+    const result = sim.step(state, input, stage, FIXTURE_LEGEND, options);
+    state = result.state; scene.present({ ...initial, ...result });
+  };
+  return { scene, player, key, initial, sim, current: () => state };
+}
+
+it.each(['3', 'f', 'd', '"a', ':'])('keeps a running move alive through unfinished %s', prefix => {
+  const { key, player, current } = feelField();
+  key('l');
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  playback.targets.value = 0.25; playback.onUpdate();
+  const drawn = [player?.x, player?.y];
+  const kills = fake.killAll.mock.calls.length;
+  for (const input of prefix) key(input);
+  expect(current().pending).not.toBeNull();
+  expect(fake.killAll).toHaveBeenCalledTimes(kills);
+  expect(fake.tween).toHaveBeenCalledTimes(1);
+  expect([player?.x, player?.y]).toEqual(drawn);
+  playback.targets.value = 0.75; playback.onUpdate();
+  expect(player?.x).toBeGreaterThan(drawn[0] ?? 0);
+});
+
+it('starts an interrupted move at the drawn sprite position when it is within one cell', () => {
+  const { key, player } = feelField();
+  key('l');
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  playback.targets.value = 0.5; playback.onUpdate();
+  const drawn = [player?.x, 8];
+  key('h');
+  expect([player?.x, player?.y]).toEqual(drawn);
+  const next = fake.tween.mock.calls.at(-1)?.[0];
+  next.targets.value = 0.25; next.onUpdate();
+  expect(player?.x).toBeLessThan(drawn[0] ?? 0);
+});
+
+it('bounds the drawn backlog to one cell while repeatedly moving without waiting', () => {
+  const { key, player, current } = feelField(false, ['o'.repeat(40)]);
+  for (let count = 0; count < 30; count++) {
+    const cursor = current().engine.cursor;
+    key('l');
+    expect(Math.abs((player?.x ?? 0) - (cursor.col * 16 + 8))
+).toBeLessThanOrEqual(16.000001);
+    const playback = fake.tween.mock.calls.at(-1)?.[0];
+    playback.targets.value = 0.1; playback.onUpdate();
+  }
+});
+
+it.each(['stage', 'restore', 'death', 'reduced motion'])('snaps the player and camera for %s', action => {
+  fake.scale.width = 150;
+  const { key, player, scene, initial, sim, current } = feelField();
+  key('G');
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  playback.targets.value = 0.25; playback.onUpdate();
+  const tweens = fake.tween.mock.calls.length;
+  if (action === 'stage') {
+    scene.present({ ...initial, state: { ...initial.state, stage: 'next-stage' }, stage: { ...initial.stage, id: 'next-stage' } });
+  } else if (action === 'restore') {
+    scene.present({ ...initial, ...sim.restore(current()) });
+
+  } else if (action === 'death') {
+    scene.present({ ...initial, state: { ...current(), status: 'dead' }, events: [{ type: 'player-died' }] });
+  } else scene.setReducedMotion(true);
+  expect(player?.x).toBe(8);
+  expect(player?.y).toBe(action === 'death' || action === 'reduced motion' ? 184 : 8);
+  expect(fake.tween).toHaveBeenCalledTimes(tweens);
+  // Finish and an explicit resize must agree on the settled camera position.
+  const settledCamera = fake.centerOn.mock.calls.at(-1);
+  const resize = fake.on.mock.calls[0]?.[1];
+  if (typeof resize === 'function') resize.call(scene);
+  expect(fake.centerOn.mock.calls.at(-1)).toEqual(settledCamera);
+});
+
+it('reuses the same three jump ghosts across many jumps and allocates nothing during playback', () => {
+  const { key, player } = feelField();
+  key('G');
+  const count = fake.images.length;
+  const ghosts = fake.images.filter(image => image.texture === 'field:player' && image !== player);
+  expect(ghosts).toHaveLength(3);
+  for (let jump = 0; jump < 20; jump++) {
+    if (jump > 0) for (const input of jump % 2 ? ['g', 'g'] : ['G']) key(input);
+    const playback = fake.tween.mock.calls.at(-1)?.[0];
+    for (let sample = 1; sample < 10; sample++) {
+      playback.targets.value = sample / 10; playback.onUpdate();
+      expect(fake.images).toHaveLength(count);
+    }
+    expect(ghosts.every(image => image.visible && image.alpha > 0)).toBe(true);
+    expect(ghosts.map(image => image.alpha)).toEqual([0.35, 0.25, 0.15].map(alpha => alpha * (1 - 0.9)));
+    playback.targets.value = 1; playback.onUpdate(); playback.onComplete();
+    expect(ghosts.every(image => !image.visible)).toBe(true);
+    expect(player?.setScale).toHaveBeenLastCalledWith(1);
+    expect(fake.tween.mock.calls.at(-1)?.[0]).toBe(playback);
+  }
+});
+
+it('leans toward a blocked cell with pooled dust and keeps the camera still', () => {
+  const { scene, player, initial } = feelField();
+  scene.present({ ...initial, state: { ...initial.state, turn: 1 }, events: [
+    { type: 'bump', reason: 'wall', at: { line: 0, col: 1 } },
+  ] });
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  const camera = fake.centerOn.mock.calls.at(-1);
+  expect(playback.duration).toBe(140);
+  playback.targets.value = 0.5; playback.onUpdate();
+  expect([player?.x, player?.y]).toEqual([12, 8]);
+  expect(fake.centerOn.mock.calls.at(-1)).toEqual(camera);
+  const dust = fake.images.find(image => image.texture === 'field:dust-puff');
+  expect(dust).toMatchObject({ x: 16, y: 8, visible: true });
+  expect(dust?.setDisplaySize).toHaveBeenCalledWith(3, 3);
+  playback.targets.value = 1; playback.onUpdate(); playback.onComplete();
+  expect([player?.x, player?.y]).toEqual([8, 8]);
+  expect(dust?.visible).toBe(false);
+});
+
+it('gives two entities independent stable idle phases and water a 900 ms clock', () => {
+  const def = FIXTURE_STAGE.entities[0];
+  if (!def) throw new Error('Fixture must supply an actor');
+  const entities = ['blot-1', 'blot-2'].map((id, col) => ({
+    id, at: { line: 0, col }, pathIndex: 0, def: { ...def, id, sprite: 'blot' },
+  }));
+  const scene = new FieldScene({ ...frame, state: { ...frame.state, entities } }, false); scene.create();
+  const actors = fake.images.filter(image => image.texture === 'field:blot');
+  expect(actors).toHaveLength(2);
+  let independent = false;
+  for (let elapsed = 0; elapsed < 600; elapsed += 50) {
+    scene.update(elapsed, 50);
+    if (actors[0]?.texture !== actors[1]?.texture) independent = true;
+  }
+  expect(independent).toBe(true);
+  expect(fake.idle.mock.calls[0]?.[0].delay).toBe(900);
+  const textures = actors.map(image => image.texture);
+  scene.update(1200, 600);
+  expect(actors.map(image => image.texture)).toEqual(textures);
+  scene.setReducedMotion(true); scene.update(1800, 600);
+  expect(actors.every(image => image.texture === 'field:blot')).toBe(true);
+});
+
+it('snaps reduced-motion moves without ghosts, bob, lean or landing squash', () => {
+  const { key, player } = feelField(true);
+  key('G');
+  expect([player?.x, player?.y]).toEqual([8, 184]);
+  expect(fake.tween).not.toHaveBeenCalled();
+  expect(fake.images.filter(image => image.texture === 'field:player')).toHaveLength(1);
+});
+
+
+it('snaps :e! through the real session input path while a walk is running', () => {
+  const { initial, scene, player, sim } = feelField();
+  const controller = createSession({ sim, storyEngine: createStoryEngine(), content,
+    stage: initial.stage, legend: initial.legend });
+  let session = controller.init(false);
+  session = controller.reduce(session, 'l');
+  expect(session.world.engine.cursor.col).toBe(1);
+  scene.present({ ...initial, state: session.world, events: session.lastEvents });
+  const playback = fake.tween.mock.calls.at(-1)?.[0];
+  playback.targets.value = 0.5; playback.onUpdate();
+  for (const input of [':', 'e', '!']) {
+    session = controller.reduce(session, input);
+    scene.present({ ...initial, state: session.world, events: session.lastEvents });
+  }
+  expect(player?.x).toBe(20);
+  session = controller.reduce(session, '<CR>');
+  expect(session.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
+  scene.present({ ...initial, state: session.world, events: session.lastEvents });
+  expect([player?.x, player?.y]).toEqual([8, 8]);
+  expect(fake.tween).toHaveBeenCalledTimes(1);
+});
+
+it.each(['G', 'w'])('carries l into a full %s jump from the old destination', command => {
+  const { key, player, current } = feelField();
+  key('l');
+  const walk = fake.tween.mock.calls.at(-1)?.[0];
+  walk.targets.value = 0.25; walk.onUpdate();
+  const oldCursor = current().engine.cursor;
+  const groundX = 8 + 16 * (1 - 0.75 ** 2);
+  key(command);
+  expect(player?.x).toBeCloseTo(groundX);
+  expect(player?.y).toBe(8); // No inherited bob.
+  expect(Math.abs(groundX - (oldCursor.col * 16 + 8))).toBeLessThanOrEqual(16);
+  const jump = fake.tween.mock.calls.at(-1)?.[0];
+  const destination = current().engine.cursor;
+  const cells = Math.abs(destination.line - oldCursor.line) + Math.abs(destination.col - oldCursor.col);
+  expect(jump.duration).toBe(Math.min(360, 160 + 15 * cells));
+  jump.targets.value = (jump.duration - 90) / (2 * jump.duration); jump.onUpdate();
+  const groundY = 8 + destination.line * 8;
+  const arc = Math.min(20, 6 + 1.5 * cells) * (destination.line > 6 ? 0.5 : 1);
+  expect(player?.y).toBeCloseTo(groundY - arc);
+  expect(player?.x).toBeCloseTo((groundX + destination.col * 16 + 8) / 2);
+});
+
+it.each(['i', 'cw', 'ciw'])('syncs insert typing at rest after %j', prefix => {
+  const { key, player, current } = feelField();
+  for (const input of prefix) key(input);
+  key('o');
+  expect(current().engine.mode).toBe('insert');
+  expect(current().pending).not.toBeNull();
+  expect([player?.x, player?.y]).toEqual([current().engine.cursor.col * 16 + 8, current().engine.cursor.line * 16 + 8]);
+  expect(fake.centerOn).toHaveBeenCalled();
+});
+
+it.each(['3', 'f'])('preserves playback after cancelling %s', prefix => {
+  const { key, player } = feelField();
+  key('l');
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.25; clock.onUpdate();
+  key(prefix); key(prefix === '3' ? '<Esc>' : '<F1>');
+  expect(fake.tween).toHaveBeenCalledTimes(1);
+  clock.targets.value = 0.75; clock.onUpdate();
+  expect(player?.x).toBeGreaterThan(20);
+});
+
+it('keeps repeated j bumps gliding from the drawn ground without snapping to the wall', () => {
+  const { key, player } = feelField(false, ['oo', 'oo', 'TT']);
+  key('j');
+  let clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.25; clock.onUpdate();
+  let groundY = 8 + 16 * (1 - 0.75 ** 2);
+  for (let repeat = 0; repeat < 4; repeat++) {
+    key('j');
+    expect(player?.y).toBeCloseTo(groundY);
+    clock = fake.tween.mock.calls.at(-1)?.[0];
+    clock.targets.value = 0.25; clock.onUpdate();
+    groundY += (24 - groundY) * (1 - 0.75 ** 2);
+    expect(player?.y).toBeCloseTo(groundY + 3);
+  }
+});
+
+it.each(['x', 'dd'])('carries a running walk through the edit %j', inputs => {
+  const { key, player } = feelField();
+  key('l');
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.25; clock.onUpdate();
+  const groundX = 8 + 16 * (1 - 0.75 ** 2);
+  for (const input of inputs) key(input);
+  expect(player?.x).toBeCloseTo(groundX);
+  const edit = fake.tween.mock.calls.at(-1)?.[0];
+  edit.targets.value = 0.5; edit.onUpdate();
+  expect(player?.x).toBeGreaterThan(groundX);
+});
+
+it('finishes squash inside the jump clock with planted feet and ghosts below the player', () => {
+  const { key, player } = feelField();
+  key('G');
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  const ghosts = fake.images.filter(image => image.texture === 'field:player' && image !== player);
+  for (const ghost of ghosts) expect(fake.containers[1]?.addAt).toHaveBeenCalledWith(ghost, 0);
+  clock.targets.value = (clock.duration - 90) / clock.duration; clock.onUpdate();
+  expect(player?.setScale).toHaveBeenLastCalledWith(1.15, 0.8);
+  expect(player?.y).toBeCloseTo(184 + 8 * 0.2);
+  expect(ghosts.every(ghost => ghost.setTint.mock.calls.length > 0)).toBe(true);
+  clock.targets.value = 1; clock.onUpdate(); clock.onComplete();
+  expect(player?.y).toBe(184);
+  expect(fake.tween).toHaveBeenCalledTimes(1);
+  key('i'); key('o'); // Clock completion releases animating immediately.
+  expect(player?.x).toBe(24);
 });

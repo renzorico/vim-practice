@@ -733,6 +733,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-4: Feel (movement, jumps, bumps, input carry-over)
+**Who:** Renzo (played it: "the motion of the character feels buggy"), Opus (diagnosis, brief, browser check), Codex (build), Sonnet (review).
+
+**What:** Movement timing moved into pure functions in `scene/animate.ts`. Walks (the world's `walk` style, so counted `hjkl` too) glide with no arc: 110 ms for one cell, +40 ms per extra cell, 420 ms cap, ease-out, a small bob. Jumps arc in proportion to distance (6-20 px), 160-360 ms with ease-in-out, a three-ghost trail over the skipped cells and a landing squash inside the jump's clock. Bumps lean 4 px toward the blocked cell and puff dust. A command that arrives mid-move starts from the drawn ground position, at most one cell behind the previous destination, so held keys glide instead of stuttering; unfinished keys, cancelled counts and insert-mode typing no longer cut a move short or freeze the sprite. Actors idle on their own phases (600 ms), water on a shared 900 ms clock. Edits got 180 ms instead of 90. Reduced motion still snaps.
+
+**Why it felt buggy:** every move played in 60 or 90 ms (`30l` crossed 30 cells in 90 ms), any move over one cell was drawn as a hop, bumps were a 2 px shake nobody saw, every key snapped the sprite to its last destination, and the whole map flipped its idle frame on one shared tick.
+
+**What the checks caught:** Sonnet's review found the first carry-over capped against the new cursor, so `l` then `G` teleported to one cell before the landing; insert-mode typing froze the sprite; bumps and edits mid-move still snapped. Fixed with regression tests. In the browser (before the fix round): one step 110 ms, `3l` 190 ms with no arc, six rapid `h` with no snap-back, `w` over 12 cells 340 ms with arc, squash and a trail that clears.
+
+**Lesson:** "Buggy" can mean too fast. Measure the drawn position frame by frame before touching logic.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

@@ -25,8 +25,6 @@ export function FieldView(props: FieldFrame): JSX.Element {
     });
     // Keep the canvas's intrinsic size out of its host's layout measurements.
     Object.assign(game.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
-    const finish = (): void => field.finish();
-    window.addEventListener('keydown', finish, true);
     const changeMotion = (): void => field.setReducedMotion(media.matches);
     media.addEventListener('change', changeMotion);
     const resize = new ResizeObserver(() => {
@@ -34,7 +32,6 @@ export function FieldView(props: FieldFrame): JSX.Element {
     });
     resize.observe(host.current);
     return () => {
-      window.removeEventListener('keydown', finish, true);
       resize.disconnect();
       media.removeEventListener('change', changeMotion);
       scene.current = null;
@@ -42,7 +39,7 @@ export function FieldView(props: FieldFrame): JSX.Element {
     };
   }, []);
 
-  // New snapshots finish playback; repeated snapshots leave the shared clock running.
+  // The scene decides whether snapshots continue, interrupt, or restore playback.
   useEffect(() => {
     // Layout reads only where the yank slot exists (they force a reflow on every render).
     const yanks = props.stage.id === 'warehouse';
