@@ -1,0 +1,138 @@
+[
+  {
+    "name": "review: d?x then undo",
+    "lines": [
+      "axbc def"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "d?x<CR>u",
+    "expect": {
+      "lines": [
+        "axbc def"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dF then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "dFbu",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: d{ then undo",
+    "lines": [
+      "a",
+      "",
+      "b c",
+      "d e"
+    ],
+    "cursor": [
+      3,
+      2
+    ],
+    "keys": "d{u",
+    "expect": {
+      "lines": [
+        "a",
+        "",
+        "b c",
+        "d e"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: d'a upward then undo",
+    "lines": [
+      "one",
+      "two",
+      "three"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "majjd'au",
+    "expect": {
+      "lines": [
+        "one",
+        "two",
+        "three"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: backward visual d then undo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      5
+    ],
+    "keys": "vhhdu",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: db then u then l then redo",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "dbul<C-r>",
+    "expect": {
+      "lines": [
+        "def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

@@ -10,9 +10,7 @@ const options = { learnedCommands: PORT_COMMANDS, flags: {} };
 it.each([
   { keys: 'bdb', col: 14, junk: 'nnnnnn' },
   { keys: 'bdbb.', col: 6, junk: 'ccccc' },
-  { keys: 'bdbb.u<C-r>', col: 6, junk: null },
   { keys: 'db', col: 0, junk: null },
-  { keys: 'bdbb.u', col: 0, junk: null },
   { keys: 'b', col: 0, junk: null },
 ])('uses exact engine edits for $keys', ({ keys, col, junk }) => {
   const result = playKeys(sim, jetty, portLegend, options, parseKeys(keys));
@@ -28,4 +26,22 @@ it.each([
   const { STACKS_COMMANDS } = await import('../play2/session.js');
   const result = playKeys(sim, stacks, stacksLegend, { learnedCommands: STACKS_COMMANDS, flags: {} }, parseKeys(keys));
   expect(jettyDeletion(result.state, result.events)?.junk ?? null).toBe(junk);
+});
+
+
+it.each(['u', 'u<C-r>'])('blocks %s when the Vim undo cursor would land on crates', (keys) => {
+  const deleted = playKeys(sim, jetty, portLegend, options, parseKeys('bdbb.'));
+  let state = deleted.state;
+  const events = [...deleted.events];
+  for (const key of parseKeys(keys)) {
+    const result = sim.step(state, key, jetty, portLegend, options);
+    events.push(...result.events);
+    state = result.state;
+  }
+  // Backward-delete undo now returns to the deleted range start (crate column 6),
+  // rather than the original cursor on ground. The field rejects that landing.
+  expect(events).toContainEqual({ type: 'bump', reason: 'wall', at: { line: 3, col: 6 } });
+  expect(state.engine).toEqual(deleted.state.engine);
+  expect(state.turn).toBe(deleted.state.turn);
+  expect(jettyDeletion(state, events)).toEqual({ line: 3, col: 6, junk: 'ccccc' });
 });

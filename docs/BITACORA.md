@@ -711,8 +711,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-2: Engine undo parity
+**Who:** Opus (Neovim goldens first, brief, review fixes), Codex (build), Sonnet (review).
+
+**What:** The undo snapshot now records where the change starts (Neovim's cursor after `u`), and a usable empty object (`di"` on `""`, `dit` on `<a></a>`, `di(` on `()`, `di[` on `[]`) makes an empty undo entry, as Neovim does. Backward deletes (`dh`, `db`, `d0`, `d?`, `dF`, `d{`, `d'a`, backward visual `d`) and change-start undo (`cit`, `cat`, `dit .`) match. 65 new Neovim goldens (14 written before the build to define the target, 45 by Codex, 6 from review), all regenerated with `--force`: byte-identical. No stage's par changed.
+
+**What the checks caught:** Sonnet: the rule applies to every operator, not only `d`/`c`: six more Neovim goldens pin the backward cases it named (all pass). `gU` and `>` are not engine commands at all (the keys fell through as `g`, `U`, `i`), so they are not pinned. Field effect: in the Jetty and Customs, `u` after `db` now lands on the restored junk (unwalkable) and bumps, so a junk delete cannot be undone there. Accepted: every pile must be deleted anyway.
+
+**Lesson:** Write the target as Neovim goldens before the builder starts: thirteen red tests are a better brief than a paragraph.
+
+---
+
 ## Parking lot
-- Engine undo parity: `di"` on `""`, `dit` on `<a></a>`, and `dh`/`db` near column 0 do not make Neovim's empty undo entry; cursor after undoing `cit`/`cat` is the original position, Neovim's is the change start (Sonnet's probes in P-1: turn each into a golden).
+- Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Script panel: narrow-width layout only tested with mocks; check `min-width: 0` on the panel's grid ancestors in a real browser.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).

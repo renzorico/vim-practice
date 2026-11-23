@@ -1,0 +1,1013 @@
+[
+  {
+    "name": "empty i\" delete cursor",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\"",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i\" delete u",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\"u",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i\" delete u<C-r>",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\"u<C-r>",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i\" delete lu",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\"lu",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i\" delete .u",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\".u",
+    "expect": {
+      "lines": [
+        "b",
+        "\"\""
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i\" delete uu",
+    "lines": [
+      "ab",
+      "\"\""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di\"uu",
+    "expect": {
+      "lines": [
+        "ab",
+        "\"\""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete cursor",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0dit",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete u",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0ditu",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete u<C-r>",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0ditu<C-r>",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete lu",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0ditlu",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete .u",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0dit.u",
+    "expect": {
+      "lines": [
+        "b",
+        "<a></a>"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty it delete uu",
+    "lines": [
+      "ab",
+      "<a></a>"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0dituu",
+    "expect": {
+      "lines": [
+        "ab",
+        "<a></a>"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete cursor",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(",
+    "expect": {
+      "lines": [
+        "b",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete u",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(u",
+    "expect": {
+      "lines": [
+        "b",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete u<C-r>",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(u<C-r>",
+    "expect": {
+      "lines": [
+        "b",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete lu",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(lu",
+    "expect": {
+      "lines": [
+        "b",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete .u",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(.u",
+    "expect": {
+      "lines": [
+        "b",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i( delete uu",
+    "lines": [
+      "ab",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di(uu",
+    "expect": {
+      "lines": [
+        "ab",
+        "()"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete cursor",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete u",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[u",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete u<C-r>",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[u<C-r>",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete lu",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[lu",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete .u",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[.u",
+    "expect": {
+      "lines": [
+        "b",
+        "[]"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty i[ delete uu",
+    "lines": [
+      "ab",
+      "[]"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xj0di[uu",
+    "expect": {
+      "lines": [
+        "ab",
+        "[]"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward h undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "dhu",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        1,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward b undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "dbu",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward B undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "dBu",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward 0 undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "d0u",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward k undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "dku",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward gg undo start",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      1,
+      4
+    ],
+    "keys": "dggu",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change iw undo u",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciwZ<Esc>u",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change iw undo u<C-r>u",
+    "lines": [
+      "one two"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "ciwZ<Esc>u<C-r>u",
+    "expect": {
+      "lines": [
+        "one two"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change i\" undo u",
+    "lines": [
+      "x \"abc\" y"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ci\"Z<Esc>u",
+    "expect": {
+      "lines": [
+        "x \"abc\" y"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change i\" undo u<C-r>u",
+    "lines": [
+      "x \"abc\" y"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ci\"Z<Esc>u<C-r>u",
+    "expect": {
+      "lines": [
+        "x \"abc\" y"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change i( undo u",
+    "lines": [
+      "x (abc) y"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ci(Z<Esc>u",
+    "expect": {
+      "lines": [
+        "x (abc) y"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change i( undo u<C-r>u",
+    "lines": [
+      "x (abc) y"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ci(Z<Esc>u<C-r>u",
+    "expect": {
+      "lines": [
+        "x (abc) y"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change it undo u",
+    "lines": [
+      "<a>one</a>"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "citZ<Esc>u",
+    "expect": {
+      "lines": [
+        "<a>one</a>"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change it undo u<C-r>u",
+    "lines": [
+      "<a>one</a>"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "citZ<Esc>u<C-r>u",
+    "expect": {
+      "lines": [
+        "<a>one</a>"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change at undo u",
+    "lines": [
+      "x <a>one</a> y"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "catZ<Esc>u",
+    "expect": {
+      "lines": [
+        "x <a>one</a> y"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "change at undo u<C-r>u",
+    "lines": [
+      "x <a>one</a> y"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "catZ<Esc>u<C-r>u",
+    "expect": {
+      "lines": [
+        "x <a>one</a> y"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "missing object leaves previous undo",
+    "lines": [
+      "ab",
+      "plain"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdi\"u",
+    "expect": {
+      "lines": [
+        "ab",
+        "plain"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward db at first column consumes empty undo",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xdbu",
+    "expect": {
+      "lines": [
+        "abc"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dd undo keeps original column",
+    "lines": [
+      "abc def",
+      "ghi jkl"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "ddu",
+    "expect": {
+      "lines": [
+        "abc def",
+        "ghi jkl"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "plain h at column zero leaves previous dot change",
+    "lines": [
+      "abc"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xh.",
+    "expect": {
+      "lines": [
+        "c"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty delete clears redo",
+    "lines": [
+      "abc",
+      "()"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xujdi(u<C-r>",
+    "expect": {
+      "lines": [
+        "abc",
+        "()"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  }
+]
