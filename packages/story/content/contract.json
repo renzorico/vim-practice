@@ -1,0 +1,129 @@
+{
+  "worlds": [],
+  "quests": [
+    {
+      "id": "library.contract",
+      "world": "library",
+      "title": "The founding contract",
+      "kind": "main",
+      "steps": [
+        {
+          "id": "contract",
+          "objective": "Rewrite the founding contract.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "contract"
+          },
+          "then": []
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "contract.start",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "notary"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "start-quest",
+          "quest": "library.contract"
+        },
+        {
+          "type": "unlock-stage",
+          "stage": "contract"
+        }
+      ]
+    },
+    {
+      "id": "contract.cleared",
+      "when": {
+        "type": "stage-cleared",
+        "stage": "contract"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "cutscene",
+          "cutscene": "contract.end"
+        }
+      ]
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "contract.intro",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "The founding contract. Every chain in the\nLibrary was written here first."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Change what's inside, not the brackets.\nci\" for quotes, ci( for brackets."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "One clause goes entirely. dap.\nAnd sign it. Not the Notary. You."
+        },
+        {
+          "speaker": "system",
+          "text": "The whole contract sits inside <contract>.\nStand on the tag you mean before cit."
+        }
+      ],
+      "then": []
+    }
+  ],
+  "cutscenes": [
+    {
+      "id": "contract.end",
+      "beats": [
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Quire",
+            "text": "Read, dust, file, copy. All of it ours\nagain. And a name at the bottom."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Notary",
+            "text": "The Minotaur. I wrote 'nothing guards them'\nbecause I was afraid to write the name."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "npc",
+            "name": "Dot",
+            "text": "Name! ...name."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "Under the Library, the Echo Caves.\nSomething down there is searching too."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "End of World 5."
+          }
+        }
+      ],
+      "then": []
+    }
+  ]
+}

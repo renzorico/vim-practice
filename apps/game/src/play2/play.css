@@ -94,3 +94,17 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .counter-gauge[data-full="true"] { animation: ledger-filed 180ms ease-out 2; }
 @keyframes ledger-filed { 50% { color: #ffe8b2; opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .counter-gauge[data-full="true"] { animation: none; } }
+
+/* Library parchment, walnut ink and brass from the World 5 sprite palette. */
+.script-panel--contract {
+  --text: #e1d1a6;
+  --text-soft: #eddfbd;
+  --bg: #261e20;
+  --line-strong: #563929;
+  --text-muted: #b39a70;
+}
+.script-panel--contract .script-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.script-panel--contract .script-target li { min-height: 1.6em; }
+@media (max-width: 1000px) {
+  .script-panel--contract .script-columns { grid-template-columns: minmax(0, 1fr); }
+}

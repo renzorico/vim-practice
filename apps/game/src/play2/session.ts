@@ -41,11 +41,12 @@ export const NOTARY_COMMANDS = [...ARCHIVE_COMMANDS, 'i[', 'a[', 'i{', 'a{', 'iB
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const HARBOUR_COMMANDS = [...COUNTER_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>', 'c', 'C', 'P', 'yy'] as const;
+export const CONTRACT_COMMANDS = [...HARBOUR_COMMANDS, 'iw', 'aw', 'i(', 'a(', 'ib', 'ab', 'ip', 'ap', 'i[', 'a[', 'i{', 'a{', 'iB', 'aB', 'it', 'at', 'i"', 'a"', "i'", "a'"] as const;
 const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 
 export function resultData(session: Session) {
