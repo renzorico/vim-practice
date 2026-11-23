@@ -5,13 +5,13 @@ import { linewiseText, writeRegister } from './registers.js';
 import { charLengthAt, clamp, extractText, lastCol, lineAt, removeText } from './text.js';
 
 /** Snapshot before a change so `u` can restore it. A new change clears the redo history. */
-export function pushUndo(state: EngineState): EngineState {
+export function pushUndo(state: EngineState, cursor: Position = state.cursor): EngineState {
   // The new revision number must differ from savedSeq even after undo moved changeSeq
   // below it (edit, save, undo, edit), otherwise `modified` would read false.
   const changeSeq = Math.max(state.changeSeq, state.savedSeq) + 1;
   return {
     ...state,
-    undoStack: [...state.undoStack, { lines: state.lines, cursor: state.cursor, seq: state.changeSeq, edits: [] }],
+    undoStack: [...state.undoStack, { lines: state.lines, cursor, seq: state.changeSeq, edits: [] }],
     redoStack: [],
     changeSeq,
     modified: changeSeq !== state.savedSeq,
@@ -19,8 +19,8 @@ export function pushUndo(state: EngineState): EngineState {
 }
 
 /** Empty deletes consume an undo step without creating a new text version. */
-export function pushEmptyUndo(state: EngineState): EngineState {
-  return { ...pushUndo(state), changeSeq: state.changeSeq, modified: state.modified };
+export function pushEmptyUndo(state: EngineState, cursor: Position = state.cursor): EngineState {
+  return { ...pushUndo(state, cursor), changeSeq: state.changeSeq, modified: state.modified };
 }
 
 export function failure(state: EngineState, message: string): CommandOutcome {
@@ -90,7 +90,7 @@ export function deleteCharRegion(
   forInsert: boolean,
 ): EngineState {
   const text = extractText(state.lines, region.start, region.end);
-  let next = pushUndo(state);
+  let next = pushUndo(state, region.start);
   if (text.length > 0) {
     next = writeRegister(next, register, text, false, 'delete');
   }
@@ -143,7 +143,7 @@ function operatorDelete(state: EngineState, range: Range, register: RegisterName
   const region = resolveCharRegion(state.lines, range);
   if (isEmptyRegion(region)) {
     // Vim records an empty delete so one undo consumes it before older edits.
-    return success(pushEmptyUndo(state));
+    return success({ ...pushEmptyUndo(state, region.start), cursor: region.start, desiredCol: region.start.col });
   }
   return success(deleteCharRegion(state, region, register, false));
 }
@@ -157,7 +157,7 @@ function operatorChange(state: EngineState, range: Range, register: RegisterName
   }
   const region = resolveCharRegion(state.lines, range);
   const changed = isEmptyRegion(region)
-    ? { ...pushUndo(state), cursor: region.start, desiredCol: region.start.col, modified: true }
+    ? { ...pushUndo(state, region.start), cursor: region.start, desiredCol: region.start.col, modified: true }
     : deleteCharRegion(state, region, register, true);
   return success({ ...changed, mode: 'insert' });
 }

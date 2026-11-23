@@ -23,7 +23,7 @@ type FindCommand = 'f' | 'F' | 't' | 'T';
 // --- Left, right, up, down ---------------------------------------------------------------
 
 const moveLeft: MotionFn = (state, count) => {
-  if (state.cursor.col === 0) return null;
+  if (state.cursor.col === 0) return isOperatorPending(state) ? charwise(state.cursor, false) : null;
   return charwise({ line: state.cursor.line, col: Math.max(0, state.cursor.col - count) }, false);
 };
 

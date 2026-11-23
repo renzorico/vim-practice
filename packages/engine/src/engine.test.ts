@@ -41,3 +41,44 @@ describe('allowedCommands', () => {
     expect(steps.at(-1)?.error?.code).toBe('not-allowed');
   });
 });
+
+
+describe('undo parity', () => {
+  it.each(['di"', 'dit', 'di(', 'di[', 'dh'])(
+    '%s records an empty snapshot without edits, register writes or a new text version', (command) => {
+      const text = command === 'di"' ? '""' : command === 'dit' ? '<a></a>'
+        : command === 'di(' ? '()' : command === 'di[' ? '[]' : 'abc';
+      const before = play(['ab', text], 'xj0').state;
+      const original = structuredClone(before);
+      const steps = [];
+      let state = before;
+      for (const key of parseKeys(command)) {
+        const step = engine.step(state, key);
+        steps.push(step);
+        state = step.state;
+      }
+      expect(before).toEqual(original);
+      expect(steps.every(step => step.error === null && step.edits.length === 0)).toBe(true);
+      expect(state.lines).toEqual(before.lines);
+      expect(state.registers).toEqual(before.registers);
+      expect(state.changeSeq).toBe(before.changeSeq);
+      expect(state.modified).toBe(before.modified);
+      expect(state.undoStack).toHaveLength(before.undoStack.length + 1);
+      expect(state.undoStack.at(-1)?.edits).toEqual([]);
+      expect(state.lastChange).toEqual(parseKeys(command));
+      const undone = engine.step(state, 'u');
+      expect(undone.edits).toEqual([]);
+      expect(undone.state.lines).toEqual(before.lines);
+      expect(undone.state.cursor).toEqual(state.undoStack.at(-1)?.cursor);
+    },
+  );
+
+  it('missing objects preserve history and the previous dot command', () => {
+    const before = play(['abc'], 'x').state;
+    let state = before;
+    for (const key of parseKeys('di(')) state = engine.step(state, key).state;
+    expect(state.undoStack).toEqual(before.undoStack);
+    expect(state.lastChange).toEqual(before.lastChange);
+    expect(engine.step(state, 'u').state.lines).toEqual(['abc']);
+  });
+});

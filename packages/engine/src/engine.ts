@@ -240,7 +240,6 @@ function runOperator(
     }
     if (!range.inclusive && range.start.line === range.end.line && range.start.col === range.end.col) {
       patched = { ...state, cursor: range.start, desiredCol: range.start.col };
-      if (operator === 'd') return { state: patched, error: { code: 'invalid-range', message: `Empty text object: ${id}` } };
     }
     const multiline = range.start.line < range.end.line;
     const throughLineEnd = range.inclusive && range.end.col >= (state.lines[range.end.line]?.length ?? 0) - 1;
@@ -265,8 +264,10 @@ function runOperator(
     patched = { ...state, ...motion.statePatch };
   }
   if (range === null) return null;
-  // d0's undo returns to column zero, even when replayed after an empty d0.
-  if (operator === 'd' && id === '0') patched = { ...patched, cursor: range.start };
+  // Backward operators save the ordered start, including linewise ranges.
+  if (operator !== 'y' && id !== `${operator}${operator}` && comparePositions(range.start, state.cursor) < 0) {
+    patched = { ...patched, cursor: range.start };
+  }
   const outcome = fn(patched, range, register);
   if (operator === 'd' && (id === "'" || id === '`') && range.linewise) {
     // nostartofline (the golden config): a linewise delete to a mark keeps the cursor's column.
@@ -332,10 +333,10 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
     const outcome = runOperator(clean, operator, id, total, arg, register);
     if (outcome === null) return result(clean);
     if (outcome.error !== null && (id === '/' || id === '?')) return result(clean, [], outcome.error);
-    // A text object Vim cannot use (or an empty one) beeps: no dot command, no undo entry. Plain
+    // A missing text object beeps: no dot command, no undo entry. Usable empty objects
+    // still record a delete and can be repeated. Plain
     // motions keep Vim's rule that even a no-op `d0` becomes the dot command (golden: no-op d0).
-    const skipped = isTextObject(id)
-      && (outcome.error !== null || (outcome.state.mode !== 'insert' && outcome.state.lines === clean.lines));
+    const skipped = isTextObject(id) && outcome.error !== null;
     const next = operator === 'y' || skipped ? outcome.state : finishChange(outcome.state, keys);
     const motion = id === `${operator}${operator}` ? null : id;
     return result(next, [record(commandId, 'operator', keys, total, register, motion)], outcome.error);
