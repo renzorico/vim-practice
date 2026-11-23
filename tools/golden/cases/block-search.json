@@ -1,0 +1,4452 @@
+[
+  {
+    "name": "even 2jl d",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jld",
+    "expect": {
+      "lines": [
+        "adef",
+        "gjkl",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl x",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlx",
+    "expect": {
+      "lines": [
+        "adef",
+        "gjkl",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYdef",
+        "gXYjkl",
+        "mXYpqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl y$p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jly$p",
+    "expect": {
+      "lines": [
+        "abcdefbc",
+        "ghijklhi",
+        "mnopqrno"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl rZ",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlrZ",
+    "expect": {
+      "lines": [
+        "aZZdef",
+        "gZZjkl",
+        "mZZpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXYhijkl",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2jl AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcXYdef",
+        "ghiXYjkl",
+        "mnoXYpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ d",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$d",
+    "expect": {
+      "lines": [
+        "a",
+        "g",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ x",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$x",
+    "expect": {
+      "lines": [
+        "a",
+        "g",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$cXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXY",
+        "gXY",
+        "mXY"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ y$p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$y$p",
+    "expect": {
+      "lines": [
+        "abcdefbcdef",
+        "ghijklhijkl",
+        "mnopqrnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ rZ",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$rZ",
+    "expect": {
+      "lines": [
+        "aZZZZZ",
+        "gZZZZZ",
+        "mZZZZZ"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$IXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXYhijkl",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j$ AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$AXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcdefXY",
+        "ghijklXY",
+        "mnopqrXY"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l d",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ld",
+    "expect": {
+      "lines": [
+        "aef",
+        "gkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l x",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lx",
+    "expect": {
+      "lines": [
+        "aef",
+        "gkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYef",
+        "gXYkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l y$p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ly$p",
+    "expect": {
+      "lines": [
+        "abcdefbcd",
+        "ghijklhij",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l rZ",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lrZ",
+    "expect": {
+      "lines": [
+        "aZZZef",
+        "gZZZkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXYhijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even j2l AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcdXYef",
+        "ghijXYkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j d",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jd",
+    "expect": {
+      "lines": [
+        "acdef",
+        "gijkl",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j x",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jx",
+    "expect": {
+      "lines": [
+        "acdef",
+        "gijkl",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYcdef",
+        "gXYijkl",
+        "mXYopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j y$p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jy$p",
+    "expect": {
+      "lines": [
+        "abcdefb",
+        "ghijklh",
+        "mnopqrn"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j rZ",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jrZ",
+    "expect": {
+      "lines": [
+        "aZcdef",
+        "gZijkl",
+        "mZopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXYhijkl",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "even 2j AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abXYcdef",
+        "ghXYijkl",
+        "mnXYopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl d",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jld",
+    "expect": {
+      "lines": [
+        "adef",
+        "g",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl x",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlx",
+    "expect": {
+      "lines": [
+        "adef",
+        "g",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYdef",
+        "gXY",
+        "mXYpqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl y$p",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jly$p",
+    "expect": {
+      "lines": [
+        "abcdefbc",
+        "g     ",
+        "mnopqrno"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl rZ",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlrZ",
+    "expect": {
+      "lines": [
+        "aZZdef",
+        "g",
+        "mZZpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXY",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2jl AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcXYdef",
+        "g  XY",
+        "mnoXYpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ d",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$d",
+    "expect": {
+      "lines": [
+        "a",
+        "g",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ x",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$x",
+    "expect": {
+      "lines": [
+        "a",
+        "g",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$cXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXY",
+        "gXY",
+        "mXY"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ y$p",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$y$p",
+    "expect": {
+      "lines": [
+        "abcdefbcdef",
+        "g     ",
+        "mnopqrnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ rZ",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$rZ",
+    "expect": {
+      "lines": [
+        "aZZZZZ",
+        "g",
+        "mZZZZZ"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$IXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXY",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j$ AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$AXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcdefXY",
+        "gXY",
+        "mnopqrXY"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l d",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ld",
+    "expect": {
+      "lines": [
+        "acdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l x",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lx",
+    "expect": {
+      "lines": [
+        "acdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYcdef",
+        "gXY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l y$p",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ly$p",
+    "expect": {
+      "lines": [
+        "abcdefb",
+        "g     ",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l rZ",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lrZ",
+    "expect": {
+      "lines": [
+        "aZcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged j2l AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abXYcdef",
+        "g XY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j d",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jd",
+    "expect": {
+      "lines": [
+        "acdef",
+        "g",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j x",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jx",
+    "expect": {
+      "lines": [
+        "acdef",
+        "g",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYcdef",
+        "gXY",
+        "mXYopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j y$p",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jy$p",
+    "expect": {
+      "lines": [
+        "abcdefb",
+        "g     ",
+        "mnopqrn"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j rZ",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jrZ",
+    "expect": {
+      "lines": [
+        "aZcdef",
+        "g",
+        "mZopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "gXY",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "ragged 2j AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abXYcdef",
+        "g XY",
+        "mnXYopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl d",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jld",
+    "expect": {
+      "lines": [
+        "adef",
+        "",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl x",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlx",
+    "expect": {
+      "lines": [
+        "adef",
+        "",
+        "mpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYdef",
+        "",
+        "mXYpqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl y$p",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jly$p",
+    "expect": {
+      "lines": [
+        "abcdefbc",
+        "        ",
+        "mnopqrno"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl rZ",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlrZ",
+    "expect": {
+      "lines": [
+        "aZZdef",
+        "",
+        "mZZpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2jl AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jlAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcXYdef",
+        "   XY",
+        "mnoXYpqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ d",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$d",
+    "expect": {
+      "lines": [
+        "a",
+        "",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ x",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$x",
+    "expect": {
+      "lines": [
+        "a",
+        "",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$cXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXY",
+        "",
+        "mXY"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ y$p",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$y$p",
+    "expect": {
+      "lines": [
+        "abcdefbcdef",
+        "            ",
+        "mnopqrnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ rZ",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$rZ",
+    "expect": {
+      "lines": [
+        "aZZZZZ",
+        "",
+        "mZZZZZ"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$IXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j$ AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2j$AXY<Esc>",
+    "expect": {
+      "lines": [
+        "abcdefXY",
+        "XY",
+        "mnopqrXY"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l d",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ld",
+    "expect": {
+      "lines": [
+        "cdef",
+        "",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l x",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lx",
+    "expect": {
+      "lines": [
+        "cdef",
+        "",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lcXY<Esc>",
+    "expect": {
+      "lines": [
+        "XYcdef",
+        "XY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l y$p",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2ly$p",
+    "expect": {
+      "lines": [
+        "abcdefab",
+        "      ",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l rZ",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lrZ",
+    "expect": {
+      "lines": [
+        "ZZcdef",
+        "",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lIXY<Esc>",
+    "expect": {
+      "lines": [
+        "XYabcdef",
+        "XY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty j2l AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>j2lAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abXYcdef",
+        "  XY",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j d",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jd",
+    "expect": {
+      "lines": [
+        "acdef",
+        "",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j x",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jx",
+    "expect": {
+      "lines": [
+        "acdef",
+        "",
+        "mopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j cXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jcXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYcdef",
+        "",
+        "mXYopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j y$p",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jy$p",
+    "expect": {
+      "lines": [
+        "abcdefb",
+        "       ",
+        "mnopqrn"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j rZ",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jrZ",
+    "expect": {
+      "lines": [
+        "aZcdef",
+        "",
+        "mZopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j IXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jIXY<Esc>",
+    "expect": {
+      "lines": [
+        "aXYbcdef",
+        "",
+        "mXYnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty 2j AXY<Esc>",
+    "lines": [
+      "abcdef",
+      "",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>2jAXY<Esc>",
+    "expect": {
+      "lines": [
+        "abXYcdef",
+        "  XY",
+        "mnXYopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d/b<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/b<CR>",
+    "expect": {
+      "lines": [
+        "bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search c/b<CR>XY<Esc>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "c/b<CR>XY<Esc>",
+    "expect": {
+      "lines": [
+        "XYbb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search y/b<CR>p",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "y/b<CR>p",
+    "expect": {
+      "lines": [
+        "aaa a bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d?b<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "d?b<CR>",
+    "expect": {
+      "lines": [
+        "aa b bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d/z<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/z<CR>",
+    "expect": {
+      "lines": [
+        "aa bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d/b<CR>.",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/b<CR>.",
+    "expect": {
+      "lines": [
+        "b cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search 2d/b<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "2d/b<CR>",
+    "expect": {
+      "lines": [
+        "b cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d2/b<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d2/b<CR>",
+    "expect": {
+      "lines": [
+        "b cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d/b<CR>u",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/b<CR>u",
+    "expect": {
+      "lines": [
+        "aa bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d?z<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "d?z<CR>",
+    "expect": {
+      "lines": [
+        "aa bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        8
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d/a<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/a<CR>",
+    "expect": {
+      "lines": [
+        "a bb cc bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "search d?c<CR>",
+    "lines": [
+      "aa bb cc bb",
+      "second bb line",
+      "last"
+    ],
+    "cursor": [
+      0,
+      8
+    ],
+    "keys": "d?c<CR>",
+    "expect": {
+      "lines": [
+        "aa bb c bb",
+        "second bb line",
+        "last"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark maw`a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "maw`a",
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark maw'a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "maw'a",
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark mawd`a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "mawd`a",
+    "expect": {
+      "lines": [
+        "otwo",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark mawy'a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "mawy'a",
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark majj`a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "majj`a",
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "mark majj'a",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "majj'a",
+    "expect": {
+      "lines": [
+        "one two",
+        "three four",
+        "five six"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "star line end",
+    "lines": [
+      "foo bar",
+      "foo bar"
+    ],
+    "cursor": [
+      0,
+      6
+    ],
+    "keys": "*",
+    "expect": {
+      "lines": [
+        "foo bar",
+        "foo bar"
+      ],
+      "cursor": [
+        1,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "hash line end",
+    "lines": [
+      "foo bar",
+      "foo bar"
+    ],
+    "cursor": [
+      1,
+      6
+    ],
+    "keys": "#",
+    "expect": {
+      "lines": [
+        "foo bar",
+        "foo bar"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlyP",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlyP",
+    "expect": {
+      "lines": [
+        "abcbcdef",
+        "ghihijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlyG$p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlyG$p",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqrbc",
+        "      hi"
+      ],
+      "cursor": [
+        2,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jly$2p",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jly$2p",
+    "expect": {
+      "lines": [
+        "abcdefbcbc",
+        "ghijklhihi",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jldu",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jldu",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlIX<Esc>u<C-r>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlIX<Esc>u<C-r>",
+    "expect": {
+      "lines": [
+        "aXbcdef",
+        "gXhijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlAX<Esc>u",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlAX<Esc>u",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlcX<Esc>u",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlcX<Esc>u",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlr<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlr<Esc>",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        2
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "extra <C-v>jlI<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlI<Esc>",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlA<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlA<Esc>",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlIX<BS>Y<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlIX<BS>Y<Esc>",
+    "expect": {
+      "lines": [
+        "aYbcdef",
+        "gYhijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlIX<CR>Y<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlIX<CR>Y<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "Ybcdef",
+        "ghijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlIX<Esc>j.",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlIX<Esc>j.",
+    "expect": {
+      "lines": [
+        "aXbcdef",
+        "gXXhijkl",
+        "mXnopqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlcX<Esc>j.",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlcX<Esc>j.",
+    "expect": {
+      "lines": [
+        "aXdef",
+        "gXkl",
+        "mXpqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>$2jd",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>$2jd",
+    "expect": {
+      "lines": [
+        "a",
+        "g",
+        "m"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>$2jIX<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>$2jIX<Esc>",
+    "expect": {
+      "lines": [
+        "aXbcdef",
+        "gXhijkl",
+        "mXnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>khd",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "<C-v>khd",
+    "expect": {
+      "lines": [
+        "adef",
+        "gjkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>khIX<Esc>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "<C-v>khIX<Esc>",
+    "expect": {
+      "lines": [
+        "aXbcdef",
+        "gXhijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlr<CR>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlr<CR>",
+    "expect": {
+      "lines": [
+        "a",
+        "def",
+        "g",
+        "jkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "extra <C-v>jlr<Tab>",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jlr<Tab>",
+    "expect": {
+      "lines": [
+        "a\t\tdef",
+        "g\t\tjkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k d",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kd",
+    "expect": {
+      "lines": [
+        "a",
+        "bg",
+        "hmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k cX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kcX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bXg",
+        "hXmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k y$p",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2ky$p",
+    "expect": {
+      "lines": [
+        "a",
+        "bcdefcdefg",
+        "hijklijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k IX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kIX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bXcdefg",
+        "hXijklmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k AX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kAX<Esc>",
+    "expect": {
+      "lines": [
+        "a    X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k rZ",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2krZ",
+    "expect": {
+      "lines": [
+        "a",
+        "bZZZZg",
+        "hZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ d",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$d",
+    "expect": {
+      "lines": [
+        "a",
+        "b",
+        "h"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ cX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$cX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bX",
+        "hX"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ y$p",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$y$p",
+    "expect": {
+      "lines": [
+        "a",
+        "bcdefg cdefg",
+        "hijklmnijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ IX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$IX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bXcdefg",
+        "hXijklmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ AX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$AX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bcdefgX",
+        "hijklmnX"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2k$ rZ",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$rZ",
+    "expect": {
+      "lines": [
+        "a",
+        "bZZZZZ",
+        "hZZZZZZ"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh d",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khd",
+    "expect": {
+      "lines": [
+        "",
+        "g",
+        "mn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh cX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khcX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xg",
+        "Xmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh y$p",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khy$p",
+    "expect": {
+      "lines": [
+        "aa",
+        "bbcdefcdefg",
+        "hhijklijklmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh IX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khIX<Esc>",
+    "expect": {
+      "lines": [
+        "Xa",
+        "Xbcdefg",
+        "Xhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh AX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khAX<Esc>",
+    "expect": {
+      "lines": [
+        "a    X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kh rZ",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khrZ",
+    "expect": {
+      "lines": [
+        "Z",
+        "ZZZZZg",
+        "ZZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl d",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kld",
+    "expect": {
+      "lines": [
+        "a",
+        "bg",
+        "hmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl cX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klcX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bXg",
+        "hXmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl y$p",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kly$p",
+    "expect": {
+      "lines": [
+        "a",
+        "bcdefcdefg",
+        "hijklijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl IX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klIX<Esc>",
+    "expect": {
+      "lines": [
+        "aX",
+        "bXcdefg",
+        "hXijklmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl AX<Esc>",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klAX<Esc>",
+    "expect": {
+      "lines": [
+        "a    X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "short-first 2kl rZ",
+    "lines": [
+      "a",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klrZ",
+    "expect": {
+      "lines": [
+        "a",
+        "bZZZZg",
+        "hZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k d",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kd",
+    "expect": {
+      "lines": [
+        "",
+        "g",
+        "mn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k cX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kcX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xg",
+        "Xmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k y$p",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2ky$p",
+    "expect": {
+      "lines": [
+        "",
+        "bcdefbcdefg",
+        "hijklhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k IX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kIX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xbcdefg",
+        "Xhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k AX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kAX<Esc>",
+    "expect": {
+      "lines": [
+        "     X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k rZ",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2krZ",
+    "expect": {
+      "lines": [
+        "",
+        "ZZZZZg",
+        "ZZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ d",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$d",
+    "expect": {
+      "lines": [
+        "",
+        "",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ cX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$cX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "X",
+        "X"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ y$p",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$y$p",
+    "expect": {
+      "lines": [
+        "",
+        "bcdefg bcdefg",
+        "hijklmnhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ IX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$IX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xbcdefg",
+        "Xhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ AX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$AX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "bcdefgX",
+        "hijklmnX"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2k$ rZ",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2k$rZ",
+    "expect": {
+      "lines": [
+        "",
+        "ZZZZZZ",
+        "ZZZZZZZ"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh d",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khd",
+    "expect": {
+      "lines": [
+        "",
+        "g",
+        "mn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh cX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khcX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xg",
+        "Xmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh y$p",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khy$p",
+    "expect": {
+      "lines": [
+        "",
+        "bcdefbcdefg",
+        "hijklhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh IX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khIX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xbcdefg",
+        "Xhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh AX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khAX<Esc>",
+    "expect": {
+      "lines": [
+        "     X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kh rZ",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2khrZ",
+    "expect": {
+      "lines": [
+        "",
+        "ZZZZZg",
+        "ZZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl d",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kld",
+    "expect": {
+      "lines": [
+        "",
+        "g",
+        "mn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl cX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klcX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xg",
+        "Xmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl y$p",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2kly$p",
+    "expect": {
+      "lines": [
+        "",
+        "bcdefbcdefg",
+        "hijklhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl IX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klIX<Esc>",
+    "expect": {
+      "lines": [
+        "X",
+        "Xbcdefg",
+        "Xhijklmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl AX<Esc>",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klAX<Esc>",
+    "expect": {
+      "lines": [
+        "     X",
+        "bcdefXg",
+        "hijklXmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "empty-first 2kl rZ",
+    "lines": [
+      "",
+      "bcdefg",
+      "hijklmn"
+    ],
+    "cursor": [
+      2,
+      4
+    ],
+    "keys": "<C-v>2klrZ",
+    "expect": {
+      "lines": [
+        "",
+        "ZZZZZg",
+        "ZZZZZmn"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "partial <C-v>j",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>j",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "partial <C-v>j$",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>j$",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "partial <C-v>jl",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>jl",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "partial <C-v>jj",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>jj",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        2,
+        3
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "partial <C-v>j2l",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>j2l",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        1
+      ],
+      "mode": "\u0016"
+    }
+  },
+  {
+    "name": "partial <C-v>jl<Esc>",
+    "lines": [
+      "abcdef",
+      "g",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "<C-v>jl<Esc>",
+    "expect": {
+      "lines": [
+        "abcdef",
+        "g",
+        "mnopqr"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

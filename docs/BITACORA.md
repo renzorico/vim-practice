@@ -602,6 +602,14 @@ Tags: `#design` `#gates`
 **What the checks caught:** In the sim, before the brief: fighting him with `da"` loses to his signing rate, and `dt.` would wipe all his clauses with World 4 tools, so his row is out of reach and the castle is about the locks. Sonnet (0 blocking): the wax-melt effect and the seal-ribbon tile were chosen by hard-coded map rows; both now read the content (the deleted text, the enclosing braces). Browser: 11 turns, 3 hearts, the ending and statue Q, no console errors.
 
 **Lesson:** Scene code keyed on map coordinates breaks silently on the next map edit; key it on the text.
+## 2026-11-23 · G-1: Block visual, search operators, search and marks in the solver (World 6 opens)
+**Who:** Opus (engine survey, contract, brief, golden check, review fixes), Codex (build), Sonnet (review).
+
+**What:** `<C-v>` block visual with `d x c y p r I A` (contract: `RegisterValue.blockWidth` marks a blockwise register); operators with search motions (`d/pat<CR>`, `c/`, `y/`, `d?`) with `.`; the solver searches single map characters, `n N * #`, and one mark, gated on the Echo Caves. 195 Neovim goldens (178 + 17 from review). Suite 38 s to 34 s.
+
+**What the checks caught:** Survey: `<C-v>` with any operator and `d/pat` failed. Codex stopped at the contract check (block put needs the register type): the design lead added `blockWidth`. Golden check: regenerated with `--force`, byte-identical. Sonnet: operator searches refused to wrap, unlike plain `/` and Neovim (wrapscan in the golden config), and a test pinned that: fixed, test now asserts Neovim's result; `d'a` upward snapped to column 0 where Neovim keeps the column (`nostartofline`): fixed; Sonnet's visual-mode switching "bug" did not reproduce in goldens (its probe was wrong): five switching goldens now pin it.
+
+**Lesson:** Turn a reviewer's suspicion into Neovim goldens before fixing anything: here they confirmed two bugs and refuted the third.
 
 ---
 

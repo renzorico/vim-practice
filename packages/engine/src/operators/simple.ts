@@ -91,6 +91,20 @@ function paste(state: EngineState, count: number, register: RegisterName | null,
   const undoable = pushUndo(state);
   const index = state.cursor.line;
 
+  if (value.blockWidth !== undefined) {
+    const col = state.cursor.col + (after && (state.lines[index]?.length ?? 0) > 0 ? 1 : 0);
+    let next = undoable;
+    for (const [offset, row] of value.text.split('\n').entries()) {
+      const line = index + offset;
+      while (next.lines.length <= line) next = applyTextEdits(next, [{ start: next.lines.join('\n').length, removed: 0, inserted: '\n' }]);
+      const existing = next.lines[line] ?? '';
+      const padded = row.padEnd(value.blockWidth, ' ').repeat(repeat);
+      const inserted = ' '.repeat(Math.max(0, col - existing.length)) + (repeat === 1 ? row : padded);
+      next = applyTextEdits(next, [{ start: offsetAt(next.lines, { line, col: Math.min(col, existing.length) }), removed: 0, inserted }]);
+    }
+    return success(withCursor(next, { line: index, col: Math.min(col, Math.max(0, (next.lines[index]?.length ?? 0) - 1)) }));
+  }
+
   if (value.linewise) {
     const body = value.text.endsWith('\n') ? value.text.slice(0, -1) : value.text;
     const pasted = Array.from({ length: repeat }, () => body.split('\n')).flat();

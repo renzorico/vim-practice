@@ -69,11 +69,12 @@ export function writeRegister(
   text: string,
   linewise: boolean,
   kind: 'yank' | 'delete',
+  blockWidth?: number,
 ): EngineState {
   if (register === BLACK_HOLE_REGISTER) {
     return state;
   }
-  const value: RegisterValue = { text, linewise };
+  const value: RegisterValue = { text, linewise, ...(blockWidth === undefined ? {} : { blockWidth }) };
   const registers: Record<string, RegisterValue> = { ...state.registers };
   const named = register !== null && NAMED_REGISTER_PATTERN.test(register) ? register : null;
 

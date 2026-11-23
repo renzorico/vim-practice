@@ -1,3 +1,4 @@
+import { blockCommand, finishBlockInsert } from './block.js';
 import { isTextObject, textObjectRange, visualTextObjectRange } from './textobjects.js';
 import { applyTextEdits, editsSince, offsetAt } from './edits.js';
 /**
@@ -105,6 +106,10 @@ export function parseNormal(keys: readonly Key[]): Parsed {
       const id = motionKey + object;
       return isTextObject(id) ? { kind: 'command', ...base, id, operator: key, operatorCount: inner.count } : INVALID;
     }
+    if (motionKey === '/' || motionKey === '?') {
+      if (keys[keys.length - 1] !== '<CR>') return INCOMPLETE;
+      return { kind: 'command', ...base, id: motionKey, arg: keys.slice(inner.next + 1, -1).join(''), operator: key, operatorCount: inner.count };
+    }
     const motion = parseMotion(keys, inner.next);
     if (motion === 'incomplete') return INCOMPLETE;
     if (motion === 'invalid') return INVALID;
@@ -123,7 +128,7 @@ export function parseNormal(keys: readonly Key[]): Parsed {
     return arg === undefined ? INCOMPLETE : { kind: 'command', ...base, id: key, arg };
   }
   if (SCROLL_COMMANDS.has(key)) return { kind: 'command', ...base, id: key };
-  if (INSERT_KEYS.has(key) || ['v', 'V', ':', '/', '?', '.', '<Esc>'].includes(key)) {
+  if (INSERT_KEYS.has(key) || ['v', 'V', '<C-v>', ':', '/', '?', '.', '<Esc>'].includes(key)) {
     return { kind: 'command', ...base, id: key };
   }
   const motion = parseMotion(keys, index);
@@ -209,6 +214,21 @@ function runOperator(
   let patched = state;
   if (id === `${operator}${operator}`) {
     range = linewiseRange(state, count ?? 1);
+  } else if (id === '/' || id === '?') {
+    const pattern = arg || state.lastSearch?.pattern;
+    if (!pattern) return { state, error: { code: 'no-previous-search', message: 'No previous search' } };
+    let target = state.cursor;
+    for (let index = 0; index < (count ?? 1); index += 1) {
+      const found = findPattern(state.lines, target, pattern, id === '/');
+      // Searches wrap (wrapscan, as plain / does and as Neovim's golden config): a match behind
+      // the cursor is a backwards range. Only a match on the cursor itself finds nothing new.
+      if (found === null || comparePositions(found, target) === 0) {
+        return { state, error: { code: 'pattern-not-found', message: `Pattern not found: ${pattern}` } };
+      }
+      target = found;
+    }
+    range = rangeFromMotion(state, { target, inclusive: false, linewise: false });
+    patched = { ...state, lastSearch: { pattern, forward: id === '/' } };
   } else if (isTextObject(id)) {
     range = textObjectRange(state, id, count ?? 1);
     if (range === null) {
@@ -245,6 +265,16 @@ function runOperator(
   }
   if (range === null) return null;
   const outcome = fn(patched, range, register);
+  if (operator === 'd' && (id === "'" || id === '`') && range.linewise) {
+    // nostartofline (the golden config): a linewise delete to a mark keeps the cursor's column.
+    const line = outcome.state.lines[outcome.state.cursor.line] ?? '';
+    const col = Math.max(0, Math.min(state.cursor.col, line.length - 1));
+    return { ...outcome, state: { ...outcome.state, cursor: { ...outcome.state.cursor, col }, desiredCol: col } };
+  }
+  if (operator === 'y' && id === "'") {
+    const cursor = { line: range.start.line, col: firstNonBlankCol(state.lines[range.start.line] ?? '') };
+    return { ...outcome, state: { ...outcome.state, cursor, desiredCol: cursor.col } };
+  }
   if (isTextObject(id) && operator === 'd' && range.start.col === 0 && range.start.line < range.end.line && !range.linewise) {
     const col = firstNonBlankCol(outcome.state.lines[outcome.state.cursor.line] ?? '');
     return { ...outcome, state: { ...outcome.state, cursor: { ...outcome.state.cursor, col }, desiredCol: col } };
@@ -268,9 +298,17 @@ function stepScroll(state: EngineState, id: string, count: number | null, keys: 
 }
 
 function stepNormal(state: EngineState, key: Key, options: EngineOptions | undefined): StepResult {
+  if (key === '<Esc>' && state.pendingKeys.length > 0) return result({ ...state, mode: 'normal', pendingKeys: [] });
   const keys = [...state.pendingKeys, key];
   const parsed = parseNormal(keys);
   if (parsed.kind === 'incomplete') {
+    const prefix = readCommandPrefix(keys);
+    if (prefix !== null && OPERATOR_KEYS.has(keys[prefix.next] ?? '')) {
+      const motion = keys[readCount(keys, prefix.next + 1).next];
+      if ((motion === '/' || motion === '?') && !isAllowed(motion, options)) {
+        return result({ ...state, pendingKeys: [], mode: 'normal' }, [], notAllowed(motion));
+      }
+    }
     const operatorPending = keys.some((k) => OPERATOR_KEYS.has(k));
     return result({ ...state, pendingKeys: keys, mode: operatorPending ? 'operator-pending' : 'normal' });
   }
@@ -285,9 +323,12 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
   if (id !== '<Esc>' && !opensCommandLine && !isAllowed(commandId, options) && !(operator !== null && isTextObject(id) && isAllowed(operator, options) && isAllowed(id, options))) return result(clean, [], notAllowed(commandId));
 
   if (operator !== null) {
+    if ((id === '/' || id === '?') && !isAllowed(commandId, options)) return result(clean, [], notAllowed(commandId));
+    if ((id === '/' || id === '?') && !isAllowed(id, options)) return result(clean, [], notAllowed(id));
     const total = count === null && operatorCount === null ? null : Math.min((count ?? 1) * (operatorCount ?? 1), MAX_COUNT);
     const outcome = runOperator(clean, operator, id, total, arg, register);
     if (outcome === null) return result(clean);
+    if (outcome.error !== null && (id === '/' || id === '?')) return result(clean, [], outcome.error);
     // A text object Vim cannot use (or an empty one) beeps: no dot command, no undo entry. Plain
     // motions keep Vim's rule that even a no-op `d0` becomes the dot command (golden: no-op d0).
     const skipped = isTextObject(id)
@@ -303,6 +344,7 @@ function stepNormal(state: EngineState, key: Key, options: EngineOptions | undef
     const inserted = enterInsert(before, id as 'i' | 'a' | 'I' | 'A' | 'o' | 'O', DEPS);
     return result({ ...inserted, changeInProgress: [...keys] }, [record(id, 'mode', keys, count, register, null)]);
   }
+  if (id === '<C-v>') return result({ ...clean, mode: 'visual-block', visualAnchor: clean.cursor, changeInProgress: keys }, [record(id, 'mode', keys, count, null, null)]);
   if (id === 'v' || id === 'V') {
     return result(enterVisual(clean, id === 'v' ? 'visual' : 'visual-line'), [record(id, 'mode', keys, count, null, null)]);
   }
@@ -377,9 +419,16 @@ function stepInsert(state: EngineState, rawKey: Key): StepResult {
       for (const typedKey of typed) current = handleInsertKey({ ...current, changeInProgress: null }, typedKey);
     }
     current = { ...current, changeInProgress: state.changeInProgress };
+    if (state.visualAnchor !== null) current = finishBlockInsert(current);
   }
-  const next = handleInsertKey(current, key);
-  if (next.mode !== 'normal') return result(next);
+  let next = handleInsertKey(current, key);
+  if (key === '<Esc>' && state.visualAnchor !== null && !state.changeInProgress?.includes('<CR>')
+    && (state.changeInProgress ?? []).some(key => key === 'I' || key === 'A')
+    && state.lines.join('\n') !== state.undoStack[state.undoStack.length - 1]?.lines.join('\n')) {
+    const cursor = { line: next.cursor.line, col: state.desiredCol };
+    next = { ...next, cursor, desiredCol: cursor.col };
+  }
+  if (next.mode !== 'normal') return result(state.visualAnchor === null ? next : { ...next, desiredCol: state.desiredCol });
   // Insert session ended: an insert that changed nothing must not leave an undo step behind.
   const snapshot = next.undoStack[next.undoStack.length - 1];
   const unchanged = snapshot !== undefined && snapshot.lines.length === next.lines.length
@@ -400,7 +449,24 @@ function stepCommandLine(state: EngineState, key: Key, options: EngineOptions | 
 }
 
 function stepVisual(state: EngineState, key: Key, options: EngineOptions | undefined): StepResult {
-  if (key === '<Esc>') return result({ ...exitToNormal(state), pendingKeys: [] });
+  if (key === '<Esc>') {
+    if (state.mode === 'visual-block' && state.pendingKeys[0] === 'r') return result({ ...state, pendingKeys: [] });
+    const cursor = state.mode === 'visual-block'
+      ? { ...state.cursor, col: Math.min(state.cursor.col, Math.max(0, (state.lines[state.cursor.line]?.length ?? 0) - 1)) }
+      : state.cursor;
+    return result({ ...exitToNormal(state), cursor, pendingKeys: [], changeInProgress: null });
+  }
+  if (state.mode === 'visual-block') {
+    const replacing = state.pendingKeys[0] === 'r';
+    if (replacing || ['d', 'x', 'c', 'y', 'I', 'A'].includes(key)) {
+      const command = replacing ? 'r' : key;
+      if (!isAllowed(command, options)) return result(state, [], notAllowed(command));
+      const changed = blockCommand(state, command, replacing ? key : undefined);
+      const keys = [...(state.changeInProgress ?? ['<C-v>']), ...(replacing ? ['r', key] : [key])];
+      return result(command === 'y' ? changed : finishChange(changed, keys), [record(command, 'operator', replacing ? ['r', key] : [key], null, null, '<C-v>')]);
+    }
+    if (key === 'r') return result({ ...state, pendingKeys: ['r'] });
+  }
   const operator = key === 'x' ? 'd' : key;
   if (state.pendingKeys.length === 0 && OPERATOR_KEYS.has(operator)) {
     if (!isAllowed(operator, options)) return result(state, [], notAllowed(operator));
@@ -409,6 +475,7 @@ function stepVisual(state: EngineState, key: Key, options: EngineOptions | undef
     const outcome = operators[operator as 'd' | 'c' | 'y'](base, range, null);
     return result(outcome.state, [record(operator, 'operator', [key], null, null, state.mode)], outcome.error);
   }
+  if (key === '<C-v>') return result(state.mode === 'visual-block' ? exitToNormal(state) : { ...state, mode: 'visual-block', changeInProgress: ['<C-v>'] });
   if (key === 'v' || key === 'V') {
     const target = key === 'v' ? 'visual' : 'visual-line';
     return result(state.mode === target ? exitToNormal(state) : { ...state, mode: target });
@@ -433,11 +500,28 @@ function stepVisual(state: EngineState, key: Key, options: EngineOptions | undef
     const id = keys[next] ?? '';
     return isAllowed(id, options) ? stepScroll(state, id, count, keys, options) : result(state, [], notAllowed(id));
   }
+  if (state.mode === 'visual-block' && (keys[next] === 'j' || keys[next] === 'k')) {
+    const id = keys[next] ?? '';
+    if (!isAllowed(id, options)) return result({ ...state, pendingKeys: [] }, [], notAllowed(id));
+    const line = Math.max(0, Math.min(state.lines.length - 1, state.cursor.line + (id === 'j' ? 1 : -1) * (count ?? 1)));
+    const col = Math.min(state.desiredCol, state.lines[line]?.length ?? 0);
+    return result({ ...state, pendingKeys: [], cursor: { line, col } }, [record(id, 'motion', keys, count, null, null)]);
+  }
+  if (state.mode === 'visual-block' && (keys[next] === 'h' || keys[next] === 'l')) {
+    if (!isAllowed(keys[next] ?? '', options)) return result({ ...state, pendingKeys: [] }, [], notAllowed(keys[next] ?? ''));
+    const length = state.lines[state.cursor.line]?.length ?? 0;
+    const col = Math.max(0, Math.min(length, state.cursor.col + (keys[next] === 'h' ? -1 : 1) * (count ?? 1)));
+    return result({ ...state, pendingKeys: [], cursor: { ...state.cursor, col }, desiredCol: col },
+      [record(keys[next] ?? '', 'motion', keys, count, null, null)]);
+  }
   const motion = parseMotion(keys, next);
   if (motion === 'incomplete') return result({ ...state, pendingKeys: keys });
   if (motion === 'invalid') return result({ ...state, pendingKeys: [] });
   const moved = runMotion({ ...state, pendingKeys: [] }, motion.id, count, motion.arg);
-  const nextState = moved === null ? { ...state, pendingKeys: [] } : applyMotionPatch({ ...state, pendingKeys: [] }, moved);
+  let nextState = moved === null ? { ...state, pendingKeys: [] } : applyMotionPatch({ ...state, pendingKeys: [] }, moved);
+  if (state.mode === 'visual-block' && motion.id === '$' && moved !== null) {
+    nextState = { ...nextState, cursor: { ...nextState.cursor, col: nextState.lines[nextState.cursor.line]?.length ?? 0 } };
+  }
   return result(nextState, moved === null ? [] : [record(motion.id, 'motion', keys, count, null, null)]);
 }
 
@@ -458,6 +542,10 @@ function stepInternal(state: EngineState, key: Key, options?: EngineOptions): St
 
 export function step(state: EngineState, key: Key, options?: EngineOptions): StepResult {
   const outcome = stepInternal(state, key, options);
+  if (state.mode === 'visual-block' && outcome.state.mode === 'visual-block' && outcome.state.pendingKeys[0] !== 'r') {
+    const tracked = { ...outcome.state, changeInProgress: [...(state.changeInProgress ?? ['<C-v>']), key] };
+    return { ...outcome, state: tracked, edits: editsSince(state, tracked) };
+  }
   return { ...outcome, edits: outcome.edits.length > 0 ? outcome.edits : editsSince(state, outcome.state) };
 }
 
