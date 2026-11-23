@@ -1,3 +1,6 @@
+import { isValidElement, type ReactNode } from 'react';
+import { SoundButton } from './audio/SoundButton.js';
+import { synth } from './audio/synth.js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive, notary, contract, mouth, gallery, marked, labyrinth, study, lastPage } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -16,6 +19,11 @@ vi.mock('react', async importOriginal => {
   const original = await importOriginal<typeof import('react')>();
   return { ...original,
     useCallback: (callback: unknown) => callback,
+    useRef: (value: unknown) => {
+      const slot = hooks.cursor++;
+      if (!hooks.values.has(slot)) hooks.values.set(slot, { current: value });
+      return hooks.values.get(slot);
+    },
     useState: (initial: unknown) => {
       const slot = hooks.cursor++;
       if (!hooks.values.has(slot)) hooks.values.set(slot, typeof initial === 'function' ? initial() : initial);
@@ -78,9 +86,10 @@ class WindowEvents {
   }
 }
 let values = new Map<string, string>();
+let appTree: ReactNode;
 function flush(): void {
   for (let count = 0; count < 20; count += 1) {
-    hooks.dirty = false; hooks.cursor = 0; App();
+    hooks.dirty = false; hooks.cursor = 0; appTree = App();
     hooks.pending.splice(0).forEach(run => run());
     if (!hooks.dirty) return;
   }
@@ -103,7 +112,7 @@ beforeEach(() => {
   vi.stubGlobal('HTMLElement', class {});
 });
 afterEach(() => {
-  hooks.effects.forEach(effect => effect.cleanup?.()); vi.unstubAllGlobals(); vi.useRealTimers();
+  hooks.effects.forEach(effect => effect.cleanup?.()); vi.unstubAllGlobals(); vi.useRealTimers(); vi.restoreAllMocks();
 });
 it('Enter advances exactly one line through both App listeners; repeat Enter and Space advance nothing extra', () => {
   flush(); key('Enter');
@@ -336,4 +345,69 @@ it('New game resets the story and preserves best records in the save', () => {
   expect(session().stageEntry.best).toEqual(best);
   expect(savedProgress().best).toEqual(best);
   expect(savedProgress().stage).toBe('margin');
+});
+
+function soundProps(node: ReactNode): { enabled: boolean; onToggle: () => void; compact: boolean } | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = soundProps(child);
+      if (found) return found;
+    }
+  }
+  if (!isValidElement<{ children?: ReactNode; enabled?: boolean; onToggle?: () => void;
+    soundEnabled?: boolean; onToggleSound?: () => void }>(node)) return;
+  if (node.type === SoundButton && node.props.onToggle) {
+    return { enabled: node.props.enabled ?? true, onToggle: node.props.onToggle, compact: false };
+  }
+  if (node.props.onToggleSound) {
+    return { enabled: node.props.soundEnabled ?? true, onToggle: node.props.onToggleSound, compact: true };
+  }
+  return soundProps(node.props.children);
+}
+function currentSound() {
+  const props = soundProps(appTree);
+  if (!props) throw new Error('Missing sound control');
+  return SoundButton(props);
+}
+function clickSoundThenEnter(): void {
+  const button = currentSound();
+  const mouseDown = new Event('mousedown', { cancelable: true });
+  Reflect.apply(button.props.onMouseDown, undefined, [mouseDown]);
+  Reflect.apply(button.props.onClick, undefined, []);
+  flush();
+  const enter = new KeyEvent('Enter');
+  // Model the browser focus default: an uncancelled mousedown focuses the button.
+  if (!mouseDown.defaultPrevented) {
+    const target = Object.assign(new HTMLElement(), { tagName: 'BUTTON', closest: () => target });
+    Object.defineProperty(enter, 'target', { value: target });
+  }
+  window.dispatchEvent(enter); flush();
+}
+it('clicking the title and footer sound controls leaves Enter for start, dialogue and death replay', () => {
+  flush(); clickSoundThenEnter();
+  expect(session().queue[0]?.index).toBe(0);
+  clickSoundThenEnter();
+  expect(session().queue[0]?.index).toBe(1);
+  hooks.session = { ...session(), world: { ...session().world, status: 'dead', hearts: 0 } }; flush();
+  clickSoundThenEnter();
+  expect(session().world.status).toBe('playing');
+});
+it('keeps native Enter and Space activation when a sound button is focused by keyboard', () => {
+  flush();
+  for (const name of ['Enter', ' ']) {
+    const event = new KeyEvent(name);
+    Object.defineProperty(event, 'target', { value: Object.assign(new HTMLElement(), { tagName: 'BUTTON' }) });
+    window.dispatchEvent(event); flush();
+    expect(event.defaultPrevented).toBe(false);
+    expect(isValidElement(appTree) && appTree.type).toBe('main');
+  }
+});
+
+it('passes the current reduced-motion preference into movement cue timing', () => {
+  enterLowlands();
+  Object.assign(window, { matchMedia: () => ({ matches: true }) });
+  const play = vi.spyOn(synth, 'play').mockReturnValue(() => {});
+  key('9'); key('l');
+  const movement = play.mock.calls.flatMap(call => call[0]).find(cue => cue.kind === 'step');
+  expect(movement?.pulsesMs).toEqual([0, 0, 0, 0, 0]);
 });

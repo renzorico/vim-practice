@@ -1,3 +1,6 @@
+import { SoundButton } from '../audio/SoundButton.js';
+import { useStarChimes } from '../audio/hooks.js';
+import { starsFor } from './progress.js';
 import { useMotionUses } from './useMotionUses.js';
 import { useMemo } from 'react';
 import { StageClearCard } from './StageClearCard.js';
@@ -21,6 +24,8 @@ import { resultData, type Session } from './session.js';
 import type { StoryContent } from '@escape/story';
 
 interface PlayScreenProps {
+  readonly soundEnabled?: boolean;
+  readonly onToggleSound?: () => void;
   readonly session: Session;
   readonly stage: Stage;
   readonly legend: Legend;
@@ -40,8 +45,9 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false }: PlayScreenProps) {
+export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
+  useStarChimes(Boolean(session.clearCard && !scriptStamp && stage.type !== 'text'), starsFor(world.turn, stage.parTurns));
   const reason = useBlockedReason(session.lastEvents);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
@@ -75,6 +81,7 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
       <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
+      {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">

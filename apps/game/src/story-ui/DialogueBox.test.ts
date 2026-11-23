@@ -38,6 +38,7 @@ vi.mock('react', async importOriginal => {
 });
 import { DialogueBox } from './DialogueBox.js';
 import { Portrait } from '../scene/sprites/Portrait.js';
+import { synth } from '../audio/synth.js';
 
 function render(node: ReactNode, path = 'root'): ReactNode {
   if (Array.isArray(node)) return node.map((child, i) => render(child, `${path}/${i}`));
@@ -71,7 +72,7 @@ beforeEach(() => {
 afterEach(() => {
   driver.effects.forEach(effect => effect.cleanup?.());
   driver.states.clear(); driver.effects.clear(); driver.pending.length = 0;
-  vi.useRealTimers(); vi.unstubAllGlobals();
+  vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks();
 });
 
 function enter(): void {
@@ -134,4 +135,49 @@ it('renders crisp 96px mood portraits, uses a neutral fallback and hides faceles
   expect(portrait('Fern', 'glad')).toEqual(portrait('Fern'));
   expect(portrait('blot')).toContain('viewBox="0 0 16 16"');
   for (const speaker of ['system', 'sign', 'unwriter', 'unknown speaker']) expect(portrait(speaker)).toBe('');
+});
+
+it('blips every three revealed characters and cancels when the line advances', () => {
+  const cancel = vi.fn();
+  const play = vi.spyOn(synth, 'play').mockReturnValue(cancel);
+  const lines: readonly Line[] = [{ speaker: 'elder', text: 'A'.repeat(90) }, { speaker: 'system', text: 'Silent' }];
+  show(lines, vi.fn(), 0);
+  vi.advanceTimersByTime(70);
+  show(lines, vi.fn(), 0);
+  expect(play).toHaveBeenCalledTimes(1);
+  expect(play.mock.calls[0]?.[0][0]?.kind).toBe('voice');
+  vi.advanceTimersByTime(70);
+  show(lines, vi.fn(), 0);
+  expect(play).toHaveBeenCalledTimes(2);
+  expect(cancel).toHaveBeenCalled();
+  // The real component unmount cleans up the previous keyed line.
+  driver.effects.forEach(effect => effect.cleanup?.());
+  expect(cancel).toHaveBeenCalledTimes(2);
+});
+
+it('rustles once for a Scribe note and keeps system lines silent', () => {
+  const play = vi.spyOn(synth, 'play').mockReturnValue(() => {});
+  show([{ speaker: 'scribe', text: 'A'.repeat(90) }], vi.fn(), 0);
+  vi.advanceTimersByTime(500);
+  show([{ speaker: 'scribe', text: 'A'.repeat(90) }], vi.fn(), 0);
+  expect(play).toHaveBeenCalledTimes(1);
+  expect(play.mock.calls[0]?.[0]).toEqual([{ kind: 'paper', offsetMs: 0 }]);
+  play.mockClear();
+  show([{ speaker: 'system', text: 'A'.repeat(80) }], vi.fn(), 0);
+  vi.advanceTimersByTime(500);
+  show([{ speaker: 'system', text: 'A'.repeat(80) }], vi.fn(), 0);
+  expect(play).not.toHaveBeenCalled();
+});
+
+it('plays one blip per instant line, including lines shorter than three characters', () => {
+  driver.reduced = true;
+  const play = vi.spyOn(synth, 'play').mockReturnValue(() => {});
+  const lines: readonly Line[] = [{ speaker: 'elder', text: 'Hi' }, { speaker: 'elder', text: 'Next' }];
+  const finish = vi.fn();
+  show(lines, finish, 0); show(lines, finish, 0);
+  expect(play).toHaveBeenCalledTimes(1);
+  show(lines, finish, 1); show(lines, finish, 1);
+  expect(play).toHaveBeenCalledTimes(2);
+  expect(play.mock.calls.every(call => call[0][0]?.kind === 'voice')).toBe(true);
+  expect(vi.getTimerCount()).toBe(0);
 });
