@@ -1,0 +1,110 @@
+{
+  "id": "marked",
+  "world": "echo-caves",
+  "type": "field",
+  "title": "The Marked Way",
+  "goalText": "Mark the fork, fetch the crystal and the lamp oil, and come back to the echo.",
+  "map": [
+    "######################",
+    "#=x=##################",
+    "######################",
+    "#..........#=o=#######",
+    "#.##################",
+    "#.##################",
+    "#..........##",
+    "######################"
+  ],
+  "legend": "marked",
+  "start": {
+    "line": 3,
+    "col": 6
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "echo",
+      "kind": "npc",
+      "sprite": "echo",
+      "at": {
+        "line": 3,
+        "col": 7
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": true
+    }
+  ],
+  "triggers": [
+    {
+      "id": "marked.talk-echo",
+      "once": false,
+      "on": "interact",
+      "target": {
+        "type": "entity",
+        "entity": "echo"
+      }
+    },
+    {
+      "id": "marked.crystal",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 1,
+          "col": 2
+        },
+        "to": {
+          "line": 1,
+          "col": 2
+        }
+      }
+    },
+    {
+      "id": "marked.oil",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 3,
+          "col": 13
+        },
+        "to": {
+          "line": 3,
+          "col": 13
+        }
+      }
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "marked.through"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 5,
+  "solution": [
+    "m",
+    "a",
+    "/",
+    "x",
+    "<CR>",
+    "`",
+    "a",
+    "/",
+    "o",
+    "<CR>",
+    "`",
+    "a",
+    "<CR>"
+  ],
+  "hints": [
+    "ma marks the spot you stand on. `a jumps back to it from anywhere, even out of sealed rock.",
+    "Mark the fork before you search: nothing else here can find the way back."
+  ]
+}
