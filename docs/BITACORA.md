@@ -812,6 +812,13 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-11: Text stages get a wider buffer
+**Who:** Opus (playtest, fix).
+
+**What:** On text stages the buffer column takes 3/5 of the width (was half) and the target column 2/5 (still at least 22ch); the gap is 32px. At 1024px the Ledger's longest row (`Mira ....... unpaid  (owed since the Last Saving)`) no longer hides behind a scrollbar. Below 680px the columns still stack.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
