@@ -20,6 +20,8 @@ const MOTIONS = new Set([
 ]);
 const TEXT_OBJECTS = new Set([..."wW\"'`()b)[]{}B<>tp"].flatMap(object => ['i' + object, 'a' + object]));
 const TEXT_OBJECT_WORLDS = new Set(['library', 'echo-caves', 'last-page']);
+const SEARCH_WORLDS = new Set(['echo-caves', 'last-page']);
+const SEARCH_COMMANDS = new Set(['/', '?', 'n', 'N', '*', '#', 'm', '`', "'"]);
 const FINDS = new Set(['f', 'F', 't', 'T']);
 
 interface Node {
@@ -160,6 +162,12 @@ function* fieldActions(
   state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number, textObjects: boolean,
 ): Generator<readonly Key[], void, string | null> {
   yield* baseFieldActions(state, commands, legend, windowHeight);
+  const characters = [...new Set(Array.from(state.engine.lines.join(''))) ].sort();
+  for (const prompt of ['/', '?']) if (commands.includes(prompt)) {
+    for (const char of characters) yield [prompt, char, '<CR>'];
+  }
+  // One local mark, a: keep the field search state and action vocabulary bounded.
+  for (const command of ['m', '`', "'"]) if (commands.includes(command)) yield [command, 'a'];
   const prefixes: readonly (readonly Key[])[] = commands.includes('"') ? [[], ['"', 'a'], ['"', 'b'], ['"', '0']] : [[]];
   for (const prefix of prefixes) {
     for (const operator of ['d', 'y']) {
@@ -218,10 +226,10 @@ function periodFor(stage: Stage): number {
   return entities.reduce((period, entity) => period / gcd(period, entity.every) * entity.every, 1);
 }
 
-function identity(state: WorldState, period: number, history: boolean, windowHeight: number, registers: readonly string[]): string {
+function identity(state: WorldState, period: number, history: boolean, windowHeight: number, registers: readonly string[], marks: boolean): string {
   const engine = state.engine;
   return JSON.stringify([
-    engine.lines, registers.map(name => engine.registers[name] ?? null), engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    marks ? engine.marks['a'] ?? null : null, engine.lines, registers.map(name => engine.registers[name] ?? null), engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
@@ -236,8 +244,10 @@ export function solveStage(
   const maxTurns = limits.maxTurns ?? 60;
   const maxExpanded = limits.maxExpanded ?? 200000;
   if (!Number.isFinite(maxTurns) || maxTurns < 0 || !Number.isFinite(maxExpanded) || maxExpanded < 0) return null;
-  const commands = options.learnedCommands.filter((command) => stage.allowedCommands === undefined
-    || stage.allowedCommands.includes(command));
+  const search = SEARCH_WORLDS.has(stage.world);
+  const commands = options.learnedCommands.filter(command => (search || !SEARCH_COMMANDS.has(command))
+    && (stage.allowedCommands === undefined || stage.allowedCommands.includes(command)));
+  const marks = search && commands.some(command => ['m', '`', "'"].includes(command));
   const period = periodFor(stage);
   const windowHeight = stage.windowHeight ?? 28;
   // Undo/redo futures depend on snapshots, even when current text and cursor match.
@@ -247,7 +257,7 @@ export function solveStage(
   const initial = sim.init(stage, legend, options);
   const frontier = new Frontier();
   let order = 0;
-  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight, registers), order: order++ };
+  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight, registers, marks), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
   let expanded = 0;
@@ -295,12 +305,12 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
-      if (!rejected) feedback = identity(state, period, history, windowHeight, registers);
+      if (!rejected) feedback = identity(state, period, history, windowHeight, registers, marks);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight, registers), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight, registers, marks), order: order++ };
       const sibling = successors.get(next.identity);
       if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
     }

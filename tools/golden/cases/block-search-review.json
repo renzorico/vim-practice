@@ -1,0 +1,389 @@
+[
+  {
+    "name": "review: block then charwise visual delete",
+    "lines": [
+      "abcdef",
+      "ghijkl"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jvd",
+    "expect": {
+      "lines": [
+        "aijkl"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: charwise then block visual delete",
+    "lines": [
+      "abcdef",
+      "ghijkl"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vj<C-v>d",
+    "expect": {
+      "lines": [
+        "acdef",
+        "gijkl"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: linewise then block yank and put",
+    "lines": [
+      "abcdef",
+      "ghijkl"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "Vj<C-v>lyP",
+    "expect": {
+      "lines": [
+        "abcbcdef",
+        "ghihijkl"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: block then linewise delete",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "<C-v>jVd",
+    "expect": {
+      "lines": [
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: charwise then linewise then charwise",
+    "lines": [
+      "abcdef",
+      "ghijkl",
+      "mnopqr"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "vjVvd",
+    "expect": {
+      "lines": [
+        "aijkl",
+        "mnopqr"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: operator search wraps",
+    "lines": [
+      "b abc"
+    ],
+    "cursor": [
+      0,
+      4
+    ],
+    "keys": "d/b<CR>",
+    "expect": {
+      "lines": [
+        "c"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: backward operator search wraps",
+    "lines": [
+      "abc b"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d?b<CR>",
+    "expect": {
+      "lines": [
+        "b"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: operator search across lines",
+    "lines": [
+      "one two",
+      "three b four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/b<CR>",
+    "expect": {
+      "lines": [
+        "b four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: n after an operator search",
+    "lines": [
+      "a b a b a b"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "d/b<CR>n",
+    "expect": {
+      "lines": [
+        "b a b a b"
+      ],
+      "cursor": [
+        0,
+        4
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dot repeats d? search",
+    "lines": [
+      "x b x b x b"
+    ],
+    "cursor": [
+      0,
+      10
+    ],
+    "keys": "d?b<CR>.",
+    "expect": {
+      "lines": [
+        "x b"
+      ],
+      "cursor": [
+        0,
+        2
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dot repeats c/ search",
+    "lines": [
+      "a b a b"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "c/b<CR>X<Esc>w.",
+    "expect": {
+      "lines": [
+        "Xb Xb"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: d'a upward keeps the column",
+    "lines": [
+      "one two",
+      "three four",
+      "five six"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "majd'a",
+    "expect": {
+      "lines": [
+        "five six"
+      ],
+      "cursor": [
+        0,
+        3
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: y backtick a then put",
+    "lines": [
+      "one two",
+      "three four"
+    ],
+    "cursor": [
+      0,
+      1
+    ],
+    "keys": "mawwy`aP",
+    "expect": {
+      "lines": [
+        "one twone two",
+        "three four"
+      ],
+      "cursor": [
+        0,
+        6
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: d'a downward",
+    "lines": [
+      "one",
+      "two",
+      "three",
+      "four"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "ma2jd'a",
+    "expect": {
+      "lines": [
+        "four"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dot after block A",
+    "lines": [
+      "ab",
+      "cd",
+      "ef"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "<C-v>jAX<Esc>j.",
+    "expect": {
+      "lines": [
+        "aXb",
+        "cXXd",
+        "eXf"
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dot after block r",
+    "lines": [
+      "abc",
+      "def",
+      "ghi"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "<C-v>jrxl.",
+    "expect": {
+      "lines": [
+        "xxc",
+        "xxf",
+        "ghi"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "review: dot after block d",
+    "lines": [
+      "abcd",
+      "efgh",
+      "ijkl"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "<C-v>jdl.",
+    "expect": {
+      "lines": [
+        "bd",
+        "fh",
+        "ijkl"
+      ],
+      "cursor": [
+        0,
+        1
+      ],
+      "mode": "n"
+    }
+  }
+]
