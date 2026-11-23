@@ -1,0 +1,613 @@
+{
+  "id": "last-page",
+  "fallback": {
+    "char": "?",
+    "kind": "barrier",
+    "sprite": "page-void",
+    "walkable": false,
+    "fixed": true,
+    "label": "void"
+  },
+  "emptyRow": {
+    "char": " ",
+    "kind": "ground",
+    "sprite": "page-blank",
+    "walkable": true,
+    "fixed": false,
+    "label": "blank line"
+  },
+  "tiles": [
+    {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "page-paper",
+      "walkable": true,
+      "fixed": false,
+      "label": "paper"
+    },
+    {
+      "char": "~",
+      "kind": "barrier",
+      "sprite": "page-margin",
+      "walkable": true,
+      "fixed": true,
+      "label": "margin"
+    },
+    {
+      "char": "a",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "b",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "c",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "d",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "e",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "f",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "g",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "h",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "i",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "j",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "k",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "l",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "m",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "n",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "o",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "p",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "q",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "r",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "s",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "t",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "u",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "v",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "w",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "x",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "y",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "z",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "A",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "B",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "C",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "D",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "E",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "F",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "G",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "H",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "I",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "J",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "K",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "L",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "M",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "N",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "O",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "P",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "Q",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "R",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "S",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "T",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "U",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "V",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "W",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "X",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "Y",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "Z",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "0",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "1",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "2",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "3",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "4",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "5",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "6",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "7",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "8",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "9",
+      "kind": "object",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": ":",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": ".",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "\"",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "(",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": ")",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": ",",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "[",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "]",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "-",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    },
+    {
+      "char": "'",
+      "kind": "barrier",
+      "sprite": "page-ink",
+      "walkable": true,
+      "fixed": false,
+      "label": "ink"
+    }
+  ]
+}

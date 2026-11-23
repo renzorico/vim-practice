@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { StoryState } from '@escape/story';
 
 export const PROGRESS_KEY = 'unsaved.progress.v1';
-export interface Progress { readonly stage: string; readonly story: StoryState }
+export interface Progress { readonly stage: string; readonly story: StoryState; readonly previous?: Progress }
 export interface ProgressStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -15,7 +15,8 @@ const storySchema = z.object({
   statues: z.array(z.enum(['O', 'E', 'R', 'D', 'Q', 'A'])),
   ending: z.enum(['recover', 'delete', 'quit']).nullable(),
 }).strict();
-const progressSchema = z.object({ stage: z.string(), story: storySchema }).strict();
+const entrySchema = z.object({ stage: z.string(), story: storySchema }).strict();
+const progressSchema = entrySchema.extend({ previous: entrySchema.optional() }).strict();
 
 // Resolve storage inside the guard: even reading window.localStorage can throw.
 export function readProgress(storage: () => ProgressStorage, stageIds: readonly string[]): Progress | null {
@@ -23,7 +24,10 @@ export function readProgress(storage: () => ProgressStorage, stageIds: readonly 
     const value = storage().getItem(PROGRESS_KEY);
     if (value === null) return null;
     const parsed = progressSchema.safeParse(JSON.parse(value));
-    return parsed.success && stageIds.includes(parsed.data.stage) ? parsed.data : null;
+    if (!parsed.success || !stageIds.includes(parsed.data.stage)
+      || (parsed.data.previous && !stageIds.includes(parsed.data.previous.stage))) return null;
+    return { stage: parsed.data.stage, story: parsed.data.story,
+      ...(parsed.data.previous ? { previous: parsed.data.previous } : {}) };
   } catch { return null; } // Storage is optional; blocked or corrupt saves mean a fresh game.
 }
 export function saveProgress(storage: () => ProgressStorage, progress: Progress): boolean {
@@ -33,4 +37,26 @@ export function saveProgress(storage: () => ProgressStorage, progress: Progress)
 export function clearProgress(storage: () => ProgressStorage): boolean {
   try { storage().removeItem(PROGRESS_KEY); return true; }
   catch { return false; }
+}
+
+/** Endings update storage only after their final cutscene beat is dismissed. */
+export function endingProgress(progress: Progress, story: StoryState): Progress {
+  if (story.ending === 'recover') return { stage: progress.stage, story };
+  if (story.ending === 'delete') return progress.previous ?? { stage: 'study', story: withoutFinale({
+    ...progress.story, ending: null,
+    flags: { ...progress.story.flags, 'study.intro-seen': false },
+  }) };
+  return progress;
+}
+
+/** A delete with no stored study save must not carry the finale's flags, quest or reactions back. */
+function withoutFinale(story: StoryState): StoryState {
+  const finale = (id: string): boolean => id.startsWith('last.') || id.startsWith('last-page');
+  return {
+    ...story,
+    flags: Object.fromEntries(Object.entries(story.flags).filter(([flag]) => !finale(flag))),
+    quests: Object.fromEntries(Object.entries(story.quests).filter(([quest]) => !finale(quest))),
+    firedReactions: story.firedReactions.filter(reaction => !finale(reaction)),
+    clearedStages: story.clearedStages.filter(stage => stage !== 'study' && stage !== 'last-page'),
+  };
 }

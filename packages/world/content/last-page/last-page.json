@@ -1,0 +1,365 @@
+{
+  "id": "last-page",
+  "world": "last-page",
+  "type": "field",
+  "title": "The Last Page",
+  "goalText": "Repair the dialog, choose a door, and write it.",
+  "map": [
+    "~~~~~~~~~~~~~~~~",
+    "E325: ATTENTOIN",
+    "Found a swap file by the the name \".folio.txt.swp\"",
+    "(2) An edit session for this file crashed.",
+    "(1) Another program may be editing the same file.",
+    "",
+    "[O]pen, (E)dit, (R)ecover, (D)elete, (Q)uit, (A)bort:"
+  ],
+  "legend": "last-page",
+  "start": {
+    "line": 1,
+    "col": 0
+  },
+  "hearts": 3,
+  "entities": [
+    {
+      "id": "margin",
+      "kind": "prop",
+      "sprite": "page-corner",
+      "at": {
+        "line": 0,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "unwriter",
+      "kind": "unwriter",
+      "sprite": "unwriter",
+      "at": {
+        "line": 0,
+        "col": 15
+      },
+      "behaviour": {
+        "type": "unwrite",
+        "path": [
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          },
+          {
+            "line": 6,
+            "col": 0
+          }
+        ]
+      },
+      "every": 3,
+      "damage": 0,
+      "solid": false
+    }
+  ],
+  "triggers": [
+    {
+      "id": "last.whole",
+      "once": true,
+      "on": "text",
+      "anchor": "margin",
+      "text": "~~~~~~~~~~~~~~~\nE325: ATTENTION\nFound a swap file by the name \".folio.txt.swp\"\n(1) Another program may be editing the same file.\n(2) An edit session for this file crashed.\n\n[O]pen, (E)dit, (R)ecover, (D)elete, (Q)uit, (A)bort:"
+    },
+    {
+      "id": "last.door-o",
+      "once": false,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 1
+        },
+        "to": {
+          "line": 6,
+          "col": 1
+        }
+      },
+      "onlyIf": "last.whole"
+    },
+    {
+      "id": "last.door-e",
+      "once": false,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 9
+        },
+        "to": {
+          "line": 6,
+          "col": 9
+        }
+      },
+      "onlyIf": "last.whole"
+    },
+    {
+      "id": "last.door-r",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 17
+        },
+        "to": {
+          "line": 6,
+          "col": 17
+        }
+      },
+      "onlyIf": "last.whole"
+    },
+    {
+      "id": "last.door-d",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 28
+        },
+        "to": {
+          "line": 6,
+          "col": 28
+        }
+      },
+      "onlyIf": "last.whole"
+    },
+    {
+      "id": "last.door-q",
+      "once": false,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 38
+        },
+        "to": {
+          "line": 6,
+          "col": 38
+        }
+      },
+      "onlyIf": "last.whole"
+    },
+    {
+      "id": "last.door-a",
+      "once": false,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 6,
+          "col": 46
+        },
+        "to": {
+          "line": 6,
+          "col": 46
+        }
+      },
+      "onlyIf": "last.whole"
+    }
+  ],
+  "scripts": [],
+  "clear": [
+    {
+      "type": "flag",
+      "flag": "last.recover"
+    },
+    {
+      "type": "saved"
+    }
+  ],
+  "teaches": [],
+  "requires": [],
+  "parTurns": 15,
+  "solution": [
+    "f",
+    "O",
+    "x",
+    "p",
+    "u",
+    "j",
+    "f",
+    "h",
+    "u",
+    "d",
+    "a",
+    "w",
+    "j",
+    "u",
+    "d",
+    "d",
+    "p",
+    "u",
+    "/",
+    "R",
+    "<CR>",
+    ":",
+    "w",
+    "<CR>"
+  ],
+  "hints": [
+    "He tears the bottom row every third turn. u right after he tears brings it back; u later undoes your own last edit.",
+    "Repair in the two turns between: xp for the typo, daw for the doubled word, ddp for the swapped lines.",
+    "When the page is whole, stand on R and write: :w."
+  ]
+}

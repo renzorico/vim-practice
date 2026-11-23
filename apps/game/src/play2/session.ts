@@ -42,6 +42,7 @@ export const MOUTH_COMMANDS = [...NOTARY_COMMANDS, '/', '?', 'n', 'N'] as const;
 export const GALLERY_COMMANDS = [...MOUTH_COMMANDS, '*', '#'] as const;
 export const MARKED_COMMANDS = [...GALLERY_COMMANDS, 'm', '`', "'"] as const;
 export const LABYRINTH_COMMANDS = MARKED_COMMANDS;
+export const LAST_PAGE_COMMANDS = LABYRINTH_COMMANDS;
 export const LEDGER_COMMANDS = [...QUARRY_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const MANIFEST_COMMANDS = [...GATES_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 export const HARBOUR_COMMANDS = [...COUNTER_COMMANDS, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>', 'c', 'C', 'P', 'yy'] as const;
@@ -51,14 +52,14 @@ const WORLD_COMMANDS: Partial<Record<Stage['world'], readonly string[]>> = {
   margin: LEARNED_COMMANDS, lowlands: LOWLANDS_COMMANDS, quarry: QUARRY_COMMANDS, wordwood: WORDWOOD_COMMANDS,
   'copper-port': PORT_COMMANDS,
 };
-const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { study: STUDY_COMMANDS, labyrinth: LABYRINTH_COMMANDS, marked: MARKED_COMMANDS, gallery: GALLERY_COMMANDS, mouth: MOUTH_COMMANDS, contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
+const STAGE_COMMANDS: Readonly<Record<string, readonly string[]>> = { 'last-page': LAST_PAGE_COMMANDS, study: STUDY_COMMANDS, labyrinth: LABYRINTH_COMMANDS, marked: MARKED_COMMANDS, gallery: GALLERY_COMMANDS, mouth: MOUTH_COMMANDS, contract: CONTRACT_COMMANDS, notary: NOTARY_COMMANDS, archive: ARCHIVE_COMMANDS, reading: READING_COMMANDS, stacks: STACKS_COMMANDS, harbour: HARBOUR_COMMANDS, counter: COUNTER_COMMANDS, customs: CUSTOMS_COMMANDS, warehouse: WAREHOUSE_COMMANDS, manifest: MANIFEST_COMMANDS, ledger: LEDGER_COMMANDS, glades: GLADES_COMMANDS, gates: GATES_COMMANDS };
 const MAX_EFFECT_ROUNDS = 32;
 /**
  * Stages whose puzzle state lives in story flags (chained levers): a retry must restart the stage
  * from its entry story, because story flags survive a world checkpoint restore (BITACORA E-5, G-5).
  * A generic fix (story state checkpointed with the world) is parked; add stages here until then.
  */
-const RESTART_ON_RETRY: ReadonlySet<string> = new Set(['labyrinth']);
+const RESTART_ON_RETRY: ReadonlySet<string> = new Set(['labyrinth', 'last-page']);
 
 export function resultData(session: Session) {
   return { keys: session.keys, turns: session.world.turn, hearts: session.world.hearts };
@@ -76,12 +77,15 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return found;
   }
   function options(story: StoryState, current: Stage) {
-    return { learnedCommands: stageCommands(current), flags: story.flags };
+    return { learnedCommands: [...stageCommands(current), ':w'], flags: story.flags };
   }
   function transition(session: Session): Session {
     if (session.world.status !== 'cleared' || session.queue.length > 0) return session;
     const following = stages[stages.findIndex(item => item.stage.id === session.world.stage) + 1];
-    return following ? enter(following, session.story, session.keys) : session;
+    if (!following) return session;
+    const next = enter(following, session.story, session.keys);
+    return following.stage.id === 'last-page'
+      ? { ...next, stageEntry: { ...next.stageEntry, previous: session.stageEntry } } : next;
   }
 
   function settle(session: Session, initial: StoryStepResult): Session {
@@ -131,18 +135,19 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
   function enter(current: SessionStage, incoming: StoryState, keys = 0, showIntro = true): Session {
     const intro = `${current.stage.id}.intro`;
     const seen = `${current.stage.id}.intro-seen`;
-    const show = showIntro && !incoming.flags[seen] && content.dialogues.some(dialogue => dialogue.id === intro);
+    const introType = content.cutscenes.some(item => item.id === intro) ? 'cutscene' : 'dialogue';
+    const show = showIntro && !incoming.flags[seen] && (introType === 'cutscene' || content.dialogues.some(dialogue => dialogue.id === intro));
     const opening = storyEngine.apply(incoming, show ? [{ type: 'set-flag', flag: seen, value: true }] : [], content);
     const story = opening.state;
     const session: Session = {
       stageEntry: { stage: current.stage.id, story },
       keys, deferredEffects: [], world: sim.init(current.stage, current.legend, options(story, current.stage)),
-      story, lastEvents: [], queue: show ? [{ type: 'dialogue', dialogue: intro, index: 0 }] : [],
+      story, lastEvents: [], queue: !show ? [] : introType === 'cutscene' ? [{ type: 'cutscene', cutscene: intro, index: 0 }] : [{ type: 'dialogue', dialogue: intro, index: 0 }],
     };
     const ready = saveOnStageEntry(settle(session, opening));
-    // A text-stage save precedes its lesson: Continue must replay an unfinished
-    // introduction so the player receives its teaching flag on dismissal.
-    return show && current.stage.type === 'text' ? { ...ready,
+    // Lessons and the finale reveal replay from entry on Continue, so an
+    // interrupted introduction cannot skip its teaching or terminal beat.
+    return show && (current.stage.type === 'text' || introType === 'cutscene') ? { ...ready,
       stageEntry: { ...ready.stageEntry, story: { ...ready.stageEntry.story,
         flags: { ...ready.stageEntry.story.flags, [seen]: false } } } } : ready;
   }
@@ -150,7 +155,8 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return enter(entry(stage.id), storyEngine.init(content), 0, showIntro);
   }
   function resume(progress: Progress): Session {
-    return enter(entry(progress.stage), progress.story);
+    const session = enter(entry(progress.stage), progress.story);
+    return { ...session, stageEntry: { ...session.stageEntry, ...(progress.previous ? { previous: progress.previous } : {}) } };
   }
 
   function presentEnd(session: Session): Session {

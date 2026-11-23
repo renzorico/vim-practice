@@ -50,7 +50,7 @@ export class FieldScene extends Phaser.Scene {
   private pileOffsets = new Map<string, number>();
   private cells = new Map<string, {
     char: string; sprite: string; tile: Phaser.GameObjects.Image; glyph: Phaser.GameObjects.Image;
-    line: number; variant: number;
+    line: number; variant: number; glyphKey: string;
   }>();
   private unwriting: { image: Phaser.GameObjects.Image; col: number; columns: number }[] = [];
   private dust: Phaser.GameObjects.Image[] = [];
@@ -179,7 +179,7 @@ export class FieldScene extends Phaser.Scene {
         if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
       }
     }
-    this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.id === 'last-page' ? '#f6efd4' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
     this.stamp = this.reducedMotion ? null : counterStamp(this.previousState, frame.state, frame.events);
     this.captureTransfer(frame);
     this.captureJunk(frame);
@@ -407,23 +407,24 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private setSourceVisible(visible: boolean): void {
-    this.source?.setVisible(visible);
+    this.source?.setVisible(visible || this.frame.stage.id === 'last-page');
     this.label?.setText(visible ? BUFFER_NAME : '').setVisible(visible);
   }
 
-  private glyphTexture(char: string): string {
-    const key = `glyph:${char.charCodeAt(0)}`;
+  private glyphTexture(char: string, door = false): string {
+    const paper = this.frame.stage.id === 'last-page';
+    const key = `glyph:${paper ? (door ? 'door:' : 'ink:') : ''}${char.charCodeAt(0)}`;
     if (!this.textures.exists(key)) {
       const texture = this.textures.createCanvas(key, TILE_SIZE, TILE_SIZE);
       if (!texture) throw new Error('Could not create source glyph texture');
       const context = texture.context;
-      context.font = '12px monospace';
+      context.font = door ? 'bold 14px monospace' : '12px monospace';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.strokeStyle = '#182523';
       context.lineWidth = 2;
-      context.strokeText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
-      context.fillStyle = '#ffffff';
+      if (!paper) context.strokeText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.fillStyle = paper ? '#292c2a' : '#ffffff';
       context.fillText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
       texture.refresh();
     }
@@ -435,6 +436,12 @@ export class FieldScene extends Phaser.Scene {
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
       const key = `${line}:${col}`;
       const char = this.frame.state.engine.lines[line]?.charAt(col) ?? '';
+      const page = this.frame.stage.id === 'last-page';
+      const door = page && this.frame.state.flags['last.whole'] === true
+        && this.frame.stage.triggers.some(trigger => trigger.on === 'enter'
+          && trigger.area.from.line === line && trigger.area.from.col === col);
+      if (door) sprite = 'page-door';
+      const glyphChar = page && line === 0 && !this.frame.showSource ? ' ' : char || ' ';
       if (sprite === 'crystal-dark' && stageLights(this.frame.stage).some(crystal => crystal.at.line === line && crystal.at.col === col && this.frame.state.flags[crystal.flag])) sprite = 'crystal-lit';
       if (sprite.startsWith('rune-lever-') && stageLights(this.frame.stage).some(lever => lever.at.line === line && lever.at.col === col && this.frame.state.flags[lever.flag])) sprite += '-lit';
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
@@ -447,18 +454,20 @@ export class FieldScene extends Phaser.Scene {
       const cell = this.cells.get(key);
       if (cell) {
         if (cell.sprite !== sprite || cell.variant !== variant) cell.tile.setTexture(this.texture(sprite, variant));
-        if (cell.char !== char) cell.glyph.setTexture(this.glyphTexture(char || ' '));
+        // Only swap the glyph when its character or door state changed: this runs per cell per render.
+        const glyphKey = `${glyphChar}:${door ? 1 : 0}`;
+        if (cell.glyphKey !== glyphKey) { cell.glyph.setTexture(this.glyphTexture(glyphChar, door)); cell.glyphKey = glyphKey; }
         cell.glyph.setVisible(char !== '');
         cell.variant = variant;
         cell.sprite = sprite;
         cell.char = char;
       } else {
         const tile = this.add.image(center(col), center(line), this.texture(sprite, variant));
-        const glyph = this.add.image(center(col), center(line), this.glyphTexture(char || ' '));
+        const glyph = this.add.image(center(col), center(line), this.glyphTexture(glyphChar, door));
         this.tiles?.add(tile);
         glyph.setVisible(char !== '');
         this.source?.add(glyph);
-        this.cells.set(key, { char, sprite, tile, glyph, line, variant });
+        this.cells.set(key, { char, sprite, tile, glyph, line, variant, glyphKey: `${glyphChar}:${door ? 1 : 0}` });
       }
     }));
     for (const [key, cell] of this.cells) {
@@ -517,7 +526,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private addEntity(id: string, sprite: string, at: Position): void {
-    if (sprite === 'minotaur') return;
+    if (sprite === 'minotaur' || (this.frame.stage.id === 'last-page' && (id === 'unwriter' || id === 'margin'))) return;
     const offset = this.pileOffsets.get(id) ?? 0;
     const image = this.add.image(center(at.col) - offset, center(at.line) - offset, this.texture(this.entitySprite(sprite), this.reducedMotion ? 0 : this.idleFrame)).setFlipX(this.facing.get(id) ?? false);
     this.actors?.add(image);
@@ -605,10 +614,13 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private positionDanger(): void {
-    const active = this.frame.state.entities.some(entity => entity.def.kind === 'unwriter');
+    const page = this.frame.stage.id === 'last-page';
+    const active = this.frame.state.entities.some(entity => entity.def.kind === 'unwriter')
+      && (!page || this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'entity' && event.lineDelta < 0));
     if (!active && !this.danger) return;
     this.danger ??= this.add.image(0, 0, this.texture('unwrite-edge')).setScrollFactor(0).setDepth(3);
     const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    this.danger.setTexture(this.texture(page ? 'page-smear' : 'unwrite-edge'));
     this.danger.setVisible(active).setDisplaySize(this.scale.width / zoom, 32 / zoom)
       .setPosition(this.scale.width / 2, (this.scale.height + this.scale.height / zoom) / 2 - 16 / zoom);
   }

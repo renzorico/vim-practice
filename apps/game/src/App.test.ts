@@ -1,4 +1,4 @@
-import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive, notary, contract, mouth, gallery, marked, labyrinth, study } from './play2/content.js';
+import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive, notary, contract, mouth, gallery, marked, labyrinth, study, lastPage } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Session } from './play2/session.js';
 import type { ProgressStorage } from './play2/progress.js';
@@ -199,7 +199,12 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(savedProgress().stage).toBe('study');
   play(study.solution);
   vi.advanceTimersByTime(400); flush(); dismiss();
-  expect(session().world.status).toBe('cleared');
+  expect(session().world.stage).toBe('last-page');
+  play(lastPage.solution);
+  expect(session().queue[0]).toMatchObject({ cutscene: 'last.recover' });
+  expect(savedProgress().story.ending).toBeNull();
+  dismiss();
+  expect(savedProgress().story.ending).toBe('recover');
   key('Enter'); // title
   key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
@@ -207,7 +212,7 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'margin' });
 });
 function dismiss(): void {
-  for (let lines = 0; session().queue.length && lines < 100; lines += 1) key('Enter');
+  for (let lines = 0; session().queue.length && session().queue[0]?.type !== 'ending' && lines < 100; lines += 1) key('Enter');
 }
 function play(input: readonly string[]): void {
   for (const value of input) {
@@ -274,4 +279,35 @@ it('keeps the solved ledger stamped for 400 ms and blocks keys until the story c
   key('Enter');
   expect(session().world.stage).toBe('canopy');
   expect(session().queue[0]).toMatchObject({ dialogue: 'canopy.intro' });
+});
+
+function reload(): void {
+  hooks.effects.forEach(effect => effect.cleanup?.());
+  hooks.values.clear(); hooks.effects.clear(); hooks.pending.length = 0; hooks.session = undefined;
+  flush();
+}
+it('delete waits for the real cutscene and Continue restores study even after reloading the Last Page', () => {
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'study', story: createStoryEngine().init(content) }));
+  flush(); key('Enter'); dismiss(); play(study.solution);
+  vi.advanceTimersByTime(400); flush(); dismiss();
+  expect(savedProgress().stage).toBe('last-page');
+  reload(); key('Enter'); dismiss();
+  play(lastPage.solution.slice(0, 18));
+  play(['6', 'j', '0', 'f', 'D']);
+  expect(session().queue[0]).toMatchObject({ cutscene: 'last.delete', index: 0 });
+  expect(savedProgress().stage).toBe('last-page');
+  key('Enter');
+  expect(savedProgress().stage).toBe('last-page');
+  key('Enter');
+  expect(savedProgress().stage).toBe('study');
+  reload(); key('Enter');
+  expect(session().world.stage).toBe('study');
+  expect(session().story.ending).toBeNull();
+});
+it('finished recover saves offer a fresh game after reload', () => {
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'last-page', story: createStoryEngine().init(content) }));
+  flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
+  expect(savedProgress().story.ending).toBe('recover');
+  reload(); key('Enter');
+  expect(session().world.stage).toBe('margin');
 });

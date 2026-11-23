@@ -1,3 +1,4 @@
+import { PAGE_PAPER, PAGE_MARGIN, PAGE_DOOR, PAGE_SMEAR } from './last-page.js';
 import { MINOTAUR_LAIR, HOOFPRINT, RUNE_LEVERS, RUNE_LEVER, MINOTAUR } from './labyrinth.js';
 import { ECHO_RUNES } from './gallery.js';
 import { CAVE_FLOOR, CAVE_ROCK, CRYSTAL_LEDGE, CRYSTAL_DARK, CRYSTAL_LIT, ECHO, LAMP_OIL, MARK_FLAG } from './mouth.js';
@@ -35,6 +36,8 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  'page-ink': PAGE_PAPER, 'page-paper': PAGE_PAPER, 'page-blank': PAGE_PAPER, 'page-void': PAGE_PAPER, 'page-corner': PAGE_MARGIN, 'page-margin': PAGE_MARGIN, 'page-door': PAGE_DOOR, 'page-smear': PAGE_SMEAR,
+
   ...RUNE_LEVERS, 'rune-lever': RUNE_LEVER, 'minotaur-lair': MINOTAUR_LAIR, hoofprint: HOOFPRINT, minotaur: MINOTAUR,
   ...ECHO_RUNES,
   'cave-floor': CAVE_FLOOR, 'cave-rock': CAVE_ROCK, 'crystal-ledge': CRYSTAL_LEDGE,

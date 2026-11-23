@@ -110,3 +110,11 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @media (max-width: 1000px) {
   .script-panel--contract .script-columns { grid-template-columns: minmax(0, 1fr); }
 }
+
+.play-terminal {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-align: left;
+  font-size: clamp(0.75rem, 1.7vw, 1rem);
+}

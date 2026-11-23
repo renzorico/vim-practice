@@ -7,7 +7,7 @@ export function tileGrid(lines: WorldState['engine']['lines'], legend: Legend): 
   const sprites = new Map(legend.tiles.map(tile => [tile.char, legend.id === 'reading' && tile.sprite === 'library-wall' ? 'reading-wall' : legend.id === 'stacks' && tile.sprite === 'dust' ? 'library-dust' : ['warehouse', 'customs', 'counter'].includes(legend.id) && tile.sprite === 'rope' ? 'cargo-rope' : legend.id === 'port' && ['water', 'ladder'].includes(tile.sprite) ? `port-${tile.sprite}` : legend.id === 'glades' && tile.sprite === 'fern' ? 'fern-fronds' : tile.sprite]));
   const width = Math.max(legend.emptyRow === undefined ? 0 : 1, ...lines.map(row => row.length));
   return lines.map((row, line) => Array.from({ length: width }, (_, col) =>
-    row === '' && col === 0 && legend.emptyRow !== undefined ? legend.emptyRow.sprite : col >= row.length ? 'blank'
+    row === '' && col === 0 && legend.emptyRow !== undefined ? legend.emptyRow.sprite : col >= row.length ? (legend.id === 'last-page' ? 'page-paper' : 'blank')
       : legend.id === 'notary' && row[col] === 'w' && row.lastIndexOf('<', col) > row.lastIndexOf('>', col) ? 'tag-label'
       : legend.id === 'notary' && row[col] === 'k' && row.lastIndexOf('{', col) > row.lastIndexOf('}', col) ? 'seal-ribbon'
       : legend.id === 'labyrinth' && sprites.get(row.charAt(col)) === 'rune-lever' ? `rune-lever-${row.charAt(col)}`

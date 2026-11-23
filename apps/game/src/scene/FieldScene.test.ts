@@ -52,7 +52,8 @@ vi.mock('phaser', () => ({ default: {
 } }));
 import { FieldScene } from './FieldScene.js';
 import { createEngine } from '@escape/engine';
-import { QUARRY_COMMANDS } from '../play2/session.js';
+import { lastPage, lastPageLegend } from '../play2/content.js';
+import { LAST_PAGE_COMMANDS, QUARRY_COMMANDS } from '../play2/session.js';
 import { quarry, quarryLegend, lighthouse, lighthouseLegend, cut, cutLegend, shaft, shaftLegend } from '../play2/content.js';
 
 const frame = { state: FIXTURE_INITIAL_STATE, events: [], legend: FIXTURE_LEGEND, stage: FIXTURE_STAGE, showSource: true };
@@ -944,4 +945,21 @@ it('draws the labyrinth lair and three rune variants, lights only pulled levers,
   expect(at('field:rune-lever-x-lit', 4, 8)?.alpha).toBe(1);
   expect(at('field:rune-lever-x', 2, 2)).toBeDefined();
   expect(fake.images.some(image => image.texture === 'field:minotaur')).toBe(false);
+});
+
+it('draws the Last Page as ink without Source, boxes repaired doors, and shows a faceless tear smear', () => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(lastPage, lastPageLegend, { learnedCommands: LAST_PAGE_COMMANDS, flags: {} });
+  const frame = { state, stage: lastPage, legend: lastPageLegend, events: [], showSource: false };
+  const scene = new FieldScene(frame, true); scene.create();
+  expect(fake.strokeText).not.toHaveBeenCalled();
+  expect(fake.fillText.mock.calls.some(call => call[0] === 'E')).toBe(true);
+  expect(fake.containers[2]?.visible).toBe(true);
+  expect(fake.images.some(image => image.texture === 'field:unwriter')).toBe(false);
+  scene.present({ ...frame, state: { ...state, flags: { 'last.whole': true } } });
+  expect(fake.images.filter(image => image.texture === 'field:page-door')).toHaveLength(6);
+  scene.present({ ...frame, state: { ...state, turn: 3 }, events: [
+    { type: 'rows-changed', fromLine: 6, toLine: 6, lineDelta: -1, by: 'entity' },
+  ] });
+  expect(fake.images.some(image => image.texture === 'field:page-smear' && image.visible)).toBe(true);
 });

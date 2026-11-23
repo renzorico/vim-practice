@@ -144,7 +144,7 @@ it('shows the index beside its target and the visual lesson keys', () => {
   expect(learnedKeycaps({}, true, 'study')).toEqual(expect.arrayContaining(['<C-v>', 'V', 'v', 'I', '$c']));
 });
 
-it('keeps the exact study story and presents End of World 6 before To be continued', () => {
+it('keeps the exact study story and presents End of World 6 before the Last Page', () => {
   expect(content.dialogues.find(item => item.id === 'study.intro')?.lines.map(line => line.text)).toEqual([
     "The Scribe's study. A desk, a lamp,\nan empty chair.", '...lost. ...lost. ...lost.', 'Block! ...block.',
     'Dot means: Ctrl-v selects a block.\nEvery row at once.',
@@ -163,7 +163,8 @@ it('keeps the exact study story and presents End of World 6 before To be continu
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
-  expect(screen(session)).toContain('To be continued.');
+  expect(session.world.stage).toBe('last-page');
+  expect(session.queue[0]).toMatchObject({ cutscene: 'last-page.intro' });
   expect(session.story.clearedStages).toContain('study');
 });
 

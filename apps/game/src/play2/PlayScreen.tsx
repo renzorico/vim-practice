@@ -29,7 +29,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
   switch (beat.type) {
     case 'line': return <p className="dialogue__text">{beat.line.text}</p>;
     case 'title': return <h1>{beat.text}</h1>;
-    case 'terminal': return <pre>{beat.lines.join('\n')}</pre>;
+    case 'terminal': return <pre className="play-terminal">{beat.lines.join('\n')}</pre>;
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
@@ -77,7 +77,9 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
       {presentation?.type === 'ending' && <section className="play-panel" role="dialog" aria-label="Ending">
-        <h2>{presentation.ending}</h2><button onClick={onAdvance}>Continue</button>
+        <h1>UNSAVED</h1><p>folio.txt written</p>
+        <p>{result.keys} keys typed.</p><p>{result.hearts} of {stage.hearts} hearts left.</p>
+        <button onClick={onAdvance}>Enter to return to title</button>
       </section>}
       {world.status === 'cleared' && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
         <h2>To be continued.</h2>
@@ -95,6 +97,7 @@ export function deathHint(content: StoryContent, stageId = 'margin'): string {
 }
 
 export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textStage = true, stageId = ''): readonly string[] {
+  if (stageId === 'last-page') return ['h', 'j', 'k', 'l', 'f', 'x', 'p', 'daw', 'dd', 'u', '<C-r>', '/', ':w'];
   if (stageId === 'study') return ['h', 'j', 'k', 'l', '0', 'f', 'w', 'b', '}', '<C-v>', 'V', 'v', 'I', '$c', 'd', 'u', '<Esc>'];
   if (stageId === 'labyrinth') return learnedKeycaps(flags, false, 'marked');
   if (stageId === 'marked') return [...learnedKeycaps(flags, false, 'gallery'), 'ma', '`a', "'a"];
