@@ -10,7 +10,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stage, legend, stages });
 function dismiss(initial: Session): Session {
   let session = initial;
-  for (let count = 0; session.queue.length && count < 100; count += 1) session = controller.reduce(session, '<CR>');
+  for (let count = 0; (session.queue.length || session.clearCard) && count < 100; count += 1) session = controller.reduce(session, '<CR>');
   return session;
 }
 function keys(initial: Session, input: readonly string[]): Session {
@@ -29,6 +29,8 @@ it('keeps Margin story, resets hearts, presents the ending before entering Lowla
   expect(session.world.status).toBe('cleared');
   expect(session.queue[0]).toMatchObject({ dialogue: 'margin.end' });
   const flags = session.story.flags;
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('lowlands');
   expect(session.world.hearts).toBe(3);

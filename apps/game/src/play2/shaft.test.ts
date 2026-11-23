@@ -16,7 +16,7 @@ const controller = createSession({ ...dependencies, stages: stages.slice(0, stag
 const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 60) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

@@ -17,7 +17,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: warehouse, legend: warehouseLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -43,6 +43,8 @@ it('enters the warehouse after jetty.end, keeping story and starting its quest',
   session = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
   expect(session.world.stage).toBe('jetty');
   expect(session.queue[0]).toMatchObject({ cutscene: 'jetty.end' });
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('warehouse');
   expect(session.queue[0]).toMatchObject({ dialogue: 'warehouse.intro' });
@@ -142,6 +144,8 @@ it('replays the supplied solution in 15 turns with three hearts and ends after w
   expect(session.world.turn).toBe(15);
   expect(session.world.hearts).toBe(3);
   expect(session.story.flags['warehouse.stocked']).toBe(true);
+  expect(screen(session)).toContain('cleared');
+  session = local.reduce(session, '<CR>');
   expect(screen(session)).toContain('To be continued.');
 });
 it('keeps stage command restrictions and Continue restores warehouse', () => {

@@ -1,3 +1,9 @@
+import { useMotionUses } from './useMotionUses.js';
+import { useMemo } from 'react';
+import { StageClearCard } from './StageClearCard.js';
+import { useBlockedReason } from './useBlockedReason.js';
+import { landingMarkers } from './feedback.js';
+import { stages } from './content.js';
 import { HoofprintGauge } from './HoofprintGauge.js';
 import { darknessFor } from '../scene/darkness.js';
 import { NotaryGauge } from './NotaryGauge.js';
@@ -23,6 +29,7 @@ interface PlayScreenProps {
   readonly showSource: boolean;
   readonly scriptStamp?: boolean;
   readonly onAdvance: () => void;
+  readonly onReplay?: () => void;
 }
 function BeatView({ beat }: { readonly beat: Beat | undefined }) {
   if (!beat) return null;
@@ -33,8 +40,12 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, scriptStamp = false }: PlayScreenProps) {
+export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false }: PlayScreenProps) {
   const { world } = session;
+  const reason = useBlockedReason(session.lastEvents);
+  const uses = useMotionUses(session);
+  const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
+    [world, stage, legend, uses, session.queue.length]);
   const presentation = session.queue[0];
   const dialogue = presentation?.type === 'dialogue'
     ? content.dialogues.find(item => item.id === presentation.dialogue) : undefined;
@@ -52,19 +63,20 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       {stage.id === 'counter' && <CounterGauge world={world} />}
       {stage.id === 'notary' && <NotaryGauge world={world} />}
       {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} />
+      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(stage.type === 'text' ? {} : { par: stage.parTurns })} />
     </header>
     <div className="play-field">
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
-      legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
+      markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys">{activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys)}</output>
+      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
     </footer>
+    {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p>{deathHint(content, world.stage)}</p>
       <button onClick={onAdvance}>Press any key to return</button>
@@ -76,12 +88,12 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
-      {presentation?.type === 'ending' && <section className="play-panel" role="dialog" aria-label="Ending">
+      {!session.clearCard && presentation?.type === 'ending' && <section className="play-panel" role="dialog" aria-label="Ending">
         <h1>UNSAVED</h1><p>folio.txt written</p>
         <p>{result.keys} keys typed.</p><p>{result.hearts} of {stage.hearts} hearts left.</p>
         <button onClick={onAdvance}>Enter to return to title</button>
       </section>}
-      {world.status === 'cleared' && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
+      {world.status === 'cleared' && !session.clearCard && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
         <h2>To be continued.</h2>
         <p>{result.keys} keys typed.</p>
         <p>{result.hearts} of {stage.hearts} hearts left.</p>

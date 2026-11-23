@@ -16,7 +16,7 @@ const dependencies = { sim, storyEngine, content, stage: cut, legend: cutLegend 
 const controller = createSession({ ...dependencies, stages });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 40) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

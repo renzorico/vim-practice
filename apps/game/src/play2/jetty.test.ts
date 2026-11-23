@@ -17,7 +17,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: jetty, legend: portLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

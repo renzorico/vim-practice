@@ -17,7 +17,7 @@ const dependencies = { sim, storyEngine, content, stage: mouth, legend: mouthLeg
 const controller = createSession({ ...dependencies, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'mouth') + 1) });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

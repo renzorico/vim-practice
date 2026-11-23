@@ -19,7 +19,7 @@ const controller = createSession({ sim, storyEngine, content, stages: stages.sli
 const oldCommands = [...READING_COMMANDS, 'P', 'yy'];
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -37,6 +37,8 @@ it('enters archive only after reading.end, preserving story and starting its que
   while (session.queue[0]?.type !== 'cutscene') session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('reading');
   expect(session.queue[0]).toMatchObject({ cutscene: 'reading.end' });
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('archive');
   expect(session.queue[0]).toMatchObject({ dialogue: 'archive.intro' });
@@ -97,6 +99,8 @@ it('plays the exact intro, filed dialogue and ending in order', () => {
     expect(markup(session)).toContain(beat.line.text.replaceAll("'", '&#x27;'));
     session = controller.reduce(session, '<CR>');
   }
+  expect(markup(session)).toContain('cleared');
+  session = controller.reduce(session, '<CR>');
   expect(markup(session)).toContain('To be continued.');
 });
 it('gates paragraph objects, exposes the keycaps and restores Archive through Continue', () => {

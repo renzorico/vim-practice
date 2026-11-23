@@ -18,7 +18,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: customs, legend: customsLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -49,6 +49,8 @@ it('warehouse.end precedes customs.intro, retaining story and starting Customs',
   session = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
   expect(session.world.stage).toBe('warehouse');
   expect(session.queue[0]).toMatchObject({ cutscene: 'warehouse.end' });
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('customs');
   expect(queued(session)).toEqual(['customs.intro']);
@@ -124,6 +126,8 @@ it('par replays in 16 turns / three hearts, then customs.end and continuation', 
   expect(session.world.status).toBe('cleared');
   expect(session.world.turn).toBe(16);
   expect(session.world.hearts).toBe(3);
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('counter');
   expect(queued(session)).toEqual(['counter.intro']);

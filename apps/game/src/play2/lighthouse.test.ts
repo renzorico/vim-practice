@@ -11,7 +11,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stage, legend, stages });
 function dismiss(initial: Session): Session {
   let next = initial;
-  for (let count = 0; next.queue.length && count < 100; count += 1) next = controller.reduce(next, '<CR>');
+  for (let count = 0; (next.queue.length || next.clearCard) && count < 100; count += 1) next = controller.reduce(next, '<CR>');
   return next;
 }
 function keys(initial: Session, input: readonly string[]): Session {
@@ -35,7 +35,9 @@ it('enters the Lighthouse only after Lowlands ending is dismissed', () => {
   const cleared = keys(initial, lowlands.solution);
   expect(cleared.world.stage).toBe('lowlands');
   expect(cleared.queue[0]).toMatchObject({ dialogue: 'lowlands.end' });
-  const entered = controller.reduce(cleared, '<CR>');
+  const card = controller.reduce(cleared, '<CR>');
+  expect(card.clearCard).toBe(true);
+  const entered = controller.reduce(card, '<CR>');
   expect(entered.world.stage).toBe('lighthouse');
   expect(entered.world.engine.cursor).toEqual(lighthouse.start);
   expect(entered.queue[0]).toMatchObject({ dialogue: 'lighthouse.intro' });

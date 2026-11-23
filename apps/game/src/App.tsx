@@ -6,7 +6,7 @@ import { createStoryEngine } from '@escape/story';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
-import { clearProgress, endingProgress, readProgress, saveProgress, type Progress } from './play2/progress.js';
+import { endingProgress, readProgress, saveProgress, type Progress } from './play2/progress.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
@@ -16,11 +16,14 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content, stages });
 const ignoreHint = (): void => {};
 const storage = () => window.localStorage;
+const scoredStages = stages.filter(({ stage }) => stage.type !== 'text');
 const stageIds = stages.map(item => item.stage.id);
-type Action = Key | { readonly type: 'new' } | { readonly type: 'continue'; readonly progress: Progress };
+type Action = Key | { readonly type: 'new'; readonly best: Progress['best'] } | { readonly type: 'continue'; readonly progress: Progress };
 function reduce(session: Session, action: Action): Session {
   if (typeof action === 'string') return controller.reduce(session, action);
-  return action.type === 'new' ? controller.init() : controller.resume(action.progress);
+  if (action.type === 'continue') return controller.resume(action.progress);
+  const fresh = controller.init();
+  return action.best ? { ...fresh, stageEntry: { ...fresh.stageEntry, best: action.best } } : fresh;
 }
 export function App() {
   const [started, setStarted] = useState(false);
@@ -29,15 +32,13 @@ export function App() {
   const [choice, setChoice] = useState(0);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
   const scriptStamp = useScriptStamp(session);
-  const ending = session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
+  const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
   const canContinue = saved !== null && saved.story.ending !== 'recover';
-  const terminal = session.world.status === 'cleared' && session.queue.length === 0;
+  const terminal = session.world.status === 'cleared' && !session.clearCard && session.queue.length === 0;
   const choose = useCallback((continueGame: boolean) => {
     if (continueGame && saved && canContinue) dispatch({ type: 'continue', progress: saved });
     else {
-      clearProgress(storage);
-      setSaved(null);
-      dispatch({ type: 'new' });
+      dispatch({ type: 'new', best: saved?.best });
     }
     setShowSource(false);
     setStarted(true);
@@ -48,6 +49,7 @@ export function App() {
     if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(0); return; }
     dispatch(key);
   }, [started, terminal, ending, scriptStamp]);
+  const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true,
     enabled: started && session.world.status !== 'dead' });
@@ -77,7 +79,7 @@ export function App() {
   useEffect(() => {
     if (!started) return;
     const progress = endingProgress(session.stageEntry, session.story);
-    if (saved === progress || (saved?.story === progress.story && saved?.stage === progress.stage)) return;
+    if (saved === progress || (saved?.story === progress.story && saved?.stage === progress.stage && saved?.best === progress.best)) return;
     saveProgress(storage, progress);
     setSaved(progress);
   }, [started, session, saved, ending]);
@@ -97,6 +99,7 @@ export function App() {
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
+      {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
       <button aria-current={choice === (canContinue ? 1 : 0) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
     </nav>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
@@ -104,5 +107,5 @@ export function App() {
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
   return <PlayScreen session={session} stage={current.stage} legend={current.legend} content={content}
-    objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} />;
+    objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />;
 }

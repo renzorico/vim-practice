@@ -22,7 +22,7 @@ const SHORTER = 'fo;xj$i, Shut, Ope<Esc>}3jf2r4jddGf:lDa today.<Esc>k$i, on thre
 const REORDERED = 'Gf:lDa today.<Esc>k0t.a, on three<Esc>7Gddk0f2r4ggfo;xj0%i, Shut, Ope<Esc>';
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -113,6 +113,8 @@ it('presents every ending beat before entering the Jetty', () => {
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
+  expect(session.clearCard).toBe(true);
+  session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('jetty');
   expect(session.queue[0]).toMatchObject({ dialogue: 'jetty.intro' });
 });

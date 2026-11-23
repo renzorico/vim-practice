@@ -121,3 +121,16 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   text-align: left;
   font-size: clamp(0.75rem, 1.7vw, 1rem);
 }
+
+.stage-clear { overflow-y: auto; justify-content: flex-start; }
+.stage-clear > :first-child { margin-top: auto; }
+.stage-clear > :last-child { margin-bottom: auto; }
+.stage-clear > * { flex-shrink: 0; }
+.stage-clear .stage-clear__stars { color: var(--you); }
+.stage-clear__stars svg { width: 40px; height: 40px; margin: 0 4px; }
+.stage-clear__empty { color: var(--text-muted); }
+.stage-clear__route { max-width: 60ch; max-height: 30svh; overflow-y: auto; line-height: 2; }
+.stage-clear__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.play-title .play-stars { margin: 0; font: 14px var(--font-mono); color: var(--you); }
+
+.stage-clear__route .learned-key { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }

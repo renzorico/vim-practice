@@ -24,7 +24,7 @@ const REORDERED = '11G02wCTilde, for Ream<Esc>k02wCthe ferry, today<Esc>yyp2wct,
   'j2wct,Ream<Esc>GddggP5jddp$bcwreal<Esc>kb.2jb.';
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -121,6 +121,8 @@ it('presents End of World 4 before entering the stacks', () => {
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
+  expect(session.clearCard).toBe(true);
+  session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('stacks');
   expect(session.queue[0]).toMatchObject({ dialogue: 'stacks.intro' });
 });

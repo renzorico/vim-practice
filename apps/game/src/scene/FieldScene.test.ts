@@ -1235,3 +1235,36 @@ it('finishes squash inside the jump clock with planted feet and ghosts below the
   key('i'); key('o'); // Clock completion releases animating immediately.
   expect(player?.x).toBe(24);
 });
+
+
+it('draws static landing labels in reduced motion and removes hidden or dark markers', () => {
+  const at = frame.state.engine.cursor;
+  const scene = new FieldScene({ ...frame, markers: [{ key: 'w', at }] }, true);
+  scene.create();
+  const label = fake.texts.find(text => text.text === 'w');
+  expect(label?.alpha).toBe(0.7);
+  const labels = fake.containers.find(container => container.add.mock.calls.some(call => call[0] === label));
+  expect(labels).toBeDefined();
+  labels?.add.mockClear();
+  scene.present({ ...frame, markers: [] });
+  expect(labels?.removeAll).toHaveBeenCalledWith(true);
+  expect(labels?.add).not.toHaveBeenCalled();
+  scene.present({ ...frame, darkness: { radius: 1, lights: [] }, markers: [{ key: 'e', at: { line: at.line + 5, col: at.col } }] });
+  expect(labels?.add).not.toHaveBeenCalled();
+});
+
+it('keeps landing text objects when a new marker list has equal contents', () => {
+  const at = frame.state.engine.cursor;
+  const scene = new FieldScene({ ...frame, markers: [{ key: 'w', at }] }, true);
+  scene.create();
+  const count = fake.texts.length;
+  const label = fake.texts.find(text => text.text === 'w');
+  const labels = fake.containers.find(container => container.add.mock.calls.some(call => call[0] === label));
+  labels?.removeAll.mockClear();
+  scene.present({ ...frame, markers: [{ key: 'w', at: { ...at } }] });
+  expect(fake.texts).toHaveLength(count);
+  expect(labels?.removeAll).not.toHaveBeenCalled();
+  scene.present({ ...frame, markers: [{ key: 'e', at }] });
+  expect(fake.texts).toHaveLength(count + 1);
+  expect(labels?.removeAll).toHaveBeenCalledOnce();
+});

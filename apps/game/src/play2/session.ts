@@ -1,11 +1,13 @@
 import type { Key } from '@escape/engine';
 import type { StoryContent, StoryEffect, StoryEngine, StoryState, StoryStepResult } from '@escape/story';
-import type { Progress } from './progress.js';
+import { recordBest, type Progress } from './progress.js';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldSim, WorldState } from '@escape/world';
 
 type PresentationEffect = Extract<StoryEffect, { type: 'dialogue' | 'cutscene' | 'teach' | 'ending' }>;
 export type Presentation = PresentationEffect & { readonly index: number };
 export interface Session {
+  readonly clearCard?: boolean;
+  readonly clearAccepted?: boolean;
   readonly stageEntry: Progress;
   readonly deferredEffects: readonly WorldEffect[];
   readonly keys: number;
@@ -80,10 +82,12 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     return { learnedCommands: [...stageCommands(current), ':w'], flags: story.flags };
   }
   function transition(session: Session): Session {
-    if (session.world.status !== 'cleared' || session.queue.length > 0) return session;
+    if (session.world.status !== 'cleared' || (session.queue.length > 0 && session.queue[0]?.type !== 'ending')) return session;
+    if (!session.clearAccepted) return { ...session, clearCard: true };
     const following = stages[stages.findIndex(item => item.stage.id === session.world.stage) + 1];
     if (!following) return session;
-    const next = enter(following, session.story, session.keys);
+    const entered = enter(following, session.story, session.keys);
+    const next = { ...entered, stageEntry: { ...entered.stageEntry, ...(session.stageEntry.best ? { best: session.stageEntry.best } : {}) } };
     return following.stage.id === 'last-page'
       ? { ...next, stageEntry: { ...next.stageEntry, previous: session.stageEntry } } : next;
   }
@@ -157,7 +161,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
   }
   function resume(progress: Progress): Session {
     const session = enter(entry(progress.stage), progress.story);
-    return { ...session, stageEntry: { ...session.stageEntry, ...(progress.previous ? { previous: progress.previous } : {}) } };
+    return { ...session, stageEntry: { ...session.stageEntry, ...(progress.best ? { best: progress.best } : {}), ...(progress.previous ? { previous: progress.previous } : {}) } };
   }
 
   function presentEnd(session: Session): Session {
@@ -225,10 +229,27 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
   }
 
   function reduce(session: Session, key: Key): Session {
-    return track(session, step(session, key));
+    let next = track(session, step(session, key));
+    if (next === session) return session;
+    if (next.world.status === 'cleared' && session.world.status !== 'cleared') {
+      const current = entry(next.world.stage).stage;
+      if (current.type === 'text') return next;
+      const best = recordBest(next.stageEntry.best, current.id, next.world.turn, current.parTurns);
+      next = { ...next, stageEntry: { ...next.stageEntry, best } };
+    }
+    return next;
   }
 
   function step(session: Session, key: Key): Session {
+    if (session.clearCard) {
+      if (key === 'r') {
+        const story = { ...session.stageEntry.story, learnedSkills: session.story.learnedSkills };
+        const replay = enter(entry(session.world.stage), story, session.keys, false);
+        return { ...replay, stageEntry: { ...session.stageEntry, story },
+          lastEvents: [{ type: 'checkpoint-restored' }] };
+      }
+      return key === '<CR>' ? transition({ ...session, clearCard: false, clearAccepted: true, lastEvents: [] }) : session;
+    }
     if (session.world.status === 'dead') {
       // Effects deferred in the dying turn belong to reactions the restored story has not fired
       // yet: drop them, or they would land twice (S-1 review).
