@@ -7,7 +7,7 @@ import { createWorldSim } from '@escape/world';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 import { deathHint, learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
-import { stage, legend, content, lighthouse, lighthouseLegend, quarry, quarryLegend } from './content.js';
+import { stage, legend, content, lighthouse, lighthouseLegend, quarry, quarryLegend, ledger, ledgerLegend } from './content.js';
 const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content });
 it('renders the story objective rather than the stage goal', () => {
@@ -86,4 +86,16 @@ it('shows start over from the Quarry onward', () => {
     }));
     expect(html.includes('<kbd>:e!</kbd> start over')).toBe(entry.stage.world === 'quarry');
   }
+});
+
+it('hides HUD par for text stages and announces only blocked reasons', () => {
+  const session = controller.init(false);
+  const render = (blocked: boolean) => renderToStaticMarkup(createElement(PlayScreen, {
+    session: { ...session, lastEvents: blocked ? [{ type: 'bump', reason: 'edge', at: { line: 0, col: 0 } }] : [] },
+    stage: ledger, legend: ledgerLegend, content, objectives: [], showSource: false, onAdvance: () => {},
+  }));
+  expect(render(false)).not.toContain('par 0');
+  expect(render(false)).toContain('aria-live="off"');
+  expect(render(true)).toContain('aria-live="polite"');
+  expect(render(true)).toContain('The edge of the world.');
 });

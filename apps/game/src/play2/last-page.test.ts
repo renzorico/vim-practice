@@ -16,7 +16,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: lastPage, legend: lastPageLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 100) throw new Error('Presentation loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -45,6 +45,9 @@ it('replays the provided solution in 15 turns with three hearts and delays recov
   }
   expect(next.story.ending).toBe('recover');
   expect(next.queue[0]).toMatchObject({ type: 'ending', ending: 'recover' });
+  expect(next.clearCard).toBe(true);
+  expect(screen(next)).toContain('cleared');
+  next = controller.reduce(next, '<CR>');
   expect(screen(next)).toContain('folio.txt written');
   expect(endingProgress(next.stageEntry, next.story).story.ending).toBe('recover');
 });

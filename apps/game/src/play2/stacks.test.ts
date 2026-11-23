@@ -17,7 +17,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'stacks') + 1), stage: stacks, legend: stacksLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -47,6 +47,8 @@ it('enters stacks after all harbour.end lines, keeping story and starting the Li
     session = controller.reduce(session, '<CR>');
   }
   expect(ending.beats.at(-1)).toMatchObject({ line: { text: 'End of World 4.' } });
+  expect(session.clearCard).toBe(true);
+  session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('stacks');
   expect(queued(session)).toEqual(['stacks.intro']);
   expect(session.story.clearedStages).toContain('harbour');
@@ -122,7 +124,9 @@ it.each([false, true])('presents every Quire line exclusively when dusted=%s', d
   if (dusted) {
     expect(session.queue[0]).toMatchObject({ cutscene: 'stacks.end' });
     expect(screen(session)).toContain('Past the stacks, the reading room.\nChains across the floor, ( to ).');
-    expect(screen(controller.reduce(session, '<CR>'))).toContain('To be continued.');
+    const card = controller.reduce(session, '<CR>');
+    expect(card.clearCard).toBe(true);
+    expect(screen(controller.reduce(card, '<CR>'))).toContain('To be continued.');
   }
 });
 it('teaches the HUD objects immediately, rejects insert/change, and keeps earlier stages gated', () => {

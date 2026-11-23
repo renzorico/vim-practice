@@ -13,7 +13,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: quarry, legend: quarryLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  while (next.queue.length) next = controller.reduce(next, '<CR>');
+  while (next.queue.length || next.clearCard) next = controller.reduce(next, '<CR>');
   return next;
 }
 function keys(session: Session, input: string): Session {

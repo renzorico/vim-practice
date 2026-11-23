@@ -11,7 +11,7 @@ function setup(authored: StoryContent = content, simulation: WorldSim = createWo
 const game = setup();
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length && count < 20; count += 1) next = game.reduce(next, '<CR>');
+  for (let count = 0; (next.queue.length || next.clearCard) && count < 20; count += 1) next = game.reduce(next, '<CR>');
   return next;
 }
 function walk(keys: string, initial = dismiss(game.init())): Session {

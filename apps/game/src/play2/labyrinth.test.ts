@@ -22,7 +22,7 @@ const dependencies = { sim, storyEngine, content, stage: labyrinth, legend: laby
 const controller = createSession({ ...dependencies, stages });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length && next.world.status !== 'dead'; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard) && next.world.status !== 'dead'; count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

@@ -19,7 +19,7 @@ const dependencies = { sim, storyEngine, content, stage: gallery, legend: galler
 const controller = createSession({ ...dependencies, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'gallery') + 1) });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -62,6 +62,8 @@ it('keeps the Mouth ending ahead of gallery entry and carries story and quest pr
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('mouth');
   expect(session.queue[0]).toMatchObject({ cutscene: 'mouth.end' });
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('gallery');
   expect(session.queue[0]).toMatchObject({ dialogue: 'gallery.intro' });

@@ -17,7 +17,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'reading') + 1), stage: reading, legend: readingLegend });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -109,7 +109,9 @@ it.each([false, true])('shows each Folio line exclusively when chains-gone=%s', 
   if (gone) {
     expect(session.queue[0]).toMatchObject({ cutscene: 'reading.end' });
     expect(screen(session)).toContain('Past the reading room, the archive: shelves of\nrows, with an empty row between shelves.');
-    expect(screen(controller.reduce(session, '<CR>'))).toContain('To be continued.');
+    const card = controller.reduce(session, '<CR>');
+    expect(card.clearCard).toBe(true);
+    expect(screen(controller.reduce(card, '<CR>'))).toContain('To be continued.');
   }
 });
 it('shows every intro and nested line in order, with nested playing once', () => {

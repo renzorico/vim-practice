@@ -18,7 +18,7 @@ const dependencies = { sim, storyEngine, content, stage: marked, legend: markedL
 const controller = createSession({ ...dependencies, stages });
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -89,6 +89,8 @@ it('enters marked after gallery.end, carrying story and both quest steps', () =>
   session = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
   expect(session.world.stage).toBe('gallery');
   expect(session.queue[0]).toMatchObject({ cutscene: 'gallery.end' });
+  session = controller.reduce(session, '<CR>');
+  expect(session.clearCard).toBe(true);
   session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('marked');
   expect(session.queue[0]).toMatchObject({ dialogue: 'marked.intro' });

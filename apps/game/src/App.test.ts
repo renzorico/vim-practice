@@ -1,7 +1,8 @@
+import { renderToStaticMarkup } from 'react-dom/server';
 import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive, notary, contract, mouth, gallery, marked, labyrinth, study, lastPage } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Session } from './play2/session.js';
-import type { ProgressStorage } from './play2/progress.js';
+import type { Progress, ProgressStorage } from './play2/progress.js';
 
 // Exercise App itself and both real key listeners without a DOM/canvas dependency.
 // Hooks retain state and dependencies; each flush is one React-style render/effect cycle.
@@ -212,7 +213,7 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'margin' });
 });
 function dismiss(): void {
-  for (let lines = 0; session().queue.length && session().queue[0]?.type !== 'ending' && lines < 100; lines += 1) key('Enter');
+  for (let lines = 0; (session().queue.length || session().clearCard) && (session().clearCard || session().queue[0]?.type !== 'ending') && lines < 100; lines += 1) key('Enter');
 }
 function play(input: readonly string[]): void {
   for (const value of input) {
@@ -221,7 +222,7 @@ function play(input: readonly string[]): void {
     key(control ?? (value === '<CR>' ? 'Enter' : value === '<Esc>' ? 'Escape' : value), false, false, control !== undefined);
   }
 }
-function savedProgress(): { stage: string; story: Session['story'] } {
+function savedProgress(): Progress {
   return JSON.parse(values.get(PROGRESS_KEY) ?? '{}') as { stage: string; story: Session['story'] };
 }
 function enterLowlands(): void {
@@ -233,7 +234,7 @@ it('saves the entry story on New game and the actual Margin-to-Lowlands change o
   expect(savedProgress()).toEqual({ stage: 'margin', story: session().story });
   play(stage.solution); dismiss();
   const entryStory = session().story;
-  expect(savedProgress()).toEqual({ stage: 'lowlands', story: entryStory });
+  expect(savedProgress()).toEqual({ stage: 'lowlands', story: entryStory, best: session().stageEntry.best });
   play([...'9l']); dismiss();
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(savedProgress().story.flags['lowlands.knows-w']).toBeUndefined();
@@ -277,6 +278,8 @@ it('keeps the solved ledger stamped for 400 ms and blocks keys until the story c
   vi.advanceTimersByTime(1); flush(); key('Enter');
   expect(session().queue[0]?.index).toBe(1);
   key('Enter');
+  expect(session().clearCard).toBe(true);
+  key('Enter');
   expect(session().world.stage).toBe('canopy');
   expect(session().queue[0]).toMatchObject({ dialogue: 'canopy.intro' });
 });
@@ -310,4 +313,27 @@ it('finished recover saves offer a fresh game after reload', () => {
   expect(savedProgress().story.ending).toBe('recover');
   reload(); key('Enter');
   expect(session().world.stage).toBe('margin');
+});
+
+
+it('shows saved total stars on the title after a reload', () => {
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'lowlands', story: createStoryEngine().init(content),
+    best: { margin: { turns: 5, stars: 3 }, lowlands: { turns: 12, stars: 2 } } }));
+  flush();
+  hooks.cursor = 0;
+  const html = renderToStaticMarkup(App());
+  expect(html).toContain('Stars: 5 / 66');
+  expect(html).toContain('Continue');
+});
+
+it('New game resets the story and preserves best records in the save', () => {
+  const best = { lowlands: { turns: 1, stars: 3 } };
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'lowlands', story: { ...createStoryEngine().init(content),
+    flags: { 'lowlands.knows-w': true } }, best }));
+  flush(); key('j'); key('Enter');
+  expect(session().world.stage).toBe('margin');
+  expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
+  expect(session().stageEntry.best).toEqual(best);
+  expect(savedProgress().best).toEqual(best);
+  expect(savedProgress().stage).toBe('margin');
 });

@@ -24,7 +24,7 @@ const OLD_TOOLS = '2jf|d10lj.j.j.j.j.j.j.7k$bcwfound<Esc>jb.jb.jb.jb.jb.jb.jb.7k
 const OLD_COMMANDS = [...CONTRACT_COMMANDS, '/', '?', 'n', 'N', '*', '#', 'm', '`', "'"];
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -163,6 +163,8 @@ it('keeps the exact study story and presents End of World 6 before the Last Page
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
+  expect(session.clearCard).toBe(true);
+  session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('last-page');
   expect(session.queue[0]).toMatchObject({ cutscene: 'last-page.intro' });
   expect(session.story.clearedStages).toContain('study');

@@ -19,7 +19,7 @@ const controller = createSession({ sim, storyEngine, content, stages, stage: led
 const book = ledger.scripts[0]!;
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count += 1) {
+  for (let count = 0; (next.queue.length || next.clearCard); count += 1) {
     if (count > 60) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }

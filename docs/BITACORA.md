@@ -768,6 +768,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-6: Show, don't tell; reward par
+**Who:** Renzo (played it: "poor designed and explained"), Opus (brief, browser check), Codex (build), Sonnet (review).
+
+**What:** Landing markers: each stage's new motion keys (up to 4) are run speculatively on a copy of the world each turn, and the key's label is drawn on the cell it would land on; a key's marker retires after 3 uses, and none show while a command is pending or a dialogue is open. A blocked turn says why in the footer for 1.5 s (one plain line per `BumpReason`; search misses keep Vim's E486). The HUD shows `Turn 3 · par 5`. Every field stage now ends on a card: stars (3 at par, 2 up to 1.5 x par, else 1), turns against par, hearts, the par route as key caps when you missed it, Enter to continue, `r` to replay from the stage entry. The best result per stage is saved (optional `best` in the save; old saves load; New game keeps it) and the title shows total stars. Text stages have no par, stars or best.
+
+**What the checks caught:** `glades-finalize` (a 200,000-state solver proof) already peaked at 4.42 GB on main, at the edge of Node's default heap; the first build kept motion-use counts in the Session, which the solver keeps per state, and the worker ran out of memory. Counting moved to presentation state; peak back to 4.42 GB. Sonnet's review also found free stars for text stages, an f/t marker drawn on the player, markers recomputed on every render, and replay keeping the replayed stage in `clearedStages` (so its stage-cleared quest condition was already true); all fixed with tests. In the browser: markers for `0`, `e`, `w` on the Lowlands, "No landing here." on a blocked `h`, the card with three stars, replay to turn 0, best saved, and the `w` marker retired after three uses.
+
+**Lesson:** Anything on the Session is multiplied by the solver's state count: keep presentation state out of it.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

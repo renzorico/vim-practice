@@ -26,7 +26,7 @@ const REORDERED = '10jf<citTilde<Esc>G2kcipGuardian of the caves: the Minotaur.<
   + PROVIDED.split('}jdap')[0] + '}jdap';
 function dismiss(session: Session): Session {
   let next = session;
-  for (let count = 0; next.queue.length; count++) {
+  for (let count = 0; (next.queue.length || next.clearCard); count++) {
     if (count > 80) throw new Error('Dialogue loop');
     next = controller.reduce(next, '<CR>');
   }
@@ -165,6 +165,8 @@ it('presents the exact ending including End of World 5 before entering the Mouth
     expect(screen(session)).not.toContain('To be continued.');
     session = controller.reduce(session, '<CR>');
   }
+  expect(session.clearCard).toBe(true);
+  session = controller.reduce(session, '<CR>');
   expect(session.world.stage).toBe('mouth');
   expect(session.story.clearedStages).toContain('contract');
   expect(session.story.quests['caves.mouth']).toEqual({ step: 0, done: false });

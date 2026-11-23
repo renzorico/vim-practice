@@ -1,3 +1,4 @@
+import type { LandingMarker } from '../play2/feedback.js';
 import { darknessAlpha, stageLights, type Darkness } from './darkness.js';
 import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
 import { counterStamp, type CounterStamp } from './counterStamp.js';
@@ -27,6 +28,7 @@ export interface FieldFrame {
   readonly darkness?: Darkness;
   readonly registerTarget?: { readonly x: number; readonly y: number };
   readonly hazards?: readonly Area[];
+  readonly markers?: readonly LandingMarker[];
 }
 
 const presentationEngine = createEngine();
@@ -70,6 +72,8 @@ export class FieldScene extends Phaser.Scene {
   private deletion: JettyDeletion | null = null;
   private danger: Phaser.GameObjects.Image | undefined;
   private gateMarks: Phaser.GameObjects.Container | undefined;
+  private shownMarkers: readonly { key: string; line: number; col: number; alpha: number }[] = [];
+  private landingLabels: Phaser.GameObjects.Container | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
   private facing = new Map<string, boolean>();
   private idleFrame = 0;
@@ -103,6 +107,7 @@ export class FieldScene extends Phaser.Scene {
     this.actors = this.add.container(0, 0).setDepth(2);
     this.source = this.add.container(0, 0).setDepth(1);
     this.gateMarks = this.add.container(0, 0).setDepth(1);
+    this.landingLabels = this.add.container(0, 0).setDepth(3);
     this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.decorations = this.add.container(0, 0).setDepth(0.8);
@@ -191,6 +196,7 @@ export class FieldScene extends Phaser.Scene {
       if (this.frame.showSource !== frame.showSource) this.setSourceVisible(frame.showSource);
       this.syncHazards(frame);
       this.frame = frame;
+      this.syncLandingMarkers();
       return;
     }
     const discontinuity = this.previousState?.stage !== frame.state.stage || this.frame.stage !== frame.stage
@@ -207,6 +213,7 @@ export class FieldScene extends Phaser.Scene {
       if (frame.events.some(event => event.type === 'rows-changed')) this.syncCells();
       if (sourceChanged) this.setSourceVisible(frame.showSource);
       this.syncHazards(frame);
+      this.syncLandingMarkers();
       return;
     }
     // Carry ground only: the old jump arc/bob must not become the next path's baseline.
@@ -603,8 +610,30 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
+  private syncLandingMarkers(): void {
+    const markers = this.frame.state.pending ? [] : (this.frame.markers ?? []).map(marker => ({
+      key: marker.key, line: marker.at.line, col: marker.at.col,
+      alpha: darknessAlpha(marker.at, this.frame.state.engine.cursor, this.frame.darkness),
+    })).filter(marker => marker.alpha > 0);
+    if (markers.length === this.shownMarkers.length && markers.every((marker, index) => {
+      const previous = this.shownMarkers[index];
+      return previous && marker.key === previous.key && marker.line === previous.line
+        && marker.col === previous.col && marker.alpha === previous.alpha;
+    })) return;
+    this.shownMarkers = markers;
+    this.landingLabels?.removeAll(true);
+    for (const marker of markers) {
+      const alpha = marker.alpha;
+      this.landingLabels?.add(this.add.text(center(marker.col), center(marker.line) - 5, marker.key, {
+        fontFamily: 'monospace', fontSize: '7px', color: '#ffe8b2', backgroundColor: BACKGROUND,
+        padding: { x: 2, y: 1 },
+      }).setOrigin(0.5, 1).setAlpha(0.7 * alpha));
+    }
+  }
+
   private syncActors(at: Position = this.frame.state.engine.cursor): void {
     this.syncGateMarks();
+    this.syncLandingMarkers();
     this.markFlags?.removeAll(true);
     for (const at of Object.values(this.frame.state.engine.marks)) {
       this.markFlags?.add(this.add.image(center(at.col), center(at.line) - 6, this.texture('mark-flag'))
