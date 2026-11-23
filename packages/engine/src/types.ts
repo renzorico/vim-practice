@@ -26,6 +26,12 @@ export interface Position {
 export interface RegisterValue {
   readonly text: string;
   readonly linewise: boolean;
+  /**
+   * Present only for a blockwise register (a `<C-v>` yank or delete): the block's width in
+   * columns. `text` then holds the block's rows joined by '\n', and a put pastes it as a block.
+   * Absent for charwise and linewise registers.
+   */
+  readonly blockWidth?: number;
 }
 
 /** Keys of `registers`: '"' unnamed, '0'-'9', 'a'-'z', '-', '/'. */
