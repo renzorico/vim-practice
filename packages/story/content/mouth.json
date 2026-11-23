@@ -7,10 +7,11 @@
       "stages": [
         "mouth",
         "gallery",
-        "marked"
+        "marked",
+        "labyrinth"
       ],
-      "castle": null,
-      "statue": null
+      "castle": "labyrinth",
+      "statue": "A"
     }
   ],
   "openingStage": "mouth",

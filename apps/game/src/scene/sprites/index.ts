@@ -1,3 +1,4 @@
+import { MINOTAUR_LAIR, HOOFPRINT, RUNE_LEVERS, RUNE_LEVER, MINOTAUR } from './labyrinth.js';
 import { ECHO_RUNES } from './gallery.js';
 import { CAVE_FLOOR, CAVE_ROCK, CRYSTAL_LEDGE, CRYSTAL_DARK, CRYSTAL_LIT, ECHO, LAMP_OIL, MARK_FLAG } from './mouth.js';
 import { TAG_LABEL, SEAL_RIBBON, VAULT_FLOOR, VAULT_WALL, NOTARY_DESK, CLAUSE_QUOTE, CLAUSE_TEXT, CLAUSE_GAP, LOCK_LEFT, LOCK_RIGHT, SEAL_LEFT, SEAL_RIGHT, KEYS, TAG_OPEN, TAG_CLOSE, TAG_SLASH, WAX, VAULT_DOOR, LOCK_SHARDS, WAX_MELT, NOTARY } from './notary.js';
@@ -34,6 +35,7 @@ import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
 import type { PixelSprite } from './sprite.js';
 export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+  ...RUNE_LEVERS, 'rune-lever': RUNE_LEVER, 'minotaur-lair': MINOTAUR_LAIR, hoofprint: HOOFPRINT, minotaur: MINOTAUR,
   ...ECHO_RUNES,
   'cave-floor': CAVE_FLOOR, 'cave-rock': CAVE_ROCK, 'crystal-ledge': CRYSTAL_LEDGE,
   'lamp-oil': LAMP_OIL,

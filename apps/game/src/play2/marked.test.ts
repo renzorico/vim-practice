@@ -75,11 +75,13 @@ it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive
   ]);
 });
 it('replays the supplied solution in five turns with three hearts', () => {
-  const session = dismiss(route(start(), parseKeys('ma/x<CR>`a/o<CR>`a<CR>')));
-  expect(session.world.status).toBe('cleared');
-  expect(session.world.turn).toBe(5);
-  expect(session.world.hearts).toBe(3);
-  expect(session.queue).toEqual([]);
+  const session = route(start(), parseKeys('ma/x<CR>`a/o<CR>`a<CR>'));
+  // Finish Echo's handoff, leaving the ending queued before the next stage.
+  const cleared = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
+  expect(cleared.world.status).toBe('cleared');
+  expect(cleared.world.turn).toBe(5);
+  expect(cleared.world.hearts).toBe(3);
+  expect(dismiss(cleared).world.stage).toBe('labyrinth');
 });
 it('enters marked after gallery.end, carrying story and both quest steps', () => {
   let session = dismiss(controller.resume({ stage: 'gallery', story: storyEngine.init(content) }));
@@ -132,7 +134,7 @@ it('offers marks immediately, rejects ma in gallery, and restores marked on Cont
   const progress = readProgress(() => storage, stages.map(entry => entry.stage.id));
   if (!progress) throw new Error('Missing save');
   expect(controller.resume(progress).world.stage).toBe('marked');
-  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked']);
+  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked', 'labyrinth']);
 });
 it('lints marked and replays every bundled stage', () => {
   expect(lintStage(marked, markedLegend)).toEqual([]);
@@ -165,7 +167,15 @@ it('finds a four-turn solution with a focused marks and search vocabulary', () =
   if (!result) throw new Error('No marked route');
   expect(result.turns).toBe(4);
   expect(marked.parTurns).toBe(result.turns);
-  expect(dismiss(route(start(), marked.solution)).world.turn).toBe(result.turns);
-  expect(dismiss(route(start(), result.keys)).world.status).toBe('cleared');
+  // Stop at marked.end; dismissing it now enters the labyrinth at turn zero.
+  for (const input of [marked.solution, result.keys]) {
+    let session = route(start(), input);
+    for (let line = 0; line < 80 && !session.queue.some(item => item.type === 'cutscene' && item.cutscene === 'marked.end'); line++) {
+      session = controller.reduce(session, '<CR>');
+    }
+    expect(session.queue[0]).toMatchObject({ cutscene: 'marked.end' });
+    expect(session.world.turn).toBe(result.turns);
+    expect(session.world.status).toBe('cleared');
+  }
   console.info('Marked focused solver:', result);
 });

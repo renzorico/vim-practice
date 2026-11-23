@@ -87,7 +87,7 @@ it('Continue restores gallery and the world lists both cave stages', () => {
   if (!progress) throw new Error('Missing save');
   expect(controller.resume(progress).world.stage).toBe('gallery');
   expect(controller.resume(progress).story).toEqual(session.stageEntry.story);
-  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked']);
+  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked', 'labyrinth']);
 });
 it('lints gallery and replays every bundled stage', () => {
   expect(lintStage(gallery, galleryLegend)).toEqual([]);
