@@ -8,13 +8,21 @@ const NEXT_HINT_KEYS = 30;
 const SHOWN_MODES: ReadonlySet<string> = new Set(['insert', 'visual', 'visual-line', 'visual-block']);
 const SIDESCROLL_CELLS = 8;
 
-/** Scroll this buffer only; never move the page or wrap a Vim buffer line. */
+/**
+ * Scroll this buffer only; never move the page or wrap a Vim buffer line. Like Vim's `nowrap`:
+ * the view sits at the first column whenever the cursor fits there, and otherwise scrolls in
+ * steps to keep the cursor clear of the (sticky) number column and the right edge.
+ */
 function keepCursorVisible(viewport: HTMLDivElement): void {
   const cursor = viewport.querySelector('.cell--cursor-block, .cell--cursor-bar');
   if (cursor === null || viewport.clientWidth === 0) return;
   const cell = cursor.getBoundingClientRect();
-  const left = viewport.getBoundingClientRect().left + viewport.clientLeft;
-  const right = left + viewport.clientWidth;
+  const box = viewport.getBoundingClientRect();
+  const gutter = viewport.querySelector('.buffer__gutter')?.getBoundingClientRect().width ?? 0;
+  const contentRight = cell.right - box.left - viewport.clientLeft + viewport.scrollLeft;
+  if (contentRight <= viewport.clientWidth) { viewport.scrollLeft = 0; return; }
+  const left = box.left + viewport.clientLeft + gutter;
+  const right = box.left + viewport.clientLeft + viewport.clientWidth;
   const step = cell.width * SIDESCROLL_CELLS;
   if (cell.left < left) viewport.scrollLeft -= Math.max(left - cell.left, step);
   else if (cell.right > right) viewport.scrollLeft += Math.max(cell.right - right, step);

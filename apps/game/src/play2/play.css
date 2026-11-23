@@ -48,7 +48,10 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-panel .buffer { min-width: 100%; width: max-content; box-sizing: border-box; padding: 16px; overflow: visible; background: var(--text-soft); color: var(--bg); font: 16px/1.6 var(--font-mono); }
 .script-panel .buffer__line { display: flex; min-height: 1.6em; white-space: pre; }
 .script-panel .buffer__text, .script-panel .buffer__gutter { flex-shrink: 0; }
-.script-panel .buffer__gutter { padding-right: 16px; color: var(--line-strong); user-select: none; text-align: right; }
+/* Like Vim's number column: a fixed width (content-box, so the padding does not eat the digits)
+   that stays put while the text scrolls sideways under it. */
+.script-panel .buffer__gutter { box-sizing: content-box; padding-right: 16px; color: var(--line-strong); user-select: none; text-align: right;
+  position: sticky; left: 0; z-index: 1; background: var(--text-soft); box-shadow: -16px 0 0 var(--text-soft); }
 .script-panel .buffer__cmdline { min-height: 1.6em; white-space: pre; }
 .script-panel .cell--cursor-block { background: var(--bg); color: var(--text); }
 .script-panel .cell--cursor-bar { box-shadow: -2px 0 0 var(--bg); }

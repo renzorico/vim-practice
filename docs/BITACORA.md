@@ -722,9 +722,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-3: Script panel layout, checked in a real browser
+**Who:** Renzo (asked for the check), Opus (browser check and fix).
+
+**What:** The Founding Contract's panel at 1280, 680 and 375 px wide: no page overflow at any width; at 375 the buffer scrolls sideways and follows the cursor. Three fixes: the number column is now fixed-width (`content-box`: the global `border-box` reset let the 16px padding eat the `ch` width, so two-digit line numbers pushed lines 10+ one column right); it is sticky with its own background, so numbers stay put while text scrolls under them, as in Vim; and the view returns to the first column whenever the cursor fits there (`0` used to stop at 41px, hiding the numbers), with the cursor kept clear of the sticky gutter.
+
+**What the checks caught:** Only a real browser showed the misaligned lines and the half-home scroll: the component tests mock every rect (Sonnet had flagged that in P-1).
+
+**Lesson:** Layout tests with mocked geometry prove the logic, not the layout: look at it at three widths.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
-- Script panel: narrow-width layout only tested with mocks; check `min-width: 0` on the panel's grid ancestors in a real browser.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).
 Ideas that are out of v1 scope, kept so they are not lost:
