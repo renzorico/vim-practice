@@ -18,7 +18,7 @@ MASTERPLAN 3.4-3.5. The world is a swap file. The Scribe has reopened `folio.txt
 - `unwrite` deletes a row each act; `u` brings it back, but only when his deletion is the most recent change: the undo stack interleaves his deletions and the player's edits. With the Unwriter every 3 turns the rhythm is: `u` right after he strikes, then two turns of repair, then he strikes again. Undo at the wrong moment undoes the player's own repair (measured: `jjdd` then `u` brought the junk row back).
 - Rows with a fixed cell cannot be deleted or moved, so the dialog rows must be all non-fixed; the anchor for the repaired-page text trigger sits on a fixed top row that he never eats.
 - A naive layout (doors at the bottom, he eats upward) is solved in two turns by `/R<CR>` and `:w`: the doors must be locked until the page is repaired.
-- Decision needed (Renzo): is the undo-timing rhythm the finale (hard, very Vim, very much the swap-file story), or should the Unwriter only threaten rows the player is not editing (easier, more readable)? Everything else in this draft holds either way.
+- Decided (Renzo, 2026-11-23): the undo-timing rhythm is the finale. (Was: is the undo-timing rhythm the finale (hard, very Vim, very much the swap-file story), or should the Unwriter only threaten rows the player is not editing (easier, more readable)? Everything else in this draft holds either way.
 
 ## Task order
 H-1 (the Last Page stage, prototype first) -> H-2 (ending screens and credits) -> polish phase (art, audio, onboarding, a11y: MASTERPLAN phase E).
