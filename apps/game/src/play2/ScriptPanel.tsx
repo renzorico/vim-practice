@@ -1,10 +1,24 @@
 import type { EngineState } from '@escape/engine';
 import type { Script } from '@escape/world';
+import { useLayoutEffect, useRef } from 'react';
 import { Buffer } from '../ui/Buffer.js';
 
 const FIRST_HINT_KEYS = 60;
 const NEXT_HINT_KEYS = 30;
 const SHOWN_MODES: ReadonlySet<string> = new Set(['insert', 'visual', 'visual-line', 'visual-block']);
+const SIDESCROLL_CELLS = 8;
+
+/** Scroll this buffer only; never move the page or wrap a Vim buffer line. */
+function keepCursorVisible(viewport: HTMLDivElement): void {
+  const cursor = viewport.querySelector('.cell--cursor-block, .cell--cursor-bar');
+  if (cursor === null || viewport.clientWidth === 0) return;
+  const cell = cursor.getBoundingClientRect();
+  const left = viewport.getBoundingClientRect().left + viewport.clientLeft;
+  const right = left + viewport.clientWidth;
+  const step = cell.width * SIDESCROLL_CELLS;
+  if (cell.left < left) viewport.scrollLeft -= Math.max(left - cell.left, step);
+  else if (cell.right > right) viewport.scrollLeft += Math.max(cell.right - right, step);
+}
 
 export const SET_RIGHT_MS = 400;
 
@@ -21,6 +35,17 @@ interface ScriptPanelProps {
 }
 
 export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPanelProps) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  // Layout effect: scroll before paint, so the cursor never shows a frame off-screen.
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (viewport === null) return;
+    const followCursor = () => keepCursorVisible(viewport);
+    followCursor();
+    const observer = new ResizeObserver(followCursor);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [engine, script.id]);
   const target = script.goals.find(goal => goal.type === 'transform');
   return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
@@ -29,7 +54,9 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
     </header>
     <div className="script-columns">
       <div className="script-editor">
-        <Buffer state={engine} />
+        <div className="script-buffer-viewport" ref={viewportRef}>
+          <Buffer state={engine} />
+        </div>
         {/* Like Vim: the mode line names insert and visual modes only; normal mode shows nothing. */}
         <output className="script-mode" aria-label="Vim mode">
           {SHOWN_MODES.has(engine.mode) ? `-- ${engine.mode.replaceAll('-', ' ').toUpperCase()} --` : ''}

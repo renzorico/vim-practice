@@ -50,24 +50,29 @@ it('w lands on links; da( removes both shackles and leaves the cursor on floor',
   expect(next.world.engine.lines[1]).toBe('|......((cc)ccc)...(ccccc)..|');
   expect(next.world.engine.lines[1]?.[next.world.engine.cursor.col]).toBe('.');
   expect(next.world.hearts).toBe(3);
+  expect(next.world.firedTriggers).toContain('reading.first-gone');
+  expect(queued(next)).toEqual(['reading.nested']);
+  expect(next.world.firedTriggers).not.toContain('reading.chains-gone');
+  expect(next.story.flags['reading.chains-gone']).not.toBe(true);
+  expect(queued(keys(dismiss(next), 'u.'))).toEqual([]);
 });
 it.each(['d2a(', '2da('])('%s removes both nested pairs from the inner links', command => {
-  const next = keys(start(), `wda(w${command}`);
+  const next = keys(dismiss(keys(start(), 'wda(')), `w${command}`);
   expect(next.world.engine.lines[1]).toBe('|.........(ccccc)..|');
   expect(next.world.hearts).toBe(3);
 });
-it('di( leaves an open shackle and queues the trigger dialogue before the flag', () => {
-  const next = keys(start(), 'wda(wd2a(wdi(');
+it('di( leaves an open shackle and sets the completion flag without repeating the hint', () => {
+  const next = keys(dismiss(keys(start(), 'wda(')), 'wd2a(wdi(');
   expect(next.world.engine.lines[1]).toBe('|.........()..|');
   expect(next.world.firedTriggers).toContain('reading.chains-gone');
-  expect(queued(next)).toEqual(['reading.nested']);
+  expect(queued(next)).toEqual([]);
   expect(next.story.flags['reading.chains-gone']).toBe(true);
   expect(keys(dismiss(next), '<CR>').queue[0]).toMatchObject({ dialogue: 'reading.folio-through' });
 });
 it('da( on the last chain cannot satisfy the open-shackle trigger', () => {
   // da( would slide Folio's cell under the cursor: the sim cancels it (solid entity), so the
   // chain stays and the open-shackle text can never be reached this way.
-  const next = keys(start(), 'wda(wd2a(wda(');
+  const next = keys(dismiss(keys(start(), 'wda(')), 'wd2a(wda(');
   expect(next.world.engine.lines[1]).toBe('|.........(ccccc)..|');
   expect(next.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'solid-entity' }));
   expect(next.world.firedTriggers).not.toContain('reading.chains-gone');
@@ -113,7 +118,7 @@ it('shows every intro and nested line in order, with nested playing once', () =>
     expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
     session = controller.reduce(session, '<CR>');
   }
-  session = keys(session, 'wda(wd2a(wdi(');
+  session = keys(session, 'wda(');
   for (const line of content.dialogues.find(item => item.id === 'reading.nested')!.lines) {
     expect(screen(session)).toContain(line.text);
     session = controller.reduce(session, '<CR>');

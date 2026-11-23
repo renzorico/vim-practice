@@ -240,6 +240,7 @@ function runOperator(
     }
     if (!range.inclusive && range.start.line === range.end.line && range.start.col === range.end.col) {
       patched = { ...state, cursor: range.start, desiredCol: range.start.col };
+      if (operator === 'd') return { state: patched, error: { code: 'invalid-range', message: `Empty text object: ${id}` } };
     }
     const multiline = range.start.line < range.end.line;
     const throughLineEnd = range.inclusive && range.end.col >= (state.lines[range.end.line]?.length ?? 0) - 1;
@@ -249,7 +250,7 @@ function runOperator(
     if (multiline && operator === 'd' && id[0] === 'a' && range.start.col <= firstNonBlankCol(state.lines[range.start.line] ?? '')
       && throughLineEnd) range = { ...range, linewise: true };
     // ci{ on a block leaves an insertion row above the closing brace (no autoindent).
-    if (operator === 'c' && range.start.line < range.end.line && range.inclusive
+    if (operator === 'c' && id !== 'it' && id !== 'at' && range.start.line < range.end.line && range.inclusive
       && range.end.col === (state.lines[range.end.line]?.length ?? 0)) {
       range = { ...range, inclusive: false };
     }
@@ -264,6 +265,8 @@ function runOperator(
     patched = { ...state, ...motion.statePatch };
   }
   if (range === null) return null;
+  // d0's undo returns to column zero, even when replayed after an empty d0.
+  if (operator === 'd' && id === '0') patched = { ...patched, cursor: range.start };
   const outcome = fn(patched, range, register);
   if (operator === 'd' && (id === "'" || id === '`') && range.linewise) {
     // nostartofline (the golden config): a linewise delete to a mark keeps the cursor's column.

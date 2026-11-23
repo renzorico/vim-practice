@@ -1,7 +1,7 @@
 import { applyTextEdits, offsetAt } from '../edits.js';
 import type { CommandOutcome, SimpleCommandFn, SimpleCommandSpec } from '../modules.js';
 import type { EngineState, Position, RegisterName } from '../types.js';
-import { deleteCharRegion, failure, operators, pushUndo, success } from './operators.js';
+import { deleteCharRegion, failure, operators, pushEmptyUndo, pushUndo, success } from './operators.js';
 import { readRegister } from './registers.js';
 import { advanceChars, charLengthAt, clamp, firstNonBlankCol, lastCol, lineAt, retreatChars } from './text.js';
 
@@ -29,7 +29,7 @@ function withCursor(state: EngineState, cursor: Position): EngineState {
 function x(state: EngineState, count: number, register: RegisterName | null): CommandOutcome {
   const { line, col } = atCursor(state);
   if (line.length === 0) {
-    return success(state);
+    return success(pushEmptyUndo(state));
   }
   const end = { line: state.cursor.line, col: advanceChars(line, col, Math.max(1, count)) };
   return success(deleteCharRegion(state, { start: state.cursor, end }, register, false));

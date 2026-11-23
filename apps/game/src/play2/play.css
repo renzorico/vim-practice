@@ -44,8 +44,10 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-goal { max-width: 75ch; margin: 0 0 32px; line-height: 1.5; }
 .script-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(22ch, 1fr); gap: 40px; }
 .script-editor { min-width: 0; }
-.script-panel .buffer { padding: 16px; overflow-x: auto; background: var(--text-soft); color: var(--bg); font: 16px/1.6 var(--font-mono); }
+.script-buffer-viewport { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-color: var(--line-strong) var(--text-soft); }
+.script-panel .buffer { min-width: 100%; width: max-content; box-sizing: border-box; padding: 16px; overflow: visible; background: var(--text-soft); color: var(--bg); font: 16px/1.6 var(--font-mono); }
 .script-panel .buffer__line { display: flex; min-height: 1.6em; white-space: pre; }
+.script-panel .buffer__text, .script-panel .buffer__gutter { flex-shrink: 0; }
 .script-panel .buffer__gutter { padding-right: 16px; color: var(--line-strong); user-select: none; text-align: right; }
 .script-panel .buffer__cmdline { min-height: 1.6em; white-space: pre; }
 .script-panel .cell--cursor-block { background: var(--bg); color: var(--text); }

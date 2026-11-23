@@ -679,13 +679,22 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-1: Parking-lot fixes
+**Who:** Opus (brief, golden check, review fix), Codex (build), Sonnet (review).
+
+**What:** Engine: `cit`/`dit` on a tag whose content spans lines now match Neovim; a no-op change (`d0` at column 0, `dl` or `x` on an empty line) makes an empty undo entry, as Neovim does. 43 Neovim goldens (regenerated with `--force`: byte-identical). Script panel: no wrapping; it scrolls sideways to keep the cursor in view (now before paint). Reading Room: Dot's `d2a(` hint plays after the first chain, not after the last.
+
+**What the checks caught:** Sonnet (0 blocking, about 120 extra Neovim probes): the panel scrolled after paint (one frame off-screen): now a layout effect. Parked: empty objects (`di"` on `""`, `dit` on `<a></a>`) and `dh`/`db` near column 0 still differ from Neovim on `u`; the cursor after undoing `cit`/`cat` lands at the original position, not the change start; the panel's narrow-width layout is only tested with mocks; the Reading Room hint is missed if the nested chain goes first (by design).
+
+**Lesson:** Parity work finds more parity work: pin every reviewer probe as a golden before calling a family done.
+
+---
+
 ## Parking lot
+- Engine undo parity: `di"` on `""`, `dit` on `<a></a>`, and `dh`/`db` near column 0 do not make Neovim's empty undo entry; cursor after undoing `cit`/`cat` is the original position, Neovim's is the change start (Sonnet's probes in P-1: turn each into a golden).
+- Script panel: narrow-width layout only tested with mocks; check `min-width: 0` on the panel's grid ancestors in a real browser.
 - Session: story flags survive a death (world checkpoint restore). Stages whose puzzle lives in flags need `RESTART_ON_RETRY` (labyrinth). Generic fix: checkpoint story state with the world.
 - Old-commands bounds at maxTurns 3 only show there is no shortcut of 3 turns or fewer; they do not prove the old route's length (Sonnet, G-5).
-- Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
-- Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.
-- Reading Room: Dot's `d2a(` hint plays when the room is already clear; move it to the first `da(` (a text trigger on the first chain gone).
-- Engine: a no-op change (`d0` at column 0) creates an empty undo entry in Neovim, so `x0d0u` keeps the `x`; the engine does not (pre-existing, found in F-1 review). Low impact.
 Ideas that are out of v1 scope, kept so they are not lost:
 - Supabase leaderboards and accounts
 - Tauri desktop build (fixes `<C-w>` in browsers)

@@ -1,0 +1,1061 @@
+[
+  {
+    "name": "dit: multiline tag, plain body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "<contract></contract>"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, plain body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "<contract>Tilde</contract>"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, plain body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "<contract>",
+        "alpha",
+        "beta",
+        "",
+        "alpha",
+        "beta",
+        "</contract>"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, plain body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit: multiline tag, plain body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      3,
+      3
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "<contract></contract>"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, plain body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      3,
+      3
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "<contract>Tilde</contract>"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, plain body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      3,
+      3
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "<contract>",
+        "alpha",
+        "beta",
+        "",
+        "alpha",
+        "beta",
+        "</contract>"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, plain body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      3,
+      3
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit: multiline tag, blank line in body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "<contract></contract>"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, blank line in body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "<contract>Tilde</contract>"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, blank line in body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "<contract>",
+        "alpha",
+        "",
+        "beta",
+        "",
+        "alpha",
+        "",
+        "beta",
+        "</contract>"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, blank line in body, cursor inside body",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit: multiline tag, blank line in body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "<contract></contract>"
+      ],
+      "cursor": [
+        0,
+        10
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, blank line in body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "<contract>Tilde</contract>"
+      ],
+      "cursor": [
+        0,
+        14
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, blank line in body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "<contract>",
+        "alpha",
+        "",
+        "beta",
+        "",
+        "alpha",
+        "",
+        "beta",
+        "</contract>"
+      ],
+      "cursor": [
+        0,
+        9
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, blank line in body, cursor closing tag",
+    "lines": [
+      "<contract>",
+      "alpha",
+      "",
+      "beta",
+      "</contract>"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit: multiline tag, indented body and closing tag, cursor inside body",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "before <contract></contract> after"
+      ],
+      "cursor": [
+        0,
+        17
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, indented body and closing tag, cursor inside body",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "before <contract>Tilde</contract> after"
+      ],
+      "cursor": [
+        0,
+        21
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, indented body and closing tag, cursor inside body",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "before <contract>",
+        "  alpha",
+        "",
+        "  beta",
+        "  ",
+        "  alpha",
+        "",
+        "  beta",
+        "  </contract> after"
+      ],
+      "cursor": [
+        0,
+        16
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, indented body and closing tag, cursor inside body",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      1,
+      2
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        "before  after"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dit: multiline tag, indented body and closing tag, cursor closing tag",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "dit",
+    "expect": {
+      "lines": [
+        "before <contract></contract> after"
+      ],
+      "cursor": [
+        0,
+        17
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "citTilde<Esc>: multiline tag, indented body and closing tag, cursor closing tag",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "citTilde<Esc>",
+    "expect": {
+      "lines": [
+        "before <contract>Tilde</contract> after"
+      ],
+      "cursor": [
+        0,
+        21
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "yitp: multiline tag, indented body and closing tag, cursor closing tag",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "yitp",
+    "expect": {
+      "lines": [
+        "before <contract>",
+        "  alpha",
+        "",
+        "  beta",
+        "  ",
+        "  alpha",
+        "",
+        "  beta",
+        "  </contract> after"
+      ],
+      "cursor": [
+        0,
+        16
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "dat: multiline tag, indented body and closing tag, cursor closing tag",
+    "lines": [
+      "before <contract>",
+      "  alpha",
+      "",
+      "  beta",
+      "  </contract> after"
+    ],
+    "cursor": [
+      4,
+      3
+    ],
+    "keys": "dat",
+    "expect": {
+      "lines": [
+        "before  after"
+      ],
+      "cursor": [
+        0,
+        7
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 then u",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0u",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 then .",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0.",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 then uu",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0uu",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 then u<C-r>",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0u<C-r>",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 dot away then u",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0l.u",
+    "expect": {
+      "lines": [
+        "bc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op d0 dot away then .",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "x0d0l..",
+    "expect": {
+      "lines": [
+        "c def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl then u",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdlu",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl then .",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdl.",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl then uu",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdluu",
+    "expect": {
+      "lines": [
+        "abc def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl then u<C-r>",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdlu<C-r>",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl dot away then u",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdlk.u",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op dl dot away then .",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjdlk..",
+    "expect": {
+      "lines": [
+        " def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x then u",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjxu",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x then .",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjx.",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x then uu",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjxuu",
+    "expect": {
+      "lines": [
+        "abc def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x then u<C-r>",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjxu<C-r>",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        1,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x dot away then u",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjxk.u",
+    "expect": {
+      "lines": [
+        "bc def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "no-op x dot away then .",
+    "lines": [
+      "abc def",
+      ""
+    ],
+    "cursor": [
+      0,
+      0
+    ],
+    "keys": "xjxk..",
+    "expect": {
+      "lines": [
+        " def",
+        ""
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  },
+  {
+    "name": "backward delete undo d0u",
+    "lines": [
+      "abc def"
+    ],
+    "cursor": [
+      0,
+      3
+    ],
+    "keys": "d0u",
+    "expect": {
+      "lines": [
+        "abc def"
+      ],
+      "cursor": [
+        0,
+        0
+      ],
+      "mode": "n"
+    }
+  }
+]

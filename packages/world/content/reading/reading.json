@@ -58,6 +58,13 @@
       }
     },
     {
+      "id": "reading.first-gone",
+      "once": true,
+      "on": "text",
+      "anchor": "door-post",
+      "text": "......((cc)ccc)...(ccccc)..|"
+    },
+    {
       "id": "reading.chains-gone",
       "once": true,
       "on": "text",
