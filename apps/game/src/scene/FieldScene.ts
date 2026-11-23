@@ -1,5 +1,5 @@
 import type { LandingMarker } from '../play2/feedback.js';
-import { darknessAlpha, stageLights, type Darkness } from './darkness.js';
+import { darknessAlpha, darknessFor, stageLights, type Darkness } from './darkness.js';
 import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
 import { counterStamp, type CounterStamp } from './counterStamp.js';
 import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
@@ -7,7 +7,7 @@ import { jettyDeletion, JETTY_SPLASH_FRACTION, type JettyDeletion } from './jett
 import Phaser from 'phaser';
 import { createEngine } from '@escape/engine';
 import type { Position } from '@escape/engine';
-import type { Area, Legend, Stage, WorldEvent, WorldState } from '@escape/world';
+import type { Area, Legend, Stage, WorldEvent, WorldId, WorldState } from '@escape/world';
 import { unwritingAlpha, unwritingPlan } from './unwrite.js';
 import { SPRITES } from './sprites/index.js';
 import {
@@ -29,11 +29,23 @@ export interface FieldFrame {
   readonly registerTarget?: { readonly x: number; readonly y: number };
   readonly hazards?: readonly Area[];
   readonly markers?: readonly LandingMarker[];
+  readonly objectiveTarget?: Position | null;
+  readonly hideCursor?: boolean;
+  readonly hideObjective?: boolean;
 }
 
 const presentationEngine = createEngine();
 const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
 const PILE_OFFSET_PX = 3;
+const GUIDANCE_PERIOD_MS = 1000;
+const CURSOR_ON_MS = 600;
+const ARROW_OUTLINE = 0x20252b;
+const OBJECTIVE_BOB_PX = 2;
+// Match the field art: scarf gold, canopy sky, port copper, library gilt, cave crystal, page ink.
+const WORLD_ACCENTS: Readonly<Record<WorldId, number>> = {
+  margin: 0xfabd2f, lowlands: 0xfabd2f, quarry: 0xfabd2f, wordwood: 0x91bbc1,
+  'copper-port': 0xd39b69, library: 0xd3ae58, 'echo-caves': 0xac79e5, 'last-page': 0x292c2a,
+};
 
 const HAZARD_SHADE = 0x1b2a3a;
 
@@ -82,6 +94,13 @@ export class FieldScene extends Phaser.Scene {
   private trail: Phaser.GameObjects.Image[] = [];
   private bumpDust: Phaser.GameObjects.Image | undefined;
   private cameraY = 0;
+  private cameraX = 0;
+  private cursorElapsed = 0;
+  private guidanceElapsed = 0;
+  private guidanceTextures = new Map<WorldId, Map<string, string>>();
+  private cursorTexture: string | undefined;
+  private cursorMark: Phaser.GameObjects.Image | undefined;
+  private objectiveArrow: Phaser.GameObjects.Image | undefined;
   private groundPosition: Position | undefined;
   private scrollOffset = 0;
   private previousState: WorldState | undefined;
@@ -141,6 +160,8 @@ export class FieldScene extends Phaser.Scene {
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value;
+    this.cursorElapsed = 0;
+    this.syncGuidance();
     if (value) {
       this.idleFrame = 0;
       this.finish();
@@ -152,7 +173,9 @@ export class FieldScene extends Phaser.Scene {
 
   /** Each actor owns a stable phase; tile animation uses its separate, slower clock. */
   override update(_time: number, delta: number): void {
-    if (this.reducedMotion) return;
+    this.guidanceElapsed += delta;
+    if (!this.reducedMotion) this.cursorElapsed = (this.cursorElapsed + delta) % GUIDANCE_PERIOD_MS;
+    if (this.reducedMotion) { this.syncGuidance(); return; }
     this.idleElapsed += delta;
     const apply = (id: string, sprite: string, image: Phaser.GameObjects.Image | undefined): void => {
       const frame = actorIdleFrame(id, this.idleElapsed);
@@ -162,6 +185,7 @@ export class FieldScene extends Phaser.Scene {
     };
     apply('player', 'player', this.player);
     for (const entity of this.frame.state.entities) apply(entity.id, this.entitySprite(entity.def.sprite), this.entities.get(entity.id));
+    this.syncGuidance();
   }
 
   /** Explicit discontinuities (restores, stage changes and reduced motion) snap everything. */
@@ -197,6 +221,7 @@ export class FieldScene extends Phaser.Scene {
       this.syncHazards(frame);
       this.frame = frame;
       this.syncLandingMarkers();
+      this.syncGuidance();
       return;
     }
     const discontinuity = this.previousState?.stage !== frame.state.stage || this.frame.stage !== frame.stage
@@ -214,6 +239,7 @@ export class FieldScene extends Phaser.Scene {
       if (sourceChanged) this.setSourceVisible(frame.showSource);
       this.syncHazards(frame);
       this.syncLandingMarkers();
+      this.syncGuidance();
       return;
     }
     // Carry ground only: the old jump arc/bob must not become the next path's baseline.
@@ -229,6 +255,9 @@ export class FieldScene extends Phaser.Scene {
     // Jumps and restores (:e!, death) recentre; walking keeps the row the last scroll left.
     else if (!frame.events.some(event => event.type === 'command')
       || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}', '/', '?', 'n', 'N', '*', '#', '`', "'"].includes(event.command.id))) this.scrollOffset = 0;
+    if (this.previousState?.stage !== frame.state.stage || frame.events.some(event => event.type === 'player-moved')
+      || this.previousState?.engine.cursor.line !== frame.state.engine.cursor.line
+      || this.previousState?.engine.cursor.col !== frame.state.engine.cursor.col) this.cursorElapsed = 0;
     this.frame = frame;
     if (!this.ready) return;
     for (const event of frame.events) {
@@ -273,6 +302,74 @@ export class FieldScene extends Phaser.Scene {
           onComplete: () => { tile.setScale(1); this.pulsing.delete(tile); } });
       }
     }
+  }
+
+  /** Pixel shapes follow the drawn sprite, including interrupted movement and jump arcs. */
+  private guidanceTexture(shape: string): string {
+    const world = this.frame.stage.world;
+    let textures = this.guidanceTextures.get(world);
+    if (!textures) {
+      textures = new Map<string, string>();
+      this.guidanceTextures.set(world, textures);
+    }
+    const cached = textures.get(shape);
+    if (cached) return cached;
+    const color = WORLD_ACCENTS[world];
+    const key = `guidance:${shape}:${color}`;
+    if (!this.textures.exists(key)) {
+      const graphics = this.make.graphics({ x: 0, y: 0 });
+      graphics.fillStyle(color);
+      if (shape === 'insert') graphics.fillRect(0, 0, 2, TILE_SIZE);
+      else if (shape === 'operator-pending') graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
+      else if (shape === 'arrow') {
+        // A filled down-pointing triangle with a dark outline, so it reads on grass, roofs and paper.
+        graphics.fillStyle(ARROW_OUTLINE);
+        for (let row = 0; row < 7; row++) graphics.fillRect(1 + row, 4 + row, TILE_SIZE - 2 - row * 2, 1);
+        graphics.fillStyle(color);
+        for (let row = 0; row < 5; row++) graphics.fillRect(3 + row, 5 + row, TILE_SIZE - 6 - row * 2, 1);
+      } else {
+        graphics.fillRect(1, 1, TILE_SIZE - 2, 1);
+        graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
+        graphics.fillRect(1, 1, 1, TILE_SIZE - 2);
+        graphics.fillRect(TILE_SIZE - 2, 1, 1, TILE_SIZE - 2);
+      }
+      graphics.generateTexture(key, TILE_SIZE, TILE_SIZE);
+      graphics.destroy();
+    }
+    textures.set(shape, key);
+    return key;
+  }
+
+  private syncGuidance(): void {
+    if (!this.ready || !this.player) return;
+    const { stage, state } = this.frame;
+    const mode = state.engine.mode;
+    const texture = this.guidanceTexture(mode);
+    if (!this.cursorMark) this.cursorMark = this.add.image(0, 0, texture).setDepth(1.9);
+    else if (this.cursorTexture !== texture) this.cursorMark.setTexture(texture);
+    this.cursorTexture = texture;
+    this.cursorMark.setPosition(this.player.x, this.player.y)
+      .setVisible(state.status === 'playing' && stage.type !== 'text' && !this.frame.hideCursor
+        && (this.reducedMotion || this.cursorElapsed < CURSOR_ON_MS));
+    const target = this.frame.objectiveTarget;
+    const visible = target && stage.type !== 'text' && !this.frame.hideObjective
+      && !this.frame.darkness && !darknessFor(stage, state.flags);
+    if (!visible) { this.objectiveArrow?.setVisible(false); return; }
+    this.objectiveArrow ??= this.add.image(0, 0, this.guidanceTexture('arrow')).setDepth(4);
+    const zoom = fieldZoom(this.scale.height, stage.windowHeight);
+    const halfWidth = this.scale.width / zoom / 2;
+    const halfHeight = this.scale.height / zoom / 2;
+    const inset = TILE_SIZE / 2;
+    const targetX = center(target.col);
+    const targetY = center(target.line);
+    const offscreen = Math.abs(targetX - this.cameraX) > halfWidth - inset
+      || Math.abs(targetY - this.cameraY) > halfHeight - inset;
+    const x = Math.max(this.cameraX - halfWidth + inset, Math.min(this.cameraX + halfWidth - inset, targetX));
+    const bob = this.reducedMotion ? 0 : Math.sin(this.guidanceElapsed * Math.PI * 2 / GUIDANCE_PERIOD_MS) * OBJECTIVE_BOB_PX;
+    const y = Math.max(this.cameraY - halfHeight + inset,
+      Math.min(this.cameraY + halfHeight - inset, targetY - TILE_SIZE + bob));
+    this.objectiveArrow.setVisible(true).setPosition(x, y)
+      .setAngle(offscreen ? Math.atan2(targetY - y, targetX - x) * 180 / Math.PI - 90 : 0);
   }
 
   private syncWarehouseDecorations(): void {
@@ -462,7 +559,9 @@ export class FieldScene extends Phaser.Scene {
       ? this.frame.state.entities.find(entity => entity.def.kind === 'keeper')?.at : undefined;
     const target = cameraTarget(bufferSize(this.frame.state.engine.lines), this.scale, cell, zoom, this.scrollOffset, keeper);
     this.cameraY = target.y;
+    this.cameraX = target.x;
     this.cameras.main.centerOn(target.x, target.y);
+    this.syncGuidance();
   }
 
   private setSourceVisible(visible: boolean): void {

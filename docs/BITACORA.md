@@ -790,6 +790,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · P-9: First-minute clarity
+**Who:** Opus (played a new game, brief, browser check, arrow redraw), Codex (build), Sonnet (review).
+
+**What:** Three things a new player could not tell on the Margin's first screen. Which one is me: Vim's cursor is drawn on Tilde's cell (a block outline in Normal mode, a bar in Insert, an underline after an operator), blinking at 1 Hz, steady with reduced motion, following the drawn sprite. Where to go: `objectiveTarget` resolves the main quest's current step to a cell (a trigger condition directly; a flag condition through the reactions that set it, at most three hops, guards honoured) and a bobbing arrow marks it, at the screen edge when off screen; none in the dark caves, where finding things is the lesson. Why I'm already failing: the Margin has no par, stars or best (`stageScoring.ts`, with the text stages). The footer says "Hold Tab to see the file".
+
+**What the checks caught:** The first arrow was a 3 px chevron that vanished against a roof; redrawn as an outlined triangle. Codex stopped to ask: the Margin's steps complete on flags, not triggers, so the arrow needed the reaction chain. Sonnet: ungated quest-step sources, per-render target computation, per-frame texture lookups, the cursor trailing the idle bob and staying on a dying sprite, and an import cycle; fixed.
+
+**Lesson:** Play the first minute as a stranger: the gaps are not bugs, they are questions nobody answers.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

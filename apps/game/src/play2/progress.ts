@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { stages } from './content.js';
+import { isScoredStage } from './stageScoring.js';
 import type { StoryState } from '@escape/story';
 
 export const PROGRESS_KEY = 'unsaved.progress.v1';
@@ -70,6 +72,8 @@ export function starsFor(turns: number, par: number): 1 | 2 | 3 {
   return turns <= par ? 3 : turns <= Math.ceil(par * 1.5) ? 2 : 1;
 }
 export function recordBest(best: StageBests = {}, stage: string, turns: number, par: number): StageBests {
+  const definition = stages.find(entry => entry.stage.id === stage)?.stage;
+  if (definition && !isScoredStage(definition)) return best;
   const previous = best[stage];
   if (previous && previous.turns <= turns) return best;
   return { ...best, [stage]: { turns, stars: starsFor(turns, par) } };

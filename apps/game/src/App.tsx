@@ -10,6 +10,7 @@ import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
 import { endingProgress, readProgress, saveProgress, type Progress } from './play2/progress.js';
+import { isScoredStage } from './play2/feedback.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
@@ -19,7 +20,7 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content, stages });
 const ignoreHint = (): void => {};
 const storage = () => window.localStorage;
-const scoredStages = stages.filter(({ stage }) => stage.type !== 'text');
+const scoredStages = stages.filter(({ stage }) => isScoredStage(stage));
 const stageIds = stages.map(item => item.stage.id);
 type Action = Key | { readonly type: 'new'; readonly best: Progress['best'] } | { readonly type: 'continue'; readonly progress: Progress };
 function reduce(session: Session, action: Action): Session {

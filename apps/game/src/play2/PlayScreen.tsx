@@ -1,11 +1,12 @@
 import { SoundButton } from '../audio/SoundButton.js';
 import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
+import { objectiveTarget } from './objectiveTarget.js';
 import { useMotionUses } from './useMotionUses.js';
 import { useMemo } from 'react';
 import { StageClearCard } from './StageClearCard.js';
 import { useBlockedReason } from './useBlockedReason.js';
-import { landingMarkers } from './feedback.js';
+import { isScoredStage, landingMarkers } from './feedback.js';
 import { stages } from './content.js';
 import { HoofprintGauge } from './HoofprintGauge.js';
 import { darknessFor } from '../scene/darkness.js';
@@ -47,7 +48,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
 }
 export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
-  useStarChimes(Boolean(session.clearCard && !scriptStamp && stage.type !== 'text'), starsFor(world.turn, stage.parTurns));
+  useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
   const reason = useBlockedReason(session.lastEvents);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
@@ -63,24 +64,30 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
   const script = stage.scripts.find(item => item.id === world.script?.id
     || (scriptStamp && world.solvedScripts[item.id] !== undefined));
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
+  const canShowObjective = !darkness && stage.type !== 'text' && !script
+    && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
+  const target = useMemo(() => canShowObjective ? objectiveTarget(content, session.story, stage, world) : null,
+    [content, session.story, stage, world.entities, canShowObjective]);
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.title}</h1>
       {stage.id === 'counter' && <CounterGauge world={world} />}
       {stage.id === 'notary' && <NotaryGauge world={world} />}
       {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(stage.type === 'text' ? {} : { par: stage.parTurns })} />
+      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
     <div className="play-field">
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
+      objectiveTarget={target} hideCursor={presentation?.type === 'cutscene'}
+      hideObjective={session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
       <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
-      {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> for Source</span>}
+      {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}

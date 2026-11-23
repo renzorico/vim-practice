@@ -5,6 +5,8 @@ import { createEngine } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
+vi.mock('./objectiveTarget.js', () => ({ objectiveTarget: vi.fn(() => null) }));
+import { objectiveTarget } from './objectiveTarget.js';
 import { deathHint, learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
 import { stage, legend, content, lighthouse, lighthouseLegend, quarry, quarryLegend, ledger, ledgerLegend } from './content.js';
@@ -98,4 +100,37 @@ it('hides HUD par for text stages and announces only blocked reasons', () => {
   expect(render(false)).toContain('aria-live="off"');
   expect(render(true)).toContain('aria-live="polite"');
   expect(render(true)).toContain('The edge of the world.');
+});
+
+
+it('hides the Margin par and explains the Tab view', () => {
+  const session = controller.init(false);
+  const html = renderToStaticMarkup(createElement(PlayScreen, {
+    session, stage, legend, content, objectives: [], showSource: false, onAdvance: () => {},
+  }));
+  expect(html).not.toContain(' · par');
+  expect(html).toContain('Hold <kbd>Tab</kbd> to see the file');
+});
+
+it('resolves objective targets only when an arrow can show', () => {
+  const session = controller.init(false);
+  const render = (changes: Partial<typeof session>, selectedStage = stage) => {
+    vi.mocked(objectiveTarget).mockClear();
+    renderToStaticMarkup(createElement(PlayScreen, {
+      session: { ...session, ...changes }, stage: selectedStage, legend, content,
+      objectives: [], showSource: false, onAdvance: () => {},
+    }));
+  };
+  render({});
+  expect(objectiveTarget).toHaveBeenCalledOnce();
+  render({}, { ...stage, id: 'mouth' });
+  expect(objectiveTarget).not.toHaveBeenCalled();
+  render({}, ledger);
+  expect(objectiveTarget).not.toHaveBeenCalled();
+  render({ queue: [{ type: 'dialogue', dialogue: 'margin.mira', index: 0 }] });
+  expect(objectiveTarget).not.toHaveBeenCalled();
+  render({ clearCard: true });
+  expect(objectiveTarget).not.toHaveBeenCalled();
+  render({ world: { ...session.world, status: 'dead' } });
+  expect(objectiveTarget).not.toHaveBeenCalled();
 });
