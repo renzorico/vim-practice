@@ -646,6 +646,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-23 · G-4: The Marked Way (stage 6-3)
+**Who:** Opus (design, sim proof, brief, review fix, browser check), Codex (build), Sonnet (review).
+
+**What:** A fork in a tunnel of plain floor and two sealed pockets: search gets you in, nothing searchable gets you out. `ma` at the fork, `/o<CR>` to the oil, `/x<CR>` straight on to the crystal (Codex's route: no trip home in between), `` `a `` home, `<CR>` to the Echo. Par 4 (the brief said 5). A small flag marks the marked cell. New: `MARKED_COMMANDS` (`m`, `` ` ``, `'`).
+
+**What the checks caught:** Codex: `'a` (to the mark's line, first non-blank) lands on rock at column 0 in this map, unlike the brief's claim; Vim's behaviour kept. Sonnet (0 blocking): a test asserted an upper bound on solver steps (a solver limit, again): removed. Browser: 4 turns, 3 hearts, no console errors.
+
+**Lesson:** The design lead's claims about Vim need the same check as the builder's: `'a` and `` `a `` differ.
+
+---
+
 ## Parking lot
 - Engine: `cit` on a tag whose content spans lines keeps two line breaks; Neovim joins the tags (`<contract>Tilde</contract>`). Add a golden and fix.
 - Script panel: long lines clip at the panel edge (the Founding Contract's Clause 1); wrap or scroll horizontally.

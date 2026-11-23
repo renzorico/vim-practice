@@ -26,3 +26,18 @@ export const ECHO = art((x, y) => {
   if (y >= 9 && y <= 14 && Math.abs(x - 8) < 3 + (y - 9) / 2) return (x + y) % 3 === 0 ? '.' : 'v';
   return '.';
 });
+
+/** Clay jar with a narrow neck and an amber oil glint. */
+export const LAMP_OIL = art((x, y) => {
+  if (y >= 3 && y <= 5 && x >= 6 && x <= 9) return y === 3 ? 'a' : 'm';
+  if (y >= 6 && y <= 13 && Math.abs(x - 7.5) <= (y < 9 ? y - 3 : 5)) {
+    return y === 13 ? 's' : x <= 5 ? 'a' : x >= 11 ? 's' : 'm';
+  }
+  return 'd';
+});
+/** Transparent pennant drawn above the marked tile, without changing that tile. */
+export const MARK_FLAG = art((x, y) => {
+  if (x === 5 && y >= 2 && y <= 14) return 'm';
+  if (y >= 2 && y <= 7 && x >= 6 && x <= 13 - (y - 2)) return 'a';
+  return '.';
+});

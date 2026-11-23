@@ -909,3 +909,17 @@ it('draws distinct carved gallery letters and keeps distant chambers dark after 
   expect(at('i', 3, 2)?.alpha).toBe(1);
   expect(at('k', 7, 2)?.alpha).toBe(0);
 });
+
+it('draws an amber flag from engine marks and clears it when marks disappear', () => {
+  const markedFrame = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine,
+    marks: { a: { line: 2, col: 4 } } } } };
+  const scene = new FieldScene(markedFrame, true);
+  scene.create();
+  const flag = fake.images.find(image => image.texture === 'field:mark-flag');
+  expect(flag).toMatchObject({ x: 72, y: 34, alpha: 1 });
+  const container = fake.containers.find(item => item.depth === 2.5);
+  expect(container?.add).toHaveBeenCalledWith(flag);
+  scene.present({ ...frame, state: { ...frame.state, turn: 1 } });
+  expect(container?.removeAll).toHaveBeenLastCalledWith(true);
+  expect(container?.add).toHaveBeenCalledTimes(1);
+});

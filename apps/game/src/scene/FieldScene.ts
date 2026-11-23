@@ -61,6 +61,7 @@ export class FieldScene extends Phaser.Scene {
   private stamp: CounterStamp | null = null;
   private cargo: { image: Phaser.GameObjects.Image; at: Position }[] = [];
   private decorations: Phaser.GameObjects.Container | undefined;
+  private markFlags: Phaser.GameObjects.Container | undefined;
   private decoratedStage: string | null = null;
   private deletion: JettyDeletion | null = null;
   private danger: Phaser.GameObjects.Image | undefined;
@@ -100,6 +101,7 @@ export class FieldScene extends Phaser.Scene {
     this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.decorations = this.add.container(0, 0).setDepth(0.8);
+    this.markFlags = this.add.container(0, 0).setDepth(2.5);
     this.label = this.add.text(8, 8, '', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
@@ -168,7 +170,7 @@ export class FieldScene extends Phaser.Scene {
     else if (scroll) this.scrollOffset = center(this.previousState.engine.cursor.line) - this.cameraY;
     // Jumps and restores (:e!, death) recentre; walking keeps the row the last scroll left.
     else if (!frame.events.some(event => event.type === 'command')
-      || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}', '/', '?', 'n', 'N'].includes(event.command.id))) this.scrollOffset = 0;
+      || frame.events.some(event => event.type === 'command' && ['%', 'G', 'gg', '{', '}', '/', '?', 'n', 'N', '*', '#', '`', "'"].includes(event.command.id))) this.scrollOffset = 0;
     this.frame = frame;
     if (!this.ready) return;
     for (const event of frame.events) {
@@ -540,6 +542,11 @@ export class FieldScene extends Phaser.Scene {
 
   private syncActors(): void {
     this.syncGateMarks();
+    this.markFlags?.removeAll(true);
+    for (const at of Object.values(this.frame.state.engine.marks)) {
+      this.markFlags?.add(this.add.image(center(at.col), center(at.line) - 6, this.texture('mark-flag'))
+        .setAlpha(darknessAlpha(at, this.frame.state.engine.cursor, this.frame.darkness)));
+    }
     if (!this.player) {
       this.player = this.add.image(0, 0, this.texture('player')).setDepth(1);
       this.actors?.add(this.player);

@@ -16,7 +16,7 @@ vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
 const storyEngine = createStoryEngine();
 const dependencies = { sim, storyEngine, content, stage: gallery, legend: galleryLegend };
-const controller = createSession({ ...dependencies, stages });
+const controller = createSession({ ...dependencies, stages: stages.slice(0, stages.findIndex(entry => entry.stage.id === 'gallery') + 1) });
 function dismiss(session: Session): Session {
   let next = session;
   for (let count = 0; next.queue.length; count++) {
@@ -87,7 +87,7 @@ it('Continue restores gallery and the world lists both cave stages', () => {
   if (!progress) throw new Error('Missing save');
   expect(controller.resume(progress).world.stage).toBe('gallery');
   expect(controller.resume(progress).story).toEqual(session.stageEntry.story);
-  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery']);
+  expect(content.worlds.find(world => world.id === 'echo-caves')?.stages).toEqual(['mouth', 'gallery', 'marked']);
 });
 it('lints gallery and replays every bundled stage', () => {
   expect(lintStage(gallery, galleryLegend)).toEqual([]);
