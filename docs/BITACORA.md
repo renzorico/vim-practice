@@ -957,6 +957,13 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-24: The book's other pages (stages, keys, banners)
+**Who:** Opus (design and code), Sonnet (review).
+
+**What:** The stage list is a spread: contents on the left, and on the right the chosen stage's opening view, its goal, your best and the par. World banners show the first view of that world behind a paper card with the road through Folio. The keys reference is paper. One painter draws any stage without Phaser (`scene/terrain/stagePicture.ts`).
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

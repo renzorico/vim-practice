@@ -38,3 +38,11 @@ it('always offers the Margin with old saves and without a save', () => {
     expect(margin).not.toContain('Locked');
   }
 });
+
+it('previews only a reached stage', () => {
+  const story = createStoryEngine().init(content);
+  const render = (selected: string): string => renderToStaticMarkup(createElement(StageSelect, { stages, content,
+    progress: { stage: 'lowlands', story, entries: { margin: story, lowlands: story } }, selected, onSelect: () => {}, onBack: () => {} }));
+  expect(render('lowlands')).toContain('class="stage-picture"');
+  expect(render('quarry-road')).not.toContain('stage-select__preview');
+});
