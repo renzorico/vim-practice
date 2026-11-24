@@ -1005,7 +1005,7 @@ Tags: `#design` `#gates`
 ## 2026-11-25 · P-28: Seen while playing
 **Who:** Opus (play, fixes).
 
-**What:** Crowns thin out over whoever stands behind them; the black edge no longer cuts the Margin's forest in two; the "Enter: talk" label is drawn at screen size instead of being blurred by the zoom; Phaser and React are separate files, so a returning visitor downloads 166 kB instead of 550.
+**What:** Crowns thin out over whoever stands behind them; the black edge of the map no longer cuts trees in two; pictures of the blank field show it whole; the "Enter: talk" label is drawn at screen size instead of being blurred by the zoom; Phaser and React are separate files, so a returning visitor downloads 166 kB instead of 550.
 
 ---
 

@@ -1,5 +1,6 @@
 import type { Legend, Stage } from '@escape/world';
 import { SPRITES } from '../sprites/index.js';
+import { blankEdges } from '../tiles.js';
 import { overhangArt, paletteColor, TALL_SPRITES } from '../sprites/tall.js';
 import { DARK_STAGES } from '../darkness.js';
 import { WORLD_PALETTES } from '../palette.js';
@@ -76,7 +77,7 @@ export function paintStage(brush: Brush, stage: Stage, legend: Legend, view: Pic
     const name = FIELD_SPRITE[tile.sprite] ?? tile.sprite;
     if (replacesGround(tile)) paintPixels(brush, groundArt(world, variant, decorationAt(tile, line, col)), x, y);
     else if (group === 'paper') paintPixels(brush, [fill(palette.paper)], x, y);
-    else paintArt(brush, name, positionHash(line, col) % (SPRITES[name]?.frames.length ?? 1), x, y);
+    else paintArt(brush, name, name === 'blank' ? blankEdges(rows, line, col) : positionHash(line, col) % (SPRITES[name]?.frames.length ?? 1), x, y);
     const edges = edgesFor(rows, at, legend);
     const banks = tile.sprite === 'chasm' ? chasmBanks(rows, at, legend) : undefined;
     const erased = erasedColumn(stage.id, line, col);

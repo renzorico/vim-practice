@@ -180,7 +180,6 @@ export class AtmosphereLayer {
 
   private syncMap(frame: FieldFrame): void {
     const rows = frame.state.engine.lines;
-    const forest = surroundingFor(frame.stage.world, frame.stage.id) === 'forest' && frame.stage.world === 'margin';
     let edges = 0; let tops = 0; let darkness = 0; let glows = 0; let paper = 0;
     const liveWidth = Math.max(frame.legend.emptyRow ? 1 : 0, ...rows.map(row => row.length));
     // Gather sources during the map's only pass; emit each bounded halo at its source.
@@ -207,8 +206,8 @@ export class AtmosphereLayer {
         if (!mapContains(this.extent, line + 1, col)) mask |= 4;
         if (!mapContains(this.extent, line, col - 1)) mask |= 8;
       }
-      // A forest has no edge: its crowns run on outside the map.
-      if (mask && frame.stage.world !== 'last-page' && !forest) {
+      // Trees draw their own outline; a straight line through their crowns would cut them.
+      if (mask && frame.stage.world !== 'last-page' && sprite !== 'tree') {
         const texture = this.texture(`atmosphere:outline:${mask}`, () => {
           const pixels: PixelRect[] = [];
           if (mask & 1) pixels.push({ x: 0, y: 0, width: 16, height: 2, color: 0x11151e, alpha: 1 });
