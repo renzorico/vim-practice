@@ -13,6 +13,7 @@ import { useMemo, useRef } from 'react';
 import { StatusLine } from './frame/StatusLine.js';
 import { ActionToast } from './frame/ActionToast.js';
 import { DialoguePlacement } from './frame/DialoguePlacement.js';
+import { TitleScene } from '../title/TitleScene.js';
 import { CutsceneView } from './CutsceneView.js';
 import { StageClearCard } from './StageClearCard.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
@@ -120,10 +121,15 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
-      {!session.clearCard && presentation?.type === 'ending' && <section className="play-panel" role="dialog" aria-label="Ending">
-        <h1>UNSAVED</h1><p>folio.txt written</p>
-        <p>{result.keys} keys typed.</p><p>{result.hearts} of {stage.hearts} hearts left.</p>
-        <button onClick={onAdvance}>Enter to return to title</button>
+      {!session.clearCard && presentation?.type === 'ending' && <section className="play-title play-ending" role="dialog" aria-label="Ending">
+        <TitleScene saved />
+        <div className="play-title__menu">
+          <p className="play-title__file">folio.txt written</p>
+          <h1 aria-label="Saved"><s aria-hidden="true">UN</s><span aria-hidden="true">SAVED</span></h1>
+          <p>The lamp is lit. Every row is there.</p>
+          <p>{result.keys} keys typed. {result.hearts} of {stage.hearts} hearts left.</p>
+          <button onClick={onAdvance}>Enter to return to title</button>
+        </div>
       </section>}
       {world.status === 'cleared' && !session.clearCard && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
         <h2>To be continued.</h2>

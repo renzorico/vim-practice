@@ -215,9 +215,9 @@ export function App() {
   if (intro) return <Prologue key={introRun} onComplete={finishIntro} soundEnabled={sound.enabled} />;
   if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">
-    <TitleScene />
+    <TitleScene saved={saved?.story.ending === 'recover'} />
     <div className="play-title__menu">
-    <p className="play-title__file" aria-hidden="true">folio.txt [+]</p>
+    <p className="play-title__file" aria-hidden="true">{saved?.story.ending === 'recover' ? 'folio.txt' : 'folio.txt [+]'}</p>
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}

@@ -973,6 +973,13 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-26: The ending you can see
+**Who:** Opus (design and code), Sonnet (review).
+
+**What:** After the saving ending, the last screen is the title's own picture with the edge whole and the lamp lit, and the title loses two letters: UNSAVED becomes SAVED. From then on the title screen keeps the whole world, and its file is `folio.txt` without the `[+]`.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
