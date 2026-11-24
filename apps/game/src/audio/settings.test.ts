@@ -16,3 +16,18 @@ it('defaults on with blocked storage and ignores failed writes', () => {
   expect(readSound(blocked)).toBe(true);
   expect(() => saveSound(false, blocked)).not.toThrow();
 });
+
+it('loads legacy on/off values and persists the three-state cycle', async () => {
+  const { readSoundMode, saveSoundMode, nextSoundMode } = await import('./settings.js');
+  let value: string | null = 'on';
+  const storage = () => ({ getItem: () => value, setItem: (_key: string, next: string) => { value = next; } });
+  expect(readSoundMode(storage)).toBe('on');
+  value = 'off'; expect(readSoundMode(storage)).toBe('off');
+  value = 'unknown'; expect(readSoundMode(storage)).toBe('on');
+  let mode = readSoundMode(storage);
+  for (const expected of ['effects only', 'off', 'on']) {
+    mode = nextSoundMode(mode); saveSoundMode(mode, storage);
+    expect(readSoundMode(storage)).toBe(expected);
+    expect(readSound(storage)).toBe(expected !== 'off');
+  }
+});

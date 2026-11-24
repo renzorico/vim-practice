@@ -6,6 +6,8 @@ import { bannerBrowserKey, WorldBanner, useWorldBanner } from './scene/WorldBann
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import { learnedReference } from './play2/help/learned.js';
 import { routeHelpCommand } from './play2/help/command.js';
+import { useMusic } from './audio/useMusic.js';
+import { SoundModeContext } from './audio/settings.js';
 import { useSound } from './audio/hooks.js';
 import { SoundButton } from './audio/SoundButton.js';
 import { useScriptStamp } from './play2/useScriptStamp.js';
@@ -65,6 +67,9 @@ export function App() {
   const sound = useSound(session, started);
   const scriptStamp = useScriptStamp(session);
   const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
+  useMusic({ screen: intro ? 'opening' : selecting ? 'stages' : !started ? 'title' : ending ? 'ending' : 'stage',
+    world: currentWorld, text: stages.find(item => item.stage.id === session.world.stage)?.stage.type === 'text',
+    dead: session.world.status === 'dead', overlay: !!banner.visible || helpOpen || !!session.clearCard || !!session.queue.length || scriptStamp }, sound.mode);
   const canContinue = saved !== null && saved.story.ending !== 'recover';
   const terminal = session.world.status === 'cleared' && !session.clearCard && session.queue.length === 0;
   const watchIntro = useCallback(() => { setIntroRun(value => value + 1); setIntro('title'); }, []);
@@ -208,10 +213,10 @@ export function App() {
   }, []);
   const helpStory = started ? session.story : saved?.story ?? session.story;
   const reference = helpOpen ? learnedReference(helpStory, started ? session.world.stage : saved?.stage ?? content.openingStage) : null;
-  const withHelp = (view: ReactNode): ReactNode => <>
+  const withHelp = (view: ReactNode): ReactNode => <SoundModeContext.Provider value={sound.mode}>
     <div hidden={helpOpen}>{view}</div>
     {reference && <HelpOverlay {...reference} worlds={content.worlds} onClose={closeHelp} />}
-  </>;
+  </SoundModeContext.Provider>;
   if (intro) return <Prologue key={introRun} onComplete={finishIntro} soundEnabled={sound.enabled} />;
   if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">

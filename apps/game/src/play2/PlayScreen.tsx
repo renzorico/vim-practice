@@ -1,5 +1,6 @@
 import { KeyText } from './KeyText.js';
 import { activeGuide } from './guides.js';
+import { useNotebookDucking } from './notebook/musicDucking.js';
 import { Notebook } from './notebook/Notebook.js';
 import { useNotebook } from './notebook/useNotebook.js';
 import { pendingPrompt } from './showcmd.js';
@@ -56,6 +57,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
   const { world } = session;
   const notebook = useNotebook(session, stage, content, clearedStages);
   const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
+  useNotebookDucking(showKeyCard);
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
   const field = useRef<HTMLDivElement>(null);
   const uses = useMotionUses(session);

@@ -131,6 +131,10 @@ export function createSynth(factory: ContextFactory = browserContext) {
     return () => { for (const cancel of cancellations) cancel(); };
   }
   return { unlock, play, stop,
+    /** Read-only access: music never creates or resumes a second context. */
+    audio(): { readonly context: AudioContext; readonly master: GainNode } | null {
+      return enabled && context?.state === 'running' && master ? { context, master } : null;
+    },
     setEnabled(value: boolean): void { enabled = value; if (!value) stop(); },
   };
 }
