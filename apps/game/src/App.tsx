@@ -1,7 +1,10 @@
+import { HelpOverlay } from './play2/help/HelpOverlay.js';
+import { learnedReference } from './play2/help/learned.js';
+import { routeHelpCommand } from './play2/help/command.js';
 import { useSound } from './audio/hooks.js';
 import { SoundButton } from './audio/SoundButton.js';
 import { useScriptStamp } from './play2/useScriptStamp.js';
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
@@ -19,7 +22,7 @@ import './play2/play.css';
 
 const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content, stages });
-const ignoreHint = (): void => {};
+
 const storage = () => window.localStorage;
 const scoredStages = stages.filter(({ stage }) => isScoredStage(stage));
 const stageIds = stages.map(item => item.stage.id);
@@ -35,10 +38,16 @@ function reduce(session: Session, action: Action): Session {
   return action.best ? { ...fresh, stageEntry: { ...fresh.stageEntry, best: action.best } } : fresh;
 }
 export function App() {
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpCommand, setHelpCommand] = useState<string | null>(null);
+  // A held q or Esc keeps repeating after the overlay closes; swallow those repeats until the next real press.
+  const swallowRepeats = useRef(false);
+  const openHelp = useCallback(() => { setHelpCommand(null); setHelpOpen(true); }, []);
+  const closeHelp = useCallback(() => { swallowRepeats.current = true; setHelpOpen(false); }, []);
   const [started, setStarted] = useState(false);
   const [showSource, setShowSource] = useState(false);
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
-  const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : 1);
+  const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : 2);
   const [selecting, setSelecting] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [replayStage, setReplayStage] = useState<string | null>(null);
@@ -77,21 +86,33 @@ export function App() {
     setSelecting(false); setShowSource(false); setStarted(true);
   }, [saved]);
   const onKey = useCallback((key: Key) => {
-    if (!started || scriptStamp) return;
+    if (!started || helpOpen) return;
+    if (scriptStamp) return;
+    const active = session.world.script?.engine ?? session.world.engine;
+    if (helpCommand !== null || (key === ':' && active.mode === 'normal' && active.pendingKeys.length === 0)) {
+      const routed = routeHelpCommand(helpCommand, key);
+      setHelpCommand(routed.pending);
+      if (routed.open) openHelp();
+      else for (const forwarded of routed.forward) dispatch(forwarded);
+      return;
+    }
     if (replayStage && session.clearCard && key === '<CR>') {
       setStarted(false); setSelecting(true); setSelectedStage(replayStage); setReplayStage(null); return;
     }
     if (key === '<Tab>') { setShowSource(true); return; }
-    if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? 1 : 0); return; }
+    if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? 2 : 0); return; }
     dispatch(key);
-  }, [started, terminal, ending, scriptStamp, replayStage, session.clearCard]);
+  }, [started, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp]);
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
-  useKeyCapture({ onKey, onHint: ignoreHint, captureTab: true,
-    enabled: started && session.world.status !== 'dead' });
+  useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
+    enabled: started && !helpOpen && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
-      if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (!event.repeat) swallowRepeats.current = false;
+      else if (swallowRepeats.current) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+      if (helpOpen || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key === 'F1') { event.preventDefault(); event.stopImmediatePropagation(); openHelp(); return; }
       if (selecting) {
         if (['j', 'k', 'Enter', 'Escape', 'q'].includes(event.key)) {
           const target = event.target instanceof HTMLElement ? event.target : null;
@@ -119,21 +140,23 @@ export function App() {
       if ((!started || session.world.status === 'dead') && wakeKey) {
         event.preventDefault(); event.stopImmediatePropagation();
         if (!started) {
-          if (event.key === 'j') setChoice(value => Math.min(canContinue ? 3 : 2, value + 1));
+          if (event.key === 'j') setChoice(value => Math.min(canContinue ? 4 : 3, value + 1));
           else if (event.key === 'k') setChoice(value => Math.max(0, value - 1));
           else if (event.key === 'Enter') {
             if (choice === (canContinue ? 1 : 0)) openStages();
-            else if (choice === (canContinue ? 3 : 2)) sound.toggle();
+            else if (choice === (canContinue ? 2 : 1)) openHelp();
+            else if (choice === (canContinue ? 4 : 3)) sound.toggle();
             else choose(canContinue && choice === 0);
           }
-        } else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
+        } else if (event.key === ':' || helpCommand !== null) onKey(event.key === 'Enter' ? '<CR>' : event.key);
+        else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
       } else if (started && event.key === 'Tab' && !browserKey) {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
       }
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle]);
+  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey]);
   useEffect(() => {
     if (!started) return;
     const entry = replayStage ? session.stageEntry : endingProgress(session.stageEntry, session.story);
@@ -142,6 +165,7 @@ export function App() {
     saveProgress(storage, progress);
     setSaved(progress);
   }, [started, session, saved, ending, replayStage]);
+  useEffect(() => { if (!started) setHelpCommand(null); }, [started]);
   useEffect(() => {
     if (started && ending === 'delete') { setStarted(false); setChoice(0); }
   }, [started, ending]);
@@ -154,22 +178,29 @@ export function App() {
     window.addEventListener('blur', blur);
     return () => { window.removeEventListener('keyup', release); window.removeEventListener('blur', blur); };
   }, []);
-  if (selecting) return <StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />;
-  if (!started) return <main className="play-title">
+  const helpStory = started ? session.story : saved?.story ?? session.story;
+  const reference = helpOpen ? learnedReference(helpStory, started ? session.world.stage : saved?.stage ?? content.openingStage) : null;
+  const withHelp = (view: ReactNode): ReactNode => <>
+    <div hidden={helpOpen}>{view}</div>
+    {reference && <HelpOverlay {...reference} worlds={content.worlds} onClose={closeHelp} />}
+  </>;
+  if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
+  if (!started) return withHelp(<main className="play-title">
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
       {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
       <button aria-current={choice === (canContinue ? 1 : 0) ? 'true' : undefined} onClick={openStages}>Stages</button>
-      <button aria-current={choice === (canContinue ? 2 : 1) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
-      <div className="play-menu__sound" data-selected={choice === (canContinue ? 3 : 2)}>
+      <button aria-current={choice === (canContinue ? 2 : 1) ? 'true' : undefined} onClick={openHelp}>Keys</button>
+      <button aria-current={choice === (canContinue ? 3 : 2) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
+      <div className="play-menu__sound" data-selected={choice === (canContinue ? 4 : 3)}>
         <SoundButton enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
-  </main>;
+  </main>);
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
-  return <PlayScreen soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />;
+  return withHelp(<PlayScreen soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
+    onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />);
 }

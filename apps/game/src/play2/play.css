@@ -154,3 +154,25 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 }
 .play-menu__sound button { width: 100%; }
 .play-menu__sound[data-selected="true"] button { border-color: var(--you); color: var(--you); }
+
+.help-link { padding: 8px; white-space: nowrap; }
+.help-reference { position: fixed; inset: 0; z-index: 50; overflow-y: auto; padding: 24px max(16px, calc((100% - 880px) / 2)); background: var(--bg); color: var(--text); scrollbar-color: var(--you) var(--surface); }
+.help-reference:focus { outline: none; }
+.help-reference__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.help-reference h1 { margin: 0; font-size: 32px; }
+.help-reference h2 { margin: 40px 0 12px; font-size: 24px; }
+.help-reference p { line-height: 1.6; max-width: 70ch; }
+.help-reference label { display: flex; flex-direction: column; gap: 8px; }
+.help-reference input { width: 100%; padding: 12px; font: inherit; background: var(--surface); color: var(--text); border: 1px solid var(--line-strong); caret-color: var(--you); }
+.help-reference input::placeholder { color: var(--text-soft); }
+.help-reference input:focus-visible { outline: 2px solid var(--you); outline-offset: 2px; }
+.help-reference__hint, .help-reference__typed { color: var(--text-soft); font-size: 13px; }
+.help-reference dl { margin: 0; }
+.help-reference__entry { display: grid; grid-template-columns: 9ch minmax(0, 1fr); gap: 16px; padding: 20px 0; border-top: 1px solid var(--line-strong); }
+.help-reference dt { display: flex; flex-direction: column; gap: 8px; }
+.help-reference dd { margin: 0; min-width: 0; }
+.help-reference dd p { margin: 0 0 8px; }
+.help-reference__new { font-size: 12px; color: var(--you); }
+.help-reference__example { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.help-reference pre { margin: 0; max-width: 100%; overflow-x: auto; font: 14px/1.6 var(--font-mono); scrollbar-color: var(--you) var(--surface); }
+@media (max-width: 540px) { .help-reference__entry { grid-template-columns: minmax(0, 1fr); gap: 8px; } .help-reference dt { flex-direction: row; } }

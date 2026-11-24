@@ -819,6 +819,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-12: `:help`, a reference for every key you have learned
+**Who:** Codex (build, stopped by its usage limit after the code was complete), Sonnet (review), Opus (brief, fixes, browser check).
+
+**What:** `:help<CR>`, `:h<CR>`, F1 or the footer link open a list of the keys learned so far, newest world first, each with a plain description and a before/after example that a test runs through the real engine. `j`/`k` scroll, `/` filters, `q` or Esc closes. The title screen has a "Keys" item. The command is caught before the session, so no turn is spent.
+
+**Review fixes:** script replays lock input again before the help check; opening help drops a half-typed `:h`; a held `q`/Esc no longer leaks into the game after closing; focus never returns to a button, which would have swallowed Enter. `glades-finalize` peak: 4.41 GB (unchanged).
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

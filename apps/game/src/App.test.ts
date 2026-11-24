@@ -1,3 +1,5 @@
+import { HelpOverlay } from './play2/help/HelpOverlay.js';
+import type { HelpKey } from './play2/help/keys.js';
 import { isValidElement, type ReactNode } from 'react';
 import { SoundButton } from './audio/SoundButton.js';
 import { synth } from './audio/synth.js';
@@ -339,7 +341,7 @@ it('shows saved total stars on the title after a reload', () => {
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
   values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
-  flush(); key('j'); key('j'); key('Enter');
+  flush(); key('j'); key('j'); key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
@@ -402,7 +404,7 @@ it('keeps native Enter and Space activation when a sound button is focused by ke
     Object.defineProperty(event, 'target', { value: Object.assign(new HTMLElement(), { tagName: 'BUTTON' }) });
     window.dispatchEvent(event); flush();
     expect(event.defaultPrevented).toBe(false);
-    expect(isValidElement(appTree) && appTree.type).toBe('main');
+    expect(renderToStaticMarkup(appTree)).toContain('play-title');
   }
 });
 
@@ -419,8 +421,12 @@ function appHtml(): string {
   return renderToStaticMarkup(appTree);
 }
 function stageMenuProps(node: ReactNode): { selected: string | null; onSelect: (id: string) => void } | undefined {
-  if (!isValidElement<{ selected?: string | null; onSelect?: (id: string) => void }>(node)) return;
+  if (Array.isArray(node)) {
+    for (const child of node) { const found = stageMenuProps(child); if (found) return found; }
+  }
+  if (!isValidElement<{ children?: ReactNode; selected?: string | null; onSelect?: (id: string) => void }>(node)) return;
   if (node.props.onSelect) return { selected: node.props.selected ?? null, onSelect: node.props.onSelect };
+  return stageMenuProps(node.props.children);
 }
 function reachedSave(): Progress {
   const story = createStoryEngine().init(content);
@@ -501,7 +507,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
   expect(savedProgress().story.ending).toBe('recover');
   const finished = values.get(PROGRESS_KEY);
-  key('Enter'); key('k'); key('Enter');
+  key('Enter'); key('k'); key('k'); key('Enter');
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   expect(session().world.stage).toBe('last-page');
   expect(session().story.ending).toBeNull();
@@ -509,8 +515,68 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   expect(savedProgress().story.ending).toBe('recover');
   expect(values.get(PROGRESS_KEY)).toBe(finished);
   // Completing the replay also leaves the finished save untouched.
-  key('k'); key('Enter');
+  key('k'); key('k'); key('Enter');
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   dismiss(); play(lastPage.solution); dismiss();
   expect(values.get(PROGRESS_KEY)).toBe(finished);
+});
+
+function helpProps(node: ReactNode): { onClose: () => void; entries: readonly HelpKey[] } | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) { const found = helpProps(child); if (found) return found; }
+  }
+  if (!isValidElement<{ children?: ReactNode; onClose: () => void; entries: readonly HelpKey[] }>(node)) return;
+  if (node.type === HelpOverlay) return node.props;
+  return helpProps(node.props.children);
+}
+it.each([':h', ':help'])('%s opens without dispatching a single key or changing the session', command => {
+  flush(); key('Enter'); dismiss();
+  const before = session();
+  for (const char of command) { key(char); expect(session()).toBe(before); }
+  key('Enter');
+  expect(helpProps(appTree)).toBeDefined();
+  expect(session()).toBe(before);
+  helpProps(appTree)?.onClose(); flush();
+  expect(helpProps(appTree)).toBeUndefined();
+  expect(session()).toBe(before);
+  key('l'); expect(session().world.turn).toBe(before.world.turn + 1);
+});
+it('F1 and the title Keys button open the saved reference without starting or changing a game', () => {
+  values.set(PROGRESS_KEY, JSON.stringify({ stage: 'lowlands', story: {
+    ...createStoryEngine().init(content), flags: { 'lowlands.knows-w': true },
+  } }));
+  flush();
+  expect(appHtml()).toContain('>Keys</button>');
+  const before = session();
+  key('F1');
+  expect(helpProps(appTree)?.entries.map(entry => entry.key)).toContain('w');
+  expect(helpProps(appTree)?.entries.map(entry => entry.key)).not.toContain('x');
+  expect(session()).toBe(before);
+  helpProps(appTree)?.onClose(); flush();
+  key('Enter'); dismiss();
+  const playing = session();
+  key('F1'); expect(helpProps(appTree)).toBeDefined(); expect(session()).toBe(playing);
+});
+it('forwards other command lines and cancels a held help prefix quietly', () => {
+  flush(); key('Enter'); dismiss();
+  const before = session();
+  key(':'); key('h'); key('Escape'); expect(session()).toBe(before);
+  key(':'); key('w'); key('Enter');
+  if (!hooks.reducer) throw new Error('Missing reducer');
+  const expected = [':', 'w', '<CR>'].reduce(hooks.reducer, before);
+  expect(session()).toEqual(expected);
+  expect(helpProps(appTree)).toBeUndefined();
+});
+it('a key held to close the reference never reaches the game; the next press does', () => {
+  flush(); key('Enter'); dismiss();
+  key('F1'); helpProps(appTree)?.onClose(); flush();
+  const before = session();
+  key('l', true); expect(session()).toBe(before);
+  key('l'); expect(session().world.turn).toBe(before.world.turn + 1);
+});
+it('F1 drops a half-typed :h, so nothing stale is forwarded after closing', () => {
+  flush(); key('Enter'); dismiss();
+  const before = session();
+  key(':'); key('h'); key('F1'); helpProps(appTree)?.onClose(); flush();
+  key('l'); expect(session().world.turn).toBe(before.world.turn + 1);
 });

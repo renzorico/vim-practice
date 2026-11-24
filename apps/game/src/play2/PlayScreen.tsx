@@ -25,6 +25,8 @@ import { resultData, type Session } from './session.js';
 import type { StoryContent } from '@escape/story';
 
 interface PlayScreenProps {
+  readonly onOpenHelp?: () => void;
+  readonly helpCommand?: string | null;
   readonly soundEnabled?: boolean;
   readonly onToggleSound?: () => void;
   readonly session: Session;
@@ -46,7 +48,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
   const reason = useBlockedReason(session.lastEvents);
@@ -84,9 +86,10 @@ export function PlayScreen({ session, stage, legend, content, objectives, showSo
       hideObjective={session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
+      {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
+      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{helpCommand ?? reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
