@@ -948,6 +948,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-23: Ground you can read (materials)
+**Who:** Opus (art and code), Sonnet (review).
+
+**Why:** a render of every stage showed floors and walls drawn from the same texture (Customs, the Caves), striped rock that pulled the eye (Quarry), a walkway that was mostly sky (Canopy) and a noisy moss that hid the fern marks (Glades).
+
+**What:** One rule everywhere: the floor is lighter and calmer than the wall. New masonry, bark, planks, moss, bramble, flagstones, cave floor and rock, gravel, tents and boulders, all procedural and deterministic (`sprites/material.ts`), same sprite names, frame counts and 16 by 16 grids.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
