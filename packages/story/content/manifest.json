@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "manifest",
-          "objective": "Fix the manifest: the title, the twins, the rope, the ink and the notes.",
+          "objective": "Fix the manifest: `fo`, `x`, `i`, `r`, `D`, `a`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "manifest"
@@ -60,17 +60,11 @@
         {
           "speaker": "npc",
           "name": "Semi",
-          "text": "Ferry's ready. The manifest isn't, and I don't\nsail on a wrong one. Fix it, please."
+          "text": "Ferry's ready, the manifest isn't, and I don't\nsail on a wrong one. You need me; fix it."
         },
         {
-          "speaker": "npc",
-          "name": "Semi",
-          "text": "Fix the title (one o too many), add the twins\nto the passengers, make the rope 4 coils."
-        },
-        {
-          "speaker": "npc",
-          "name": "Semi",
-          "text": "Strike the ink: it's banned on the water.\nAnd set 'Last checked' to today."
+          "speaker": "system",
+          "text": "Five fixes: the title has an extra o, add the\ntwins, rope to 4 coils, strike ink, date today."
         }
       ],
       "then": []
@@ -100,7 +94,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "The ferry pulls out. Behind you, the\nWordwood. Ahead, the lights of Copper Port."
+            "text": "The ferry pulls out. Behind you, the Wordwood.\nAhead, Copper Port, and a ledger nobody trusts."
           }
         },
         {

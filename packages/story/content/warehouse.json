@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "stock",
-          "objective": "Copy oil onto the top and middle shelves, rope onto the bottom. y copies, p pastes.",
+          "objective": "Stock the shelves: `yw`, then `p` on each.",
           "completeWhen": {
             "type": "flag",
             "flag": "warehouse.stocked",
@@ -21,7 +21,7 @@
         },
         {
           "id": "ream",
-          "objective": "Talk to Ream, the quartermaster. Stand next to him, press Enter.",
+          "objective": "Talk to Ream: next to him, `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "warehouse"
@@ -37,17 +37,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The warehouse. Oil on the top rack, rope on the\nbottom, and three bare shelves to stock."
+          "text": "The warehouse. You need three bare shelves\nstocked: oil on top and middle, rope below."
         },
         {
-          "speaker": "npc",
-          "name": "Ream",
-          "text": "Copy, don't carry. y yanks: it copies and takes\nnothing. yw copies one word, like oooo."
-        },
-        {
-          "speaker": "npc",
-          "name": "Ream",
-          "text": "p puts it just after you. Stand on a shelf's [\nand press p. Oil: top, middle. Rope: bottom."
+          "speaker": "system",
+          "text": "Stand on the tally word. Press `yw`.\nThen on a shelf's [ press `p`: the oil lands."
         }
       ],
       "then": []
@@ -56,13 +50,13 @@
       "id": "warehouse.still",
       "lines": [
         {
-          "speaker": "scribe",
-          "text": "Note: the yank stays put. Press p again and the\nsame thing goes down again."
-        },
-        {
           "speaker": "npc",
           "text": "Still! ...still.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "On the next shelf's [, press `p` again:\nthe same oil goes down again."
         }
       ],
       "then": [
@@ -100,7 +94,7 @@
         {
           "speaker": "npc",
           "name": "Ream",
-          "text": "A yank holds one thing at a time.\nOil first, both shelves. Then the rope."
+          "text": "One thing at a time. Oil first, both shelves.\nThen the rope. My shelves, my rules."
         }
       ],
       "then": []
@@ -116,7 +110,7 @@
         {
           "speaker": "npc",
           "name": "Ream",
-          "text": "Every night someone fills my shelves.\nCopies, and wrong ones. Ask at customs."
+          "text": "Every night someone fills these shelves with\ncopies, and wrong ones. Ask at customs."
         }
       ],
       "then": [

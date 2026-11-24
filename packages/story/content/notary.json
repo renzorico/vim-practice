@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "open",
-          "objective": "Open the three locks before seven clauses: da[ on the lock, da{ on the seal, dit on the tag.",
+          "objective": "Open three locks: `da[`, `da{`, `dit`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "notary"
@@ -26,17 +26,13 @@
       "id": "notary.intro",
       "lines": [
         {
-          "speaker": "system",
-          "text": "The vault: a desk at the top, a stair down the\nside, three locks below. The Notary is signing."
-        },
-        {
           "speaker": "npc",
           "name": "Notary",
-          "text": "Notary. Everything in order: a clause every two\nturns. At seven, the vault stays shut for good."
+          "text": "Notary. A clause every two turns. At seven the\nvault shuts for good. You need it open: hurry."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: da[ opens a lock, da{ breaks a seal, dit\nempties a tag. Stand anywhere inside each."
+          "speaker": "system",
+          "text": "In a lock, press `da[`. In a seal, `da{`.\nIn a tag, `dit`. Three locks, in that order."
         }
       ],
       "then": []
@@ -72,7 +68,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Inside the lock: da[. Then 0 2j w, da{ for the\nseal. Again 0 2j w, then dit for the tag."
+          "text": "In the lock, `da[`. Then `0` `2j` `w` and `da{`.\nAgain `0` `2j` `w`, then `dit` for the tag."
         }
       ],
       "then": []

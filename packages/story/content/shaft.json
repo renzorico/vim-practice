@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "mason",
-          "objective": "Reach the Mason at the bottom. Don't climb: stand at the lip and use dd with a count, like 10dd.",
+          "objective": "Reach the Mason: `10dd` at the lip, then talk.",
           "completeWhen": {
             "type": "flag",
             "flag": "shaft.mason-cured",
@@ -28,7 +28,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The shaft: far below, someone lays stone, row on\nrow. Walk down to the lip (jj) and look."
+          "text": "You need the Mason, at the bottom of this shaft.\nWalk to the lip: `j` `j`. Then look down."
         }
       ],
       "then": []
@@ -42,13 +42,8 @@
           "name": "The Mason"
         },
         {
-          "speaker": "scribe",
-          "text": "Note: dd deletes your row, so the shaft rises\nto you. . repeats it: dd once, then . again."
-        },
-        {
-          "speaker": "npc",
-          "text": "Again! ...again!",
-          "name": "Dot"
+          "speaker": "system",
+          "text": "Stay at the lip. Press `10dd`: ten rows go and\nthe shaft rises. Or `3dd`, then `.` each time."
         }
       ],
       "then": [
@@ -171,7 +166,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Wet mortar! It flings you back up.\nDon't climb. Use dd to pull the shaft up."
+          "text": "Wet mortar! It flings you back up to the lip.\nDon't climb. Pull the shaft up to you."
         }
       ],
       "then": []
@@ -181,17 +176,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "You came down?... Nobody comes down.",
-          "name": "The Mason"
-        },
-        {
-          "speaker": "npc",
-          "text": "Walls. I build walls. There was a door\nin the plan once. A door in a wall.",
-          "name": "The Mason"
-        },
-        {
-          "speaker": "npc",
-          "text": "A row is missing from my plan. The one\nthat says what the walls were for.",
+          "text": "You came down? Nobody comes down. I build\nwalls. A row's missing: what they're for.",
           "name": "The Mason"
         },
         {
@@ -200,7 +185,7 @@
         },
         {
           "speaker": "npc",
-          "text": "...Opened. A wall with a way through.\nA door! I've been building it wrong.",
+          "text": "A cage, opened. A wall with a way through.\nA door! I've been building it wrong.",
           "name": "The Mason"
         }
       ],
@@ -217,7 +202,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Stay at the lip. 10dd deletes 10 rows and the\nshaft rises. Then Enter at the Mason."
+          "text": "Stay at the lip. `10dd` deletes ten rows and the\nshaft rises. Then `Enter` next to the Mason."
         }
       ],
       "then": []
@@ -328,7 +313,7 @@
       "beats": [
         {
           "type": "title",
-          "text": "The Mason laughs. The shaft is quiet."
+          "text": "The Mason laughs. First time in years, he says."
         },
         {
           "type": "line",
@@ -346,7 +331,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "Another buffer. Same words the Lamplighter\nfound, I'd bet. And a letter: E.",
+            "text": "Same words the Lamplighter found, I'd bet.\nAnd a letter beside them: E.",
             "name": "The Mason"
           }
         }

@@ -26,7 +26,7 @@
       "steps": [
         {
           "id": "dust",
-          "objective": "Dust the three shelves. Stand on a dust word, press daw. Then j and . for the next shelf.",
+          "objective": "Dust three shelves: `daw`, then `j` and `.`.",
           "completeWhen": {
             "type": "flag",
             "flag": "stacks.dusted",
@@ -36,7 +36,7 @@
         },
         {
           "id": "quire",
-          "objective": "Talk to Quire, the librarian. Stand next to Quire, press Enter.",
+          "objective": "Talk to Quire: next to Quire, `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "stacks"
@@ -57,12 +57,11 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Quire, librarian. The contract says I may not\ntouch a book, so I can't dust. You can."
+          "text": "Quire, the librarian. I may not touch a book,\nand you need my door open. So: you dust."
         },
         {
-          "speaker": "npc",
-          "name": "Quire",
-          "text": "Stand on a dust word and press daw: it deletes\nthe word and the space after it. Three shelves."
+          "speaker": "system",
+          "text": "Stand on a dust word. Press `daw`: the word and\nthe space after it are gone."
         }
       ],
       "then": []
@@ -72,12 +71,16 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: after daw, j moves one shelf down and .\nrepeats your last change: the same daw again."
+          "text": "Page 5. The year he stopped asking, I kept\nwriting. I told myself he'd read it later."
         },
         {
           "speaker": "npc",
           "name": "Dot",
           "text": "Down! ...down."
+        },
+        {
+          "speaker": "system",
+          "text": "After `daw`, press `j`: one shelf down.\nThen `.` repeats the `daw`."
         }
       ],
       "then": [
@@ -105,7 +108,11 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Three shelves. Stand on a dust word, press daw.\nI'm not allowed to, you see."
+          "text": "Three shelves. I'm not allowed to, you see."
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on a dust word. Press `daw`."
         }
       ],
       "then": []
@@ -121,7 +128,7 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "The reading room is chained, bracket to\nbracket. Bring your %."
+          "text": "The reading room next door is chained, bracket\nto bracket. Good luck."
         }
       ],
       "then": [

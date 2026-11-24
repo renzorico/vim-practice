@@ -23,7 +23,7 @@
       "steps": [
         {
           "id": "cut",
-          "objective": "Clear the wall of rubble. Stand in front of it, press 4x.",
+          "objective": "Clear the rubble: `4x` from the last gravel.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "quarry.through"
@@ -32,7 +32,7 @@
         },
         {
           "id": "river",
-          "objective": "Cross the river. Stand on the bank, press 5r= to lay planks.",
+          "objective": "Cross the river: `5r=` from the last dirt.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "quarry.far"
@@ -59,7 +59,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Quarry. The Unwriter walked through and the\nroad is buried. Clear it, then cross the river."
+          "text": "The Quarry. You need the road south, and the\nUnwriter buried it. Rubble, then a river."
         }
       ],
       "then": []
@@ -69,28 +69,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Road's buried, child. Half the cut came down.\nThat pile of rubble is three stones. Three.",
-          "name": "Foreman Ash"
-        },
-        {
-          "speaker": "npc",
-          "text": "We don't dig here. We delete. x deletes one\ncharacter: the stone you stand on.",
-          "name": "Foreman Ash"
-        },
-        {
-          "speaker": "npc",
-          "text": "When stone goes, the row slides shut. So count\nthe rubble (3), then your own stone (1).",
-          "name": "Foreman Ash"
-        },
-        {
-          "speaker": "npc",
-          "text": "Stand in front of it and press 4x.\nOne move, and the road's open.",
+          "text": "Half the cut came down. No road, no tolls, no\npay for my crew. Clear it, will you?",
           "name": "Foreman Ash"
         },
         {
           "speaker": "npc",
           "name": "Foreman Ash",
-          "text": "Cut too much? :e! puts the whole quarry back.\nNo shame in it. I've done it twice. Today."
+          "text": "Cut too much? `:e!` puts the quarry back.\nNo shame. I've done it twice. Today."
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone."
         }
       ],
       "then": [
@@ -106,8 +95,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Stone doesn't argue, child. Stand in front\nof the rubble and say 4x. Three plus you.",
+          "text": "My crew's playing cards in the tents. Loudly.\nPay day can't come soon enough.",
           "name": "Foreman Ash"
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone."
         }
       ],
       "then": []
@@ -117,7 +110,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Ash says the Unwriter walked right through\nthe cut. Didn't even stop. Rude, I'd say.",
+          "text": "Ash says the Unwriter walked straight through\nthe cut. Didn't even stop. Rude. I want my bunk.",
           "name": "Kit"
         }
       ],
@@ -128,7 +121,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "I heard the wall whisper once. What if we're\nalready gone? ...Sorry. Long shift.",
+          "text": "The wall whispered last night. What if we're\nalready gone? Ignore me. Long shift.",
           "name": "Kit"
         }
       ],
@@ -139,11 +132,11 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: water won't hold you, planks will.\nr= puts a plank where you stand."
+          "text": "Page 2. My brother liked machines, so I wrote\nhim a quarry. Cranes, carts, a very loud river."
         },
         {
-          "speaker": "scribe",
-          "text": "The river is 4 tiles, plus your own: 5r= lays\nfive planks in one move."
+          "speaker": "system",
+          "text": "Stand on the last dirt before the water.\nPress `5r=`: five planks, across the river."
         }
       ],
       "then": [
@@ -159,7 +152,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A river, and Blots on the far bank. Read the\nnote pinned by the water to cross."
+          "text": "A river, and Blots on the far bank. A note is\npinned at the water's edge. Read it."
         }
       ],
       "then": []
@@ -169,7 +162,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Through a crack in the rock: this same quarry,\nbut emptier. No road. No one."
+          "text": "Through a crack in the rock: this same quarry,\nbut emptier. No road. No tents. No one."
         }
       ],
       "then": []
@@ -179,7 +172,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Rubble: stand in front, press 4x. River: stand\non the bank, press 5r= for planks."
+          "text": "Rubble: `4x` from the last gravel before it.\nRiver: `5r=` from the last dirt before it."
         }
       ],
       "then": []
@@ -189,7 +182,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The road south is open. Below, someone is\nbuilding, row on row. Follow the sound."
+          "text": "The road south is open. Somewhere below,\nsomeone is laying stone, row on row."
         }
       ],
       "then": []

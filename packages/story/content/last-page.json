@@ -20,7 +20,7 @@
       "steps": [
         {
           "id": "write",
-          "objective": "Repair the typos before the grey thing tears the page. Then stand on R and type :w.",
+          "objective": "Repair the page, `u` undoes tears. Then `:w` on R.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "last-page"
@@ -183,7 +183,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The page is whole. The grey thing stops.\nThe Scribe is reading every word."
+          "text": "The page is whole. The grey thing stops."
+        },
+        {
+          "speaker": "scribe",
+          "text": "Someone's been reading. All of it. I thought it\nwas only me, talking to an empty room."
         }
       ],
       "then": []
@@ -192,8 +196,12 @@
       "id": "last.door-r",
       "lines": [
         {
+          "speaker": "scribe",
+          "text": "Recover. Yes. And this time I'll write it down,\nfor whoever's reading."
+        },
+        {
           "speaker": "system",
-          "text": "Recover. The Scribe's finger moves to R.\nNow write it so it stays: :w then Enter."
+          "text": "Stand on R. Type `:w`, then press `Enter`:\nthe page is written."
         }
       ],
       "then": []
@@ -235,7 +243,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "The Scribe is back. Something grey is tearing\nthe page. Tidying up. u brings the rows back."
+            "text": "The Scribe is back. Something grey is tearing\nthe page, row by row. Tidying up."
           }
         },
         {
@@ -244,6 +252,13 @@
             "speaker": "npc",
             "name": "Dot",
             "text": "Attention. ...attention."
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "system",
+            "text": "When it tears a row, press `u`:\nthe row comes back."
           }
         }
       ],

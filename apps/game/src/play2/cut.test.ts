@@ -41,8 +41,8 @@ it('keeps story and starts the Cut quest after the Quarry Road ending', () => {
 it('the note teaches dd and u keycaps on dismissal', () => {
   const reading = keys(start(), '2j2l<CR>');
   expect(reading.queue[0]).toMatchObject({ dialogue: 'cut.note' });
-  expect(content.dialogues.find(dialogue => dialogue.id === 'cut.note')?.lines[2]).toEqual({
-    speaker: 'scribe', text: 'Three Blots sit on the cage. Delete their row\nwith dd, then press u to rebuild the ledge.',
+  expect(content.dialogues.find(dialogue => dialogue.id === 'cut.note')?.lines.at(-1)).toEqual({
+    speaker: 'scribe', text: 'I always did that. Start a page, leave it\nunsaved, swear I\'ll be back by morning.',
   });
   const read = dismiss(reading);
   expect(read.story.flags['cut.knows-dd']).toBe(true);

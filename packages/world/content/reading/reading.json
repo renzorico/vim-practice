@@ -99,7 +99,7 @@
     "<CR>"
   ],
   "hints": [
-    "da( deletes the chain and both its shackles, from anywhere inside them.",
-    "A chain inside a chain: d2a( takes both. di( takes the chain and leaves the shackle."
+    "`da(` deletes the chain and both its shackles, from anywhere inside them.",
+    "A chain inside a chain: `d2a(` takes both. `di(` takes the chain and leaves the shackle."
   ]
 }

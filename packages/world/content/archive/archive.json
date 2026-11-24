@@ -78,7 +78,7 @@
     "P"
   ],
   "hints": [
-    "dap deletes the shelf you stand in and the empty row after it. } jumps to the next empty row; p puts the shelf below.",
-    "yap copies a shelf with its empty row. P puts rows above you: the copy goes above the last rail."
+    "`dap` deletes the shelf you stand in and the empty row after it. `}` jumps to the next empty row; `p` puts the shelf below.",
+    "`yap` copies a shelf with its empty row. `P` puts rows above you: the copy goes above the last rail."
   ]
 }

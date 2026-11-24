@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "index",
-          "objective": "Fix the index: cut the shelf column, change lost to found, star every row (Ctrl-v), keep only the final draft.",
+          "objective": "Fix the index: `Ctrl-v`, then `d`, `c`, `I`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "study"
@@ -59,16 +59,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Scribe's study: a desk, a lamp, a chair.\nThe index on the desk says 'lost' everywhere."
+          "text": "The Scribe's study: a desk, a lamp, a chair. You\nneed the index fixed: it says 'lost' everywhere."
         },
         {
-          "speaker": "npc",
-          "name": "Echo",
-          "text": "...lost. ...lost. ...lost."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: Ctrl-v selects a block of columns, across\nevery row. Then d, c or I act on all of it."
+          "speaker": "system",
+          "text": "Press `Ctrl-v`, then move: a block of columns\nacross every row. Then `d`, `c` or `I`."
         }
       ],
       "then": []
@@ -82,7 +77,14 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Every entry found. Under the last line,\nin the Scribe's hand:"
+            "text": "Every entry found. On the desk, under the last\nline, in the Scribe's hand:"
+          }
+        },
+        {
+          "type": "line",
+          "line": {
+            "speaker": "scribe",
+            "text": "Page 6. I read it aloud to the empty room. The\nroom answered. Most company I've had in years."
           }
         },
         {

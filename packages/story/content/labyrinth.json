@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "levers",
-          "objective": "Mark the stair (ma). Pull levers x, y, z with ?x, ?y, ?z and Enter. Return with `a.",
+          "objective": "Mark `ma`, pull `?x` `?y` `?z` (`Enter`), return `` `a ``.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "labyrinth"
@@ -27,16 +27,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The labyrinth. Hooves above, getting closer.\nPull three levers, then return to the stair."
+          "text": "The labyrinth. You need three levers pulled,\nthen the stair. Hooves, getting closer."
         },
         {
-          "speaker": "npc",
-          "name": "Echo",
-          "text": "...behind you. ...always behind you."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: ? searches backward. First mark the stair\nwith ma: `a brings you home later."
+          "speaker": "system",
+          "text": "On the stair, press `ma`: it marks the way home.\nLater, `` `a `` brings you back."
         }
       ],
       "then": []
@@ -101,7 +96,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Mark the stair: ma. Then ?x Enter, ?y Enter, ?z\nEnter: the real rune is behind you. Home: `a."
+          "text": "Mark the stair: `ma`. Search each rune: `?x`,\n`?y`, `?z` (+ `Enter`). Home: `` `a ``."
         }
       ],
       "then": []

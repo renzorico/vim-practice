@@ -21,7 +21,7 @@
       "steps": [
         {
           "id": "cross",
-          "objective": "Cross the blank field. Stand on a stone, press w to hop to the next.",
+          "objective": "Cross the blank field, stone to stone: `w`.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "lowlands.far-side"
@@ -30,7 +30,7 @@
         },
         {
           "id": "lighthouse",
-          "objective": "Reach the Lighthouse door at the end of the jetty. $ jumps to the end of the row.",
+          "objective": "Reach the Lighthouse door along the jetty: `$`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "lowlands"
@@ -39,7 +39,7 @@
         },
         {
           "id": "lamp",
-          "objective": "Climb the Lighthouse stairs. Find who is crying at the top.",
+          "objective": "Climb the Lighthouse to whoever is crying.",
           "completeWhen": {
             "type": "flag",
             "flag": "lighthouse.lit",
@@ -61,7 +61,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Press w to hop stone to stone. On the jetty,\npress $ to jump to the door."
+          "text": "Hop stone to stone with `w`.\nOn the jetty, `$` jumps to the door."
         }
       ],
       "then": []
@@ -71,7 +71,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Lowlands: the Unwriter wiped the field.\nOnly the stepping stones are left. Cross them."
+          "text": "The Lowlands. You need the Lighthouse, but the\nfield is wiped blank. Only stones are left."
         }
       ],
       "then": []
@@ -81,18 +81,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Sorry! Sorry, don't step there, it's blank.\nI lost a boot in it. And a sandwich.",
+          "text": "Sorry! Don't step there, it's blank. I lost a\nboot in it. And a sandwich.",
           "name": "Wren"
         },
         {
-          "speaker": "npc",
-          "text": "Sorry, you can't walk on blank. But you can\nleap it. Each stone is a word. w: next one.",
-          "name": "Wren"
-        },
-        {
-          "speaker": "npc",
-          "text": "b jumps back one. Sorry, I keep saying sorry.\nCross to the far side, then follow the jetty.",
-          "name": "Wren"
+          "speaker": "system",
+          "text": "Stand on the path, then on each stone.\nPress `w`: you hop to the next one."
         }
       ],
       "then": [
@@ -108,8 +102,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Sorry! w is forward, b is back, stone to stone.\nThe far side is east. Sorry, sorry.",
+          "text": "Still no boot. I gave up on the sandwich.\nThe far side's east, past the last stone.",
           "name": "Wren"
+        },
+        {
+          "speaker": "system",
+          "text": "Overshot a stone? Press `b`:\nyou hop back to the one before."
         }
       ],
       "then": []
@@ -119,7 +117,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Look. The tide isn't coming in tonight.\nIt isn't going out either. Rude.",
+          "text": "I've waited for the tide since the Flicker.\nIt won't come in. It won't go out. Rude.",
           "name": "Gull"
         },
         {
@@ -135,11 +133,11 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: this jetty is one long row. You could\npress l forty times. Or press $ once."
+          "text": "Page 1. My little brother asked what's past\nthe sea. I wrote a jetty so he'd have to wait."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: $ jumps to the end of a row, 0 back to\nits start. Try $ now."
+          "speaker": "system",
+          "text": "Stand anywhere on the jetty.\nPress `$`: you land at the Lighthouse door."
         }
       ],
       "then": [
@@ -164,7 +162,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Blots crawl up the jetty! The door is at the\nend of this row. Press $ to jump there."
+          "text": "Blots crawl up the jetty behind you."
+        },
+        {
+          "speaker": "system",
+          "text": "Press `$`: you jump to the door at the end\nof the row, and they can't follow."
         }
       ],
       "then": [
@@ -221,7 +223,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Lighthouse door. The lamp is dark and\nsomeone is crying inside. Go up."
+          "text": "The Lighthouse door. The lamp is dark and\nsomeone is crying inside. Go up the stairs."
         }
       ],
       "then": []

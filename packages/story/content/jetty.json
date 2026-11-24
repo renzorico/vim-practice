@@ -26,7 +26,7 @@
       "steps": [
         {
           "id": "bitt",
-          "objective": "Talk to Bitt, the dockhand, next to you. Press Enter.",
+          "objective": "Talk to Bitt, next to you: `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "jetty.asked",
@@ -36,7 +36,7 @@
         },
         {
           "id": "clear",
-          "objective": "Delete the nets and crates. Stand just past a pile and press db.",
+          "objective": "Clear both piles: just past each one, `db`.",
           "completeWhen": {
             "type": "flag",
             "flag": "jetty.clear",
@@ -46,7 +46,7 @@
         },
         {
           "id": "ream",
-          "objective": "Go up the ladder to Ream, the quartermaster. Press Enter next to him.",
+          "objective": "Climb to Ream, then talk: `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "jetty"
@@ -62,11 +62,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Copper Port. The ferry drops you at the end of\nthe jetty. Crates and nets block the boards."
+          "text": "Copper Port. You need the quay, but crates and\nnets block the whole jetty."
         },
         {
           "speaker": "system",
-          "text": "Bitt, the dockhand, is right here. Talk to him:\nstand next to him, press Enter."
+          "text": "Bitt, the dockhand, is next to you.\nPress `Enter` to talk."
         }
       ],
       "then": []
@@ -76,28 +76,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "First ferry in a month. And they dumped\nthe cargo on my jetty. Look at it.",
+          "text": "First ferry in a month, and they dumped the\ncargo on my jetty. My cart can't roll over it.",
           "name": "Bitt"
         },
         {
           "speaker": "npc",
-          "text": "My cart runs the boards to the quay.\nIt won't roll over a crate.",
+          "text": "Mind the boards, they're nailed down. Only the\npiles come off.",
           "name": "Bitt"
         },
         {
-          "speaker": "npc",
-          "text": "Don't press x: you'd delete the board you stand\non. Those are nailed down.",
-          "name": "Bitt"
-        },
-        {
-          "speaker": "npc",
-          "text": "d deletes, and the key after says how far. b is\nback to the start of a word: a pile is a word.",
-          "name": "Bitt"
-        },
-        {
-          "speaker": "npc",
-          "text": "Stand just past a pile and press db. The boards\nslide right up to you.",
-          "name": "Bitt"
+          "speaker": "system",
+          "text": "Stand on the plank just past a pile.\nPress `db`: the pile goes, the boards close up."
         }
       ],
       "then": [
@@ -118,8 +107,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Stand just past a pile, then db. Don't stop at\nthe first pile: there are two.",
+          "text": "Don't stop at the first pile. There are two.",
           "name": "Bitt"
+        },
+        {
+          "speaker": "system",
+          "text": "Stand just past a pile. Press `db`."
         }
       ],
       "then": []
@@ -129,12 +122,16 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: . repeats your last change. After db,\n. is another db: use it on the next pile."
+          "text": "Page 4. He drew Copper Port himself, badly: the\nships are bananas. I kept it. Just that one."
         },
         {
           "speaker": "npc",
           "text": "Again! ...again.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "After one `db`, press `b`. Then `.` repeats\nthe `db` on the next pile."
         }
       ],
       "then": [

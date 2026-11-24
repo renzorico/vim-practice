@@ -9,12 +9,12 @@ import { MOOD_OVERRIDES, moodFor, type Mood } from './mood.js';
 
 const stages = { margin, lowlands, quarry, canopy, stacks, mouth };
 const cases: readonly [keyof typeof stages, string, number, Mood][] = [
-  ['margin', 'margin.intro', 0, 'neutral'], ['margin', 'margin.elder', 0, 'worried'],
+  ['margin', 'margin.intro', 0, 'worried'], ['margin', 'margin.elder', 0, 'worried'],
   ['lowlands', 'lowlands.death-hint', 0, 'neutral'], ['lowlands', 'lowlands.wren', 0, 'worried'],
   ['quarry', 'quarry-road.intro', 0, 'worried'], ['quarry', 'quarry.ash', 0, 'neutral'],
   ['canopy', 'canopy.intro', 0, 'worried'], ['canopy', 'canopy.fern', 0, 'worried'],
   ['stacks', 'stacks.intro', 0, 'neutral'], ['stacks', 'stacks.down', 0, 'neutral'],
-  ['mouth', 'mouth.intro', 0, 'neutral'], ['mouth', 'mouth.intro', 1, 'worried'],
+  ['mouth', 'mouth.intro', 0, 'neutral'], ['mouth', 'mouth.intro', 1, 'neutral'],
 ];
 
 it.each(cases)('reads the mood of real %s content: %s line %i', (stage, id, index, expected) => {

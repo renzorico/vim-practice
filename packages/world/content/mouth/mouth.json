@@ -114,7 +114,7 @@
     "<CR>"
   ],
   "hints": [
-    "?x then Enter searches backwards for a crystal: from the mouth it wraps round to the deepest one.",
-    "n repeats the search in the same direction: the next crystal up. You can't see them. Search can."
+    "`?x` then `Enter` searches backwards for a crystal: from the mouth it wraps round to the deepest one.",
+    "`n` repeats the search in the same direction: the next crystal up. You can't see them. Search can."
   ]
 }

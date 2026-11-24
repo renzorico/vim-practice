@@ -69,7 +69,7 @@
     "<CR>"
   ],
   "hints": [
-    "* searches for the whole word under the cursor: it skips inkwell and finds the next ink.",
-    "Each chamber names the next word. w onto it, then * again. # goes back if you overshoot."
+    "`*` searches for the whole word under the cursor: it skips inkwell and finds the next ink.",
+    "Each chamber names the next word. `w` onto it, then `*` again. `#` goes back if you overshoot."
   ]
 }

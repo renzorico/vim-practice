@@ -115,7 +115,7 @@ it('loses without a mark on turn 12; each retry resets levers, marks, story reac
     const dead = dismiss(session);
     expect(dead.world.status).toBe('dead');
     expect(dead.world.hearts).toBe(0);
-    expect(markup(dead)).toContain('Mark the stair: ma. Then ?x Enter, ?y Enter, ?z');
+    expect(markup(dead)).toContain('Mark the stair: `ma`. Search each rune: `?x`,');
     attempt = controller.reduce(dead, 'j');
     expect(attempt.world.turn).toBe(0);
     expect(attempt.world.hearts).toBe(3);
@@ -211,16 +211,15 @@ it('finds no route without ? within 3 turns / 50 expansions, counted by simulati
 it('keeps the supplied dialogue and ending wording, including line breaks', () => {
   const lines = (id: string) => content.dialogues.find(dialogue => dialogue.id === `labyrinth.${id}`)?.lines;
   expect(lines('intro')).toEqual([
-    { speaker: 'system', text: 'The labyrinth. Hooves above, getting closer.\nPull three levers, then return to the stair.' },
-    { speaker: 'npc', name: 'Echo', text: '...behind you. ...always behind you.' },
-    { speaker: 'scribe', text: 'Note: ? searches backward. First mark the stair\nwith ma: `a brings you home later.' },
+    { speaker: 'system', text: 'The labyrinth. You need three levers pulled,\nthen the stair. Hooves, getting closer.' },
+    { speaker: 'system', text: 'On the stair, press `ma`: it marks the way home.\nLater, `` `a `` brings you back.' },
   ]);
   for (const [id, text] of [
     ['lever-x', 'The first lever drops. Far off, a grind.'],
     ['lever-y', 'The second lever. The grind gets louder.'],
     ['lever-z', 'The third. Now home, before he finds you.'],
     ['home', 'The stair shudders. A way down opens\nbehind it, and the hooves stop.'],
-    ['death-hint', 'Mark the stair: ma. Then ?x Enter, ?y Enter, ?z\nEnter: the real rune is behind you. Home: `a.'],
+    ['death-hint', 'Mark the stair: `ma`. Search each rune: `?x`,\n`?y`, `?z` (+ `Enter`). Home: `` `a ``.'],
   ] as const) expect(lines(id)).toEqual([{ speaker: 'system', text }]);
   expect(content.cutscenes.find(scene => scene.id === 'labyrinth.end')).toEqual({
     id: 'labyrinth.end', beats: [

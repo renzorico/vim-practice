@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "file",
-          "objective": "Move the misfiled shelf after the bibles (dap, then p), and copy the atlases by the door (yap, P).",
+          "objective": "File the shelf: `dap`, `p`. Copy atlases: `yap`, `P`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "archive"
@@ -26,18 +26,13 @@
       "id": "archive.intro",
       "lines": [
         {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "Oh good, hands. I'm Index. This shelf you're on\nis filed wrong. It goes after the bibles."
+        },
+        {
           "speaker": "system",
-          "text": "The Archive. Each shelf is a block of rows,\nwith an empty row between shelves."
-        },
-        {
-          "speaker": "npc",
-          "name": "Index",
-          "text": "Oh good, hands. I'm Index. The shelf you're on\nis misfiled. It goes after the bibles."
-        },
-        {
-          "speaker": "npc",
-          "name": "Index",
-          "text": "dap lifts the whole shelf, empty row and all.\nThen copy the atlases: yap, P above the rail."
+          "text": "In the shelf, press `dap`: it lifts, empty row\nand all. Then `}` to the next empty row, `p`."
         }
       ],
       "then": []

@@ -172,7 +172,7 @@
     "$"
   ],
   "hints": [
-    "Stand on a stone and press w to hop to the next.",
-    "On the jetty, press $ to jump to the door."
+    "Stand on the path or a stone and press `w` to hop to the next stone.",
+    "On the jetty, press `$` to jump to the door."
   ]
 }

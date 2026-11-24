@@ -127,7 +127,7 @@
     "p"
   ],
   "hints": [
-    "A count before p puts it that many times: \"a8p puts what \"a holds, eight times.",
-    "Yank both on the way down: \"ayl on the oil, \"byl on the rope. Then the crates: \"a8p, \"b8p, \"a4p, \"b4p."
+    "A count before `p` puts it that many times: `\"a8p` puts what `\"a` holds, eight times.",
+    "Yank both on the way down: `\"ayl` on the oil, `\"byl` on the rope. Then the crates: `\"a8p`, `\"b8p`, `\"a4p`, `\"b4p`."
   ]
 }

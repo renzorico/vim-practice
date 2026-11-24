@@ -339,7 +339,7 @@
     "<CR>"
   ],
   "hints": [
-    "Stand on a gate mark and press %: you land on its partner.",
-    "Ctrl-d drops half a screen, Ctrl-u climbs half a screen: landings are that far apart."
+    "Stand on a gate mark and press `%`: you land on its partner.",
+    "`Ctrl-d` drops half a screen, `Ctrl-u` climbs half a screen: landings are that far apart."
   ]
 }

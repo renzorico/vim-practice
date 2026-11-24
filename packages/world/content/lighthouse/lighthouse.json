@@ -119,6 +119,6 @@
     "<CR>"
   ],
   "hints": [
-    "Climb in big moves: 8k goes up 8 rows at once.\nw and 0 jump along a row."
+    "Climb in big jumps: `8k` goes up eight rows.\n`w` and `0` jump along a row."
   ]
 }

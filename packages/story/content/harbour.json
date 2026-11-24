@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "ledger",
-          "objective": "Fix the ledger: Lighthouse order on top, Ream as keeper, crates real, ships added.",
+          "objective": "Fix the ledger: `ct,`, `P`, `ddp`, `cw`, `C`, `yyp`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "harbour"
@@ -60,15 +60,11 @@
         {
           "speaker": "npc",
           "name": "Cleat",
-          "text": "Harbourmaster Cleat. The ledger says the clerk\nruns the port. Lighthouse order goes on top."
+          "text": "Harbourmaster Cleat. The ledger says the clerk\nruns the port. You need it fixed: I run it."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: c deletes and leaves you typing.\ncw: a word. ct,: up to the comma. C: to the end."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: P puts a row above you. yy copies a row.\nddp swaps a row with the one below it."
+          "speaker": "system",
+          "text": "Keeper row: press `ct,`, type Ream, `Esc`.\nThen the order: `G`, `dd`, `gg`, `P`."
         }
       ],
       "then": []
@@ -106,7 +102,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Past the harbour, a library with its doors\nchained. Every chain is a contract."
+            "text": "Past the harbour: a library, doors chained.\nSomeone wrote those chains. Who?"
           }
         },
         {

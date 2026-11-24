@@ -101,7 +101,7 @@
     "t"
   ],
   "hints": [
-    "da[ opens a lock from anywhere inside it; da{ breaks a seal. dit empties a tag and keeps the tag.",
-    "0 takes you back to the stair, 2j down one vault. w lands inside the next lock."
+    "`da[` opens a lock from anywhere inside it; `da{` breaks a seal. `dit` empties a tag and keeps the tag.",
+    "`0` takes you back to the stair, `2j` down one vault. `w` lands inside the next lock."
   ]
 }

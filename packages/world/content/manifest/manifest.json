@@ -116,11 +116,11 @@
         "<Esc>"
       ],
       "hints": [
-        "Title: fo jumps to an o, ; to the next o. Press x on an o too many in Wordwoood.",
-        "Passengers: $ jumps to the ). Press i, type , Shut, Ope then Esc.",
-        "} jumps to the next empty row. On the rope row, f2 finds the 2: press r4.",
-        "G jumps to the last row. f: then l, then D cuts the rest. Press a, type today.",
-        "Sails row: t. stops before the full stop. Press a, type , on three, then Esc."
+        "Title: `fo` jumps to an o, `;` to the next o. Press `x` on the extra o in Wordwoood.",
+        "Passengers: `$` jumps to the ). Press `i`, type , Shut, Ope then `Esc`.",
+        "`}` jumps to the next empty row. On the rope row, `f2` finds the 2: press `r` then `4`.",
+        "`G` jumps to the last row. `f:` then `l`, then `D` cuts the rest. Press `a`, type today.",
+        "Sails row: `t.` stops before the full stop. Press `a`, type , on three, then `Esc`."
       ],
       "effects": []
     }
@@ -194,10 +194,10 @@
     "<Esc>"
   ],
   "hints": [
-    "Title: fo jumps to an o, ; to the next o. Press x on an o too many in Wordwoood.",
-    "Passengers: $ jumps to the ). Press i, type , Shut, Ope then Esc.",
-    "} jumps to the next empty row. On the rope row, f2 finds the 2: press r4.",
-    "G jumps to the last row. f: then l, then D cuts the rest. Press a, type today.",
-    "Sails row: t. stops before the full stop. Press a, type , on three, then Esc."
+    "Title: `fo` jumps to an o, `;` to the next o. Press `x` on the extra o in Wordwoood.",
+    "Passengers: `$` jumps to the ). Press `i`, type , Shut, Ope then `Esc`.",
+    "`}` jumps to the next empty row. On the rope row, `f2` finds the 2: press `r` then `4`.",
+    "`G` jumps to the last row. `f:` then `l`, then `D` cuts the rest. Press `a`, type today.",
+    "Sails row: `t.` stops before the full stop. Press `a`, type , on three, then `Esc`."
   ]
 }
