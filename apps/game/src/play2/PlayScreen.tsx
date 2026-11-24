@@ -117,7 +117,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : scriptStamp ? null : <>
-      {cutscene && presentation && <CutsceneView beat={cutscene.beats[presentation.index]} stage={stage} legend={legend} onAdvance={onAdvance} />}
+      {cutscene && presentation && <CutsceneView id={cutscene.id} index={presentation.index} beat={cutscene.beats[presentation.index]} stage={stage} legend={legend} onAdvance={onAdvance} />}
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
