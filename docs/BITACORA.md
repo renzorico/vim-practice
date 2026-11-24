@@ -1014,7 +1014,8 @@ Tags: `#design` `#gates`
 
 **What playing showed, and the fix:**
 - After the last stepping stone, `w` answered "Blocked: tree" and the marker pointed back. The last stone now counts as across, so the next objective and its marker show at once.
-- "At the foot of the stairs" in the Lighthouse, but no stairs were drawn and nothing marked the spot. The three openings are stairs now, the two places to press `8k` are marked, the objective names the key, and the guide ends where the blank floor begins (guides can have an area).
+- "At the foot of the stairs" in the Lighthouse, but no stairs were drawn and nothing marked the spot. The three openings are stairs now, the two places to press `8k` are marked, and the guide ends where the blank floor begins (guides can have an area).
+- In the Quarry, with the rubble gone, the game still asked for `4x`. The marker now goes with the rubble, and the first step east is already the river.
 - Stand markers and the cursor were thin yellow lines, invisible on pale stone. Both have a dark second tone; the marker also tints its cell.
 
 ---

@@ -1301,8 +1301,8 @@ describe('first-minute guidance', () => {
     const player = fake.images.find(image => image.texture === 'field:player');
     expect(cursor).toMatchObject({ x: player?.x, y: player?.y, depth: 4.2, visible: true });
     const pixels = fake.pixels.get(cursor?.texture ?? '');
-    expect(pixels).toEqual(mode === 'insert' ? [[0, 0, 2, 16]] : mode === 'operator-pending'
-      ? [[1, 14, 14, 1]]
+    expect(pixels).toEqual(mode === 'insert' ? [[0, 0, 2, 16], [2, 0, 1, 16]] : mode === 'operator-pending'
+      ? [[1, 14, 14, 1], [1, 15, 14, 1]]
       // A dark outer frame, then the accent one.
       : [[0, 0, 16, 1], [0, 15, 16, 1], [0, 1, 1, 14], [15, 1, 1, 14], [1, 1, 14, 1], [1, 14, 14, 1], [1, 1, 1, 14], [14, 1, 1, 14]]);
   });

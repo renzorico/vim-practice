@@ -9,6 +9,8 @@ export interface Guide {
   readonly standAt?: readonly Position[];
   /** The part of the map the guide is about; past it, the step goes on without one. */
   readonly within?: { readonly from: Position; readonly to: Position };
+  /** Applies only while this row still has this character: once the rubble is gone, nothing asks to clear it. */
+  readonly whileRow?: { readonly line: number; readonly has: string };
 }
 
 const cell = (line: number, col: number): Position => ({ line, col });
@@ -31,7 +33,7 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
     lamp: { ...guide(['8', 'k'], [cell(25, 1), cell(17, 1)]), within: { from: cell(12, 0), to: cell(25, 20) } },
   },
   'quarry.road': {
-    cut: guide(['4', 'x'], [cell(6, 15)]),
+    cut: { ...guide(['4', 'x'], [cell(6, 15)]), whileRow: { line: 6, has: 'R' } },
     river: guide(['5', 'r', '='], Array.from({ length: 11 }, (_, index) => cell(index + 1, 30))),
     // Enter reaches the gate from beside it, not from its own cell.
     south: guide(['<CR>'], [cell(10, 42), cell(9, 43), cell(11, 43)]),
@@ -64,8 +66,9 @@ export function guideFor(questId: string, stepId: string): Guide | null {
   return GUIDES[questId]?.[stepId] ?? null;
 }
 
-export function guideApplies(guide: Guide, at: Position): boolean {
-  const { within } = guide;
+export function guideApplies(guide: Guide, at: Position, rows: readonly string[]): boolean {
+  const { within, whileRow } = guide;
+  if (whileRow && !rows[whileRow.line]?.includes(whileRow.has)) return false;
   return !within || at.line >= within.from.line && at.line <= within.to.line && at.col >= within.from.col && at.col <= within.to.col;
 }
 

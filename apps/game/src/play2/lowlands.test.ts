@@ -62,7 +62,9 @@ it('l bumps into blank; w leaps each gap, b returns, and the far-side trigger ad
   expect(bumped.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
   session = keys(bumped, ['w','b']);
   expect(session.world.engine.cursor.col).toBe(13);
-  session = keys(session, ['w','w','w']);
+  session = keys(session, ['w','w']);
+  expect(session.world.firedTriggers).not.toContain('lowlands.far-side');
+  session = keys(session, ['w']);
   expect(session.world.engine.cursor.col).toBe(26);
   // The last stone already counts as across: the next objective shows before the player tries one `w` too many.
   expect(session.world.firedTriggers).toContain('lowlands.far-side');

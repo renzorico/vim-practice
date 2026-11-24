@@ -23,7 +23,7 @@
         },
         {
           "speaker": "system",
-          "text": "The stairs go up the left wall. Stand at their\nfoot and press `8k`: eight rows in one move."
+          "text": "The stairs go up the left wall. Stand below\nthem and press `8k`: eight rows in one move."
         }
       ],
       "then": []

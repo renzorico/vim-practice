@@ -416,8 +416,13 @@ export class FieldScene extends Phaser.Scene {
           graphics.fillRect(1, pixel, 1, 1); graphics.fillRect(TILE_SIZE - 2, pixel, 1, 1);
         }
       } else if (shape === 'range') graphics.fillRect(1, 1, TILE_SIZE - 2, TILE_SIZE - 2);
-      else if (shape === 'insert') graphics.fillRect(0, 0, 2, TILE_SIZE);
-      else if (shape === 'operator-pending') graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
+      else if (shape === 'insert') {
+        graphics.fillRect(0, 0, 2, TILE_SIZE);
+        graphics.fillStyle(ARROW_OUTLINE, 0.6).fillRect(2, 0, 1, TILE_SIZE);
+      } else if (shape === 'operator-pending') {
+        graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
+        graphics.fillStyle(ARROW_OUTLINE, 0.6).fillRect(1, TILE_SIZE - 1, TILE_SIZE - 2, 1);
+      }
       else if (shape === 'person') {
         graphics.fillStyle(0x20252b).fillRect(2, 0, 12, 11);
         graphics.fillStyle(0xf6efd4).fillRect(3, 1, 10, 9).fillRect(7, 10, 3, 3);
