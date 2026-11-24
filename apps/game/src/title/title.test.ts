@@ -44,3 +44,8 @@ describe('title scene', () => {
     }
   });
 });
+it('lights the lamp, brighter sky included, only once the file is saved', () => {
+  const paint = (saved: boolean): string => { const { brush, rects } = recorder(); paintWorld(brush, saved); return rects.map(rect => rect.color).join(); };
+  expect(paint(true)).toContain('#ffe9a8');
+  expect(paint(false)).not.toContain('#ffe9a8');
+});

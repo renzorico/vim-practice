@@ -964,6 +964,35 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-25: Cutscenes you can follow
+**Who:** Opus (design and code), Sonnet (review).
+
+**Why:** the 24 cutscenes were a blank page with one centred line and no name, so "Copy. ...copy." came from nobody.
+
+**What:** Every beat plays over the place it happens in, between two film bars: speech uses the dialogue box with portrait and name, narration is a caption, "The Scribe is in another buffer." is carved in stone, the swap file is a terminal, the end of a world is a page. The death panel is a torn card over the map. Small maps are centred in their picture, with the world's own surroundings around them. Labels say "go south" and "take lift" again (P-20 had turned them into "use"). The unused second cutscene component is gone.
+
+---
+
+## 2026-11-25 · P-26: The ending you can see
+**Who:** Opus (design and code), Sonnet (review).
+
+**What:** After the saving ending, the last screen is the title's own picture with the edge whole and the lamp lit, and the title loses two letters: UNSAVED becomes SAVED. From then on the title screen keeps the whole world, and its file is `folio.txt` without the `[+]`.
+
+---
+
+## 2026-11-25 · P-22: Music
+**Who:** Codex (player, two rounds), Opus (brief, the nine scores, level), Sonnet (review).
+
+**Why:** between two keys the game was silent, so every place felt the same.
+
+**What:** One original, synthesized score per world, plus title and ending (the title's theme alone, at half speed, finally answered). No audio files. It ducks under dialogue, the notebook, cards and help, cross-fades between worlds, stops on death, pauses in a hidden tab. The sound button now has three states: on, effects only, off (old settings still load).
+
+**Review fixes:** fades jumped instead of fading; one error silenced music for good; pads decayed like plucks; notes lost at the node cap; a DOM observer for ducking. The first scores were one template transposed, so they were rewritten by hand in a small text notation (`tune([...])`) with tests for mode, range, rests and repetition.
+
+**Checked:** the title score's output in the browser (level, no sample jumps over 0.001). Nobody has listened to all nine: Renzo's ears decide.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

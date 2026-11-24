@@ -12,6 +12,7 @@ import type { HelpKey } from './play2/help/keys.js';
 import { isValidElement, type ReactNode } from 'react';
 import { SoundButton } from './audio/SoundButton.js';
 import { synth } from './audio/synth.js';
+import { SoundModeContext, readSoundMode } from './audio/settings.js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { gates, manifest, jetty, warehouse, customs, counter, harbour, stacks, reading, archive, notary, contract, mouth, gallery, marked, labyrinth, study, lastPage } from './play2/content.js';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -30,6 +31,7 @@ vi.mock('react', async importOriginal => {
   const original = await importOriginal<typeof import('react')>();
   return { ...original,
     useCallback: (callback: unknown) => callback,
+    useContext: (context: import('react').Context<unknown>) => context === SoundModeContext ? readSoundMode() : original.useContext(context),
     useRef: (value: unknown) => {
       const slot = hooks.cursor++;
       if (!hooks.values.has(slot)) hooks.values.set(slot, { current: value });
@@ -762,7 +764,7 @@ it('keeps the new title menu indices correct with and without Continue', () => {
   key('k'); expect(appHtml()).toMatch(/aria-current="true">Keys/);
   key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
   key('Escape'); key('j'); key('j'); key('j'); key('j'); key('j');
-  expect(appHtml()).toContain('data-sound-toggle="true" aria-label="Sound: on" aria-pressed="true" aria-current="true"');
+  expect(appHtml()).toContain('data-sound-toggle="true" aria-label="Sound: on" aria-current="true"');
 });
 it('uses quiet dialogue ticks, one low tone on beat four, and no cues when muted', () => {
   autoSkipIntro = false;
@@ -861,4 +863,14 @@ it('stops idle frame updates while preserving a pausable auto-advance deadline',
   vi.advanceTimersByTime(60000); flush(); expect(introProps()?.beat).toBe(0);
   Object.assign(page, { hidden: false }); page.dispatchEvent(new Event('visibilitychange'));
   vi.advanceTimersByTime(1200); flush(); expect(introProps()?.beat).toBe(1);
+});
+
+it('cycles and saves on → effects only → off → on without requiring audio', () => {
+  flush();
+  for (const mode of ['effects only', 'off', 'on']) {
+    currentSound().props.onClick(); flush();
+    expect(values.get('unsaved.sound.v1')).toBe(mode);
+    expect(appHtml()).toContain(`aria-label="Sound: ${mode}"`);
+    expect(appHtml()).not.toContain('aria-pressed');
+  }
 });

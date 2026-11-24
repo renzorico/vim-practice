@@ -167,3 +167,14 @@ it('recovers after resume rejection and skips a failed cue without losing the ba
   synth.play([{ kind: 'jump', offsetMs: 0 }]);
   expect(context.nodes[5]?.start).toHaveBeenCalledOnce();
 });
+
+it('shares only its already-unlocked context and master, with no extra allocations', () => {
+  const synth = createSynth();
+  expect(synth.audio()).toBeNull();
+  expect(FakeContext.instances).toHaveLength(0);
+  synth.unlock();
+  const context = FakeContext.instances[0]!;
+  expect(synth.audio()).toEqual({ context, master: context.nodes[0] });
+  expect(context.nodes).toHaveLength(1);
+  synth.setEnabled(false); expect(synth.audio()).toBeNull();
+});

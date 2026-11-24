@@ -82,9 +82,23 @@ function paintSky(brush: Brush): void {
     brush.fillStyle = NEAR_HILL; brush.fillRect(x, near, 1, horizon - near);
   }
 }
+/** Once the file is saved: the lamp is lit and its light reaches the page's edge. */
+function paintLamp(brush: Brush): void {
+  const lamp = { x: LIGHTHOUSE.x + 5, y: LIGHTHOUSE.y + 3 };
+  brush.fillStyle = '#ffe9a8';
+  for (let distance = 0; distance < 170; distance++) {
+    const half = 1 + Math.floor(distance * 0.13);
+    brush.globalAlpha = 0.5 * (1 - distance / 170);
+    brush.fillRect(lamp.x - distance, lamp.y - half, 1, half * 2);
+    brush.fillRect(lamp.x + distance, lamp.y - half, 1, half * 2);
+  }
+  brush.globalAlpha = 1;
+  brush.fillRect(LIGHTHOUSE.x + 2, LIGHTHOUSE.y + 1, 6, 4);
+}
 /** The whole world, before anything is unwritten. Painted once. */
-export function paintWorld(brush: Brush): void {
+export function paintWorld(brush: Brush, saved = false): void {
   paintSky(brush);
+  if (saved) paintLamp(brush);
   paintTableau(brush, TITLE_ROWS, marginLegend, 'margin', 0, GROUND_LINE * TABLEAU_TILE, true);
 }
 /** The same ground as letters. Painted once. */
@@ -98,10 +112,10 @@ export function paintLetters(context: CanvasRenderingContext2D): void {
 }
 /** One frame: composite whole cells, letters and blank page, then what moves. */
 export function paintFrame(context: CanvasRenderingContext2D, world: HTMLCanvasElement, letters: HTMLCanvasElement,
-  player: HTMLCanvasElement, elapsed: number, reducedMotion: boolean): void {
+  player: HTMLCanvasElement, elapsed: number, reducedMotion: boolean, saved = false): void {
   context.drawImage(world, 0, 0);
   context.font = FONT;
-  TITLE_ROWS.forEach((row, line) => {
+  if (!saved) TITLE_ROWS.forEach((row, line) => {
     const y = (GROUND_LINE + line) * TABLEAU_TILE;
     let blankFrom: number | undefined;
     for (let col = 0; col < row.length; col++) {
@@ -113,7 +127,7 @@ export function paintFrame(context: CanvasRenderingContext2D, world: HTMLCanvasE
     if (blankFrom !== undefined) { context.fillStyle = TILDE_INK; context.fillText('~', blankFrom + 4, y + 12); }
   });
   // Letters lifting off the edge, each on its own loop.
-  for (let index = 0; index < 14 && !reducedMotion; index++) {
+  for (let index = 0; index < 14 && !reducedMotion && !saved; index++) {
     const seed = positionHash(index, 3);
     const life = (elapsed / 5200 + (seed % 100) / 100) % 1;
     context.globalAlpha = Math.sin(life * Math.PI) * 0.85;

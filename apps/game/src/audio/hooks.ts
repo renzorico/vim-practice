@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Session } from '../play2/session.js';
 import { cuesFor } from './cues.js';
-import { readSound, saveSound } from './settings.js';
+import { readSoundMode, saveSoundMode, nextSoundMode } from './settings.js';
 import { speakerPitch, synth } from './synth.js';
 
 export function useSound(session: Session, started: boolean) {
-  const [enabled, setEnabled] = useState(readSound);
+  const [mode, setMode] = useState(readSoundMode);
+  const enabled = mode !== 'off';
   const previous = useRef(session);
   useEffect(() => {
     synth.setEnabled(enabled);
@@ -28,13 +29,13 @@ export function useSound(session: Session, started: boolean) {
   }, [session, started]);
   useEffect(() => { if (!started) synth.stop(); }, [started]);
   const toggle = (): void => {
-    const next = !enabled;
-    synth.setEnabled(next);
-    saveSound(next);
-    setEnabled(next);
-    if (next) synth.unlock();
+    const next = nextSoundMode(mode);
+    synth.setEnabled(next !== 'off');
+    saveSoundMode(next);
+    setMode(next);
+    if (next !== 'off') synth.unlock();
   };
-  return { enabled, toggle };
+  return { enabled, mode, toggle };
 }
 
 export function useStarChimes(visible: boolean, stars: number): void {

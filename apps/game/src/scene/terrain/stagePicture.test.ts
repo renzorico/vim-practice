@@ -7,7 +7,10 @@ const COLS = 18;
 it.each(stages.filter(item => item.stage.type !== 'text').map(item => [item.stage.id, item] as const))(
   'paints the opening view of %s: start inside, no gap, brush reset', (_, { stage, legend }) => {
     const view = pictureWindow(stage, ROWS, COLS);
-    expect(view.line).toBeGreaterThanOrEqual(0); expect(view.col).toBeGreaterThanOrEqual(0);
+    // Never past the map on one side only: a smaller map sits in the middle.
+    const width = Math.max(...stage.map.map(row => row.length));
+    if (width >= COLS) expect(view.col).toBeGreaterThanOrEqual(0);
+    else expect(Math.abs(-view.col - (view.col + COLS - width))).toBeLessThanOrEqual(1);
     expect(stage.start.line).toBeGreaterThanOrEqual(view.line); expect(stage.start.line).toBeLessThan(view.line + ROWS);
     expect(stage.start.col).toBeGreaterThanOrEqual(view.col); expect(stage.start.col).toBeLessThan(view.col + COLS);
     const covered = new Uint8Array(ROWS * 16 * COLS * 16);
