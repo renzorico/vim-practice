@@ -1,3 +1,4 @@
+import { WorldMap } from '../prologue/WorldMap.js';
 import { useEffect, useRef } from 'react';
 import type { StoryContent } from '@escape/story';
 import type { SessionStage } from './session.js';
@@ -21,6 +22,8 @@ export function StageSelect({ stages, content, progress, selected, onSelect, onB
   }, [selected]);
   return <main className="stage-select">
     <header className="stage-select__header"><h1>Stages</h1><button onClick={onBack}>Back to title</button></header>
+    <WorldMap world={stages.find(item => item.stage.id === (selected ?? progress?.stage))?.stage.world ?? 'margin'}
+      visited={['margin', ...stages.filter(item => item.stage.id === progress?.stage || Boolean(progress?.entries?.[item.stage.id])).map(item => item.stage.world)]} />
     <p><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to play · <kbd>Esc</kbd> / <kbd>q</kbd> to return</p>
     {content.worlds.slice().sort((left, right) => left.order - right.order).map(world => <section key={world.id} aria-labelledby={`world-${world.id}`}>
       <h2 id={`world-${world.id}`}>{world.name}</h2>

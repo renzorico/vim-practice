@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+import { CurrentWorld } from '../prologue/WorldMap.js';
+import { goalLine } from '../prologue/data.js';
 import { keyParts, KeyText } from '../play2/KeyText.js';
 import type { Guide } from '../play2/guides.js';
 import { heartsText, turnText } from './hud';
@@ -14,10 +17,12 @@ interface ObjectiveHudProps {
 }
 
 export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, positioned }: ObjectiveHudProps) {
+  const world = useContext(CurrentWorld);
   // With no tile to stand on, a guide row would only repeat the keycaps already in the objective.
   const named = !guide?.standAt && keyParts(objectives[0] ?? '').some(part => part.keycap);
   return (
     <aside className="objective-hud" aria-label="Objectives">
+      <p className="objective-hud__journey">{goalLine(world)}</p>
       <div className="objective-hud__stats">
         <span className="objective-hud__hearts" aria-label={`${hearts} of ${maxHearts} hearts`}>
           {heartsText(hearts, maxHearts)}

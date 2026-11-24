@@ -1,3 +1,5 @@
+import { Prologue, PrologueScene } from './prologue/Prologue.js';
+import { CAPTIONS, AUTO_WAIT_MS, CHARACTERS_PER_SECOND } from './prologue/data.js';
 import { WorldBanner, BANNER_DURATION_MS } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import type { HelpKey } from './play2/help/keys.js';
@@ -90,9 +92,25 @@ class WindowEvents {
 }
 let values = new Map<string, string>();
 let appTree: ReactNode;
+let introTree: ReactNode;
+let mountedIntroKey: string | null | undefined;
+let autoSkipIntro = true;
+function skipIntroForPlaythrough(): void {
+  if (autoSkipIntro && isValidElement(appTree) && appTree.type === Prologue) {
+    window.dispatchEvent(new KeyEvent('Escape')); flush();
+  }
+}
 function flush(): void {
   for (let count = 0; count < 20; count += 1) {
     hooks.dirty = false; hooks.cursor = 0; appTree = App();
+    const prologue = isValidElement<Parameters<typeof Prologue>[0]>(appTree) && appTree.type === Prologue ? appTree : null;
+    if (!prologue || mountedIntroKey !== prologue.key) {
+      for (const [slot, effect] of hooks.effects) if (slot >= 1000) { effect.cleanup?.(); hooks.effects.delete(slot); }
+      for (const slot of hooks.values.keys()) if (slot >= 1000) hooks.values.delete(slot);
+      mountedIntroKey = prologue?.key;
+    }
+    introTree = undefined;
+    if (prologue) { hooks.cursor = 1000; introTree = Prologue(prologue.props); }
     hooks.pending.splice(0).forEach(run => run());
     if (!hooks.dirty) return;
   }
@@ -102,7 +120,7 @@ function key(value: string, repeat = false, meta = false, ctrl = false): KeyEven
   // Existing playthroughs wait through each first-visit banner before sending game input.
   if (bannerWorld(appTree)) { vi.advanceTimersByTime(BANNER_DURATION_MS); flush(); }
   const event = new KeyEvent(value, repeat, meta, ctrl);
-  window.dispatchEvent(event); flush(); return event;
+  window.dispatchEvent(event); flush(); skipIntroForPlaythrough(); return event;
 }
 function session(): Session {
   if (!hooks.session) throw new Error('App did not initialise');
@@ -111,6 +129,7 @@ function session(): Session {
 beforeEach(() => {
   vi.useFakeTimers();
   hooks.cursor = 0; hooks.dirty = false; hooks.values.clear(); hooks.effects.clear(); hooks.pending.length = 0; hooks.session = undefined;
+  autoSkipIntro = true; mountedIntroKey = undefined; introTree = undefined;
   values = new Map();
   vi.stubGlobal('window', new WindowEvents({ getItem: key => values.get(key) ?? null,
     setItem: (key, value) => { values.set(key, value); }, removeItem: key => { values.delete(key); } }));
@@ -344,7 +363,7 @@ it('shows saved total stars on the title after a reload', () => {
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
   values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
-  flush(); key('j'); key('j'); key('j'); key('Enter');
+  flush(); key('j'); key('j'); key('j'); key('j'); key('Enter');
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
@@ -390,7 +409,7 @@ function clickSoundThenEnter(): void {
     const target = Object.assign(new HTMLElement(), { tagName: 'BUTTON', closest: () => target });
     Object.defineProperty(enter, 'target', { value: target });
   }
-  window.dispatchEvent(enter); flush();
+  window.dispatchEvent(enter); flush(); skipIntroForPlaythrough();
 }
 it('clicking the title and footer sound controls leaves Enter for start, dialogue and death replay', () => {
   flush(); clickSoundThenEnter();
@@ -422,7 +441,8 @@ it('passes the current reduced-motion preference into movement cue timing', () =
 });
 
 function appHtml(): string {
-  return renderToStaticMarkup(appTree);
+  hooks.cursor = 2000;
+  return renderToStaticMarkup(introTree ?? appTree);
 }
 function stageMenuProps(node: ReactNode): { selected: string | null; onSelect: (id: string) => void } | undefined {
   if (Array.isArray(node)) {
@@ -511,7 +531,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
   expect(savedProgress().story.ending).toBe('recover');
   const finished = values.get(PROGRESS_KEY);
-  key('Enter'); key('k'); key('k'); key('Enter');
+  key('Enter'); key('k'); key('k'); key('k'); key('Enter');
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   expect(session().world.stage).toBe('last-page');
   expect(session().story.ending).toBeNull();
@@ -519,7 +539,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   expect(savedProgress().story.ending).toBe('recover');
   expect(values.get(PROGRESS_KEY)).toBe(finished);
   // Completing the replay also leaves the finished save untouched.
-  key('k'); key('k'); key('Enter');
+  key('k'); key('k'); key('k'); key('Enter');
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   dismiss(); play(lastPage.solution); dismiss();
   expect(values.get(PROGRESS_KEY)).toBe(finished);
@@ -602,7 +622,7 @@ it('shows each world once per session and swallows the banner dismissal key and 
   key('Enter', true); expect(session()).toBe(before);
   key('Enter'); expect(session().queue[0]?.index).toBe(1);
 });
-it('expires a banner after exactly 1600ms without forwarding input', () => {
+it('expires a banner after exactly 2600ms without forwarding input', () => {
   flush(); key('Enter');
   vi.advanceTimersByTime(BANNER_DURATION_MS - 1); flush(); expect(bannerWorld(appTree)).toBe('margin');
   vi.advanceTimersByTime(1); flush(); expect(bannerWorld(appTree)).toBeUndefined();
@@ -632,4 +652,173 @@ it.each([new KeyEvent('Shift'), new KeyEvent('F1'), new KeyEvent('F12'),
   const before = session(); window.dispatchEvent(event); flush();
   expect(bannerWorld(appTree)).toBe('margin'); expect(session()).toBe(before);
   if (event.key !== 'Shift') expect(event.defaultPrevented).toBe(false);
+});
+
+function introProps() {
+  if (!isValidElement<Parameters<typeof PrologueScene>[0]>(introTree) || introTree.type !== PrologueScene) return undefined;
+  return introTree.props;
+}
+it('New game opens the eight exact captions before the first banner, without changing the session or save', () => {
+  autoSkipIntro = false;
+  flush(); const before = session(); key('Enter');
+  expect(introProps()?.beat).toBe(0);
+  expect(bannerWorld(appTree)).toBeUndefined();
+  for (let beat = 0; beat < CAPTIONS.length; beat++) {
+    expect(introProps()?.beat).toBe(beat);
+    expect(introProps()?.shown).toBe(0);
+    key('l'); key('F1'); key('Enter', true);
+    expect(introProps()?.shown).toBe(0);
+    expect(session()).toBe(before); expect(values.has(PROGRESS_KEY)).toBe(false);
+    key('Enter'); expect(introProps()?.shown).toBe(CAPTIONS[beat]?.length);
+    key('Enter', true); expect(introProps()?.beat).toBe(beat);
+    key('Enter');
+  }
+  expect(introProps()).toBeUndefined(); expect(bannerWorld(appTree)).toBe('margin');
+  expect(savedProgress().stage).toBe('margin');
+  const entry = session();
+  window.dispatchEvent(new KeyEvent('Enter', true)); flush(); expect(session()).toBe(entry);
+});
+it('automatically reveals at 45 cps and waits 3.5 seconds after the caption', () => {
+  autoSkipIntro = false; flush(); key('Enter');
+  vi.advanceTimersByTime(1000); flush();
+  expect(introProps()?.shown).toBe(CAPTIONS[0].length);
+  const duration = CAPTIONS[0].length / CHARACTERS_PER_SECOND * 1000 + AUTO_WAIT_MS;
+  vi.advanceTimersByTime(duration - 1000 - 1); flush(); expect(introProps()?.beat).toBe(0);
+  vi.advanceTimersByTime(30); flush(); expect(introProps()?.beat).toBe(1);
+});
+it('Esc skips the entire opening and the held key never advances the game', () => {
+  autoSkipIntro = false; flush(); key('Enter'); key('Escape');
+  expect(introProps()).toBeUndefined(); expect(bannerWorld(appTree)).toBe('margin');
+  const before = session(); key('Enter', true); expect(session()).toBe(before);
+});
+it('reduced motion shows whole captions, stays still and never auto-advances', () => {
+  Object.assign(window, { matchMedia: () => ({ matches: true }) });
+  autoSkipIntro = false; flush(); key('Enter');
+  expect(introProps()).toMatchObject({ reduced: true, shown: CAPTIONS[0].length, elapsed: 0 });
+  vi.advanceTimersByTime(60000); flush(); expect(introProps()?.beat).toBe(0);
+  key('Enter'); expect(introProps()?.beat).toBe(1);
+  key('Enter', true); expect(introProps()?.beat).toBe(1);
+});
+it('Intro follows Keys and returns to the title without dispatch or save changes', () => {
+  autoSkipIntro = false;
+  values.set(PROGRESS_KEY, JSON.stringify(reachedSave())); flush();
+  const before = session(); const saved = values.get(PROGRESS_KEY);
+  expect(appHtml()).toMatch(/Keys<\/button>.*Intro<\/button>.*New game<\/button>/);
+  key('j'); key('j'); key('j'); key('Enter');
+  expect(introProps()).toBeDefined(); key('Escape');
+  expect(appHtml()).toContain('Start game'); expect(session()).toBe(before);
+  expect(values.get(PROGRESS_KEY)).toBe(saved);
+  key('k'); key('k'); key('k'); key('Enter'); expect(introProps()).toBeUndefined();
+  expect(session().world.stage).toBe('quarry-road');
+});
+it('renders the prologue and cleans up its canvas effect when no canvas exists', () => {
+  autoSkipIntro = false; flush(); key('Enter');
+  expect(() => appHtml()).not.toThrow();
+  expect(appHtml()).toContain('Esc skip');
+  hooks.pending.splice(0).forEach(run => run());
+});
+it('keeps the new title menu indices correct with and without Continue', () => {
+  flush(); key('k'); expect(appHtml()).toMatch(/aria-current="true">Intro/);
+  key('k'); expect(appHtml()).toMatch(/aria-current="true">Keys/);
+  key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
+  key('Escape'); key('j'); key('j'); key('j'); key('j'); key('j');
+  expect(appHtml()).toContain('data-selected="true"');
+});
+it('uses quiet dialogue ticks, one low tone on beat four, and no cues when muted', () => {
+  autoSkipIntro = false;
+  const playSound = vi.spyOn(synth, 'play').mockReturnValue(() => {});
+  flush(); key('Enter'); vi.advanceTimersByTime(100); flush();
+  expect(playSound.mock.calls.flatMap(call => call[0])).toContainEqual({ kind: 'voice', offsetMs: 0, pitch: 300 });
+  key('Enter'); key('Enter'); key('Enter'); key('Enter'); key('Enter'); key('Enter');
+  expect(introProps()?.beat).toBe(3);
+  expect(playSound.mock.calls.flatMap(call => call[0]).filter(cue => cue.kind === 'fixed')).toHaveLength(1);
+  key('Escape');
+  // Return to the title with fresh hook state while retaining the stored sound preference.
+  values.set('unsaved.sound.v1', 'off'); values.delete(PROGRESS_KEY); reload(); playSound.mockClear();
+  key('Enter');
+  for (let beat = 0; beat < 4; beat++) {
+    vi.advanceTimersByTime(80); flush(); key('Enter'); key('Enter');
+  }
+  expect(playSound).not.toHaveBeenCalled();
+});
+it('Tab stays available for prologue controls while session keys are isolated', () => {
+  autoSkipIntro = false; flush(); key('Enter');
+  const before = session();
+  expect(key('Tab').defaultPrevented).toBe(false);
+  key('l'); key(':'); key('w'); expect(session()).toBe(before);
+});
+it('completing Intro returns to the title, while Continue and Stages bypass it', () => {
+  Object.assign(window, { matchMedia: () => ({ matches: true }) });
+  autoSkipIntro = false;
+  values.set(PROGRESS_KEY, JSON.stringify(reachedSave())); flush();
+  const before = session(); const saved = values.get(PROGRESS_KEY);
+  key('j'); key('j'); key('j'); key('Enter');
+  for (let beat = 0; beat < CAPTIONS.length; beat++) key('Enter');
+  expect(introProps()).toBeUndefined(); expect(appHtml()).toContain('Start game');
+  expect(session()).toBe(before); expect(values.get(PROGRESS_KEY)).toBe(saved);
+  key('k'); key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
+  stageMenuProps(appTree)?.onSelect('quarry-road'); flush();
+  expect(introProps()).toBeUndefined(); expect(session().world.stage).toBe('quarry-road');
+});
+
+it('mounts a fresh opening after closing on beat four, without replaying its tone', () => {
+  autoSkipIntro = false;
+  const sound = vi.spyOn(synth, 'play').mockReturnValue(() => {});
+  flush(); key('k'); key('Enter');
+  for (let beat = 0; beat < 3; beat++) { key('Enter'); key('Enter'); }
+  expect(introProps()?.beat).toBe(3);
+  key('Escape'); sound.mockClear(); key('Enter');
+  expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
+  expect(sound.mock.calls.flatMap(call => call[0]).filter(cue => cue.kind === 'fixed')).toHaveLength(0);
+  key('Escape'); key('j'); key('Enter');
+  expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
+});
+
+it('pauses while hidden and clamps a delayed visible tick to 100ms', () => {
+  const page = new EventTarget();
+  Object.assign(page, { hidden: false }); vi.stubGlobal('document', page);
+  autoSkipIntro = false; flush(); key('Enter');
+  vi.advanceTimersByTime(100); flush();
+  const before = introProps()?.elapsed ?? 0;
+  Object.assign(page, { hidden: true }); page.dispatchEvent(new Event('visibilitychange'));
+  vi.advanceTimersByTime(60000); flush(); expect(introProps()?.elapsed).toBe(before);
+  Object.assign(page, { hidden: false }); page.dispatchEvent(new Event('visibilitychange'));
+  const now = Date.now(); vi.setSystemTime(now + 60000);
+  vi.advanceTimersByTime(23); flush(); expect(introProps()?.elapsed).toBe(before + 100);
+});
+
+it('keeps the final beat open and stops its ticker after the demonstration', () => {
+  autoSkipIntro = false; flush(); key('Enter');
+  for (let beat = 0; beat < 7; beat++) { key('Enter'); key('Enter'); }
+  vi.advanceTimersByTime(3000); flush();
+  expect(introProps()?.beat).toBe(7);
+  const elapsed = introProps()?.elapsed;
+  vi.advanceTimersByTime(60000); flush();
+  expect(introProps()).toMatchObject({ beat: 7, elapsed });
+  key('Enter'); expect(introProps()).toBeUndefined();
+});
+
+it('retains seen banners on returning to title and clears them only for New game', () => {
+  flush(); key('Enter');
+  expect(bannerWorld(appTree)).toBe('margin');
+  vi.advanceTimersByTime(BANNER_DURATION_MS); flush();
+  hooks.session = { ...session(), world: { ...session().world, status: 'cleared' }, queue: [], clearCard: false }; flush();
+  key('Enter'); expect(appHtml()).toContain('Start game');
+  key('Enter'); expect(bannerWorld(appTree)).toBeUndefined();
+  hooks.session = { ...session(), world: { ...session().world, status: 'cleared' }, queue: [], clearCard: false }; flush();
+  key('Enter');
+  for (let choice = 0; choice < 4; choice++) key('j');
+  key('Enter'); expect(bannerWorld(appTree)).toBe('margin');
+});
+
+it('stops idle frame updates while preserving a pausable auto-advance deadline', () => {
+  const page = new EventTarget(); Object.assign(page, { hidden: false }); vi.stubGlobal('document', page);
+  autoSkipIntro = false; flush(); key('Enter');
+  vi.advanceTimersByTime(2000); flush();
+  const elapsed = introProps()?.elapsed;
+  vi.advanceTimersByTime(1000); flush(); expect(introProps()?.elapsed).toBe(elapsed);
+  Object.assign(page, { hidden: true }); page.dispatchEvent(new Event('visibilitychange'));
+  vi.advanceTimersByTime(60000); flush(); expect(introProps()?.beat).toBe(0);
+  Object.assign(page, { hidden: false }); page.dispatchEvent(new Event('visibilitychange'));
+  vi.advanceTimersByTime(1200); flush(); expect(introProps()?.beat).toBe(1);
 });
