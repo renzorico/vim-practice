@@ -57,6 +57,7 @@ export function App() {
   const [introRun, setIntroRun] = useState(0);
   const [showSource, setShowSource] = useState(false);
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
+  const [hintRequests, setHintRequests] = useState(0);
   const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : 3);
   const [selecting, setSelecting] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
@@ -107,6 +108,7 @@ export function App() {
     setReplayStage(saved && !continues ? id : null);
     setSelecting(false); setShowSource(false); setStarted(true);
   }, [saved]);
+  const askHint = useCallback(() => setHintRequests(count => count + 1), []);
   const onKey = useCallback((key: Key) => {
     if (!started || intro || helpOpen || banner.visible) return;
     if (scriptStamp) return;
@@ -114,7 +116,8 @@ export function App() {
     if (helpCommand !== null || (key === ':' && active.mode === 'normal' && active.pendingKeys.length === 0)) {
       const routed = routeHelpCommand(helpCommand, key);
       setHelpCommand(routed.pending);
-      if (routed.open) openHelp();
+      if (routed.open === 'help') openHelp();
+      else if (routed.open === 'hint') askHint();
       else for (const forwarded of routed.forward) dispatch(forwarded);
       return;
     }
@@ -235,6 +238,7 @@ export function App() {
         <SoundButton selected={choice === (canContinue ? 5 : 4)} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
+    <p className="play-menu-touch">You play this with a keyboard: every key is a Vim key. Open it on a computer.</p>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
     </div>
   </main>);
@@ -245,5 +249,5 @@ export function App() {
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
     {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
 }

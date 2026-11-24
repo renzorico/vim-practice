@@ -15,6 +15,8 @@ import { StatusLine } from './frame/StatusLine.js';
 import { ActionToast } from './frame/ActionToast.js';
 import { DialoguePlacement } from './frame/DialoguePlacement.js';
 import { TitleScene } from '../title/TitleScene.js';
+import { HintSlip } from './hints/HintSlip.js';
+import { useHints } from './hints/useHints.js';
 import { CutsceneView } from './CutsceneView.js';
 import { StageClearCard } from './StageClearCard.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
@@ -38,6 +40,9 @@ import type { StoryContent } from '@escape/story';
 interface PlayScreenProps {
   readonly onOpenHelp?: () => void;
   readonly helpCommand?: string | null;
+  /** How many times `:hint` was asked for in this sitting. */
+  readonly hintRequests?: number;
+  readonly onAskHint?: () => void;
   readonly helpOpen?: boolean;
   /** Stages cleared in this game, including after the replayed stage's entry. */
   readonly clearedStages?: readonly string[];
@@ -53,7 +58,7 @@ interface PlayScreenProps {
   readonly onAdvance: () => void;
   readonly onReplay?: () => void;
 }
-export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
   const notebook = useNotebook(session, stage, content, clearedStages);
   const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
@@ -87,6 +92,9 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
     return !nearest || distance(at) < distance(nearest) ? at : nearest;
   }, null);
   const targetEntity = target ? world.entities.find(entity => entity.at.line === target.line && entity.at.col === target.col)?.id : undefined;
+  const quiet = session.queue.length > 0 || Boolean(session.clearCard) || showKeyCard || scriptStamp || world.status !== 'playing';
+  const hints = useHints({ session, hints: script?.hints ?? stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
+    requests: hintRequests, quiet, scriptId: script?.id ?? '' });
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
@@ -103,6 +111,8 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
+      <HintSlip hint={quiet ? null : hints.hint}
+        place={(note, key) => <DialoguePlacement key={key} field={field} world={world} stage={stage} follow>{note}</DialoguePlacement>} />
       <ActionToast events={session.lastEvents} stage={stage} world={world} legend={legend}
         hidden={Boolean(presentation || session.clearCard || showKeyCard || scriptStamp || world.status !== 'playing')} />
       {dialogue && presentation && !scriptStamp && world.status !== 'dead' && <DialoguePlacement key={dialogue.id} field={field} world={world} stage={stage}>
@@ -112,6 +122,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
     <StatusLine engine={activeEngine} learned={learnedKeycaps(session.story.flags, stage.type === 'text', stage.id)}
       textStage={Boolean(world.script) || stage.type === 'text'} restartTaught={Boolean(session.story.flags['quarry.knows-x']) || !['margin', 'lowlands', 'quarry'].includes(stage.world)}
       prompt={prompt} helpCommand={helpCommand} onOpenHelp={onOpenHelp}
+      {...(hints.available && onAskHint ? { onAskHint } : {})} stuck={hints.stuck && !quiet}
       sound={onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />} />
     {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}

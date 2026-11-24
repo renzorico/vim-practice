@@ -993,6 +993,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-27: `:hint` (nobody stays stuck)
+**Who:** Opus (design and code), Sonnet (review).
+
+**Why:** Renzo got stuck on the planks. Every stage had hints written, but field stages never showed them; only the text stages did.
+
+**What:** `:hint` (or its button in the status line) shows the stage's hints one at a time as a note in the margin: only those for the current objective when one names its keys, so later ones are not given away. After the last it puts them away. No turn, no star lost, nothing in the world changes. After 14 turns on one objective, or 4 blocked moves in a row, the button lights up and asks "stuck?". A new objective puts the note away. Nothing new on the Session.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
