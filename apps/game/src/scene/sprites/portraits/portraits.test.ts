@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { PORTRAITS } from './index.js';
-import { portraitFor, portraitId, SPEAKER_ACCENTS } from './speakers.js';
+import { portraitFor, portraitId } from './speakers.js';
 import { SPRITES } from '../index.js';
 
 const MAIN = ['elder', 'mira', 'dot', 'scribe', 'ash', 'wren', 'echo', 'lamplighter', 'mason',
@@ -222,7 +222,6 @@ describe('portraits', () => {
   for (const [id, art] of Object.entries(PORTRAITS)) it(`${id} has complete 32px art and distinct expressions`, () => {
     expect(art.frames).toHaveLength(MAIN.includes(id) ? 3 : 1);
     expect(new Set(art.frames.map(frame => frame.join(''))).size).toBe(art.frames.length);
-    expect(SPEAKER_ACCENTS[id]).toBeDefined();
     for (const frame of art.frames) {
       expect(frame).toHaveLength(32);
       for (const row of frame) {

@@ -9,9 +9,11 @@ import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
 import { objectiveTarget } from './objectiveTarget.js';
 import { useMotionUses } from './useMotionUses.js';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { StatusLine } from './frame/StatusLine.js';
+import { ActionToast } from './frame/ActionToast.js';
+import { DialoguePlacement } from './frame/DialoguePlacement.js';
 import { StageClearCard } from './StageClearCard.js';
-import { useBlockedReason } from './useBlockedReason.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
 import { stages } from './content.js';
 import { HoofprintGauge } from './HoofprintGauge.js';
@@ -63,7 +65,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
   const notebook = useNotebook(session, stage, content, clearedStages);
   const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
-  const reason = useBlockedReason(session.lastEvents, stage, world, legend);
+  const field = useRef<HTMLDivElement>(null);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
     [world, stage, legend, uses, session.queue.length]);
@@ -93,35 +95,35 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
-      <h1>{stage.title}</h1>
-      {stage.id === 'counter' && <CounterGauge world={world} />}
-      {stage.id === 'notary' && <NotaryGauge world={world} />}
-      {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      <ObjectiveHud guide={visibleGuide} positioned={positioned} objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
+      <ObjectiveHud title={stage.title} gauges={<>
+        {stage.id === 'counter' && <CounterGauge world={world} />}
+        {stage.id === 'notary' && <NotaryGauge world={world} />}
+        {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
+      </>} guide={visibleGuide} positioned={positioned} objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
-    <div className="play-field">
+    <div className="play-field" ref={field}>
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
       objectiveTarget={showKeyCard ? null : nearestStand ?? target} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
-      markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
-    <footer className="play-controls">
-      {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
-      <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
-      {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{helpCommand ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : activeEngine.pendingKeys.join('') || reason || '')}</output>
-      {prompt && <span className="pending-prompt">{prompt}</span>}
-      {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
-      {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
-    </footer>
+      markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
+      <ActionToast events={session.lastEvents} stage={stage} world={world} legend={legend}
+        hidden={Boolean(presentation || session.clearCard || showKeyCard || scriptStamp || world.status !== 'playing')} />
+      {dialogue && presentation && !scriptStamp && world.status !== 'dead' && <DialoguePlacement key={dialogue.id} field={field} world={world} stage={stage}>
+        <DialogueBox dialogueId={dialogue.id} lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />
+      </DialoguePlacement>}
+    </div>
+    <StatusLine engine={activeEngine} learned={learnedKeycaps(session.story.flags, stage.type === 'text', stage.id)}
+      textStage={Boolean(world.script) || stage.type === 'text'} restartTaught={Boolean(session.story.flags['quarry.knows-x']) || !['margin', 'lowlands', 'quarry'].includes(stage.world)}
+      prompt={prompt} helpCommand={helpCommand} onOpenHelp={onOpenHelp}
+      sound={onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />} />
     {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : scriptStamp ? null : <>
-      {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
       {cutscene && presentation && <section className="play-panel" role="dialog" aria-label="Story">
         <BeatView beat={cutscene.beats[presentation.index]} /><button onClick={onAdvance}>Enter to go on</button>
       </section>}

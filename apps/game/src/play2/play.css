@@ -13,8 +13,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-screen { height: 100svh; display: flex; flex-direction: column; }
 .play-header { padding: 16px 24px 0; }
 .play-header h1 { margin: 0 0 12px; font-size: 20px; font-weight: 500; }
-.play-header .objective-hud { border: 0; border-radius: 0; background: transparent; padding: 0; }
-.play-header .objective-hud__list { list-style: none; padding: 0; }
 .play-field { flex: 1; min-height: 0; position: relative; }
 .play-field > div { min-height: 0 !important; }
 .play-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; color: var(--text-soft); font-size: 13px; }
@@ -100,14 +98,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @keyframes ledger-filed { 50% { color: #ffe8b2; opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .counter-gauge[data-full="true"] { animation: none; } }
 
-/* Library parchment, walnut ink and brass from the World 5 sprite palette. */
-.script-panel--contract {
-  --text: #e1d1a6;
-  --text-soft: #eddfbd;
-  --bg: #261e20;
-  --line-strong: #563929;
-  --text-muted: #b39a70;
-}
 .script-panel--contract .script-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .script-panel--contract .script-target li { min-height: 1.6em; }
 @media (max-width: 1000px) {
@@ -178,15 +168,12 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @media (max-width: 540px) { .help-reference__entry { grid-template-columns: minmax(0, 1fr); gap: 8px; } .help-reference dt { flex-direction: row; } }
 
 /* Instruction surfaces use the same keycaps and palette as the field. */
-.objective-guide { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--text-muted); margin-top: 8px; }
-.objective-guide--ready, .play-controls output { color: var(--you); }
+.objective-guide { display: flex; align-items: center; gap: 6px; }
+.play-controls output { color: var(--you); }
 .objective-guide kbd, .keycap { font-family: var(--font-mono); }
-.dialogue .keycap, .objective-hud .keycap { padding: 0 0.3em; border: 1px solid var(--line-strong); border-radius: 2px; background: rgb(0 0 0 / 25%); }
-.dialogue--instruction { border-left: 1px solid var(--you); }
-.dialogue__try { color: var(--you); font-weight: 600; }
 .pending-prompt { font-size: 0.875rem; max-width: 32ch; }
-.objective-guide kbd { border: 1px solid var(--line-strong); padding: 2px 6px; opacity: 0.7; }
-.objective-guide--ready kbd { opacity: 1; color: var(--you); }
+.objective-guide kbd { opacity: 0.7; }
+.objective-guide--ready kbd { opacity: 1; }
 @media (max-width: 600px) {
   .play-controls { flex-wrap: wrap; gap: 8px 12px; }
 }
@@ -207,3 +194,71 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .world-banner__tiles { width: 240px; height: 48px; max-width: 100%; margin: 24px 0 40px; image-rendering: pixelated; }
 .world-banner button { color: #f6efd4; font: 14px var(--font-mono); }
 @media (max-width: 540px) { .play-title { padding: 16px; justify-content: flex-end; } .play-title__menu { margin-left: 0; padding: 24px; } }
+
+/* P-19: a fixed frame. Both rows exist even before a quest starts. */
+.play-header { flex: 0 0 80px; height: 80px; padding: 0; }
+.play-header .objective-hud { height: 100%; }
+.play-header h1 { margin: 0; font-size: 16px; white-space: nowrap; }
+.play-controls { flex: 0 0 40px; height: 40px; min-width: 0; flex-wrap: nowrap; gap: 12px; padding: 0 12px 0 0; font: 11px var(--font-mono); background: var(--surface); }
+.status-identity, .status-right, .status-learned { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
+.status-identity { flex: 0 1 50%; }
+.status-buffer { color: var(--text-muted); }
+.status-identity output { overflow-x: auto; }
+.status-mode { align-self: stretch; display: grid; place-items: center; min-height: 40px; padding: 0 10px; color: var(--ink); background: var(--mode-normal); font-weight: 600; }
+.status-mode--insert { background: var(--mode-insert); }
+.status-mode--visual { background: var(--mode-visual); }
+.status-mode--visual-line { background: var(--mode-line); }
+.status-mode--visual-block { background: var(--mode-block); }
+.status-mode--operator-pending { background: var(--mode-pending); }
+.status-mode--command-line { background: var(--mode-command); }
+.status-learned { margin-left: auto; flex-shrink: 0; }
+.status-learned .learned-key { min-width: 0; margin: 0; padding: 2px 4px; }
+.status-right { margin-left: auto; flex-shrink: 1; }
+.status-right output { min-width: 0; }
+.status-right .pending-prompt { overflow: hidden; text-overflow: ellipsis; font-size: 12px; max-width: 34ch; }
+.play-controls button { padding: 0 4px; min-height: 32px; border: 0; font: inherit; }
+.play-controls [data-sound-toggle] { width: 32px; }
+.play-controls .status-more { color: var(--text); }
+.frame-accessible { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.action-toast { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 15; max-width: calc(100% - 32px); padding: 8px 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-muted); border-bottom-width: 3px; font: 13px/1.4 var(--font-mono); pointer-events: none; }
+.action-toast[data-visible='false'] { visibility: hidden; }
+.action-toast__slip { display: block; }
+.action-toast[data-visible='true'] .action-toast__slip { animation: slip-arrive 160ms ease-out; }
+.dialogue-placement { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+.dialogue-placement > .dialogue { pointer-events: auto; position: absolute; bottom: 16px; }
+.dialogue-placement--top > .dialogue { top: 16px; bottom: auto; }
+.play-panel { color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom: 3px solid var(--ink-muted); }
+.play-panel button:focus-visible { outline-color: var(--ink); }
+.play-panel button, .play-panel kbd { color: var(--ink); background: var(--paper-secondary); border-color: var(--ink-muted); }
+.play-panel .stage-clear__stars { color: var(--ink-muted); }
+.play-panel .stage-clear__empty { color: var(--paper-edge); }
+
+/* A walnut desk with two ruled sheets; the sticky Vim gutter remains independent. */
+.script-panel { --text: var(--paper); --text-soft: var(--paper-secondary); --bg: var(--ink); --line-strong: var(--ink-muted); --text-muted: var(--paper-edge); background: repeating-linear-gradient(0deg, var(--desk) 0 7px, var(--desk-grain) 8px 9px, var(--desk) 10px 48px); color: var(--ink); }
+.script-heading { z-index: 2; padding: 20px 24px 1px; background: var(--paper); border-bottom: 1px solid var(--paper-edge); }
+.script-goal { margin-bottom: 16px; }
+.script-columns { gap: 24px; align-items: start; }
+.script-editor, .script-target { background: var(--paper); color: var(--ink); border: 1px solid var(--paper-edge); box-shadow: 3px 4px 0 var(--frame-shadow); }
+.script-panel .buffer { background: repeating-linear-gradient(to bottom, transparent 0 calc(1.6em - 1px), var(--paper-rule) calc(1.6em - 1px) 1.6em), var(--paper); background-origin: content-box; }
+.script-panel .buffer__gutter { background: var(--paper); box-shadow: -16px 0 0 var(--paper); border-right: 1px solid var(--paper-edge); margin-right: 12px; }
+.script-target { position: relative; padding: 20px 16px; margin-top: 16px; background: var(--paper-secondary); }
+.script-target::before { content: ''; position: absolute; width: 8px; height: 8px; border: 1px solid var(--ink-muted); background: var(--tab-gold); top: 5px; left: 50%; }
+.script-target h3 { font-size: 13px; }
+.script-target li { background: linear-gradient(to bottom, transparent calc(100% - 1px), var(--paper-rule) 1px); }
+.script-target li[data-matched='true'] { color: var(--green-ink); }
+.script-hints { color: var(--paper); }
+.script-hints kbd { color: var(--paper); }
+.script-stamp { color: var(--green-ink); background: var(--paper); }
+@keyframes slip-arrive { from { opacity: 0; translate: 0 4px; } to { opacity: 1; translate: 0 0; } }
+
+@media (max-width: 899px) {
+  .play-header { flex-basis: 112px; height: 112px; }
+  .status-buffer, .status-tab, .status-restart { display: none; }
+  .play-controls { gap: 6px; padding-right: 4px; }
+  .status-mode { padding: 0 6px; }
+  .status-right { gap: 4px; }
+}
+@media (max-width: 540px) { .play-controls span:first-child { flex-basis: auto; } .status-identity { flex-basis: auto; } .status-right .pending-prompt { max-width: 18ch; } .help-link { display: none; } }
+@media (prefers-reduced-motion: reduce) { .action-toast[data-visible='true'] .action-toast__slip { animation: none; } }
+
+.script-panel--contract { --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }

@@ -81,13 +81,14 @@ it('reveals Quarry keycaps from flags and selects its authored death hint', () =
   expect(deathHint(content, 'unknown')).toBe(deathHint(content, 'margin'));
 });
 
-it('shows start over from the Quarry onward', () => {
+it('shows start over only after Ash teaches it', () => {
   const session = controller.init(false);
-  for (const entry of [{ stage, legend }, { stage: quarry, legend: quarryLegend }]) {
+  for (const taught of [false, true]) {
     const html = renderToStaticMarkup(createElement(PlayScreen, {
-      session, ...entry, content, showSource: false, objectives: [], onAdvance: () => {},
+      session: { ...session, story: { ...session.story, flags: { 'quarry.knows-x': taught } } },
+      stage: quarry, legend: quarryLegend, content, showSource: false, objectives: [], onAdvance: () => {},
     }));
-    expect(html.includes('<kbd>:e!</kbd> start over')).toBe(entry.stage.world === 'quarry');
+    expect(html.includes('<kbd>:e!</kbd> start over')).toBe(taught);
   }
 });
 
@@ -110,7 +111,7 @@ it('hides the Margin par and explains the Tab view', () => {
     session, stage, legend, content, objectives: [], showSource: false, onAdvance: () => {},
   }));
   expect(html).not.toContain(' · par');
-  expect(html).toContain('Hold <kbd>Tab</kbd> to see the file');
+  expect(html).toContain('<kbd>Tab</kbd> file view');
 });
 
 it('resolves objective targets only when an arrow can show', () => {

@@ -19,3 +19,35 @@
   --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
 }
+
+/* Book frame: paper/ink is 12.9:1; green ink/paper is 7.4:1. */
+:root {
+  --paper: #f6efd4;
+  --paper-secondary: #eddfbd;
+  --ink: #29271f;
+  --ink-muted: #563929;
+  --paper-edge: #b9aa89;
+  --paper-rule: #51432f14;
+  --green-ink: #315336;
+  --desk: #30251f;
+  --desk-grain: #392c23;
+  --frame-shadow: #00000040;
+  --instruction-tint: #d7ae5233;
+  --tab-blue: #74a9b0;
+  --tab-gold: #fabd2f;
+  --tab-tan: #dfad80;
+  --tab-green: #a9b56d;
+  --tab-slate: #66788d;
+  --tab-light-ink: #ffffff;
+  --mode-normal: #b8bb26;
+  --mode-insert: #83a598;
+  --mode-visual: #d3869b;
+  --mode-line: #dfad80;
+  --mode-block: #a9b56d;
+  --mode-pending: #fabd2f;
+  --mode-command: #f6efd4;
+}
+:root {
+  --contract-paper: #e1d1a6;
+  --contract-sheet: #eddfbd;
+}
