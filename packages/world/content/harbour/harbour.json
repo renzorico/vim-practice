@@ -163,11 +163,11 @@
         "<Esc>"
       ],
       "hints": [
-        "Keeper row: ct, changes everything up to the comma. Type Ream, then Esc.",
-        "The order belongs on top. G, dd cuts the last row, gg goes to the top, P puts it above.",
-        "On the rope row, ddp swaps it with the oil row below, so oil comes first.",
-        "On copied, press cw, type real, then Esc. On the next row, b to the word's start, then . repeats it.",
-        "Ships: C changes to the end of the row. yyp copies a row just below it."
+        "Keeper row: `ct,` changes everything up to the comma. Type Ream, then `Esc`.",
+        "The order belongs on top. `G`, `dd` cuts the last row, `gg` goes to the top, `P` puts it above.",
+        "On the rope row, `ddp` swaps it with the oil row below, so oil comes first.",
+        "On copied, press `cw`, type real, then `Esc`. On the next row, `b` to the word's start, then `.` repeats it.",
+        "Ships: `C` changes to the end of the row. `yyp` copies a row just below it."
       ],
       "effects": []
     }
@@ -284,10 +284,10 @@
     "<Esc>"
   ],
   "hints": [
-    "Keeper row: ct, changes everything up to the comma. Type Ream, then Esc.",
-    "The order belongs on top. G, dd cuts the last row, gg goes to the top, P puts it above.",
-    "On the rope row, ddp swaps it with the oil row below, so oil comes first.",
-    "On copied, press cw, type real, then Esc. On the next row, b to the word's start, then . repeats it.",
-    "Ships: C changes to the end of the row. yyp copies a row just below it."
+    "Keeper row: `ct,` changes everything up to the comma. Type Ream, then `Esc`.",
+    "The order belongs on top. `G`, `dd` cuts the last row, `gg` goes to the top, `P` puts it above.",
+    "On the rope row, `ddp` swaps it with the oil row below, so oil comes first.",
+    "On copied, press `cw`, type real, then `Esc`. On the next row, `b` to the word's start, then `.` repeats it.",
+    "Ships: `C` changes to the end of the row. `yyp` copies a row just below it."
   ]
 }

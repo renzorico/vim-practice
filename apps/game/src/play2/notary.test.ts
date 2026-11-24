@@ -15,6 +15,7 @@ import { bufferSize, cameraTarget } from '../scene/camera.js';
 import { counterStamp } from '../scene/counterStamp.js';
 import { jettyDeletion } from '../scene/jettyDeletion.js';
 import { SPRITES } from '../scene/sprites/index.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -97,7 +98,7 @@ it('the 15-turn Archive route loses on turn 14, repeats its fuse line, and retri
     const dead = dismiss(fused);
     expect(dead.world.hearts).toBe(0);
     expect(dead.world.status).toBe('dead');
-    expect(markup(dead)).toContain('Inside the lock: da[');
+    expect(visibleText(markup(dead))).toContain(plainText('In the lock, `da[`.'));
     attempt = controller.reduce(dead, 'j');
     expect(attempt.world.engine.lines).toEqual(notary.map);
     expect(attempt.world.turn).toBe(0);

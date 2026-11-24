@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "chains",
-          "objective": "Lift the three chains: stand inside each and press da(. Use d2a( for the nested one.",
+          "objective": "Lift three chains: `da(`, and `d2a(` for the nested one.",
           "completeWhen": {
             "type": "flag",
             "flag": "reading.chains-gone",
@@ -21,7 +21,7 @@
         },
         {
           "id": "folio",
-          "objective": "Talk to Folio at the far end. Press Enter next to Folio.",
+          "objective": "Talk to Folio: next to Folio, `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "reading"
@@ -36,18 +36,13 @@
       "id": "reading.intro",
       "lines": [
         {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Folio, reader. Chains hold this room, and me,\neach shackled ( to ). Free us, I'll guide you."
+        },
+        {
           "speaker": "system",
-          "text": "The reading room. Chains lie across the floor,\neach held by a pair of shackles, ( and )."
-        },
-        {
-          "speaker": "npc",
-          "name": "Folio",
-          "text": "Folio, reader, chained to my chair. Stand in a\nchain and press da(: chain and shackles go."
-        },
-        {
-          "speaker": "npc",
-          "name": "Folio",
-          "text": "The last chain is mine: use di(. It takes the\nchain and leaves the shackle. I may need it."
+          "text": "Stand inside a chain. Press `da(`: chain and\nshackles go. Folio's own chain: `di(` instead."
         }
       ],
       "then": []
@@ -56,13 +51,13 @@
       "id": "reading.nested",
       "lines": [
         {
-          "speaker": "scribe",
-          "text": "Note: a chain inside a chain? d2a( takes both.\nThe whole room is clear after that."
-        },
-        {
           "speaker": "npc",
           "name": "Dot",
           "text": "Open! ...open."
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on the outer ( of the double chain.\nPress `d2a(`: both chains go."
         }
       ],
       "then": []
@@ -73,7 +68,7 @@
         {
           "speaker": "npc",
           "name": "Folio",
-          "text": "Chains first. Anywhere inside, da(."
+          "text": "Chains first, please. I'm not going anywhere.\nLiterally."
         }
       ],
       "then": []

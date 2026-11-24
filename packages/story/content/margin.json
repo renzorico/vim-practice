@@ -24,7 +24,7 @@
       "steps": [
         {
           "id": "meet-elder",
-          "objective": "Walk to the Elder (h j k l). Stand next to him, press Enter.",
+          "objective": "Meet the Elder: walk `h` `j` `k` `l`, talk `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "margin.met-elder",
@@ -34,7 +34,7 @@
         },
         {
           "id": "see-mira",
-          "objective": "Talk to Mira at the well, south of here. Press Enter next to her.",
+          "objective": "Talk to Mira at the well: next to her, `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "margin.knows-counts",
@@ -44,7 +44,7 @@
         },
         {
           "id": "cross",
-          "objective": "Cross the road to the east gate. Use 30l, one move.",
+          "objective": "Cross the road to the east gate: `30l`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "margin"
@@ -213,11 +213,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "You're Tilde, in the Margin, the last edge of\nthe world. Someone is shouting your name."
+          "text": "You wake in the Margin. This morning a whole\nrow of the village is gone. Your house too."
         },
         {
-          "speaker": "elder",
-          "text": "Child! Here! Walk to me: h left, j down,\nk up, l right. Then press Enter to talk."
+          "speaker": "system",
+          "text": "The Elder is shouting for you.\nWalk to him: `h` `j` `k` `l`, then `Enter`."
         }
       ],
       "then": []
@@ -227,15 +227,15 @@
       "lines": [
         {
           "speaker": "elder",
-          "text": "Child... the Unwriter came again last night.\nThe north field is gone. Row by row."
+          "text": "The Unwriter came again last night, child.\nThe north field went, and the festival lamps."
         },
         {
           "speaker": "elder",
-          "text": "Someone must warn the Lighthouse, east along\nthe road. Or we are all unsaved. Unsaved!"
+          "text": "Someone must warn the Lighthouse, east along\nthe road. Or we're all unsaved. Unsaved!"
         },
         {
-          "speaker": "elder",
-          "text": "Blots swarm the road. Mira, at the well,\nsouth of here, knows a trick. Go, child."
+          "speaker": "system",
+          "text": "Blots swarm the road. Go south to the well.\nStand next to Mira and press `Enter`."
         }
       ],
       "then": [
@@ -251,7 +251,11 @@
       "lines": [
         {
           "speaker": "elder",
-          "text": "Child, Mira waits at the well, south of here.\nStand next to her and press Enter."
+          "text": "No lamps, so candles. The festival goes ahead,\nunsaved or not. Go on, child."
+        },
+        {
+          "speaker": "system",
+          "text": "Mira is at the well, south of here.\nStand next to her and press `Enter`."
         }
       ],
       "then": []
@@ -261,7 +265,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Morning, Tilde. The Elder's been looking for\nyou. Go see him first, he's in a state.",
+          "text": "Morning, Tilde. The Elder's looking for you.\nGo see him first. He's in a state.",
           "name": "Mira"
         }
       ],
@@ -272,18 +276,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Blots take one step every time you do.\nSo don't take thirty. Keep up, Tilde.",
+          "text": "We were three on this well wall once. You,\nme and... never mind. Bram's left, road's clear.",
           "name": "Mira"
         },
         {
           "speaker": "npc",
-          "text": "Put a number before a key: 30l walks\nright thirty tiles in one move.",
+          "text": "Blots take a step every time you do. So don't\ntake thirty steps. Take one move.",
           "name": "Mira"
         },
         {
-          "speaker": "npc",
-          "text": "Any number works: 5j, 3h, 30l. I sent Bram\nhome, so the road east is open.",
-          "name": "Mira"
+          "speaker": "system",
+          "text": "Stand on the road, past the wall.\nPress `30l`: you cross to the gate in one move."
         }
       ],
       "then": [
@@ -308,8 +311,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "A number, then the key: 30l.\nThe Blots can't keep up. Go on.",
+          "text": "Still two on the wall. Funny, it keeps room\nfor a third.",
           "name": "Mira"
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on the road. Press `30l`:\nthe Blots can't keep up."
         }
       ],
       "then": []
@@ -319,12 +326,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "My brother left before the Last Saving.\nWe never said his name again. Anyway.",
+          "text": "I knit my brother a scarf every winter. He left\nbefore the Last Saving. We don't say his name.",
           "name": "Pell"
         },
         {
           "speaker": "npc",
-          "text": "Out there, unsaved things just... fade.\nMind the road, child. Take a scarf.",
+          "text": "Out there, unsaved things just fade. Mind the\nroad, child. Take the scarf. Wool lasts.",
           "name": "Pell"
         }
       ],
@@ -335,7 +342,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Road's closed. Blots everywhere. You step,\nthey step. I'm not paid enough for this.",
+          "text": "Road's closed. Blots everywhere. I've been on\nthis shift since sunrise. I want my bed.",
           "name": "Bram"
         },
         {
@@ -351,7 +358,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Ink bubbles up from the fields. Blots!\nThey step when you step. Use 30l, one move."
+          "text": "Ink bubbles up out of the fields: Blots.\nThey step every time you step."
+        },
+        {
+          "speaker": "system",
+          "text": "Press `30l` on the road: one move, and you're\npast all of them."
         }
       ],
       "then": [
@@ -457,7 +468,7 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "A Save Stone: I left them for you. Rest here.\nSoon you'll learn what else they're for."
+          "text": "A Save Stone. I left these for you. Rest here.\nSoon you'll learn what else they're for."
         }
       ],
       "then": [
@@ -477,7 +488,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Past the Blots! The east gate is open.\nBeyond it: the Lowlands, then the Lighthouse."
+          "text": "Past the Blots, and the gate is open. Ahead:\nthe Lowlands. Who took a row of your village?"
         }
       ],
       "then": []
@@ -487,7 +498,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Blots follow every step. Type 30l: one move\nacross the road, and they can't catch you."
+          "text": "Blots step when you step. On the road, press\n`30l`: one move, and they can't catch you."
         }
       ],
       "then": []

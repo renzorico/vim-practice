@@ -90,11 +90,11 @@
         "<Esc>"
       ],
       "hints": [
-        "Press dd on a wall row to strike it. . repeats a change.",
-        "Cursor on the u of unpaid, press 2x. Then j and . for each row below.",
-        "Cursor on the e of Brem, press r then a to make it Bram.",
-        "On Mira's row, cursor just after paid, press D to cut the note.",
-        "Last step: press o under the last row, type door, then Esc."
+        "Press `dd` on a wall row to strike it. `.` repeats a change.",
+        "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for each row below.",
+        "Cursor on the e of Brem, press `r` then `a` to make it Bram.",
+        "On Mira's row, cursor just after paid, press `D` to cut the note.",
+        "Last step: press `o` under the last row, type door, then `Esc`."
       ],
       "effects": []
     }
@@ -149,10 +149,10 @@
     "<Esc>"
   ],
   "hints": [
-    "Press dd on a wall row to strike it. . repeats a change.",
-    "Cursor on the u of unpaid, press 2x. Then j and . for each row below.",
-    "Cursor on the e of Brem, press r then a to make it Bram.",
-    "On Mira's row, cursor just after paid, press D to cut the note.",
-    "Last step: press o under the last row, type door, then Esc."
+    "Press `dd` on a wall row to strike it. `.` repeats a change.",
+    "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for each row below.",
+    "Cursor on the e of Brem, press `r` then `a` to make it Bram.",
+    "On Mira's row, cursor just after paid, press `D` to cut the note.",
+    "Last step: press `o` under the last row, type door, then `Esc`."
   ]
 }

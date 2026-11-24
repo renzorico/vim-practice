@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "ledger",
-          "objective": "Fix the ledger: strike every wall, mark the crew paid, add a door at the end.",
+          "objective": "Fix the ledger: `dd`, `x`, `r`, `D`, `o`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "ledger"
@@ -60,17 +60,11 @@
         {
           "speaker": "npc",
           "name": "The Mason",
-          "text": "My ledger is wrong. Strike out the walls, mark\nthe crew paid, and add a door at the end."
+          "text": "My ledger's wrong. Strike the walls, mark the\ncrew paid, add a door at the end. A door!"
         },
         {
-          "speaker": "npc",
-          "name": "The Mason",
-          "text": "o opens a row below: type, then press Esc.\nD cuts from the cursor to the end of a row."
-        },
-        {
-          "speaker": "npc",
-          "name": "The Mason",
-          "text": "The rest you know: dd, x, r, and the dot.\nWalls I know. Doors, I'm still learning."
+          "speaker": "system",
+          "text": "Start at the top. On a wall row, press `dd`:\nthe row is struck out. Work down from there."
         }
       ],
       "then": [
@@ -90,7 +84,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "The crew is paid. The plan has a door.\nThe Mason hums as he works."
+            "text": "The crew is paid, the plan has a door. Beyond\nthe quarry: a forest with every bridge cut."
           }
         },
         {

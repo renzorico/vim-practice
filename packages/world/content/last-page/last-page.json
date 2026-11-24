@@ -358,8 +358,8 @@
     "<CR>"
   ],
   "hints": [
-    "The grey thing tears the bottom row every third turn. Press u right after to bring the row back; later, u undoes your own last edit.",
-    "Repair in the two turns between: xp fixes ATTENTOIN, daw removes the doubled \"the\", ddp swaps the two crossed rows.",
-    "When the page is whole, stand on R and write: :w."
+    "The grey thing tears the bottom row every third turn. Press `u` right after to bring the row back; later, `u` undoes your own last edit.",
+    "Repair in the two turns between: `xp` fixes ATTENTOIN, `daw` removes the doubled \"the\", `ddp` swaps the two crossed rows.",
+    "When the page is whole, stand on R and write: `:w`."
   ]
 }

@@ -10,6 +10,7 @@ import { createSession, READING_COMMANDS, STACKS_COMMANDS, stageCommands, type S
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -102,7 +103,7 @@ it.each([false, true])('shows each Folio line exclusively when chains-gone=%s', 
   const id = gone ? 'reading.folio-through' : 'reading.folio-wait';
   expect(queued(session)).toEqual([id]);
   for (const line of content.dialogues.find(item => item.id === id)!.lines) {
-    expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(session.story.flags['reading.through'] === true).toBe(gone);
@@ -117,12 +118,12 @@ it.each([false, true])('shows each Folio line exclusively when chains-gone=%s', 
 it('shows every intro and nested line in order, with nested playing once', () => {
   let session = controller.init();
   for (const line of content.dialogues.find(item => item.id === 'reading.intro')!.lines) {
-    expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   session = keys(session, 'wda(');
   for (const line of content.dialogues.find(item => item.id === 'reading.nested')!.lines) {
-    expect(screen(session)).toContain(line.text);
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(queued(keys(session, 'udi('))).toEqual([]);

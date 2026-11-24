@@ -198,6 +198,6 @@
     "l"
   ],
   "hints": [
-    "Blots step when you step. Type 30l to cross\nthe road in one move."
+    "Blots step when you step. On the road, press\n`30l` to cross in one move."
   ]
 }

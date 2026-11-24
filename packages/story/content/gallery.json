@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "follow",
-          "objective": "Stand on a word and press * to jump to its next copy. Then w to the next word, and * again.",
+          "objective": "Follow the words: `*` on a word, `w`, `*` again.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gallery"
@@ -27,16 +27,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The echo gallery: words carved in sealed rooms,\nand every word said twice. Follow them."
+          "text": "The echo gallery: words carved in sealed rooms,\nsaid twice. You need to follow them down."
         },
         {
-          "speaker": "npc",
-          "name": "Echo",
-          "text": "...ink. ...ink."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: * jumps to the next copy of the\nword you stand on. # jumps back."
+          "speaker": "system",
+          "text": "Stand on a word. Press `*`: you jump to its\nnext copy. `#` jumps back."
         }
       ],
       "then": []

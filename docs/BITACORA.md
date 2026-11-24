@@ -854,6 +854,21 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-14: A story worth reading, instructions that read as instructions
+**Who:** Sonnet (writing), Sonnet (instruction check against the engine), Opus (brief, direction, final read, browser check).
+
+**Why:** Renzo: "the messages are a bit odd and not so worth to read, when instructions are given they are not very clear to be instructions."
+
+**What:**
+- A spine (MASTERPLAN 3.7): the Scribe wrote Folio for a little brother who stopped asking for the next page, and stopped saving because nobody was waiting. The Scribe's notes are now six pages of that story, one per world, and the Last Page pays it off. The plot and the twist are unchanged.
+- The Margin starts with a stake: a row of the village is gone, and Tilde's house with it.
+- A box is either story or instruction, never both. An instruction is the last box, names the place by what is on screen, and has its keys in backticks ("Try this" and keycaps, from P-13). Key explanations moved to the key cards.
+- The HUD no longer repeats keys the objective already shows.
+
+**Instruction check:** every instruction was checked, most by driving the real game, and 11 were wrong or misleading (Lighthouse `8k` from a cell where a wall blocks it; Shaft `3dd` and `.` that never reach the Mason; Gates `Ctrl-d` pressed once instead of four times; others). All fixed. Ledger, Manifest, Harbour, Contract, Study and Last Page hints were checked by reading against their buffers, not by driving each key.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

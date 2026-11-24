@@ -97,10 +97,15 @@ it.each(['11l9x', '12x'])('restores the cut after overcounting %s without losing
   expect(restored.story).toEqual({ ...command.storyCheckpoint, learnedSkills: command.story.learnedSkills });
   expect(restored.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
 });
-it('teaches retry as the last line of Ash’s first dialogue', () => {
-  expect(content.dialogues.find(dialogue => dialogue.id === 'quarry.ash')?.lines.at(-1)).toEqual({
+it('teaches retry in Ash’s first dialogue, before the closing 4x instruction', () => {
+  const lines = content.dialogues.find(dialogue => dialogue.id === 'quarry.ash')?.lines ?? [];
+  expect(lines).toContainEqual({
     speaker: 'npc', name: 'Foreman Ash',
-    text: "Cut too much? :e! puts the whole quarry back.\nNo shame in it. I've done it twice. Today.",
+    text: "Cut too much? `:e!` puts the quarry back.\nNo shame. I've done it twice. Today.",
+  });
+  expect(lines.at(-1)).toEqual({
+    speaker: 'system',
+    text: 'Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone.',
   });
 });
 it('clears at the remapped gate after shortening all three old clear rows', () => {

@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "crates",
-          "objective": "Fill the three crates: eight oil, eight rope, then four of each. Use a count with p.",
+          "objective": "Fill the crates: `\"a8p`, `\"b8p`, `\"a4p`, `\"b4p`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "counter"
@@ -27,16 +27,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The counting house. A clerk makes a fake every\ntwo turns. Fill the three crates before eight."
+          "text": "The counting house. You need three crates filled\nbefore the clerk's fakes reach eight."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: a count before p puts it that many times:\n\"a8p puts what register a holds, eight times."
-        },
-        {
-          "speaker": "npc",
-          "name": "Dot",
-          "text": "Eight! ...eight."
+          "speaker": "system",
+          "text": "On the way down: `\"ayl` on oil, `\"byl` on rope.\nAt a crate: `\"a8p` drops eight oil."
         }
       ],
       "then": []
@@ -83,7 +78,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Yank both on the way down: \"ayl, then \"byl.\nAt the crates: \"a8p, \"b8p, \"a4p, \"b4p."
+          "text": "Yank both on the way down: `\"ayl`, then `\"byl`.\nAt the crates: `\"a8p`, `\"b8p`, `\"a4p`, `\"b4p`."
         }
       ],
       "then": []
@@ -102,7 +97,7 @@
           "line": {
             "speaker": "npc",
             "name": "Clerk",
-            "text": "I lost the row that said which were real.\nSo I copied everything. You copied the truth."
+            "text": "I lost the row that said which were real, so I\ncopied everything. You copied the truth."
           }
         },
         {

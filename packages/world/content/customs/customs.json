@@ -145,7 +145,7 @@
     "<CR>"
   ],
   "hints": [
-    "d keeps what it deletes, so after db, p puts the nets back. \"0p puts your last yank instead.",
-    "\"b before yw names a register: \"byw keeps the rope safe while you carry the oil."
+    "`d` keeps what it deletes, so after `db`, `p` puts the nets back. `\"0p` puts your last yank instead.",
+    "`\"b` before `yw` names a register: `\"byw` keeps the rope safe while you carry the oil."
   ]
 }

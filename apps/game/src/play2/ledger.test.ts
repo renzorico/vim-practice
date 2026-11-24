@@ -11,6 +11,7 @@ import { createSession, LEDGER_COMMANDS, type Session } from './session.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { ScriptPanel, visibleHints } from './ScriptPanel.js';
 import { readProgress, saveProgress } from './progress.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => createElement('div', null, 'FIELD') }));
 const sim = createWorldSim(createEngine());
@@ -127,8 +128,8 @@ it('reveals a hint at 60 keys, then one every 30, capped at five', () => {
   }
   let session = start();
   for (let count = 0; count < 59; count += 1) session = controller.reduce(session, '<Esc>');
-  expect(screen(session)).not.toContain(book.hints[0]);
-  expect(screen(controller.reduce(session, '<Esc>'))).toContain(book.hints[0]);
+  expect(visibleText(screen(session))).not.toContain(plainText(book.hints[0]!));
+  expect(visibleText(screen(controller.reduce(session, '<Esc>')))).toContain(plainText(book.hints[0]!));
 });
 it('validates content, the text-stage map and the raw world replay', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);

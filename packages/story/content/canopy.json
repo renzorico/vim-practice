@@ -25,7 +25,7 @@
       "steps": [
         {
           "id": "canopy",
-          "objective": "Cross the cut bridges. f and a letter jumps to it: fH reaches the ladder.",
+          "objective": "Cross the cut bridges: `fH` reaches the ladder.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "canopy.tier-c"
@@ -34,7 +34,7 @@
         },
         {
           "id": "lift",
-          "objective": "Walk to the lift at the end and press Enter next to it.",
+          "objective": "Ride the lift: stand next to it, press `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "canopy"
@@ -50,11 +50,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Wordwood, a forest grown from words. The\nUnwriter cut the bridges. Cross the canopy."
+          "text": "The Wordwood. You need the ferry, but the\nUnwriter cut every bridge in the canopy."
         },
         {
           "speaker": "system",
-          "text": "Don't walk the gaps. Talk to Fern: she knows a\nfaster way across."
+          "text": "Talk to Fern: stand next to her, press `Enter`.\nShe knows a way across."
         }
       ],
       "then": []
@@ -64,23 +64,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Don't walk off the end. It's a long way\ndown, and the ground doesn't forgive.",
+          "text": "The Unwriter cut every bridge I ever built.\nDon't walk off the end. The ground's far down.",
           "name": "Fern"
         },
         {
-          "speaker": "npc",
-          "text": "Up here we don't walk the gaps. f and a letter\njumps you to the next one on your row.",
-          "name": "Fern"
-        },
-        {
-          "speaker": "npc",
-          "text": "See the ladder at the far end? Press fH. The\ngaps don't matter, only where you land.",
-          "name": "Fern"
-        },
-        {
-          "speaker": "npc",
-          "text": "Knots work too: f* jumps to the next knot (*),\nand ; repeats the find for the one after.",
-          "name": "Fern"
+          "speaker": "system",
+          "text": "On your row, press `fH`: land on the ladder.\nKnots work too: `f*`, then `;` for the next."
         }
       ],
       "then": [
@@ -96,7 +85,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "The Unwriter cut every bridge and never looked\ndown. I don't think it could. Press fH, child.",
+          "text": "It cut every bridge and never looked down.\nKeep your eyes up here, child.",
           "name": "Fern"
         }
       ],
@@ -106,13 +95,13 @@
       "id": "canopy.tier-b",
       "lines": [
         {
-          "speaker": "scribe",
-          "text": "Note: , repeats your last f backward. ; repeats\nit forward. Overshot? Press , to step back."
-        },
-        {
           "speaker": "npc",
           "text": "Back! ...back.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Overshot a jump? Press `,`: it repeats your\nlast `f` backward. `;` repeats it forward."
         }
       ],
       "then": [
@@ -128,7 +117,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Through a knothole: the same wood,\nbut saplings. No canopy at all."
+          "text": "Through a knothole: the same wood, but saplings.\nNo canopy. No bridges to cut."
         }
       ],
       "then": []
@@ -138,7 +127,7 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: thorns (@) past the gap. f@ lands you in\nthem. t@ stops one tile short. Use t@."
+          "text": "Thorns past the gap: press `t@` to stop one\ntile short. `f@` is blocked."
         }
       ],
       "then": [
@@ -164,7 +153,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Don't walk the gaps. f then a letter jumps: fH\nfor the ladder, t@ to stop before the thorns."
+          "text": "Don't walk the gaps. `fH` jumps to the ladder.\n`t@` stops one tile before the thorns."
         }
       ],
       "then": []
@@ -178,7 +167,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Below the canopy, the glades. Something down\nthere is counting. Out loud."
+            "text": "Below the canopy, the glades. Someone down\nthere is counting. Out loud. Every glade."
           }
         }
       ],

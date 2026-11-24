@@ -10,6 +10,7 @@ import { createSession, PORT_COMMANDS, stageCommands, type Session } from './ses
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { saveProgress, readProgress } from './progress.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -115,7 +116,7 @@ it('Ream waits before the clear and gives both through lines afterwards', () => 
   const lines = content.dialogues.find(item => item.id === 'jetty.ream-through')!.lines;
   let session = through;
   for (const line of lines) {
-    expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(session.world.status).toBe('cleared');
@@ -179,7 +180,7 @@ it.each([
   const dialogue = content.dialogues.find(item => item.id === `jetty.${id}`)!;
   for (const [index, line] of dialogue.lines.entries()) {
     expect(session.queue[0]?.index).toBe(index);
-    expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(queued(session)).not.toContain(`jetty.${id}`);

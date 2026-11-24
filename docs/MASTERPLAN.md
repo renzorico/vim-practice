@@ -140,6 +140,32 @@ v1 ships R and D. The lesson under the story is real and useful: what a swap fil
 3. The game never mocks a failed attempt.
 4. Dialogue: max 2 short lines per box. Notes: max 3 sentences plus an example.
 
+### 3.7 The spine: the Scribe's pages
+The Scribe wrote Folio for one reader: their little brother, who asked for the next page every night. He grew up and stopped asking. The Scribe kept writing anyway, a little each night, and stopped saving, because nobody was waiting for it. That is why so much was never saved. Tilde, walking and reading, is the first reader in years.
+
+- Pages, one per world, each adding something the last did not. In each note the page comes first and the key comes last.
+
+| World | Page | Where |
+|---|---|---|
+| Lowlands | 1: the brother asks what is past the sea; the Scribe writes a jetty so he has to wait | `lowlands.note` |
+| Quarry | 2: he liked machines, so the Scribe wrote a quarry | `quarry.note` |
+| Wordwood | 3: he fell asleep before the end; the Scribe finished it for the empty room | `gates.note` |
+| Copper Port | 4: he drew the port himself, badly; the ships are bananas | `jetty.again` |
+| Library | 5: the year he stopped asking, the Scribe kept writing | `stacks.down` |
+| Echo Caves | 6: the Scribe reads it aloud to an empty room, and the room answers | `study.end` |
+
+- The twist is never stated (3.4): no "file", "swap", "crash" or "Vim" said as an explanation. Every seed stays where it is.
+- The Last Page pays it off: when the page is whole the Scribe realises someone has been reading (`last.whole`, `last.door-r`).
+- The Margin's first minute gives Tilde a stake: a row of the village is gone this morning, and Mira's well wall still has room for a third person who is never named.
+- Each world's first box says what Tilde needs there, in one sentence. Each world's last box answers it and opens the next question.
+
+Writing rules for every box (dialogue, objective, hint, death hint):
+1. A box is **story** or **instruction**, never both. An instruction box is the last box of its dialogue and has the form `Where. Keys. What you will see.`
+2. Every key the player must press is in backticks (a backtick key is written doubled: `` `` `a `` ``), and nothing else is. Backticks count toward the 48-character row.
+3. The place is what is on screen and exact: "the last gravel before the rubble", "the last dirt before the water". Count the cells on the map.
+4. Keys a later puzzle asks the player to find are not given away. What a key does in general is the Key card's job, not the dialogue's.
+5. At most 3 boxes per conversation, 2 in an intro. Each named character wants one concrete thing that has nothing to do with Tilde. A verbal habit appears once per dialogue at most. Humour comes from losing work nobody saved.
+
 ## 4. Tech
 
 ```

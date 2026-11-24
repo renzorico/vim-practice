@@ -10,6 +10,7 @@ import { createSession, COUNTER_COMMANDS, STACKS_COMMANDS, stageCommands, type S
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -117,7 +118,7 @@ it.each([false, true])('presents every Quire line exclusively when dusted=%s', d
   const id = dusted ? 'stacks.quire-through' : 'stacks.quire-wait';
   expect(queued(session)).toEqual([id]);
   for (const line of content.dialogues.find(item => item.id === id)!.lines) {
-    expect(screen(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(screen(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(session.story.flags['stacks.through'] === true).toBe(dusted);

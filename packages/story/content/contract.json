@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "contract",
-          "objective": "Rewrite the contract: change names inside quotes (ci\"), words inside brackets (ci(), strike Clause 3 (dap), sign it (cit).",
+          "objective": "Rewrite it: `ci\"`, `ci(`, `dap`, `cit`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "contract"
@@ -60,17 +60,11 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "The founding contract. Our chains began here.\nTime to rewrite it."
+          "text": "The founding contract. Our chains began here.\nYou need it rewritten before we can leave."
         },
         {
-          "speaker": "npc",
-          "name": "Folio",
-          "text": "Change what's inside, not the brackets.\nci\" for quotes, ci( for brackets."
-        },
-        {
-          "speaker": "npc",
-          "name": "Index",
-          "text": "One clause goes: dap. Sign it yourself: stand on\n<name> before cit, or it rewrites everything."
+          "speaker": "system",
+          "text": "Quotes: `ci\"`. Brackets: `ci(`. Clause: `dap`.\nSign it: stand on <name>, then `cit`."
         }
       ],
       "then": []
@@ -108,7 +102,7 @@
           "type": "line",
           "line": {
             "speaker": "system",
-            "text": "Under the Library, the Echo Caves.\nSomething down there is searching too."
+            "text": "Under the Library, the Echo Caves. A hoof, far\nbelow. Something is searching too."
           }
         },
         {

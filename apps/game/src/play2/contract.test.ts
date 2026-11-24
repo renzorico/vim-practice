@@ -59,7 +59,7 @@ it('enters contract after notary.end with statue Q, retained story and the contr
   expect(session.story.clearedStages).toContain('notary');
   expect(session.story.unlockedStages).toContain('contract');
   expect(session.story.quests['library.contract']).toEqual({ step: 0, done: false });
-  expect(storyEngine.objectives(session.story, content)).toContain('Rewrite the contract: change names inside quotes (ci"), words inside brackets (ci(), strike Clause 3 (dap), sign it (cit).');
+  expect(storyEngine.objectives(session.story, content)).toContain('Rewrite it: `ci"`, `ci(`, `dap`, `cit`.');
   expect(keys(session, SHORTER).story.quests['library.contract']).toEqual({ step: 1, done: true });
 });
 

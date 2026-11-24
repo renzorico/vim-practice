@@ -11,6 +11,7 @@ import { sessionSolver } from './solver.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
 import { bufferSize, cameraTarget } from '../scene/camera.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -86,17 +87,17 @@ it.each(['dip}pgg2jyapGP', 'dap}pgg2jyipGP'])('rejects the aisle layout from %s'
 it('plays the exact intro, filed dialogue and ending in order', () => {
   let session = controller.init();
   for (const line of content.dialogues.find(item => item.id === 'archive.intro')!.lines) {
-    expect(markup(session)).toContain(line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(markup(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   session = route(session, archive.solution);
   for (const line of content.dialogues.find(item => item.id === 'archive.filed')!.lines) {
-    expect(markup(session)).toContain(line.text);
+    expect(visibleText(markup(session))).toContain(plainText(line.text));
     session = controller.reduce(session, '<CR>');
   }
   for (const beat of content.cutscenes.find(item => item.id === 'archive.end')!.beats) {
     if (beat.type !== 'line') throw new Error('Expected line');
-    expect(markup(session)).toContain(beat.line.text.replaceAll("'", '&#x27;'));
+    expect(visibleText(markup(session))).toContain(plainText(beat.line.text));
     session = controller.reduce(session, '<CR>');
   }
   expect(markup(session)).toContain('cleared');

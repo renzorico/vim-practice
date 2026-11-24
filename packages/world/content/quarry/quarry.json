@@ -248,7 +248,7 @@
     "<CR>"
   ],
   "hints": [
-    "Stand in front of the rubble and press 4x: 3 stones plus yours.",
-    "At the river's edge, press 5r=: 4 water tiles plus yours."
+    "On the last gravel before the rubble, press `4x`: that gravel plus 3 stones.",
+    "On the last dirt before the river, press `5r=`: that dirt plus 4 water tiles."
   ]
 }

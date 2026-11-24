@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "fetch",
-          "objective": "Mark the fork (ma). Search with / for the crystal (x) and the oil (o), then `a to come back.",
+          "objective": "Mark `ma`, search `/x` and `/o`, return `` `a ``.",
           "completeWhen": {
             "type": "flag",
             "flag": "marked.both",
@@ -21,7 +21,7 @@
         },
         {
           "id": "echo",
-          "objective": "Give them to the Echo: stand next to it and press Enter.",
+          "objective": "Give them to the Echo: next to it, `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "marked"
@@ -37,16 +37,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A fork in the tunnel. A crystal and lamp oil sit\nsealed in the rock. Mark the fork first."
+          "text": "A fork in the tunnel. You need a crystal and\nlamp oil, sealed somewhere in the rock."
         },
         {
-          "speaker": "npc",
-          "name": "Echo",
-          "text": "...crystal. ...oil. ...and back."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: ma marks this spot. `a brings you back\nto it from anywhere. Mark the fork first."
+          "speaker": "system",
+          "text": "At the fork, press `ma`: it marks the spot.\nLater, `` `a `` brings you back from anywhere."
         }
       ],
       "then": []

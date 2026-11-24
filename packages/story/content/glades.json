@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "floor",
-          "objective": "Get down to Pilcrow on the forest floor. G jumps to the last row.",
+          "objective": "Get down to Pilcrow on the floor: `G`.",
           "completeWhen": {
             "type": "flag",
             "flag": "glades.asked",
@@ -19,7 +19,7 @@
         },
         {
           "id": "lamp",
-          "objective": "Light the lamp in the second glade. { climbs one glade at a time.",
+          "objective": "Light the lamp two glades up: `{`, then `{`.",
           "completeWhen": {
             "type": "flag",
             "flag": "glades.lamp",
@@ -29,7 +29,7 @@
         },
         {
           "id": "rope",
-          "objective": "Pull the gate rope at the lookout, the top row. gg jumps there.",
+          "objective": "Pull the rope at the lookout: `gg` jumps there.",
           "completeWhen": {
             "type": "flag",
             "flag": "glades.rope",
@@ -39,7 +39,7 @@
         },
         {
           "id": "gate",
-          "objective": "Go back down to Pilcrow. G jumps to the last row.",
+          "objective": "Go back down to Pilcrow: `G`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "glades"
@@ -55,11 +55,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The glades: a lookout above, thickets below,\nclearings between. Pilcrow waits at the bottom."
+          "text": "The glades. You need Pilcrow, at the bottom,\nto open the gate. Thickets in the way."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: thickets are slow. An empty row is a\nclearing. } jumps to the next one, { back."
+          "speaker": "system",
+          "text": "Thickets are slow. Press `}`: you jump to the\nnext clearing (an empty row). `{` goes back."
         }
       ],
       "then": []
@@ -69,18 +69,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Three glades, four thickets, one child.\nI count everything that comes down.",
+          "text": "Three glades, four thickets, one child. I count\neverything that comes down. The gate's shut.",
           "name": "Pilcrow"
         },
         {
           "speaker": "npc",
-          "text": "The gate is shut. Its rope is at the lookout,\nup top. The lamp in the second glade is dark.",
+          "text": "Its rope is at the lookout, up top. But the lamp\nin the second glade is dark. Lamp first.",
           "name": "Pilcrow"
         },
         {
-          "speaker": "npc",
-          "text": "Lamp first: two glades up from me. Press { to\nclimb one glade at a time.",
-          "name": "Pilcrow"
+          "speaker": "system",
+          "text": "At the bottom, press `{` twice:\nyou climb two glades, up to the dark lamp."
         }
       ],
       "then": [
@@ -96,8 +95,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Two glades up. { then { again. Count them.\nI already have.",
+          "text": "Two glades up. I've counted them twice.",
           "name": "Pilcrow"
+        },
+        {
+          "speaker": "system",
+          "text": "Press `{`, then `{` again."
         }
       ],
       "then": []
@@ -110,13 +113,13 @@
           "text": "You trim the wick. The glade lamp burns."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: gg jumps to the first row, wherever you\nare. Here, that means the lookout."
-        },
-        {
           "speaker": "npc",
           "text": "Top! ...top.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Press `gg` to jump to the lookout, the top row."
         }
       ],
       "then": [
@@ -159,7 +162,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Lamp's lit, one counted. Now the rope at the\nlookout. gg jumps you to the top row.",
+          "text": "Lamp's lit. One counted. Now the rope,\nup at the lookout.",
           "name": "Pilcrow"
         }
       ],
@@ -183,13 +186,13 @@
           "text": "You haul the rope. Far below,\na gate groans open."
         },
         {
-          "speaker": "scribe",
-          "text": "Note: G is gg's twin: it jumps to the last row,\nthe forest floor. Go back down to Pilcrow."
-        },
-        {
           "speaker": "npc",
           "text": "Down! ...down.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Press `G`: you drop to the last row, the forest\nfloor, where Pilcrow waits."
         }
       ],
       "then": [
@@ -215,7 +218,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "One child: down, up, down again. Counted.",
+          "text": "One child: down, up, down again. Counted twice.",
           "name": "Pilcrow"
         },
         {
@@ -247,7 +250,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Skip the thickets: } drops a glade, { climbs\none. gg jumps to the top, G to the floor."
+          "text": "Skip the thickets: `}` drops a glade, `{` climbs\none. `gg` jumps to the top, `G` to the floor."
         }
       ],
       "then": []

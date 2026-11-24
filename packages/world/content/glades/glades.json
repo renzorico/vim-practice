@@ -219,7 +219,7 @@
     "<CR>"
   ],
   "hints": [
-    "} drops to the next clearing. { climbs back to the one above.",
-    "gg jumps to the top row, G to the last. No walking through thickets."
+    "`}` drops to the next clearing. `{` climbs back to the one above.",
+    "`gg` jumps to the top row, `G` to the last. No walking through thickets."
   ]
 }

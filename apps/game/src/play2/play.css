@@ -181,6 +181,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .objective-guide { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--text-muted); margin-top: 8px; }
 .objective-guide--ready, .play-controls output { color: var(--you); }
 .objective-guide kbd, .keycap { font-family: var(--font-mono); }
+.dialogue .keycap, .objective-hud .keycap { padding: 0 0.3em; border: 1px solid var(--line-strong); border-radius: 2px; background: rgb(0 0 0 / 25%); }
 .dialogue--instruction { border-left: 1px solid var(--you); }
 .dialogue__try { color: var(--you); font-weight: 600; }
 .pending-prompt { font-size: 0.875rem; max-width: 32ch; }

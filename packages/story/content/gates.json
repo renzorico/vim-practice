@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "shut",
-          "objective": "Talk to Shut, the keeper asleep at the foot of the tree. Press Enter next to him.",
+          "objective": "Talk to Shut at the foot of the tree: `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.met-shut",
@@ -19,7 +19,7 @@
         },
         {
           "id": "ope",
-          "objective": "Find Ope, Shut's twin at the top. Stand on the ) next to Shut and press %.",
+          "objective": "Find Ope: on the ) under Shut, press `%`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.asked",
@@ -29,7 +29,7 @@
         },
         {
           "id": "lamp-a",
-          "objective": "Light the lower lamp in the trunk. Ctrl-d drops half a screen.",
+          "objective": "Light the lower lamp in the trunk: `Ctrl-d`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-a",
@@ -39,7 +39,7 @@
         },
         {
           "id": "lamp-b",
-          "objective": "Light the upper lamp. Ctrl-u climbs half a screen.",
+          "objective": "Light the upper lamp: `Ctrl-u`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-b",
@@ -49,7 +49,7 @@
         },
         {
           "id": "tell",
-          "objective": "Go back down to Shut and tell him about the lamps. G jumps to the last row.",
+          "objective": "Tell Shut: `G`, walk next to him, `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.shut-ready",
@@ -59,7 +59,7 @@
         },
         {
           "id": "open",
-          "objective": "Go back up to Ope: stand on the ) next to Shut and press %.",
+          "objective": "Go back up to Ope: on the ) under Shut, press `%`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gates"
@@ -75,7 +75,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A hollow tree, taller than the canopy. At its\nfoot, a gate and a sleeping keeper."
+          "text": "A hollow tree, taller than the canopy. You need\nthe gate at its foot, and its keeper is asleep."
         }
       ],
       "then": []
@@ -85,18 +85,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Gate's shut. It takes two to open,\nand there is only me.",
+          "text": "Gate's shut. It takes two to open, and there's\nonly me. A bracket with no partner is an error.",
           "name": "Shut"
         },
         {
           "speaker": "npc",
-          "text": "A bracket with no partner is an error.\nSo I am an error. I've made my peace.",
+          "text": "Don't believe me? Go on. Nothing will happen.",
           "name": "Shut"
         },
         {
-          "speaker": "npc",
-          "text": "Don't believe me? Stand on the ) next to me and\npress %. Go on. Nothing will happen.",
-          "name": "Shut"
+          "speaker": "system",
+          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to its partner, at the top."
         }
       ],
       "then": [
@@ -123,7 +122,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The top. % jumped from Shut's ) to this ( : its\npartner. So there is another keeper."
+          "text": "The top. You jumped from Shut's ) to this (, its\npartner. So there's another keeper."
         }
       ],
       "then": []
@@ -133,26 +132,17 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "A visitor! From below? Nothing's below.\nI open. Nobody shuts. That's the tragedy.",
+          "text": "A visitor? From below? Nothing's below. I open,\nnobody shuts. That's the tragedy.",
           "name": "Ope"
         },
         {
           "speaker": "npc",
-          "text": "A brother? If I had a brother, the trunk\nlamps would be lit. They're dark.",
+          "text": "A brother? Light the trunk lamps and I'll\nbelieve you. Lower one first, then the upper.",
           "name": "Ope"
-        },
-        {
-          "speaker": "npc",
-          "text": "Light them and I'll believe you. Lower one\nfirst, then the upper. Flame climbs.",
-          "name": "Ope"
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: Ctrl-d drops half a screen, Ctrl-u climbs\nhalf a screen. The landings sit that far apart."
         },
         {
           "speaker": "system",
-          "text": "The trunk is hollow. Stand over the hollow\nfirst, then press Ctrl-d."
+          "text": "Stand over the hollow, top of the trunk. Press\n`Ctrl-d` four times: down to the lower lamp."
         }
       ],
       "then": [
@@ -168,7 +158,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Lower lamp, then upper. Then ask the\nnobody down there what he sees.",
+          "text": "Lower lamp, then upper. Then ask the nobody\ndown there what he sees.",
           "name": "Ope"
         }
       ],
@@ -179,7 +169,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The lower lamp catches.\nNow the upper one: Ctrl-u climbs."
+          "text": "The lower lamp catches."
+        },
+        {
+          "speaker": "system",
+          "text": "Now the upper lamp. Press `Ctrl-u` twice:\nhalf a screen up each time."
         }
       ],
       "then": [
@@ -265,7 +259,7 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Light. In the trunk. Someone lit the\nupper lamp. You can't reach it from here.",
+          "text": "Light, in the trunk. Someone lit the upper\nlamp. You can't reach it from here.",
           "name": "Shut"
         },
         {
@@ -275,7 +269,7 @@
         },
         {
           "speaker": "npc",
-          "text": "Tell him: on three. I never stopped\ncounting. I only stopped believing.",
+          "text": "Tell him: on three. I never stopped counting.\nI only stopped believing.",
           "name": "Shut"
         }
       ],
@@ -297,8 +291,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Go on. My mark, and %.\nOn three.",
+          "text": "Go on. Up you go. On three.",
           "name": "Shut"
+        },
+        {
+          "speaker": "system",
+          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to Ope's (."
         }
       ],
       "then": []
@@ -334,11 +332,11 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: a sealed room, and you're inside it. %\njumps to the partner of the mark you stand on."
+          "text": "Page 3. He fell asleep before the end of this\nchapter. I finished it for the empty room."
         },
         {
-          "speaker": "scribe",
-          "text": "Brackets nest: the inner pair closes first.\nStand on the ( here, press %, and you're out."
+          "speaker": "system",
+          "text": "Brackets nest: the inner pair closes first.\nStand on the ( here and press `%`: you're out."
         }
       ],
       "then": []
@@ -358,7 +356,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Blot on the landing! Wait for it to step aside,\nthen Ctrl-u or Ctrl-d to cross half a screen."
+          "text": "Blot on the landing! Wait for it to step aside,\nthen `Ctrl-u` or `Ctrl-d`: half a screen."
         }
       ],
       "then": []
@@ -617,7 +615,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "The Scribe came through when we were one.\nLeft a line on the hinge. Look.",
+            "text": "The Scribe came through when we were one gate.\nLeft a line on the hinge. Look.",
             "name": "Ope"
           }
         },

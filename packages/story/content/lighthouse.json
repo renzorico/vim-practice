@@ -9,7 +9,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Climb in big moves: 8k goes up 8 rows at once.\nw and 0 jump along a row."
+          "text": "Climb in big jumps: `8k` goes up eight rows.\n`w` and `0` jump along a row."
         }
       ],
       "then": []
@@ -19,7 +19,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Inside the Lighthouse. Climb the stairs to the\ntop: someone up there is crying."
+          "text": "Inside the Lighthouse. You need the lamp, at the\ntop: someone up there is crying."
+        },
+        {
+          "speaker": "system",
+          "text": "At the foot of the stairs, press `8k`:\neight rows up in one move."
         }
       ],
       "then": []
@@ -29,7 +33,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Unwriter! It deletes the floor under you,\nrow by row. Climb! Counts help: 8k = 8 up."
+          "text": "The Unwriter! It wipes the floor under you,\nrow by row."
+        },
+        {
+          "speaker": "system",
+          "text": "Keep climbing: counts like `3k` skip rows in\none move."
         }
       ],
       "then": [
@@ -169,12 +177,12 @@
       "lines": [
         {
           "speaker": "npc",
-          "text": "Who's there?... He took a row of my light.\nI can't read the words to light the lamp.",
+          "text": "Who's there? The Unwriter took a row of my\nlight. I can't read the words to light the lamp.",
           "name": "The Lamplighter"
         },
         {
           "speaker": "npc",
-          "text": "Tilde?... Then read them to me. Quick!\nThere... there... it catches. Thank you.",
+          "text": "Tilde? Then read them to me. Quick!\nThere... there... it catches. Thank you.",
           "name": "The Lamplighter"
         }
       ],
@@ -253,7 +261,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "The Scribe stayed here three nights ago...\nCarved a line in my wall. Look.",
+            "text": "The Scribe stayed here three nights ago.\nCarved a line in my wall. Look.",
             "name": "The Lamplighter"
           }
         },
@@ -265,7 +273,7 @@
           "type": "line",
           "line": {
             "speaker": "npc",
-            "text": "Means nothing to me... Maybe to you.\nThe road goes on, past the sea.",
+            "text": "Means nothing to me. Maybe to you. The road\ngoes on, south, to a quarry. Ask who's building.",
             "name": "The Lamplighter"
           }
         },

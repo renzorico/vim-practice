@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "ledge",
-          "objective": "Cross the ledge. Stand on it: dd deletes the Blots' row, u brings the ledge back.",
+          "objective": "Clear the Blots: `dd` on the ledge, then `u`.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "cut.far"
@@ -18,7 +18,7 @@
         },
         {
           "id": "dot",
-          "objective": "Walk to the cage at the end of the ledge. Press Enter next to it.",
+          "objective": "Open the cage: stand next to it, press `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "cut.dot-free",
@@ -35,7 +35,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Cut: a ledge over a long drop. Someone is\ncrying at the far end. Cross it."
+          "text": "The Cut: a ledge over a long drop. Someone is\ncrying in a cage at the far end. Reach it."
         }
       ],
       "then": []
@@ -45,15 +45,11 @@
       "lines": [
         {
           "speaker": "scribe",
-          "text": "Note: dd deletes the row you stand on, and\neverything on it. Blots included."
+          "text": "That cage is mine. I drew something small in\nit and never came back to finish."
         },
         {
           "speaker": "scribe",
-          "text": "Note: u undoes your last change. The ledge\ncomes back. The Blots do not."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Three Blots sit on the cage. Delete their row\nwith dd, then press u to rebuild the ledge."
+          "text": "I always did that. Start a page, leave it\nunsaved, swear I'll be back by morning."
         }
       ],
       "then": [
@@ -74,7 +70,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Blots pour onto the ledge, crawling along your\nrow. Delete the row (dd), then undo (u)."
+          "text": "Blots pour onto the ledge, crawling along\nyour row. Nowhere to run."
+        },
+        {
+          "speaker": "system",
+          "text": "Press `dd`: your row, Blots and all, is wiped.\nThen `u`: the ledge comes back, they don't."
         }
       ],
       "then": [
@@ -215,7 +215,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Stand on the ledge, press dd to wipe the Blots\nin your row, then u to bring the ledge back."
+          "text": "On the ledge, press `dd` to wipe the Blots in\nyour row. Then `u` to bring the ledge back."
         }
       ],
       "then": []
@@ -225,7 +225,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Dot hops after you. Below, the sound of stone\non stone: someone still building."
+          "text": "Dot hops after you. Below, stone on stone:\nsomeone down there is still building."
         }
       ],
       "then": []

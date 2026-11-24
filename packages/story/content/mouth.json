@@ -26,7 +26,7 @@
       "steps": [
         {
           "id": "crystals",
-          "objective": "Light the three sealed crystals, deepest first: ?x then Enter, then n.",
+          "objective": "Light the crystals, deepest first: `?x` `Enter`, then `n`.",
           "completeWhen": {
             "type": "flag",
             "flag": "mouth.top",
@@ -36,7 +36,7 @@
         },
         {
           "id": "echo",
-          "objective": "Talk to the Echo beside the top crystal. Press Enter next to it.",
+          "objective": "Talk to the Echo by the top crystal: `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "mouth"
@@ -52,16 +52,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Echo Caves. Too dark to see anything, and\nthe crystals are sealed in the rock."
+          "text": "The Echo Caves, pitch dark. You need the study,\nand the crystals that show it are sealed."
         },
         {
-          "speaker": "npc",
-          "name": "Echo",
-          "text": "...study. ...study."
-        },
-        {
-          "speaker": "scribe",
-          "text": "Note: ?x then Enter searches backward for an x\n(a crystal). n repeats it: the next one up."
+          "speaker": "system",
+          "text": "From the mouth, press `?x`, then `Enter`:\nthe deepest crystal. Then `n` for the next."
         }
       ],
       "then": []
@@ -113,12 +108,12 @@
         {
           "speaker": "npc",
           "name": "Echo",
-          "text": "You found me without seeing me. That's how\nthe Scribe found things too."
+          "text": "You found me without seeing me. The Scribe was\ngood at that. Say something? I'll say it back."
         },
         {
           "speaker": "npc",
           "name": "Echo",
-          "text": "The Scribe's words echo through the gallery.\nFollow the right one."
+          "text": "The Scribe's words echo through the gallery.\nThe right ones come back twice. Follow them."
         }
       ],
       "then": [
