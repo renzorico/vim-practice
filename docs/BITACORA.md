@@ -902,6 +902,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-16: The Scribe's notebook (new keys, when you need them, and you try them)
+**Who:** Sonnet (start, stopped by its usage limit), Codex (build, fix round), Sonnet (review), Opus (brief, fixes, browser check).
+
+**Why:** Renzo: "the 'your new keys' page is poorly designed, it needs to be scrolled up/down... appears out of nowhere, needs some redesign, I like the idea tho."
+
+**What:** The black "Your new keys" page is gone. A page of the Scribe's notebook slides up over the dimmed game right after the dialogue that first names a key. One lesson per page, no scrolling, at most two in a row, each shown once per save. Tilde tries it first, then the player does, on a strip of that stage's own tiles driven by the real engine: `h j k l` around a square of path, `4x` on three stones, `5r=` across four water tiles, `w` over stepping stones. Keys without an authored lesson use their help example.
+
+**Review fixes:** on layouts that need Option or AltGr the practice ignored `{ }` (the game and the notebook now share one key reader, `input/keyReader.ts`); focus no longer sits on a button that Space could press; the page limit counts pages, not keys; Tab behind an open page does nothing.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

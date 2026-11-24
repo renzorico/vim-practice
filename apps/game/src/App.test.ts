@@ -1,5 +1,11 @@
 import { Prologue, PrologueScene } from './prologue/Prologue.js';
 import { CAPTIONS, AUTO_WAIT_MS, CHARACTERS_PER_SECOND } from './prologue/data.js';
+import { lessonFor, lessonKeys } from './play2/notebook/lessons.js';
+import { keyCardEntries } from './play2/introducedAt.js';
+import { track, dismissed, type Tracker } from './play2/notebook/queue.js';
+import { clearSeenKeys, readSeenKeys, markKeysSeen, KEYS_SEEN_KEY } from './play2/notebook/seen.js';
+import { HELP_KEYS } from './play2/help/keys.js';
+import { openPage, pressKey } from './play2/notebook/pageModel.js';
 import { WorldBanner, BANNER_DURATION_MS } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import type { HelpKey } from './play2/help/keys.js';
@@ -59,7 +65,7 @@ vi.mock('react', async importOriginal => {
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
 import { App } from './App.js';
-import { content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy, glades } from './play2/content.js';
+import { stages, content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy, glades } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
 
@@ -100,6 +106,15 @@ function skipIntroForPlaythrough(): void {
     window.dispatchEvent(new KeyEvent('Escape')); flush();
   }
 }
+let notebookTracker: Tracker | null = null;
+function observeNotebook(): void {
+  const current = hooks.session;
+  if (!current) return;
+  const stage = stages.find(item => item.stage.id === current.world.stage)?.stage;
+  if (!stage) return;
+  notebookTracker = track(notebookTracker, current, { stage, content,
+    candidates: keyCardEntries(stage.id, current.story).map(entry => entry.key), seen: readSeenKeys() });
+}
 function flush(): void {
   for (let count = 0; count < 20; count += 1) {
     hooks.dirty = false; hooks.cursor = 0; appTree = App();
@@ -112,7 +127,7 @@ function flush(): void {
     introTree = undefined;
     if (prologue) { hooks.cursor = 1000; introTree = Prologue(prologue.props); }
     hooks.pending.splice(0).forEach(run => run());
-    if (!hooks.dirty) return;
+    if (!hooks.dirty) { observeNotebook(); return; }
   }
   throw new Error('Hooks did not settle');
 }
@@ -130,10 +145,12 @@ beforeEach(() => {
   vi.useFakeTimers();
   hooks.cursor = 0; hooks.dirty = false; hooks.values.clear(); hooks.effects.clear(); hooks.pending.length = 0; hooks.session = undefined;
   autoSkipIntro = true; mountedIntroKey = undefined; introTree = undefined;
+  notebookTracker = null; clearSeenKeys();
   values = new Map();
   vi.stubGlobal('window', new WindowEvents({ getItem: key => values.get(key) ?? null,
     setItem: (key, value) => { values.set(key, value); }, removeItem: key => { values.delete(key); } }));
   vi.stubGlobal('HTMLElement', class {});
+  clearSeenKeys(); notebookTracker = null;
 });
 afterEach(() => {
   hooks.effects.forEach(effect => effect.cleanup?.()); vi.unstubAllGlobals(); vi.useRealTimers(); vi.restoreAllMocks();
@@ -161,7 +178,9 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   const story = createStoryEngine().init(content);
   const saved = { stage: 'lowlands', story: { ...story, flags: { 'lowlands.knows-w': true, 'lowlands.intro-seen': true } } };
   values.set(PROGRESS_KEY, JSON.stringify(saved));
+  values.set(KEYS_SEEN_KEY, '["w"]');
   flush(); key('Enter');
+  expect(readSeenKeys().has('w')).toBe(true);
   expect(session().world.stage).toBe('lowlands');
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(session().queue).toEqual([]);
@@ -243,10 +262,31 @@ it('Continue restores a Lowlands save and j / Enter chooses New game and replace
   key('Enter');
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
+  expect(readSeenKeys().size).toBe(0);
   expect(JSON.parse(values.get(PROGRESS_KEY) ?? '{}')).toMatchObject({ stage: 'margin' });
 });
 function dismiss(): void {
-  for (let lines = 0; !stageMenuProps(appTree) && (session().queue.length || session().clearCard) && (session().clearCard || session().queue[0]?.type !== 'ending') && lines < 100; lines += 1) key('Enter');
+  // App's lightweight harness does not mount child components. Drive the notebook's
+  // real queue and engine here; Notebook.test covers its actual keyboard listener.
+  for (let lines = 0; lines < 100 && !stageMenuProps(appTree); lines += 1) {
+    const group = notebookTracker?.queue.group;
+    if (group) {
+      const before = session();
+      expect(group.length).toBeLessThanOrEqual(2);
+      for (const name of group) {
+        const entry = HELP_KEYS.find(item => item.key === name);
+        if (!entry) throw new Error(`Missing notebook example ${name}`);
+        const lesson = lessonFor(entry);
+        const completed = lesson.example.keys.reduce(pressKey, openPage(lesson, true));
+        expect(completed.phase).toBe('done');
+      }
+      markKeysSeen(group.flatMap(lessonKeys));
+      notebookTracker = notebookTracker ? { ...notebookTracker, queue: dismissed(notebookTracker.queue) } : null;
+      expect(session()).toBe(before);
+    }
+    if (!(session().queue.length || session().clearCard) || (!session().clearCard && session().queue[0]?.type === 'ending')) break;
+    key('Enter');
+  }
 }
 function play(input: readonly string[]): void {
   for (const value of input) {

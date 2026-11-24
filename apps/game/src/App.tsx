@@ -1,5 +1,6 @@
 import { Prologue } from './prologue/Prologue.js';
 import { CurrentWorld } from './prologue/WorldMap.js';
+import { clearSeenKeys } from './play2/notebook/seen.js';
 import { SPRITES } from './scene/sprites/index.js';
 import { WORLD_PALETTES } from './scene/palette.js';
 import { groundArt } from './scene/terrain/art.js';
@@ -15,7 +16,7 @@ import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } 
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
-import { shouldLeaveToBrowser } from './input/capture.js';
+import { modalOpen, shouldLeaveToBrowser } from './input/capture.js';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
@@ -83,7 +84,7 @@ export function App() {
     setIntro(null);
     if (intro !== 'new') return;
     banner.reset();
-    dispatch({ type: 'new', best: saved?.best });
+    clearSeenKeys(); dispatch({ type: 'new', best: saved?.best });
     setSaved(null); setClearedSince([]); setReplayStage(null); setShowSource(false); setStarted(true);
   }, [intro, saved, banner.reset]);
   const openStages = useCallback(() => {
@@ -176,7 +177,7 @@ export function App() {
           }
         } else if (event.key === ':' || helpCommand !== null) onKey(event.key === 'Enter' ? '<CR>' : event.key);
         else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
-      } else if (started && event.key === 'Tab' && !browserKey) {
+      } else if (started && event.key === 'Tab' && !browserKey && !modalOpen()) {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
       }
     };

@@ -7,6 +7,9 @@ export interface TargetLike {
 
 const FORM_CONTROLS: ReadonlySet<string> = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 const ACTIVATABLE: ReadonlySet<string> = new Set(['BUTTON', 'A', 'SUMMARY']);
+/** True while a modal dialog is open: it owns the keyboard, so the screen behind must not react. */
+export const modalOpen = (): boolean => typeof document !== 'undefined'
+  && typeof document.querySelector === 'function' && document.querySelector('[aria-modal="true"]') !== null;
 /** Keys a focused button or link uses natively. */
 const NATIVE_ACTIVATION_KEYS: ReadonlySet<string> = new Set(['Enter', ' ']);
 
