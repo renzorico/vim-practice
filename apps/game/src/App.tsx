@@ -238,7 +238,7 @@ export function App() {
   // Replays run on the story from before the clear, so remember what this game has cleared since.
   const clearedStages = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
-    {banner.visible && <WorldBanner world={banner.visible} onDismiss={() => { banner.dismiss(); }} />}
+    {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
     onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
 }

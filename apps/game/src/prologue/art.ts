@@ -1,6 +1,7 @@
 import type { WorldId } from '@escape/world';
 import { legend as marginLegend } from '../play2/content.js';
-import { paintSprite, paintTableau } from '../scene/terrain/tableau.js';
+import { treeArt } from '../scene/terrain/forest.js';
+import { paintPixels, paintSprite, paintTableau } from '../scene/terrain/tableau.js';
 import { WORLD_PALETTES } from '../scene/palette.js';
 import { WORLDS } from './data.js';
 
@@ -40,6 +41,12 @@ export const VIGNETTE_TILES: Readonly<Record<WorldId, readonly string[]>> = {
   'echo-caves': ['cave-floor', 'cave-rock', 'crystal-lit', 'crystal-dark', 'crystal-ledge'],
   'last-page': ['page-paper', 'page-paper', 'page-margin', 'page-corner'],
 };
+/** One tile of a place's picture; a tree stands alone here, so it is the lone tree of the field. */
+function paintTile(brush: CanvasRenderingContext2D, name: string, world: WorldId, x: number, y: number): void {
+  if (name !== 'tree') { paintSprite(brush, name, x, y); return; }
+  paintPixels(brush, treeArt(world, 0, 0), x, y);
+  paintPixels(brush, treeArt(world, 0, 0, true), x, y - TILE / 2);
+}
 const hex = (value: number): string => `#${value.toString(16).padStart(6, '0')}`;
 function surface(width: number, height: number): HTMLCanvasElement | null {
   if (typeof document === 'undefined') return null;
@@ -71,7 +78,7 @@ function prepare(): ArtCache | null {
     if (!strip || !brush) return village;
     brush.fillStyle = hex(WORLD_PALETTES[world].ground); brush.fillRect(0, 0, 32, 48);
     const tiles = VIGNETTE_TILES[world];
-    for (let index = 0; index < tiles.length; index++) paintSprite(brush, tiles[index] ?? '', index % 2 * TILE, Math.floor(index / 2) * TILE);
+    for (let index = 0; index < tiles.length; index++) paintTile(brush, tiles[index] ?? '', world, index % 2 * TILE, Math.floor(index / 2) * TILE);
     return strip;
   });
   const vignettes = WORLDS.map(world => {
@@ -81,11 +88,11 @@ function prepare(): ArtCache | null {
     const tiles = VIGNETTE_TILES[world];
     paintSprite(brush, tiles[0] ?? '', 0, 24); paintSprite(brush, tiles[1] ?? '', 24, 24);
     if (world === 'margin') {
-      paintSprite(brush, 'house-roof', 4, 4); paintSprite(brush, 'house-wall', 4, 20); paintSprite(brush, 'tree', 22, 12);
+      paintSprite(brush, 'house-roof', 4, 4); paintSprite(brush, 'house-wall', 4, 20); paintTile(brush, 'tree', world, 22, 16);
     } else if (world === 'last-page') {
       brush.fillStyle = PAPER; brush.fillRect(7, 3, 26, 34); paintSprite(brush, 'page-corner', 17, 3);
     } else {
-      paintSprite(brush, tiles[2] ?? '', 4, 8); paintSprite(brush, tiles[3] ?? '', 20, 12); paintSprite(brush, tiles[4] ?? '', 12, 24);
+      paintTile(brush, tiles[2] ?? '', world, 4, 12); paintSprite(brush, tiles[3] ?? '', 20, 12); paintSprite(brush, tiles[4] ?? '', 12, 24);
     }
     return tile;
   });
