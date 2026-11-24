@@ -13,6 +13,7 @@ import { erasedArt, erasedColumn } from './erased.js';
 import { treeArt, treeMask, treeVariant } from './forest.js';
 import { decorationAt, groundVariant, positionHash } from './life.js';
 import { outlineArt } from './outline.js';
+import { stairsAt } from './stairs.js';
 import { replacesGround, substrate, surface } from './surfaces.js';
 import { paintPixels, TABLEAU_TILE, type Brush } from './tableau.js';
 
@@ -74,7 +75,7 @@ export function paintStage(brush: Brush, stage: Stage, legend: Legend, view: Pic
     if (group === 'object') floor(substrate(rows, at, legend), variant, x, y);
     if (building) { paintPixels(brush, buildingArt(building, line - building.line, col - building.col), x, y); return; }
     if (tile.sprite === 'tree') { paintPixels(brush, treeArt(world, treeMask(rows, line, col, legend, forest), treeVariant(line, col)), x, y); return; }
-    const name = FIELD_SPRITE[tile.sprite] ?? tile.sprite;
+    const name = stairsAt(stage.id, rows, legend, line, col) ? 'stairs' : FIELD_SPRITE[tile.sprite] ?? tile.sprite;
     if (replacesGround(tile)) paintPixels(brush, groundArt(world, variant, decorationAt(tile, line, col)), x, y);
     else if (group === 'paper') paintPixels(brush, [fill(palette.paper)], x, y);
     else paintArt(brush, name, name === 'blank' ? blankEdges(rows, line, col) : positionHash(line, col) % (SPRITES[name]?.frames.length ?? 1), x, y);

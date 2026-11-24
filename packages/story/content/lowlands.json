@@ -39,7 +39,7 @@
         },
         {
           "id": "lamp",
-          "objective": "Climb the Lighthouse to whoever is crying.",
+          "objective": "Climb the Lighthouse to whoever is crying: `8k`.",
           "completeWhen": {
             "type": "flag",
             "flag": "lighthouse.lit",

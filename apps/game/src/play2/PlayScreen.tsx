@@ -1,5 +1,5 @@
 import { KeyText } from './KeyText.js';
-import { activeGuide } from './guides.js';
+import { activeGuide, guideApplies } from './guides.js';
 import { useNotebookDucking } from './notebook/musicDucking.js';
 import { Notebook } from './notebook/Notebook.js';
 import { useNotebook } from './notebook/useNotebook.js';
@@ -81,7 +81,8 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   const canShowObjective = !darkness && stage.type !== 'text' && !script
     && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
-  const guide = activeGuide(content, session.story);
+  const active = activeGuide(content, session.story);
+  const guide = active && guideApplies(active, activeEngine.cursor) ? active : null;
   const visibleGuide = session.queue.length === 0 && !session.clearCard && !showKeyCard && world.status === 'playing' ? guide : null;
   const mapGuide = canShowObjective ? visibleGuide : null;
   const positioned = Boolean(visibleGuide?.standAt?.some(at => at.line === activeEngine.cursor.line && at.col === activeEngine.cursor.col));

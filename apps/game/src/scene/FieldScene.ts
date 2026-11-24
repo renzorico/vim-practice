@@ -1,5 +1,6 @@
 import { movementFacing, playerFrame, isPerson, npcFacing, personIdleFrame, interactionLabel, slipPosition, type Facing } from './characters.js';
 import { treeArt, treeMask, treeVariant } from './terrain/forest.js';
+import { stairsAt } from './terrain/stairs.js';
 import { surroundingFor } from './terrain/atmosphere.js';
 import { erasedArt, erasedColumn } from './terrain/erased.js';
 import { findBuildings, intactBuildings, buildingAt, buildingArt, type Building } from './terrain/buildings.js';
@@ -407,8 +408,10 @@ export class FieldScene extends Phaser.Scene {
       const graphics = this.make.graphics({ x: 0, y: 0 });
       graphics.fillStyle(color);
       if (shape === 'stand' || shape === 'stand-ready') {
+        // A tinted cell in a two-tone frame: it reads on grass, on pale stone and on paper.
+        graphics.fillStyle(color, 0.18).fillRect(2, 2, TILE_SIZE - 4, TILE_SIZE - 4);
         for (let pixel = 1; pixel < TILE_SIZE - 1; pixel++) {
-          if (shape === 'stand' && pixel % 4 >= 2) continue;
+          graphics.fillStyle(shape === 'stand' && pixel % 4 >= 2 ? ARROW_OUTLINE : color);
           graphics.fillRect(pixel, 1, 1, 1); graphics.fillRect(pixel, TILE_SIZE - 2, 1, 1);
           graphics.fillRect(1, pixel, 1, 1); graphics.fillRect(TILE_SIZE - 2, pixel, 1, 1);
         }
@@ -426,6 +429,9 @@ export class FieldScene extends Phaser.Scene {
         graphics.fillStyle(color);
         for (let row = 0; row < 5; row++) graphics.fillRect(3 + row, 5 + row, TILE_SIZE - 6 - row * 2, 1);
       } else {
+        graphics.fillStyle(ARROW_OUTLINE, 0.6).fillRect(0, 0, TILE_SIZE, 1).fillRect(0, TILE_SIZE - 1, TILE_SIZE, 1)
+          .fillRect(0, 1, 1, TILE_SIZE - 2).fillRect(TILE_SIZE - 1, 1, 1, TILE_SIZE - 2);
+        graphics.fillStyle(color);
         graphics.fillRect(1, 1, TILE_SIZE - 2, 1);
         graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
         graphics.fillRect(1, 1, 1, TILE_SIZE - 2);
@@ -754,6 +760,7 @@ export class FieldScene extends Phaser.Scene {
       if (sprite === 'crystal-dark' && stageLights(this.frame.stage).some(crystal => crystal.at.line === line && crystal.at.col === col && this.frame.state.flags[crystal.flag])) sprite = 'crystal-lit';
       if (sprite.startsWith('rune-lever-') && stageLights(this.frame.stage).some(lever => lever.at.line === line && lever.at.col === col && this.frame.state.flags[lever.flag])) sprite += '-lit';
       if (sprite === 'lamp' && this.frame.state.flags['lighthouse.lit']) sprite = 'lamp-lit';
+      if (!this.frame.showSource && stairsAt(this.frame.stage.id, this.frame.state.engine.lines, this.frame.legend, line, col)) sprite = 'stairs';
       if (sprite === 'house-wall' && char === 'H' && this.frame.state.engine.lines[line - 1]?.charAt(col) !== 'H') sprite = 'house-roof';
       const variant = sprite === 'blank' ? blankEdges(this.frame.state.engine.lines, line, col)
         : (sprite === 'port-water' || sprite === 'water' || sprite === 'river' || sprite === 'chasm' || sprite === 'fake') ? (this.reducedMotion ? 0 : this.idleFrame)

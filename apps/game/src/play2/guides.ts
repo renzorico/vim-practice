@@ -7,6 +7,8 @@ export interface Guide {
   /** Press these here, in order; or just the tools for a puzzle whose steps the player works out. */
   readonly kind: 'do' | 'use';
   readonly standAt?: readonly Position[];
+  /** The part of the map the guide is about; past it, the step goes on without one. */
+  readonly within?: { readonly from: Position; readonly to: Position };
 }
 
 const cell = (line: number, col: number): Position => ({ line, col });
@@ -26,6 +28,7 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
   'lowlands.lighthouse': {
     cross: guide(['w'], [cell(7, 13), cell(7, 14), cell(7, 18), cell(7, 22), cell(7, 23)]),
     lighthouse: guide(['$'], [cell(11, 40)]),
+    lamp: { ...guide(['8', 'k'], [cell(25, 1), cell(17, 1)]), within: { from: cell(12, 0), to: cell(25, 20) } },
   },
   'quarry.road': {
     cut: guide(['4', 'x'], [cell(6, 15)]),
@@ -59,6 +62,11 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
 
 export function guideFor(questId: string, stepId: string): Guide | null {
   return GUIDES[questId]?.[stepId] ?? null;
+}
+
+export function guideApplies(guide: Guide, at: Position): boolean {
+  const { within } = guide;
+  return !within || at.line >= within.from.line && at.line <= within.to.line && at.col >= within.from.col && at.col <= within.to.col;
 }
 
 /** Match the HUD's first active main quest. Derived; never stored on a session. */

@@ -64,13 +64,14 @@ it('l bumps into blank; w leaps each gap, b returns, and the far-side trigger ad
   expect(session.world.engine.cursor.col).toBe(13);
   session = keys(session, ['w','w','w']);
   expect(session.world.engine.cursor.col).toBe(26);
+  // The last stone already counts as across: the next objective shows before the player tries one `w` too many.
+  expect(session.world.firedTriggers).toContain('lowlands.far-side');
+  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
   session = controller.reduce(session, 'w');
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 26 });
   expect(session.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
   session = keys(session, ['l']);
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 27 });
-  expect(session.world.firedTriggers).toContain('lowlands.far-side');
-  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
 });
 function jetty(): Session {
   const read = dismiss(controller.reduce(move(startLowlands(), 11, 38), '<CR>'));

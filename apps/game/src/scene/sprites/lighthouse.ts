@@ -13,6 +13,9 @@ export const LAMPLIGHTER: PixelSprite = CHARACTER_FIELDS.lamplighter;
 /** Worn slabs: warm seams that stay under whoever stands on them. */
 export const STONE_FLOOR: PixelSprite = { palette, frames: [grid((x, y) =>
   y % 8 === 7 || (x + (y < 8 ? 0 : 8)) % 16 === 15 ? 'F' : grain(x, y, 2) < 4 ? 'F' : grain(x, y, 5) < 3 ? 'h' : 'f')] };
+/** Four treads going up, each lit along its edge. */
+export const STAIRS: PixelSprite = { palette, frames: [grid((x, y) =>
+  x === 0 || x === 15 ? 'k' : y % 4 === 0 ? 'h' : y % 4 === 3 ? 'k' : y < 8 ? 'F' : 'f')] };
 export const TOWER_WALL: PixelSprite = { palette, frames: [[
   'kkkkkkkkkkkkkkkk', 'kbbbbbbbkbbbbbbk', 'kbffffbbkbbfffbb', 'kbbbbbbbkbbbbbbk',
   'kkkkkkkkkkkkkkkk', 'bbbkbbbbbbbbkbbb', 'bfbkbbffffbbkbfb', 'bbbkbbbbbbbbkbbb',
