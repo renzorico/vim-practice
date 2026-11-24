@@ -17,16 +17,16 @@ export const HOOFPRINT = art((x, y) => {
     && x >= left && x <= left + 4 && x !== left + 2
     && (y > top || x === left + 1 || x === left + 3);
   return hoof(2, 3) || hoof(9, 8) ? 'k'
-    : hoof(2, 2) || hoof(9, 7) ? 'm' : CAVE_ROCK.frames[0]?.[y]?.[x] ?? 'd';
+    : hoof(2, 2) || hoof(9, 7) ? 'c' : CAVE_ROCK.frames[0]?.[y]?.[x] ?? 'd';
 });
 const RUNES: Readonly<Record<string, readonly string[]>> = {
   x: ['101', '010', '101'], y: ['101', '010', '010'], z: ['111', '010', '111'],
 };
 function lever(rune: string, lit: boolean): PixelSprite {
   return art((x, y) => {
-    if (y >= 3 && y <= 5 && RUNES[rune]?.[y - 3]?.[x - 6] === '1') return lit ? 'w' : 'v';
+    if (y >= 3 && y <= 5 && RUNES[rune]?.[y - 3]?.[x - 6] === '1') return lit ? 'w' : 'c';
     if (y >= 8 && y <= 13 && x >= 3 && x <= 12) return y === 8 ? 'm' : y === 13 ? 'k' : 's';
-    if (x >= (lit ? 9 : 5) && x <= (lit ? 10 : 6) && y >= 6 && y <= 10) return lit ? 'a' : 'v';
+    if (x >= (lit ? 9 : 5) && x <= (lit ? 10 : 6) && y >= 6 && y <= 10) return lit ? 'a' : 'c';
     return lit && y === 14 && x >= 3 && x <= 12 ? 'V' : 'd';
   });
 }

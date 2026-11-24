@@ -108,7 +108,7 @@ export const ECHO_RUNES: Readonly<Record<string, PixelSprite>> = Object.fromEntr
     const left = Math.floor((16 - (strokes[0]?.length ?? 3)) / 2);
     const carved = (x: number, y: number): boolean => strokes[y - 4]?.[x - left] === '1';
     return [`echo-rune-${letter}`, {
-      palette: { d: '#171522', s: '#292637', k: '#0b0a12', v: '#ac79e5' },
+      palette: { d: '#4a4562', s: '#39354e', k: '#12101d', v: '#c79bf5' },
       frames: [Array.from({ length: 16 }, (_, y) => Array.from({ length: 16 }, (_, x) =>
         carved(x, y) ? 'k' : carved(x, y - 1) ? 'v' : y === 2 || x === 1 ? 's' : 'd').join(''))],
     }];
