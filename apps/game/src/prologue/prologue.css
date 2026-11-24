@@ -1,0 +1,44 @@
+.prologue { box-sizing: border-box; height: 100svh; min-height: 0; overflow: hidden; padding: 44px 16px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); color: var(--text); font-family: var(--font-ui); }
+.prologue canvas { image-rendering: pixelated; flex: 0 0 auto; }
+.prologue button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); padding: 10px 16px; cursor: pointer; }
+.prologue button:hover { background: var(--surface-raised); }
+.prologue button:focus-visible { outline: 2px solid var(--you); outline-offset: 4px; }
+.prologue .prologue__skip { position: absolute; top: 16px; right: 20px; }
+.prologue__stage { width: min(1120px, 100%); max-height: 58svh; display: grid; place-items: center; flex: 0 1 auto; }
+.prologue__caption { box-sizing: border-box; flex: 0 0 auto; width: min(100%, 44ch); height: 2.9em; margin: 20px 0 12px; white-space: pre-line; font-size: 24px; line-height: 1.45; text-align: center; }
+.prologue__accessible { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: pre; }
+.prologue__footer { min-height: 76px; text-align: center; font-size: 14px; color: var(--text-soft); }
+.prologue__footer p { margin: 0 0 10px; }
+.prologue__goal { width: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.prologue__goal h1 { margin: 0 0 clamp(12px, 4svh, 36px); font-size: clamp(28px, 5vw, 52px); line-height: 1.1; color: var(--you); }
+
+/* The road through Folio. Every size follows --place, so the path always meets the middle of each picture. */
+.folio-map { --place: clamp(34px, 5.4vw, 56px); display: flex; list-style: none; width: 100%; max-width: 820px; margin: 0 auto; padding: 16px 0; color: var(--text-soft); font: 13px var(--font-ui); }
+.prologue__goal .folio-map { --place: clamp(34px, 8.6vw, 92px); max-width: 1080px; }
+.folio-map li { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.folio-map li::before { content: ''; position: absolute; top: calc(var(--place) / 2); left: 0; width: 100%; border-top: 3px dotted var(--line-strong); }
+.folio-map li:first-child::before { left: 50%; width: 50%; }
+.folio-map li:last-child::before { width: 50%; }
+.folio-map li[data-state='visited']::before { border-top: 3px solid var(--goal); }
+.folio-map li[data-state='current']::after { content: ''; position: absolute; top: calc(var(--place) / 2); left: 0; width: 50%; border-top: 3px solid var(--goal); }
+.folio-map li:first-child::after { display: none; }
+.folio-map__dot { position: relative; z-index: 1; flex-shrink: 0; width: var(--place); height: var(--place); border-radius: 8px; overflow: hidden; background: var(--surface-raised); }
+.folio-map__dot canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.folio-map [data-state='current'] { color: var(--you); }
+.folio-map [data-state='current'] .folio-map__dot { outline: 3px solid var(--you); outline-offset: 3px; }
+.folio-map [data-state='unknown'] canvas { filter: grayscale(0.75) brightness(0.5); }
+.folio-map [data-destination] canvas { filter: none; }
+.folio-map__unknown { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font: bold calc(var(--place) * 0.5) var(--font-mono); text-shadow: 0 2px 0 #171b24, 2px 0 0 #171b24, -2px 0 0 #171b24, 0 -2px 0 #171b24; }
+.folio-map [data-destination] .folio-map__unknown { color: var(--you); }
+.folio-map__name { max-width: 10ch; }
+.objective-hud__journey { color: var(--text-soft); font: 13px var(--font-ui); margin: 0 0 10px; }
+
+@media (max-width: 600px), (max-height: 600px) {
+  .prologue__caption { font-size: 20px; height: auto; min-height: 2.9em; margin: 12px 0 10px; }
+  .prologue__footer { min-height: 68px; }
+}
+@media (max-width: 480px) {
+  .prologue { padding-inline: 8px; }
+  .prologue__caption { min-height: 5.8em; }
+  .folio-map__name { font-size: 10px; overflow-wrap: anywhere; }
+}

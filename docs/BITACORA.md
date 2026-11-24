@@ -882,6 +882,17 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-17: The opening, and where am I
+**Who:** Codex (build, fix round), Sonnet (review), Opus (brief, script, map and art polish, browser check).
+
+**Why:** Renzo: "we need a short intro explaining what is this about... what's gonna be the goal of the game so people get actually hooked. It seems too abrupt and confusing on where to start or where are we."
+
+**What:** New game plays eight short beats, skippable with Esc: someone types a world, the letters turn into the village, the writer disappears, something grey deletes rows, you are Tilde, "YOUR GOAL: find the Scribe, make them save the world", and how you move. It never states the twist (MASTERPLAN 3.8). The title menu has "Intro" to watch it again. World banners show the road through Folio with where you are and one line of why; the HUD keeps "Find the Scribe" under the stage title; the stage list has the same map.
+
+**Review fixes:** a second run started on the old beat or closed at once; a hidden tab could skip beats; the whole app re-rendered 45 times a second; art was redrawn pixel by pixel every frame; banners repeated after every return to the title; the last beat started the game by itself.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

@@ -1,8 +1,10 @@
+import { WorldMap } from '../prologue/WorldMap.js';
+import { WORLD_WHY } from '../prologue/data.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WorldId } from '@escape/world';
 import { SPRITES } from './sprites/index.js';
 
-export const BANNER_DURATION_MS = 1600;
+export const BANNER_DURATION_MS = 2600;
 export const WORLD_NAMES: Readonly<Record<WorldId, readonly [string, string]>> = {
   margin: ['0', 'The Margin'], lowlands: ['1', 'Lowlands'], quarry: ['2', 'The Quarry'],
   wordwood: ['3', 'Wordwood'], 'copper-port': ['4', 'Copper Port'], library: ['5', 'The Library'],
@@ -18,7 +20,8 @@ export function useWorldBanner(world: WorldId, active: boolean) {
   const [visible, setVisible] = useState<WorldId | null>(null);
   const blocking = useRef(false);
   useEffect(() => {
-    if (!active || seen.current.has(world)) return;
+    if (!active) return;
+    if (seen.current.has(world)) return;
     seen.current.add(world);
     blocking.current = true;
     setVisible(world);
@@ -31,7 +34,8 @@ export function useWorldBanner(world: WorldId, active: boolean) {
     if (event?.repeat || event?.key === 'Shift') return true;
     blocking.current = false; setVisible(null); return true;
   }, []);
-  return { visible, dismiss };
+  const reset = useCallback(() => { seen.current.clear(); }, []);
+  return { visible, dismiss, reset };
 }
 const WORLD_TILES: Readonly<Record<WorldId, readonly string[]>> = {
   margin: ['grass', 'road', 'house-wall', 'water', 'grass'],
@@ -64,6 +68,8 @@ export function WorldBanner({ world, onDismiss }: { readonly world: WorldId; rea
   return <div className="world-banner" role="status" aria-label={`World ${number}: ${name}`}>
     <p>World {number}</p><h2>{name}</h2>
     <TileRibbon world={world} />
+    <p>{WORLD_WHY[world]}</p>
+    <WorldMap world={world} />
     <button onClick={onDismiss}>Press any key to begin</button>
   </div>;
 }
