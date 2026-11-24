@@ -238,6 +238,7 @@ export function App() {
         <SoundButton selected={choice === (canContinue ? 5 : 4)} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
+    <p className="play-menu-touch">You play this with a keyboard: every key is a Vim key. Open it on a computer.</p>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
     </div>
   </main>);

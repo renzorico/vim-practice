@@ -222,6 +222,8 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-title__menu button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .play-title__menu .play-stars { margin: 0; padding: 2px 12px 8px; color: var(--ink-muted); }
 .play-title__menu .play-menu-hint { font-size: 13px; margin: 20px 0 0; color: var(--ink-muted); line-height: 1.7; }
+.play-title__menu .play-menu-touch { display: none; }
+@media (hover: none) and (pointer: coarse) { .play-title__menu .play-menu-touch { display: block; margin: 20px 0 0; padding: 8px 12px; color: var(--ink); background: var(--tab-gold); font-size: 14px; line-height: 1.5; } .play-title__menu .play-menu-hint { display: none; } }
 .play-title__menu kbd { padding: 0 5px; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
 /* The story's last edit: two letters deleted. */
 .play-ending { position: fixed; inset: 0; z-index: 30; overflow-y: auto; }
