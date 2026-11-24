@@ -6,6 +6,10 @@ export interface KeyEventLike {
   readonly ctrlKey: boolean;
   readonly metaKey: boolean;
   readonly altKey: boolean;
+  /** True when AltGr is down (Windows also reports it as Ctrl+Alt). */
+  readonly altGraph?: boolean;
+  /** True on macOS, where Option types characters. Elsewhere plain Alt is a shortcut. */
+  readonly mac?: boolean;
 }
 
 export interface MappedKey {
@@ -27,9 +31,19 @@ const SPECIAL_KEYS: Readonly<Record<string, Key>> = {
 /** Ctrl chords the engine understands. Others (C-w, C-t, C-n...) stay with the browser. */
 const CTRL_CHORDS: ReadonlySet<string> = new Set(['r', 'd', 'u', 'v']);
 
-/** Maps a browser key event to Vim notation. Cmd/Meta and Alt chords are never handled or prevented. */
+/** ASCII punctuation. On many layouts (Spanish, German, French) some of it needs Option or AltGr. */
+const PUNCTUATION = /^[!-/:-@[-`{-~]$/;
+
+/**
+ * Maps a browser key event to Vim notation. Cmd/Meta chords are never handled or prevented, and neither are
+ * Alt chords, except when Option or AltGr is how the layout types a punctuation character.
+ */
 export function mapKeyEvent(event: KeyEventLike): MappedKey {
-  if (event.metaKey || event.altKey) return IGNORED;
+  if (event.metaKey) return IGNORED;
+
+  const typesCharacters = event.altGraph === true || (event.mac === true && event.altKey && !event.ctrlKey);
+  if (typesCharacters && PUNCTUATION.test(event.key)) return { key: event.key, preventDefault: true };
+  if (event.altKey) return IGNORED;
 
   if (event.ctrlKey) {
     const letter = event.key.toLowerCase();

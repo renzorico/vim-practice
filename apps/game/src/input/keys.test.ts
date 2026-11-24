@@ -46,4 +46,22 @@ describe('mapKeyEvent', () => {
       expect(press(name)).toEqual({ key: null, preventDefault: false });
     }
   });
+
+  it('accepts punctuation typed with Option on macOS or AltGr elsewhere', () => {
+    for (const char of ['{', '}', '[', ']', '#', '@', '|', '\\', '~']) {
+      expect(press(char, { altKey: true, mac: true })).toEqual({ key: char, preventDefault: true });
+      expect(press(char, { altKey: true, ctrlKey: true, altGraph: true }).key).toBe(char);
+      expect(press(char, { altGraph: true }).key).toBe(char);
+    }
+  });
+
+  it('still leaves real Alt shortcuts alone', () => {
+    expect(press('[', { altKey: true })).toEqual({ key: null, preventDefault: false });
+    expect(press('[', { altKey: true, ctrlKey: true }).key).toBeNull();
+    expect(press('[', { altKey: true, ctrlKey: true, mac: true }).key).toBeNull();
+    expect(press('{', { altKey: true, metaKey: true, mac: true }).key).toBeNull();
+    expect(press('r', { altKey: true, ctrlKey: true }).key).toBeNull();
+    expect(press('\u00e5', { altKey: true, mac: true }).key).toBeNull();
+    expect(press('Enter', { altKey: true, mac: true }).key).toBeNull();
+  });
 });

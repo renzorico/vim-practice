@@ -828,6 +828,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · K-1: Spanish (and other) keyboards can type every key
+**Who:** Opus (found while diagnosing the Quarry, fix), Sonnet (review).
+
+**What:** The game dropped every key typed with Option or AltGr, so on a Spanish ISO layout `{ } [ ] # @ |` did nothing and the later worlds could not be finished. Punctuation typed with Option (macOS) or AltGr (elsewhere) now reaches the game; real Alt and Ctrl+Alt shortcuts stay with the browser. Dead keys (`` ` ``, `^`, `~`) are resolved from the physical key and the active layout (Spanish, German, French, US International), and the Space that completes one is dropped.
+
+**Limits:** dead keys need the Keyboard API (Chrome, Edge); in Safari and Firefox they stay ignored. Tested with synthetic events only: a real dead-key press on real hardware is still to be checked.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
