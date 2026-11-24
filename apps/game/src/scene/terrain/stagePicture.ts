@@ -4,7 +4,7 @@ import { overhangArt, paletteColor, TALL_SPRITES } from '../sprites/tall.js';
 import { DARK_STAGES } from '../darkness.js';
 import { WORLD_PALETTES } from '../palette.js';
 import { groundArt, terrainArt, type PixelRect } from './art.js';
-import { surroundingFor } from './atmosphere.js';
+import { surroundingArt, surroundingFor, surroundingVariant } from './atmosphere.js';
 import { buildingArt, buildingAt, findBuildings } from './buildings.js';
 import { chasmArt, chasmBanks } from './chasm.js';
 import { edgesFor, terrainGroup, tileAt } from './edges.js';
@@ -20,10 +20,10 @@ export interface PictureWindow { readonly line: number; readonly col: number; re
 /** Legend names that the field draws with another sprite. */
 const FIELD_SPRITE: Readonly<Record<string, string>> = { fern: 'fern-fronds', dust: 'library-dust', 'echo-rune': 'cave-floor' };
 
-/** The window of `rows` by `cols` cells that holds the stage's start, kept inside the map. */
+/** The window of `rows` by `cols` cells that holds the stage's start: inside the map, or centred on a map smaller than it. */
 export function pictureWindow(stage: Stage, rows: number, cols: number): PictureWindow {
   const width = Math.max(...stage.map.map(row => row.length));
-  const clamp = (value: number, limit: number): number => Math.max(0, Math.min(limit, value));
+  const clamp = (value: number, limit: number): number => limit < 0 ? Math.ceil(limit / 2) : Math.max(0, Math.min(limit, value));
   return { rows, cols, line: clamp(stage.start.line - Math.floor(rows / 2), stage.map.length - rows),
     col: clamp(stage.start.col - Math.floor(cols / 3), width - cols) };
 }
@@ -41,7 +41,9 @@ function paintArt(brush: Brush, name: string, frame: number, x: number, y: numbe
 export function paintStage(brush: Brush, stage: Stage, legend: Legend, view: PictureWindow): void {
   const { world, map: rows } = stage;
   const palette = WORLD_PALETTES[world];
-  const forest = surroundingFor(world, stage.id) === 'forest';
+  const around = surroundingFor(world, stage.id);
+  const forest = around === 'forest';
+  const width = Math.max(...rows.map(row => row.length));
   const buildings = findBuildings(rows, legend);
   const place = (line: number, col: number): { readonly x: number; readonly y: number } => ({
     x: (col - view.col) * TABLEAU_TILE, y: (line - view.line) * TABLEAU_TILE });
@@ -58,8 +60,12 @@ export function paintStage(brush: Brush, stage: Stage, legend: Legend, view: Pic
   };
   eachCell((line, col) => {
     const at = { line, col };
-    const tile = tileAt(rows, at, legend);
     const { x, y } = place(line, col);
+    if (line < 0 || line >= rows.length || col < 0 || col >= width) {
+      paintPixels(brush, [fill(palette.shade), ...surroundingArt(around, world, surroundingVariant(around, line, col), 0, 1)], x, y);
+      return;
+    }
+    const tile = tileAt(rows, at, legend);
     if (!tile || col >= (rows[line]?.length ?? 0)) { paintPixels(brush, [fill(palette.shade)], x, y); return; }
     const variant = groundVariant(line, col);
     const group = terrainGroup(tile);

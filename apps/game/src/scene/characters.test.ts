@@ -48,6 +48,7 @@ it('uses feedback classification for every interactable entity in every stage', 
       flags: { ...(trigger.onlyIf ? { [trigger.onlyIf]: true } : {}), ...(trigger.unless ? { [trigger.unless]: false } : {}) } };
     const reason = blockedReason([{ type: 'bump', at: entity.at, reason: 'solid-entity' }], stage, state);
     const label = interactionLabel(entity, stage, state);
+    if (def.sprite === 'quarry-gate' || def.sprite === 'lift') { expect(label).toMatch(/^Enter: (go south|take lift)$/); continue; }
     expect(label).toBe(reason === 'Press Enter to read.' ? 'Enter: read'
       : reason === 'Press Enter to talk.' || isPerson(def.kind) ? 'Enter: talk' : 'Enter: use');
     if (def.kind === 'prop' && ['note', 'sign', 'book', 'plaque'].includes(def.sprite)) expect(label).toBe('Enter: read');

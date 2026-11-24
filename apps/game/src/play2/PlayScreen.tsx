@@ -13,6 +13,7 @@ import { useMemo, useRef } from 'react';
 import { StatusLine } from './frame/StatusLine.js';
 import { ActionToast } from './frame/ActionToast.js';
 import { DialoguePlacement } from './frame/DialoguePlacement.js';
+import { CutsceneView } from './CutsceneView.js';
 import { StageClearCard } from './StageClearCard.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
 import { stages } from './content.js';
@@ -24,7 +25,6 @@ import { YankedSlot } from './YankedSlot.js';
 import type { Position } from '@escape/engine';
 import { createEngine } from '@escape/engine';
 import { ScriptPanel } from './ScriptPanel.js';
-import type { Beat } from '@escape/story';
 import type { Legend, Stage } from '@escape/world';
 import { throwbackAreas } from '../scene/hazards.js';
 import { FieldView } from '../scene/FieldView.js';
@@ -50,15 +50,6 @@ interface PlayScreenProps {
   readonly scriptStamp?: boolean;
   readonly onAdvance: () => void;
   readonly onReplay?: () => void;
-}
-function BeatView({ beat }: { readonly beat: Beat | undefined }) {
-  if (!beat) return null;
-  switch (beat.type) {
-    case 'line': return <p className="dialogue__text"><KeyText text={beat.line.text} /></p>;
-    case 'title': return <h1><KeyText text={beat.text} /></h1>;
-    case 'terminal': return <pre className="play-terminal">{beat.lines.join('\n')}</pre>;
-    case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
-  }
 }
 export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
@@ -121,13 +112,11 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       sound={onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />} />
     {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
-    {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
+    {world.status === 'dead' ? <section className="play-panel play-card play-card--death" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : scriptStamp ? null : <>
-      {cutscene && presentation && <section className="play-panel" role="dialog" aria-label="Story">
-        <BeatView beat={cutscene.beats[presentation.index]} /><button onClick={onAdvance}>Enter to go on</button>
-      </section>}
+      {cutscene && presentation && <CutsceneView beat={cutscene.beats[presentation.index]} stage={stage} legend={legend} onAdvance={onAdvance} />}
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}

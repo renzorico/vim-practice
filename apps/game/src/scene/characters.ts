@@ -23,8 +23,12 @@ export function npcFacing(at: Position, player: Position, previous = false): boo
 export function personIdleFrame(id: string, elapsed: number, reducedMotion = false): number {
   return reducedMotion ? 0 : Math.floor(((elapsed + idlePhase(id) * 2) % 1200) / 600);
 }
+const EXIT_LABELS: Readonly<Record<string, string>> = { 'quarry-gate': 'Enter: go south', lift: 'Enter: take lift' };
 /** Reuse feedback's classification, including its trigger/flag guards; no second sprite mapping. */
 export function interactionLabel(entity: Entity, stage: Stage, state: WorldState): string {
+  // Two props lead somewhere: say where.
+  const exit = EXIT_LABELS[entity.def.sprite];
+  if (exit) return exit;
   const reason = blockedReason([{ type: 'bump', at: entity.at, reason: 'solid-entity' }], stage,
     { ...state, entities: [entity] });
   if (reason === 'Press Enter to read.') return 'Enter: read';

@@ -964,6 +964,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-25: Cutscenes you can follow
+**Who:** Opus (design and code), Sonnet (review).
+
+**Why:** the 24 cutscenes were a blank page with one centred line and no name, so "Copy. ...copy." came from nobody.
+
+**What:** Every beat plays over the place it happens in, between two film bars: speech uses the dialogue box with portrait and name, narration is a caption, "The Scribe is in another buffer." is carved in stone, the swap file is a terminal, the end of a world is a page. The death panel is a torn card over the map. Small maps are centred in their picture, with the world's own surroundings around them. Labels say "go south" and "take lift" again (P-20 had turned them into "use"). The unused second cutscene component is gone.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
