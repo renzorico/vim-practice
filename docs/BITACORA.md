@@ -939,6 +939,15 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-21: The title and the opening, redrawn
+**Who:** Opus (art and code), Sonnet (review).
+
+**Why:** the title and the opening still used the old trees and houses, and the title looked like a web form over a flat field.
+
+**What:** The title is the Margin at dawn under a dithered sky, the dark Lighthouse on the hill, Tilde on the road; the right edge of the world turns into its letters and then into blank page with `~`, and breathes. The menu is a sheet of paper headed `folio.txt [+]` (Vim's mark for an unsaved file), with line numbers and a cursor after the title. The opening's village uses the same art as the field (`scene/terrain/tableau.ts`, shared), and its letters are the Margin's real ones.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

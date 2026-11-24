@@ -23,10 +23,6 @@ export function particleY(index: number, elapsed: number, height: number): numbe
 }
 export function shadowScale(height: number): number { return Math.max(0.35, 1 - Math.max(0, height) / 40); }
 
-export const TITLE_ROW_CLOCK_MS = 8000;
-export function titleRowGone(tick: number, reducedMotion: boolean): boolean {
-  return !reducedMotion && tick % 2 === 1;
-}
 
 const particleCell = { line: 0, col: 0 };
 

@@ -8,8 +8,6 @@ button:focus-visible { outline: 2px solid var(--you); outline-offset: 4px; }
 kbd { font-family: var(--font-mono); color: var(--you); }
 .play-title, .play-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
 .play-title { min-height: 100svh; }
-.play-title h1 { font: 600 clamp(48px, 12vw, 96px)/1 var(--font-mono); color: var(--you); margin: 0 0 24px; letter-spacing: -0.03em; }
-.play-title p { margin: 0 0 48px; color: var(--text-soft); }
 .play-screen { height: 100svh; display: flex; flex-direction: column; }
 .play-header { padding: 16px 24px 0; }
 .play-header h1 { margin: 0 0 12px; font-size: 20px; font-weight: 500; }
@@ -31,8 +29,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-panel p { white-space: pre-line; }
 
 .play-menu { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
-.play-menu button[aria-current="true"] { border-color: var(--you); color: var(--you); }
-.play-title .play-menu-hint { margin: 24px 0 0; font-size: 13px; }
 .learned-key { display: inline-block; min-width: 28px; margin-right: 6px; padding: 3px 6px; border: 1px solid var(--line-strong); text-align: center; }
 
 /* The ledger is an Ember parchment sheet; the field is never mounted beneath it. */
@@ -141,7 +137,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .stage-select__header { align-items: flex-start; flex-direction: column; }
 }
 .play-menu__sound button { width: 100%; }
-.play-menu__sound[data-selected="true"] button { border-color: var(--you); color: var(--you); }
 
 .help-link { padding: 8px; white-space: nowrap; }
 .help-reference { position: fixed; inset: 0; z-index: 50; overflow-y: auto; padding: 24px max(16px, calc((100% - 880px) / 2)); background: var(--bg); color: var(--text); scrollbar-color: var(--you) var(--surface); }
@@ -179,13 +174,26 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 /* Dawn at the edge of the buffer. Atlas pixels stay crisp at every viewport. */
 .play-title { position: relative; isolation: isolate; overflow: hidden; background: #3b5144; }
 .title-scene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; z-index: -1; }
-.play-title__menu { align-self: flex-start; margin-left: clamp(0px, 6vw, 96px); width: min(100%, 400px); padding: clamp(24px, 5vw, 48px); color: #f6efd4; background: #182523; box-shadow: 0 16px 48px rgb(16 20 29 / 35%); }
-.play-title__menu h1 { font-size: clamp(40px, 9vw, 64px); color: #ffdf98; margin-bottom: 16px; }
-.play-title__menu p { color: #e2d5b8; margin-bottom: 28px; }
-.play-title__menu .play-menu-hint { color: #e2d5b8; line-height: 1.7; }
-.play-title__menu button { color: #f6efd4; background: #182523; border-color: #8c9c8c; }
-.play-title__menu button:hover, .play-title__menu button[aria-current="true"] { color: #ffdf98; background: #2b3d35; }
-.play-title__menu button:focus-visible { outline: 2px solid #ffdf98; outline-offset: 3px; }
+/* On tall screens the crop keeps the edge where the world comes apart. */
+@media (max-aspect-ratio: 4/3) { .title-scene { object-position: 84% center; } }
+.play-title__menu { align-self: flex-start; margin-left: clamp(0px, 5vw, 80px); width: min(100%, 380px); padding: clamp(24px, 4vw, 40px) clamp(20px, 3vw, 32px); text-align: left; color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom-width: 4px; box-shadow: 6px 8px 0 var(--frame-shadow); }
+.play-title__menu h1 { margin: 0 0 8px; font-size: clamp(40px, 8vw, 60px); color: var(--ink); }
+/* The cursor sits after the last letter: the file is still open. */
+.play-title__menu h1::after { content: ''; display: inline-block; width: 0.5em; height: 0.82em; margin-left: 0.12em; background: var(--tab-gold); vertical-align: -0.06em; animation: title-cursor 1.2s step-end infinite; }
+@keyframes title-cursor { 50% { opacity: 0; } }
+.play-title__menu p { margin-bottom: 24px; color: var(--ink-muted); }
+.play-title__menu .play-title__file { margin: 0 0 4px; font: 600 13px var(--font-mono); color: var(--ink-muted); }
+.play-title__menu .play-menu { counter-reset: line; gap: 0; border-left: 1px solid var(--paper-edge); }
+.play-title__menu .play-menu button { display: block; width: 100%; min-height: 40px; padding: 8px 12px; text-align: left; font: 500 17px var(--font-ui); color: var(--ink); background: transparent; border: 0; }
+.play-title__menu .play-menu button::before { counter-increment: line; content: counter(line); content: counter(line) / ''; display: inline-block; width: 2ch; margin-right: 14px; color: var(--ink-muted); font: 13px var(--font-mono); text-align: right; }
+.play-title__menu .play-menu button:hover { background: var(--paper-secondary); }
+.play-title__menu .play-menu button[aria-current="true"] { color: var(--ink); background: var(--tab-gold); }
+.play-title__menu .play-menu button[aria-current="true"]::before { color: var(--ink); }
+.play-title__menu button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.play-title__menu .play-stars { margin: 0; padding: 2px 12px 8px; color: var(--ink-muted); }
+.play-title__menu .play-menu-hint { font-size: 13px; margin: 20px 0 0; color: var(--ink-muted); line-height: 1.7; }
+.play-title__menu kbd { padding: 0 5px; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
+@media (prefers-reduced-motion: reduce) { .play-title__menu h1::after { animation: none; } }
 .world-banner { position: fixed; inset: 0; z-index: 45; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; background: #182523; color: #f6efd4; }
 .world-banner p { margin: 0 0 16px; font: 16px var(--font-mono); }
 .world-banner h2 { margin: 0; font-size: clamp(32px, 7vw, 64px); }
@@ -220,8 +228,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .frame-accessible { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .action-toast { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 15; max-width: calc(100% - 32px); padding: 8px 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-muted); border-bottom-width: 3px; font: 13px/1.4 var(--font-mono); pointer-events: none; }
 .action-toast[data-visible='false'] { visibility: hidden; }
-.action-toast__slip { display: block; }
-.action-toast[data-visible='true'] .action-toast__slip { animation: slip-arrive 160ms ease-out; }
 .dialogue-placement { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 .dialogue-placement > .dialogue { pointer-events: auto; position: absolute; bottom: 16px; }
 .dialogue-placement--top > .dialogue { top: 16px; bottom: auto; }
@@ -261,6 +267,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .status-right { gap: 4px; }
 }
 @media (max-width: 540px) { .play-controls span:first-child { flex-basis: auto; } .status-identity { flex-basis: auto; } .status-right .pending-prompt { max-width: 18ch; } .help-link { display: none; } }
-@media (prefers-reduced-motion: reduce) { .play-panel.stage-clear { animation: none; } .action-toast[data-visible='true'] .action-toast__slip { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .play-panel.stage-clear { animation: none; } }
 
 .script-panel--contract { --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }
