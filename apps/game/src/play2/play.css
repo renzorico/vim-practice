@@ -116,9 +116,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .stage-clear > :first-child { margin-top: auto; }
 .stage-clear > :last-child { margin-bottom: auto; }
 .stage-clear > * { flex-shrink: 0; }
-.stage-clear .stage-clear__stars { color: var(--you); }
 .stage-clear__stars svg { width: 40px; height: 40px; margin: 0 4px; }
-.stage-clear__empty { color: var(--text-muted); }
 .stage-clear__route { max-width: 60ch; max-height: 30svh; overflow-y: auto; line-height: 2; }
 .stage-clear__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .play-title .play-stars { margin: 0; font: 14px var(--font-mono); color: var(--you); }
@@ -230,8 +228,12 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-panel { color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom: 3px solid var(--ink-muted); }
 .play-panel button:focus-visible { outline-color: var(--ink); }
 .play-panel button, .play-panel kbd { color: var(--ink); background: var(--paper-secondary); border-color: var(--ink-muted); }
-.play-panel .stage-clear__stars { color: var(--ink-muted); }
-.play-panel .stage-clear__empty { color: var(--paper-edge); }
+/* A paper card over the dimmed map, so you can see what you just crossed. */
+.play-panel.stage-clear { inset: 16px; width: min(560px, calc(100% - 32px)); height: fit-content; max-height: calc(100svh - 32px); margin: auto; padding: 32px 24px; box-shadow: 0 0 0 100vmax var(--panel-dim); animation: slip-arrive 160ms ease-out; }
+.stage-clear h2 { font-size: 32px; }
+.stage-clear__stars path { stroke: var(--ink); }
+.stage-clear__stars path[fill='currentColor'] { fill: var(--tab-gold); }
+.stage-clear__empty { opacity: 0.45; }
 
 /* A walnut desk with two ruled sheets; the sticky Vim gutter remains independent. */
 .script-panel { --text: var(--paper); --text-soft: var(--paper-secondary); --bg: var(--ink); --line-strong: var(--ink-muted); --text-muted: var(--paper-edge); background: repeating-linear-gradient(0deg, var(--desk) 0 7px, var(--desk-grain) 8px 9px, var(--desk) 10px 48px); color: var(--ink); }
@@ -259,6 +261,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .status-right { gap: 4px; }
 }
 @media (max-width: 540px) { .play-controls span:first-child { flex-basis: auto; } .status-identity { flex-basis: auto; } .status-right .pending-prompt { max-width: 18ch; } .help-link { display: none; } }
-@media (prefers-reduced-motion: reduce) { .action-toast[data-visible='true'] .action-toast__slip { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .play-panel.stage-clear { animation: none; } .action-toast[data-visible='true'] .action-toast__slip { animation: none; } }
 
 .script-panel--contract { --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }

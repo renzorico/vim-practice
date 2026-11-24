@@ -1,6 +1,8 @@
 import type { Position } from '@escape/engine';
 import type { WorldId } from '@escape/world';
 import type { PixelRect } from './art.js';
+import { canopyArt } from './forest.js';
+import { positionHash } from './life.js';
 import { WORLD_PALETTES } from '../palette.js';
 
 export type Surrounding = 'sea' | 'strata' | 'forest' | 'brick' | 'books' | 'cave' | 'paper' | 'meadow';
@@ -55,16 +57,33 @@ export function surroundingArt(kind: Surrounding, world: WorldId, variant: numbe
     rect(3 + variant * 3, 6, 2, 4, palette.ink, 0.4);
   }
   if (kind === 'forest') {
-    rect(6, 0, 4, 16, palette.ink); rect(0, 0, 16, 5, palette.face);
-    rect(2 + variant, 4, 10, 3, palette.shade); rect(8, 9, 8, 2, palette.ink, 0.5);
+    // Joined crowns fill every seam. Three leaf patterns, three distance steps.
+    for (const pixel of canopyArt(world, variant % 3, variant >= 3)) rect(pixel.x, pixel.y, pixel.width, pixel.height, pixel.color);
+    rect(0, 0, 16, 16, palette.ink, 0.3 + fade * 0.14);
   }
   if (kind === 'brick') {
     rect(0, 7, 16, 1, palette.ink); rect(7 + variant, 0, 1, 7, palette.ink);
     rect(0, 14, 16, 2, palette.face); if (variant === 0) rect(1, 0, 3, 16, palette.ink);
   }
   if (kind === 'books') {
-    rect(0, 14, 16, 2, palette.face); rect(0, 0, 2, 16, palette.ink);
-    for (let x = 3; x < 15; x += 3) rect(x, 2 + (x + variant) % 3, 2, 10, x % 2 ? palette.wall : palette.road, 0.65);
+    const arrangement = Math.floor(variant / 16); const xCell = variant % 4; const yCell = Math.floor(variant / 4) % 4;
+    const shelfWidth = 2 + arrangement % 3;
+    const gap = xCell >= shelfWidth;
+    if (!gap) {
+      rect(0, 0, 16, 16, palette.face, 0.32);
+      rect(0, 14, 16, 2, palette.road, 0.65);
+      if (xCell === 0 || xCell === shelfWidth - 1) rect(xCell === 0 ? 0 : 15, 0, 1, 16, palette.ink, 0.6);
+      for (let x = 2; x < 15; x += 3) {
+        const height = 6 + (x + yCell * 3 + arrangement) % 6;
+        rect(x, 14 - height, 2, height, (x + yCell) % 2 ? palette.wall : palette.road, 0.38);
+      }
+      if (arrangement === 2 && xCell === 1) {
+        rect(4, 0, 1, 16, palette.wall, 0.55); rect(11, 0, 1, 16, palette.wall, 0.55);
+        for (let y = 3; y < 16; y += 5) rect(5, y, 6, 1, palette.wall, 0.55);
+      }
+    } else if (arrangement === 1 && yCell === 1) {
+      rect(7, 5, 1, 11, palette.road, 0.5); rect(4, 3, 7, 4, palette.light, 0.25);
+    }
   }
   return rects;
 }
@@ -75,7 +94,9 @@ export const GLOW_SPRITES = new Set(['lamp-lit', 'lamp', 'glade-lamp-lit', 'save
 export { TALL_SPRITES } from '../sprites/tall.js';
 import { TALL_SPRITES } from '../sprites/tall.js';
 export function overhangVisible(sprite: string, above: string | undefined, showSource: boolean): boolean {
-  return !showSource && TALL_SPRITES.has(sprite) && !TALL_SPRITES.has(above ?? '');
+  // Crowns overlap the tree behind them; any other tall thing would show a doubled top.
+  const covered = TALL_SPRITES.has(above ?? '') && !(sprite === 'tree' && above === 'tree');
+  return !showSource && TALL_SPRITES.has(sprite) && !covered;
 }
 
 export function mapExtent(authored: readonly string[], live: readonly string[], emptyRow = false): readonly string[] {
@@ -94,4 +115,20 @@ export function meadowFades(authored: readonly string[]): readonly number[] {
     }
     return 4;
   });
+}
+
+/** Books share a 4x4 layout: variable shelf spans, breathing gaps, ladders and lamps. */
+export function surroundingVariant(kind: Surrounding, line: number, col: number): number {
+  if (kind === 'books') {
+    const blockLine = Math.floor(line / 4); const blockCol = Math.floor(col / 4);
+    // Adjacent blocks have opposite parity, so even hash collisions cannot repeat a room.
+    const arrangement = (positionHash(blockLine, blockCol) % 2) * 2 + ((blockLine + blockCol) & 1);
+    return arrangement * 16 + ((line % 4 + 4) % 4) * 4 + (col % 4 + 4) % 4;
+  }
+  if (kind === 'forest') return positionHash(line, col) % 3 + (line & 1) * 3;
+  return positionHash(line, col) % 4;
+}
+export function forestDistance(rows: readonly string[], line: number, col: number): number {
+  const width = Math.max(0, ...rows.map(row => row.length));
+  return Math.min(2, Math.max(0, -line - 1, line - rows.length, -col - 1, col - width));
 }

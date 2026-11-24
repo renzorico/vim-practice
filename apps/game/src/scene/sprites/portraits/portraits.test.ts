@@ -247,8 +247,10 @@ describe('portraits', () => {
   });
 });
 
-it('preserves every field id, size and animation count', () => {
-  expect(Object.fromEntries(Object.entries(SPRITES).map(([id, art]) => [id, art.frames.length]))).toEqual(ORIGINAL_COUNTS);
+it('preserves every field id and size, with directional player and breathing people', () => {
+  const counts: Record<string, number> = { ...ORIGINAL_COUNTS, player: 10 };
+  for (const id of [...MAIN, ...REST]) if (counts[id] === 1) counts[id] = 2;
+  expect(Object.fromEntries(Object.entries(SPRITES).map(([id, art]) => [id, art.frames.length]))).toEqual(counts);
   for (const art of Object.values(SPRITES)) for (const frame of art.frames) {
     expect(frame).toHaveLength(16);
     frame.forEach(row => expect(row).toHaveLength(16));

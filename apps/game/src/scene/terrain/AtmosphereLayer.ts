@@ -1,3 +1,5 @@
+import { treeArt, treeMask, treeVariant } from './forest.js';
+import { findBuildings, intactBuildings, smokeArt, type Building } from './buildings.js';
 import Phaser from 'phaser';
 import type { Position } from '@escape/engine';
 import type { FieldFrame } from '../FieldScene.js';
@@ -6,7 +8,7 @@ import { darknessAlpha, falloffPattern, FALLOFF_LEVELS } from '../darkness.js';
 import { tileAt } from './edges.js';
 import { overhangArt } from '../sprites/tall.js';
 import type { PixelRect } from './art.js';
-import { GLOW_SPRITES, glowStrength, mapContains, mapExtent, meadowFades, overhangVisible, surroundingArt, surroundingFor } from './atmosphere.js';
+import { GLOW_SPRITES, glowStrength, mapContains, mapExtent, meadowFades, overhangVisible, surroundingArt, surroundingFor, surroundingVariant, forestDistance } from './atmosphere.js';
 import { WORLD_PALETTES } from '../palette.js';
 import { positionHash } from './life.js';
 
@@ -22,8 +24,12 @@ export class AtmosphereLayer {
   private darkness: Slot[] = [];
   private tops: Slot[] = [];
   private paper: Slot[] = [];
+  private smoke: Slot[] = [];
+  private buildings: readonly Building[] = [];
+  private builtRows?: readonly string[];
   private vignette?: Phaser.GameObjects.Image;
   private elapsed = 0;
+  private reducedMotion = true;
   private glowAlpha = GLOW_ALPHA;
   private hiddenRows: ReadonlySet<number> = new Set<number>();
   private viewLeft = NaN;
@@ -90,8 +96,8 @@ export class AtmosphereLayer {
         if (mapContains(this.extent, line, col)) continue;
         const at = this.exteriorAt; at.line = line; at.col = col;
         const index = exterior++;
-        const variant = positionHash(at.line, at.col) % 4;
-        const fade = kind === 'meadow' ? this.meadow[Math.max(0, Math.min(this.meadow.length - 1, at.col))] ?? 0 : 0;
+        const variant = surroundingVariant(kind, at.line, at.col);
+        const fade = kind === 'forest' ? forestDistance(this.extent, at.line, at.col) : kind === 'meadow' ? this.meadow[Math.max(0, Math.min(this.meadow.length - 1, at.col))] ?? 0 : 0;
         const texture = this.texture(`atmosphere:${frame.stage.world}:${kind}:${variant}:${fade}`, () => surroundingArt(kind, frame.stage.world, variant, 0, fade));
         this.place(this.exterior, index, at, texture, -3).setAlpha(1);
         const slot = this.exterior[index];
@@ -138,7 +144,12 @@ export class AtmosphereLayer {
 
   private placeTop(frame: FieldFrame, sprite: string, at: Position, index: number): void {
     const { line, col } = at;
-    const texture = this.texture(`overhang:${sprite}`, () => overhangArt(sprite), 16, 8);
+    const tree = sprite === 'tree';
+    const mask = tree ? treeMask(frame.state.engine.lines, line, col, frame.legend, surroundingFor(frame.stage.world, frame.stage.id) === 'forest') : 0;
+    const variant = treeVariant(line, col);
+    const texture = tree ? this.texture(`overhang:tree:${frame.stage.world}:${mask}:${variant}`,
+      () => treeArt(frame.stage.world, mask, variant, true), 16, 8)
+      : this.texture(`overhang:${sprite}`, () => overhangArt(sprite), 16, 8);
     this.above.line = line - 1; this.above.col = col;
     const alpha = Math.min(darknessAlpha(at, frame.state.engine.cursor, frame.darkness),
       darknessAlpha(this.above, frame.state.engine.cursor, frame.darkness));
@@ -213,6 +224,20 @@ export class AtmosphereLayer {
       if (overhangVisible(sprite, undefined, frame.showSource)) this.placeTop(frame, sprite, entity.at, tops++);
     }
     this.trim(this.paper, paper); this.trim(this.edges, edges); this.trim(this.tops, tops); this.trim(this.glows, glows); this.trim(this.darkness, darkness);
+    let smoke = 0;
+    if (!frame.showSource && !frame.darkness) {
+      if (this.builtRows !== rows || this.stage !== frame.stage) this.buildings = intactBuildings(findBuildings(frame.stage.map, frame.legend), frame.stage.map, rows);
+      this.builtRows = rows;
+      const buildings = this.buildings;
+      if (buildings.length) {
+        const texture = this.texture('village:smoke', smokeArt);
+        for (const building of buildings) for (let puff = 0; puff < 3; puff++) {
+          const at = { line: building.line, col: building.col + (building.roof % 2 ? building.width - 1 : 0) };
+          this.place(this.smoke, smoke++, at, texture, 1.5).setVisible(!this.reducedMotion);
+        }
+      }
+    }
+    this.trim(this.smoke, smoke);
     this.actors.sort('depth');
   }
 
@@ -239,6 +264,7 @@ export class AtmosphereLayer {
   setHiddenRows(rows: ReadonlySet<number>): void {
     this.hiddenRows = rows;
     this.hideRows(this.paper); this.hideRows(this.edges); this.hideRows(this.glows);
+    for (const slot of this.smoke) slot.image.setVisible(slot.active && !this.reducedMotion && !rows.has(slot.at.line));
     for (const slot of this.tops) slot.image.setVisible(slot.active && (slot.coveredAlpha ?? 0) > 0
       && !rows.has(slot.at.line) && !rows.has(slot.at.line - 1));
   }
@@ -248,7 +274,15 @@ export class AtmosphereLayer {
   }
 
   update(delta: number, reducedMotion: boolean): void {
+    this.reducedMotion = reducedMotion;
     this.elapsed += reducedMotion ? 0 : delta;
+    for (let index = 0; index < this.smoke.length; index++) {
+      const slot = this.smoke[index]; if (!slot) continue;
+      const phase = ((this.elapsed + index % 3 * 1200 + positionHash(slot.at.line, slot.at.col) % 500) % 3600) / 3600;
+      slot.image.setVisible(slot.active && !reducedMotion && !this.hiddenRows.has(slot.at.line));
+      if (slot.active && !reducedMotion) slot.image.setPosition(slot.at.col * 16 + 8 + Math.sin(phase * Math.PI) * 5,
+        slot.at.line * 16 - phase * 26).setScale(0.4 + phase * 0.8).setAlpha(Math.sin(phase * Math.PI) * 0.45);
+    }
     const phase = reducedMotion ? 0 : Math.floor(this.elapsed / 1800) % 2;
     if (phase !== this.foamPhase) {
       this.foamPhase = phase;
