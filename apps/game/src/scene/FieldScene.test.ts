@@ -1756,3 +1756,17 @@ it('bounds Margin texture creation, reuses all walking shapes, and restores sour
   expect(fake.images.filter(image => image.visible && image.texture.startsWith('overhang:'))).toHaveLength(0);
   expect(smoke.every(image => !image.visible)).toBe(true);
 });
+
+it('thins the crown in front of whoever stands behind it, and only that one', async () => {
+  const { stage, legend } = await import('../play2/content.js');
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(stage, legend, { learnedCommands: ['h', 'j', 'k', 'l'], flags: {} });
+  const at = (line: number, col: number) => ({ ...state, engine: { ...state.engine, cursor: { line, col } } });
+  const scene = new FieldScene({ state: at(11, 8), stage, legend, events: [], showSource: false }, true); scene.create();
+  const crown = (col: number) => fake.images.find(image => image.texture.startsWith('overhang:tree') && image.x === col * 16 + 8 && image.y === 12 * 16 - 4);
+  expect(crown(8)?.alpha).toBeCloseTo(0.35);
+  expect(crown(9)?.alpha).toBe(1);
+  scene.present({ state: at(11, 9), stage, legend, events: [], showSource: false });
+  expect(crown(8)?.alpha).toBe(1);
+  expect(crown(9)?.alpha).toBeCloseTo(0.35);
+});

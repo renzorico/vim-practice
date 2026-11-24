@@ -1203,6 +1203,8 @@ export class FieldScene extends Phaser.Scene {
         });
         this.prompts?.add(this.add.text(point.x, point.y, text, {
           fontFamily: 'monospace', fontSize: '7px', color: '#20252b', backgroundColor: '#f6efd4', padding: { x: 3, y: 1 },
+          // Drawn at screen size, or the zoom would blur seven-pixel letters.
+          resolution: Math.max(1, Math.round(zoom)),
         }).setOrigin(0, 0));
       }
     }

@@ -6,4 +6,6 @@ export default {
   // Relative base so the build works under a GitHub Pages sub-path.
   base: './',
   plugins: [react()],
+  // The engine's parts change far less often than the game: keep them cached between deploys.
+  build: { rollupOptions: { output: { manualChunks: { phaser: ['phaser'], react: ['react', 'react-dom'] } } } },
 };
