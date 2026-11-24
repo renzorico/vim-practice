@@ -12,6 +12,8 @@ import { GLOW_SPRITES, glowStrength, mapContains, mapExtent, meadowFades, overha
 import { WORLD_PALETTES } from '../palette.js';
 import { positionHash } from './life.js';
 
+/** How much of a crown is left over someone standing behind it. */
+const BEHIND_ALPHA = 0.35;
 interface Slot { readonly image: Phaser.GameObjects.Image; at: { line: number; col: number }; active: boolean; coveredAlpha?: number; frames?: readonly [string, string] | undefined }
 /** Additive: much more than this bleaches the lamp or stone itself. */
 export const GLOW_ALPHA = 0.45;
@@ -46,6 +48,7 @@ export class AtmosphereLayer {
   private source?: boolean;
   private sight?: FieldFrame['darkness'];
   private cursor?: Position;
+  private fadedAt?: Position;
   private extent: readonly string[] = [];
   private meadow: readonly number[] = [];
   private foamFrames = new Map<string, readonly [string, string]>();
@@ -120,8 +123,21 @@ export class AtmosphereLayer {
       || this.sight !== frame.darkness || Boolean(frame.darkness && (this.cursor?.line !== frame.state.engine.cursor.line || this.cursor?.col !== frame.state.engine.cursor.col));
     if (lightingChanged) this.syncMap(frame);
     this.entities = frame.state.entities;
+    if (lightingChanged || this.fadedAt?.line !== frame.state.engine.cursor.line || this.fadedAt.col !== frame.state.engine.cursor.col) this.fadeTops(frame);
     this.rows = frame.state.engine.lines; this.stage = frame.stage; this.flags = frame.state.flags;
     this.source = frame.showSource; this.sight = frame.darkness; this.cursor = frame.state.engine.cursor;
+  }
+
+  /** Whoever stands behind a crown or a capital shows through it. */
+  private fadeTops(frame: FieldFrame): void {
+    const { cursor } = frame.state.engine;
+    this.fadedAt = { line: cursor.line, col: cursor.col };
+    const behind = new Set([`${cursor.line}:${cursor.col}`, ...frame.state.entities.map(entity => `${entity.at.line}:${entity.at.col}`)]);
+    for (const slot of this.tops) {
+      if (!slot.active) continue;
+      const alpha = slot.coveredAlpha ?? 0;
+      slot.image.setAlpha(behind.has(`${slot.at.line - 1}:${slot.at.col}`) ? alpha * BEHIND_ALPHA : alpha);
+    }
   }
 
   private syncVignette(frame: FieldFrame, zoom: number): void {
@@ -164,6 +180,7 @@ export class AtmosphereLayer {
 
   private syncMap(frame: FieldFrame): void {
     const rows = frame.state.engine.lines;
+    const forest = surroundingFor(frame.stage.world, frame.stage.id) === 'forest' && frame.stage.world === 'margin';
     let edges = 0; let tops = 0; let darkness = 0; let glows = 0; let paper = 0;
     const liveWidth = Math.max(frame.legend.emptyRow ? 1 : 0, ...rows.map(row => row.length));
     // Gather sources during the map's only pass; emit each bounded halo at its source.
@@ -190,7 +207,8 @@ export class AtmosphereLayer {
         if (!mapContains(this.extent, line + 1, col)) mask |= 4;
         if (!mapContains(this.extent, line, col - 1)) mask |= 8;
       }
-      if (mask && frame.stage.world !== 'last-page') {
+      // A forest has no edge: its crowns run on outside the map.
+      if (mask && frame.stage.world !== 'last-page' && !forest) {
         const texture = this.texture(`atmosphere:outline:${mask}`, () => {
           const pixels: PixelRect[] = [];
           if (mask & 1) pixels.push({ x: 0, y: 0, width: 16, height: 2, color: 0x11151e, alpha: 1 });

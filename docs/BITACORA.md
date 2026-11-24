@@ -1002,6 +1002,13 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-28: Seen while playing
+**Who:** Opus (play, fixes).
+
+**What:** Crowns thin out over whoever stands behind them; the black edge no longer cuts the Margin's forest in two; the "Enter: talk" label is drawn at screen size instead of being blurred by the zoom; Phaser and React are separate files, so a returning visitor downloads 166 kB instead of 550.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
