@@ -1,3 +1,4 @@
+import { WorldBanner, BANNER_DURATION_MS } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import type { HelpKey } from './play2/help/keys.js';
 import { isValidElement, type ReactNode } from 'react';
@@ -98,6 +99,8 @@ function flush(): void {
   throw new Error('Hooks did not settle');
 }
 function key(value: string, repeat = false, meta = false, ctrl = false): KeyEvent {
+  // Existing playthroughs wait through each first-visit banner before sending game input.
+  if (bannerWorld(appTree)) { vi.advanceTimersByTime(BANNER_DURATION_MS); flush(); }
   const event = new KeyEvent(value, repeat, meta, ctrl);
   window.dispatchEvent(event); flush(); return event;
 }
@@ -375,6 +378,7 @@ function currentSound() {
   return SoundButton(props);
 }
 function clickSoundThenEnter(): void {
+  if (bannerWorld(appTree)) { vi.advanceTimersByTime(BANNER_DURATION_MS); flush(); }
   const button = currentSound();
   const mouseDown = new Event('mousedown', { cancelable: true });
   Reflect.apply(button.props.onMouseDown, undefined, [mouseDown]);
@@ -579,4 +583,53 @@ it('F1 drops a half-typed :h, so nothing stale is forwarded after closing', () =
   const before = session();
   key(':'); key('h'); key('F1'); helpProps(appTree)?.onClose(); flush();
   key('l'); expect(session().world.turn).toBe(before.world.turn + 1);
+});
+
+function bannerWorld(node: ReactNode): string | undefined {
+  if (Array.isArray(node)) return node.map(bannerWorld).find(Boolean);
+  if (!isValidElement<{ children?: ReactNode; world?: string }>(node)) return;
+  if (node.type === WorldBanner) return node.props.world;
+  return bannerWorld(node.props.children);
+}
+it('shows each world once per session and swallows the banner dismissal key and held repeats', () => {
+  flush(); key('Enter');
+  expect(bannerWorld(appTree)).toBe('margin');
+  const before = session();
+  const skip = new KeyEvent('Enter'); window.dispatchEvent(skip); flush();
+  expect(skip.defaultPrevented).toBe(true);
+  expect(session()).toBe(before);
+  expect(bannerWorld(appTree)).toBeUndefined();
+  key('Enter', true); expect(session()).toBe(before);
+  key('Enter'); expect(session().queue[0]?.index).toBe(1);
+});
+it('expires a banner after exactly 1600ms without forwarding input', () => {
+  flush(); key('Enter');
+  vi.advanceTimersByTime(BANNER_DURATION_MS - 1); flush(); expect(bannerWorld(appTree)).toBe('margin');
+  vi.advanceTimersByTime(1); flush(); expect(bannerWorld(appTree)).toBeUndefined();
+  expect(session().queue[0]?.index).toBe(0);
+});
+it('shows a new world banner once and does not show it on a same-session revisit', () => {
+  flush(); key('Enter');
+  vi.advanceTimersByTime(BANNER_DURATION_MS); flush();
+  hooks.session = { ...session(), world: { ...session().world, stage: 'lowlands' } }; flush();
+  expect(bannerWorld(appTree)).toBe('lowlands');
+  vi.advanceTimersByTime(BANNER_DURATION_MS); flush();
+  hooks.session = { ...session(), world: { ...session().world, stage: 'margin' } }; flush();
+  expect(bannerWorld(appTree)).toBeUndefined();
+});
+
+it('swallows held repeats without dismissing the world banner', () => {
+  flush(); key('Enter');
+  const before = session();
+  const held = new KeyEvent('j', true); window.dispatchEvent(held); flush();
+  expect(held.defaultPrevented).toBe(true);
+  expect(bannerWorld(appTree)).toBe('margin'); expect(session()).toBe(before);
+});
+it.each([new KeyEvent('Shift'), new KeyEvent('F1'), new KeyEvent('F12'),
+  new KeyEvent('r', false, true), new KeyEvent('r', false, false, true), new KeyEvent('r', false, false, false, true)])
+('keeps the world banner on modifier and browser keys (%s)', event => {
+  flush(); key('Enter');
+  const before = session(); window.dispatchEvent(event); flush();
+  expect(bannerWorld(appTree)).toBe('margin'); expect(session()).toBe(before);
+  if (event.key !== 'Shift') expect(event.defaultPrevented).toBe(false);
 });

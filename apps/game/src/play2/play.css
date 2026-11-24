@@ -202,3 +202,20 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .key-card { padding: 16px; }
   .key-card__entry { grid-template-columns: 3rem minmax(0, 1fr); gap: 4px 12px; }
 }
+
+/* Dawn at the edge of the buffer. Atlas pixels stay crisp at every viewport. */
+.play-title { position: relative; isolation: isolate; overflow: hidden; background: #3b5144; }
+.title-scene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; z-index: -1; }
+.play-title__menu { align-self: flex-start; margin-left: clamp(0px, 6vw, 96px); width: min(100%, 400px); padding: clamp(24px, 5vw, 48px); color: #f6efd4; background: #182523; box-shadow: 0 16px 48px rgb(16 20 29 / 35%); }
+.play-title__menu h1 { font-size: clamp(40px, 9vw, 64px); color: #ffdf98; margin-bottom: 16px; }
+.play-title__menu p { color: #e2d5b8; margin-bottom: 28px; }
+.play-title__menu .play-menu-hint { color: #e2d5b8; line-height: 1.7; }
+.play-title__menu button { color: #f6efd4; background: #182523; border-color: #8c9c8c; }
+.play-title__menu button:hover, .play-title__menu button[aria-current="true"] { color: #ffdf98; background: #2b3d35; }
+.play-title__menu button:focus-visible { outline: 2px solid #ffdf98; outline-offset: 3px; }
+.world-banner { position: fixed; inset: 0; z-index: 45; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; background: #182523; color: #f6efd4; }
+.world-banner p { margin: 0 0 16px; font: 16px var(--font-mono); }
+.world-banner h2 { margin: 0; font-size: clamp(32px, 7vw, 64px); }
+.world-banner__tiles { width: 240px; height: 48px; max-width: 100%; margin: 24px 0 40px; image-rendering: pixelated; }
+.world-banner button { color: #f6efd4; font: 14px var(--font-mono); }
+@media (max-width: 540px) { .play-title { padding: 16px; justify-content: flex-end; } .play-title__menu { margin-left: 0; padding: 24px; } }

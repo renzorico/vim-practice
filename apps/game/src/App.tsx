@@ -1,3 +1,8 @@
+import { SPRITES } from './scene/sprites/index.js';
+import { WORLD_PALETTES } from './scene/palette.js';
+import { groundArt } from './scene/terrain/art.js';
+import { groundVariant, titleRowGone, TITLE_ROW_CLOCK_MS } from './scene/terrain/life.js';
+import { bannerBrowserKey, WorldBanner, useWorldBanner } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import { learnedReference } from './play2/help/learned.js';
 import { routeHelpCommand } from './play2/help/command.js';
@@ -53,6 +58,8 @@ export function App() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [replayStage, setReplayStage] = useState<string | null>(null);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
+  const currentWorld = stages.find(item => item.stage.id === session.world.stage)?.stage.world ?? 'margin';
+  const banner = useWorldBanner(currentWorld, started);
   const sound = useSound(session, started);
   const scriptStamp = useScriptStamp(session);
   const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
@@ -88,7 +95,7 @@ export function App() {
     setSelecting(false); setShowSource(false); setStarted(true);
   }, [saved]);
   const onKey = useCallback((key: Key) => {
-    if (!started || helpOpen) return;
+    if (!started || helpOpen || banner.visible) return;
     if (scriptStamp) return;
     const active = session.world.script?.engine ?? session.world.engine;
     if (helpCommand !== null || (key === ':' && active.mode === 'normal' && active.pendingKeys.length === 0)) {
@@ -104,13 +111,18 @@ export function App() {
     if (key === '<Tab>') { setShowSource(true); return; }
     if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? 2 : 0); return; }
     dispatch(key);
-  }, [started, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp]);
+  }, [started, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible]);
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
-    enabled: started && !helpOpen && (session.world.status !== 'dead' || helpCommand !== null) });
+    enabled: started && !helpOpen && !banner.visible && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
+      if (started && banner.visible && bannerBrowserKey(event)) return;
+      if (started && banner.dismiss(event)) {
+        swallowRepeats.current = true;
+        event.preventDefault(); event.stopImmediatePropagation(); return;
+      }
       if (!event.repeat) swallowRepeats.current = false;
       else if (swallowRepeats.current) { event.preventDefault(); event.stopImmediatePropagation(); return; }
       if (helpOpen || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -158,7 +170,7 @@ export function App() {
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey]);
+  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible]);
   useEffect(() => {
     if (!started) return;
     const entry = replayStage ? session.stageEntry : endingProgress(session.stageEntry, session.story);
@@ -192,6 +204,8 @@ export function App() {
   </>;
   if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">
+    <TitleScene />
+    <div className="play-title__menu">
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
@@ -204,11 +218,84 @@ export function App() {
       </div>
     </nav>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
+    </div>
   </main>);
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
   // Replays run on the story from before the clear, so remember what this game has cleared since.
   const clearedStages = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
-  return withHelp(<PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />);
+  return withHelp(<>
+    {banner.visible && <WorldBanner world={banner.visible} onDismiss={() => { banner.dismiss(); }} />}
+    <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
+    onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></>);
+}
+
+const TITLE_WIDTH = 384;
+const TITLE_HEIGHT = 240;
+/** A small original Margin tableau drawn from the same tile atlas as the field. */
+const TITLE_TILE_SIZE = 16;
+const TITLE_FIRST_ROW = 4;
+const TITLE_ROWS = 15;
+const TITLE_COLS = 24;
+const TITLE_PAPER_COL = 16;
+const TITLE_ROAD_ROW = 10;
+const TITLE_SKY_HEIGHT = 38;
+const TITLE_TREES = [1, 4, 8, 12];
+const TITLE_HOUSE_COLS = [3, 4, 5];
+const TITLE_TILDE_COL = 17;
+const TITLE_GLYPH_BASELINE = 12;
+const TITLE_TREE_ROWS = [5, 13];
+const TITLE_ROOF_ROW = 7;
+const TITLE_HOUSE_ROW = 8;
+const TITLE_WELL = { col: 10, line: 8 };
+const TITLE_STONE = { col: 7, line: 11 };
+const TITLE_PLAYER = { col: 14, line: 9 };
+function TitleScene() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const context = canvas.current?.getContext('2d');
+    if (!context) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let tick = 0;
+    const palette = WORLD_PALETTES.margin;
+    const hex = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
+    const tile = (sprite: string, col: number, line: number): void => {
+      const art = SPRITES[sprite];
+      if (!art) return;
+      art.frames[0]?.forEach((row, y) => [...row].forEach((pixel, x) => {
+        const color = art.palette[pixel];
+        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(col * TITLE_TILE_SIZE + x, line * TITLE_TILE_SIZE + y, 1, 1); }
+      }));
+    };
+    const draw = (): void => {
+      context.clearRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
+      context.fillStyle = '#d9ad82'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
+      context.fillStyle = '#edcca2'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_SKY_HEIGHT);
+      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) for (let col = 0; col < TITLE_COLS; col++) {
+        const paper = col >= TITLE_PAPER_COL || (titleRowGone(tick, reduced.matches) && line === TITLE_ROAD_ROW);
+        if (paper) { context.fillStyle = hex(palette.paper); context.fillRect(col * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE, TITLE_TILE_SIZE, TITLE_TILE_SIZE); continue; }
+        const road = line === TITLE_ROAD_ROW;
+        tile(road ? 'road' : 'grass', col, line);
+        if (!road) for (const pixel of groundArt('margin', groundVariant(line, col))) {
+          context.globalAlpha = pixel.alpha; context.fillStyle = hex(pixel.color);
+          context.fillRect(col * TITLE_TILE_SIZE + pixel.x, line * TITLE_TILE_SIZE + pixel.y, pixel.width, pixel.height);
+        }
+        context.globalAlpha = 1;
+      }
+      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) {
+        context.fillStyle = '#687b74'; context.font = '12px monospace';
+        context.fillText('~', TITLE_TILDE_COL * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE + TITLE_GLYPH_BASELINE);
+      }
+      for (const col of TITLE_TREES) for (const line of TITLE_TREE_ROWS) tile('tree', col, line);
+      for (const col of TITLE_HOUSE_COLS) { tile('house-roof', col, TITLE_ROOF_ROW); tile('house-wall', col, TITLE_HOUSE_ROW); }
+      tile('well', TITLE_WELL.col, TITLE_WELL.line); tile('save-stone', TITLE_STONE.col, TITLE_STONE.line);
+      tile('player', TITLE_PLAYER.col, TITLE_PLAYER.line);
+    };
+    draw();
+    const timer = setInterval(() => { if (!reduced.matches) { tick++; draw(); } }, TITLE_ROW_CLOCK_MS);
+    const change = (): void => { tick = 0; draw(); };
+    reduced.addEventListener('change', change);
+    return () => { clearInterval(timer); reduced.removeEventListener('change', change); };
+  }, []);
+  return <canvas className="title-scene" ref={canvas} width={TITLE_WIDTH} height={TITLE_HEIGHT} aria-hidden="true" />;
 }

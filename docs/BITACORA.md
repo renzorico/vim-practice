@@ -869,6 +869,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-15: Places that look like places
+**Who:** Codex (build, fix round), Sonnet (review), Opus (brief, art direction, fixes, browser check).
+
+**What:** Walls have a lit top and a shaded front, water has a bank and drifting foam, roads have worn edges, planks over water get posts. Actors stand on soft shadows and have thin dark outlines. Ground has four variants and sparse decoration per world (never on an obstacle, never in source view), plus a light particle layer. Eight world palettes. The title screen is the Margin at dawn, with one row of `~` that vanishes and comes back. Entering a world shows a short banner (any key skips it; the key does not reach the game). Bare paper marks deleted text only; the uneven ends of authored rows are no longer drawn.
+
+**Art direction after seeing it:** lighter ground, shore without a dashed line, ink outlines instead of cream, ground (not background) behind trees, wells and stones.
+
+**Review fixes:** the opaque ground hid `dd`, `p` and the other edit animations (ground is now the cell's own tile); stale outlines; shadow stripes on tall walls; full-map recompute on every edit; banner skipped by a held key and blocking browser shortcuts; sprite names matched by substring. The fake Phaser in the scene tests creates its mocks lazily (it ran out of memory). `glades-finalize` peak: 4.42 GB (unchanged).
+
+**Not measured:** frames per second on the largest map.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
