@@ -837,6 +837,23 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-13: Instructions you can see
+**Who:** Codex (build), Sonnet (review), Opus (brief, fixes, browser check).
+
+**Why:** Renzo got stuck on the Quarry river. "Stand on the bank" never said which tile, `4x` broke the river's shape, the game waited silently after `5r`, and bumping the note said "Blocked".
+
+**What:**
+- Key cards: when a stage introduces keys, a card shows each with an animated, engine-checked example. Aliases and app controls stay in `:help` only.
+- Guides: a "Do:" row with keycaps under the objective, and outlined tiles to stand on (Margin, Lowlands, Quarry Road). Later worlds show "Use:" with only the tools the objective names; a test stops a guide from spelling out a puzzle's solution.
+- showcmd: half-typed keys and what the game is waiting for. After `[count]r` the tiles it will change light up (red when the count does not fit).
+- Keycaps in any text between backticks, with a "Try this" label on dialogue boxes that contain one (P-14 adds the backticks).
+- Bumps name the obstacle ("Blocked: river.") and say "Press Enter to read / to talk / here". Enter with nobody near no longer shows an engine error.
+- The Quarry Road's row 6 is pre-shifted, so the river lines up after the taught `4x`. The gate on the far bank has markers.
+
+**Review fixes:** three Caves guides had wrong keys (replaced by tools); the card came back on replays, swallowed F1 and kept the keyboard under `:help`; held Esc leaked into the game; register and text-object prompts. `glades-finalize` peak: 4.41 GB (unchanged).
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

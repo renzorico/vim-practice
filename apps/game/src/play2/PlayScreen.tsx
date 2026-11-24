@@ -34,6 +34,9 @@ import type { StoryContent } from '@escape/story';
 interface PlayScreenProps {
   readonly onOpenHelp?: () => void;
   readonly helpCommand?: string | null;
+  readonly helpOpen?: boolean;
+  /** Stages cleared in this game, including after the replayed stage's entry. */
+  readonly clearedStages?: readonly string[];
   readonly soundEnabled?: boolean;
   readonly onToggleSound?: () => void;
   readonly session: Session;
@@ -55,10 +58,10 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
   const [dismissedEntry, setDismissedEntry] = useState<Session['stageEntry'] | null>(null);
-  const cardEntries = keyCardEntries(stage.id, session.story);
+  const cardEntries = keyCardEntries(stage.id, session.story, clearedStages);
   const showKeyCard = session.queue.length === 0 && world.status === 'playing' && world.turn === 0
     && dismissedEntry !== session.stageEntry && cardEntries.length > 0;
   const dismissKeyCard = () => setDismissedEntry(session.stageEntry);
@@ -90,7 +93,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, co
     const distance = (cell: Position) => Math.abs(cell.line - activeEngine.cursor.line) + Math.abs(cell.col - activeEngine.cursor.col);
     return !nearest || distance(at) < distance(nearest) ? at : nearest;
   }, null);
-  const prompt = pendingPrompt(activeEngine, stageCommands(stage));
+  const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.title}</h1>
@@ -115,7 +118,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, co
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
-    {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} onDismiss={dismissKeyCard} />}
+    {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} suspended={helpOpen} onDismiss={dismissKeyCard} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
@@ -185,7 +188,3 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(['customs', 'counter'].includes(stageId) ? ['"', '"a', '"0'] : [])];
 }
 
-export function pendingKeyLabel(keys: readonly string[]): string {
-  const pending = keys.join('');
-  return pending ? `${pending}${(/[ftgdy]$/.test(pending) || /^"[a-z0-9-]?$/.test(pending)) ? '…' : ''}` : '\u00a0';
-}

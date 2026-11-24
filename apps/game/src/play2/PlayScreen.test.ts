@@ -148,6 +148,10 @@ it('shows Quarry instructions after its intro, and never on a cleared replay', (
   expect(html).not.toContain('Delete the whole line.');
   expect(render({ ...session, queue: [{ type: 'dialogue', dialogue: 'quarry-road.intro', index: 0 }] })).not.toContain('Your new keys');
   expect(render({ ...session, story: { ...session.story, clearedStages: ['quarry-road'] } })).not.toContain('Your new keys');
+  const replayed = renderToStaticMarkup(createElement(PlayScreen, {
+    session, stage: quarry, legend: quarryLegend, content, showSource: false, objectives: [], onAdvance: () => {}, clearedStages: ['quarry-road'],
+  }));
+  expect(replayed).not.toContain('Your new keys');
   expect(session.world.turn).toBe(0);
 });
 it('renders the current guide as keycaps under the objective', () => {

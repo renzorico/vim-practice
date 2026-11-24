@@ -31,7 +31,7 @@ export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, 
           ))}
         </ul>
       )}
-      {guide && <div className={`objective-guide${positioned ? ' objective-guide--ready' : ''}`}>Do: {guide.standAt && <svg aria-label="Stand on the marker" width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="none" stroke="currentColor" strokeDasharray="2 2" /></svg>}{guide.keys.map((key, index) => <kbd key={index}>{key === '<CR>' ? 'Enter' : key}</kbd>)}</div>}
+      {guide && <div className={`objective-guide${positioned ? ' objective-guide--ready' : ''}`}>{guide.kind === 'do' ? 'Do:' : 'Use:'} {guide.standAt && <svg aria-label="Stand on the marker" width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="none" stroke="currentColor" strokeDasharray="2 2" /></svg>}{guide.keys.map((key, index) => <kbd key={index}>{key === '<CR>' ? 'Enter' : key}</kbd>)}</div>}
     </aside>
   );
 }

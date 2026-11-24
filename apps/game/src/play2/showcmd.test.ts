@@ -22,3 +22,7 @@ it('previews only a replace, clips invalid ranges, and never changes the engine'
   expect(state).toEqual(before);
   expect(pendingPrompt(engine.init(['abc']), [])).toBeNull();
 });
+it.each([['"', 'type a register letter'], ['"f', 'now y, d or p'], ['"m', 'now y, d or p'], ['di', 'type an object: w, (, ", p...'], ['ca', 'type an object: w, (, ", p...']])('explains %s without mistaking it for a find or a mark', (keys, prompt) => {
+  expect(pendingPrompt(pending(keys), ['w'])).toBe(prompt);
+});
+it('never lists an empty set of motions', () => expect(pendingPrompt(pending('d'), ['}'])).toBe('now a motion'));

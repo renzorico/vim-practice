@@ -44,7 +44,7 @@ export function useKeyCapture({ onKey, onHint, captureTab, enabled = true }: Key
     };
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.isComposing) return;
-      if (event.repeat && (event.key === 'Enter' || event.key === ' ')) {
+      if (event.repeat && (event.key === 'Enter' || event.key === ' ' || event.key === 'Escape')) {
         event.preventDefault();
         return;
       }

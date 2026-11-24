@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createEngine, type Position } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
-import { activeGuide, GUIDES, guideFor } from './guides.js';
+import { activeGuide, GUIDES, guideFor, keysOf } from './guides.js';
 import { content, stages } from './content.js';
 import { createSession, stageCommands, type Session } from './session.js';
 
@@ -61,12 +61,24 @@ describe('authored objective guides', () => {
       const { stage } = entryFor(stageForQuest[questId] ?? '');
       for (const [stepId, guide] of Object.entries(steps)) {
         let state = engine.init(['one two (three) [four] {five} <b>six</b>', 'next']);
-        for (const key of guide.keys) {
+        for (const key of guide.keys.flatMap(keysOf)) {
           // Interact and save are app/world controls rather than stage Vim commands.
           const result = engine.step(state, key, { allowedCommands: [...stageCommands(stage), ':w'] });
-          expect(result.error?.code, `${questId}/${stepId}: ${guide.keys.join('')}`).not.toBe('not-allowed');
+          expect(result.error?.code, `${questId}/${stepId}: ${guide.keys.join(' ')}`).not.toBe('not-allowed');
           state = result.state;
         }
+      }
+    }
+  });
+  it('only shows tools the objective names, so a puzzle guide never spells out its solution', () => {
+    for (const [questId, steps] of Object.entries(GUIDES)) for (const [stepId, guide] of Object.entries(steps)) {
+      if (guide.kind !== 'use') continue;
+      const objective = content.quests.find(item => item.id === questId)?.steps.find(step => step.id === stepId)?.objective ?? '';
+      const plain = objective.replaceAll('`', '').replaceAll('`a', 'a');
+      for (const cap of guide.keys) {
+        const named = cap === '<CR>' ? /Enter/.test(objective) : cap.startsWith('<C-')
+          ? objective.toLowerCase().includes(`ctrl-${cap[3]}`) : plain.includes(cap.replaceAll('`', ''));
+        expect(named, `${questId}/${stepId}: ${cap}`).toBe(true);
       }
     }
   });

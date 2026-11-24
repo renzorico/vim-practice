@@ -27,10 +27,13 @@ export const introducedAt: Readonly<Record<string, string>> = {
 /** Aliases and app controls: listed in `:help`, but a card for them would bury the key being taught. */
 const REFERENCE_ONLY: ReadonlySet<string> = new Set([':e!', ':q', 'I', 'N', 'ib', 'ab', 'iB', 'aB', "i'", "a'"]);
 
-/** Cleared stages and earlier replays never interrupt play with a teaching card. */
-export function keyCardEntries(stageId: string, story: StoryState): readonly HelpKey[] {
+/**
+ * Cleared stages and earlier replays never interrupt play with a teaching card. A replay runs on the story as it
+ * was before the clear, so the stages cleared since then come in separately.
+ */
+export function keyCardEntries(stageId: string, story: StoryState, clearedSince: readonly string[] = []): readonly HelpKey[] {
   const current = stages.findIndex(({ stage }) => stage.id === stageId);
-  if (current < 0 || story.clearedStages.includes(stageId)) return [];
+  if (current < 0 || story.clearedStages.includes(stageId) || clearedSince.includes(stageId)) return [];
   const reached = stages.reduce((furthest, { stage }, index) =>
     story.unlockedStages.includes(stage.id) || story.clearedStages.includes(stage.id)
       || story.flags[`${stage.id}.intro-seen`] ? Math.max(furthest, index) : furthest, current);

@@ -9,7 +9,7 @@ import { lintLegend, lintStage } from '../../../../tools/maps/lint.js';
 import { canopy, content, glades, gladesLegend, stages } from './content.js';
 import { createSession, GLADES_COMMANDS, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
-import { learnedKeycaps, pendingKeyLabel, PlayScreen } from './PlayScreen.js';
+import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
 import { animationSteps } from '../scene/animate.js';
 import { tileGrid } from '../scene/tiles.js';
@@ -114,7 +114,7 @@ it('HUD teaches paragraphs immediately and twins after their flags; g is pending
   expect(learnedKeycaps({}, false, 'glades')).not.toContain('gg');
   expect(learnedKeycaps({ 'glades.lamp': true }, false, 'glades')).toContain('gg');
   expect(learnedKeycaps({ 'glades.rope': true }, false, 'glades')).toContain('G');
-  expect(pendingKeyLabel(keys(start(), 'g').world.engine.pendingKeys)).toBe('g…');
+  expect(keys(start(), 'g').world.engine.pendingKeys.join('')).toBe('g');
 });
 it('Continue restores Glades entry', () => {
   let stored = '';

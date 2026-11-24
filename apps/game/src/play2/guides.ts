@@ -2,13 +2,19 @@ import type { Position } from '@escape/engine';
 import type { StoryContent, StoryState } from '@escape/story';
 
 export interface Guide {
+  /** One keycap each: a key to press, or a whole command (`dap`) where the player already knows its parts. */
   readonly keys: readonly string[];
+  /** Press these here, in order; or just the tools for a puzzle whose steps the player works out. */
+  readonly kind: 'do' | 'use';
   readonly standAt?: readonly Position[];
 }
 
 const cell = (line: number, col: number): Position => ({ line, col });
 const guide = (keys: readonly string[], standAt?: readonly Position[]): Guide =>
-  standAt ? { keys, standAt } : { keys };
+  standAt ? { kind: 'do', keys, standAt } : { kind: 'do', keys };
+const use = (...keys: readonly string[]): Guide => ({ kind: 'use', keys });
+/** The single keys a keycap stands for. */
+export const keysOf = (cap: string): readonly string[] => cap.startsWith('<') ? [cap] : [...cap];
 
 /** Authored instructions only. Puzzle objectives without a named command have no guide. */
 export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> = {
@@ -27,34 +33,28 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
     // Enter reaches the gate from beside it, not from its own cell.
     south: guide(['<CR>'], [cell(10, 42), cell(9, 43), cell(11, 43)]),
   },
-  'quarry.cut': { ledge: guide(['d', 'd', 'u']), dot: guide(['<CR>']) },
-  'quarry.mason': { mason: guide(['1', '0', 'd', 'd']) },
-  'wordwood.ferry': { canopy: guide(['f', 'H']), lift: guide(['<CR>']) },
-  'wordwood.glades': {
-    floor: guide(['G']), lamp: guide(['{']), rope: guide(['g', 'g']), gate: guide(['G']),
-  },
+  'quarry.cut': { ledge: use('dd', 'u'), dot: guide(['<CR>']) },
+  'quarry.mason': { mason: use('10dd') },
+  'wordwood.ferry': { canopy: use('fH'), lift: guide(['<CR>']) },
+  'wordwood.glades': { floor: use('G'), lamp: use('{'), rope: use('gg'), gate: use('G') },
   'wordwood.gates': {
-    shut: guide(['<CR>']), ope: guide(['%']), 'lamp-a': guide(['<C-d>']),
-    'lamp-b': guide(['<C-u>']), tell: guide(['G']), open: guide(['%']),
+    shut: guide(['<CR>']), ope: use('%'), 'lamp-a': use('<C-d>'),
+    'lamp-b': use('<C-u>'), tell: use('G'), open: use('%'),
   },
-  'port.jetty': { bitt: guide(['<CR>']), clear: guide(['d', 'b']), ream: guide(['<CR>']) },
-  'port.warehouse': { stock: guide(['y', 'w', 'p']), ream: guide(['<CR>']) },
-  'port.customs': {
-    oil: guide(['y', 'w', '"', '0', 'p']),
-    mixed: guide(['"', 'b', 'y', 'w', '"', 'b', 'p']), tare: guide(['<CR>']),
-  },
-  'port.counterfeiter': { crates: guide(['8', 'p']) },
-  'library.stacks': { dust: guide(['d', 'a', 'w', 'j', '.']), quire: guide(['<CR>']) },
-  'library.reading': { chains: guide(['d', 'a', '(']), folio: guide(['<CR>']) },
-  'library.archive': { file: guide(['d', 'a', 'p', 'p', 'y', 'a', 'p', 'P']) },
-  'library.notary': { open: guide(['d', 'a', '[', 'd', 'a', '{', 'd', 'i', 't']) },
-  'library.contract': { contract: guide(['c', 'i', '"']) },
-  'caves.mouth': { crystals: guide(['?', 'x', '<CR>', '<CR>', 'n']), echo: guide(['<CR>']) },
-  'caves.gallery': { follow: guide(['*', 'w', '*']) },
-  'caves.marked': { fetch: guide(['m', 'a', '/', 'x', '<CR>', '`', 'a']), echo: guide(['<CR>']) },
-  'caves.labyrinth': { levers: guide(['m', 'a', '?', 'x', '<CR>', '<CR>', '`', 'a']) },
-  'caves.study': { index: guide(['<C-v>']) },
-  'last.page': { write: guide([':', 'w', '<CR>']) },
+  'port.jetty': { bitt: guide(['<CR>']), clear: use('db'), ream: guide(['<CR>']) },
+  'port.warehouse': { stock: use('y', 'p'), ream: guide(['<CR>']) },
+  'port.customs': { oil: use('yw', '"0p'), mixed: use('"byw', '"bp'), tare: guide(['<CR>']) },
+  'library.stacks': { dust: use('daw', 'j', '.'), quire: guide(['<CR>']) },
+  'library.reading': { chains: use('da(', 'd2a('), folio: guide(['<CR>']) },
+  'library.archive': { file: use('dap', 'p', 'yap', 'P') },
+  'library.notary': { open: use('da[', 'da{', 'dit') },
+  'library.contract': { contract: use('ci"', 'ci(', 'dap', 'cit') },
+  'caves.mouth': { crystals: use('?x', '<CR>', 'n'), echo: guide(['<CR>']) },
+  'caves.gallery': { follow: use('*', 'w') },
+  'caves.marked': { fetch: use('ma', '/', '`a'), echo: guide(['<CR>']) },
+  'caves.labyrinth': { levers: use('ma', '?', '`a') },
+  'caves.study': { index: use('<C-v>') },
+  'last.page': { write: guide([':w', '<CR>']) },
 };
 
 export function guideFor(questId: string, stepId: string): Guide | null {

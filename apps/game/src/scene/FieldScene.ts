@@ -37,6 +37,7 @@ export interface FieldFrame {
 }
 
 const presentationEngine = createEngine();
+const NO_CELLS: readonly Position[] = [];
 const center = (cell: number): number => cell * TILE_SIZE + TILE_SIZE / 2;
 const PILE_OFFSET_PX = 3;
 const GUIDANCE_PERIOD_MS = 1000;
@@ -388,7 +389,7 @@ export class FieldScene extends Phaser.Scene {
     const { stage, state } = this.frame;
     const visible = stage.type !== 'text' && state.status === 'playing' && !this.frame.hideObjective
       && !this.frame.darkness && !darknessFor(stage, state.flags);
-    const cells = visible ? this.frame.standAt ?? [] : [];
+    const cells = visible ? this.frame.standAt ?? NO_CELLS : NO_CELLS;
     while (this.standMarks.length > cells.length) this.standMarks.pop()?.destroy();
     cells.forEach((at, index) => {
       const ready = at.line === state.engine.cursor.line && at.col === state.engine.cursor.col;
@@ -399,7 +400,7 @@ export class FieldScene extends Phaser.Scene {
         .setAlpha(ready || this.reducedMotion ? 1 : 0.65 + 0.35 * Math.cos(this.guidanceElapsed * Math.PI * 2 / GUIDANCE_PERIOD_MS));
     });
     const preview = visible ? rangePreview(state.engine) : null;
-    const range = preview?.cells ?? [];
+    const range = preview?.cells ?? NO_CELLS;
     while (this.rangeMarks.length > range.length) this.rangeMarks.pop()?.destroy();
     range.forEach((at, index) => {
       const mark = this.rangeMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('range')).setDepth(0.9);

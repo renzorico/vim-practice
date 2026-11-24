@@ -30,7 +30,7 @@ export function blockedReason(events: readonly WorldEvent[], stage?: Stage, worl
         && (!trigger.once || !world?.firedTriggers.includes(trigger.id))
         && (!trigger.onlyIf || world?.flags[trigger.onlyIf]) && (!trigger.unless || !world?.flags[trigger.unless]));
       if (interact && entity) return entity.def.kind === 'prop' && ['note', 'sign', 'book', 'plaque'].includes(entity.def.sprite)
-        ? 'Press Enter to read.' : 'Press Enter to talk.';
+        ? 'Press Enter to read.' : entity.def.kind === 'npc' ? 'Press Enter to talk.' : 'Press Enter here.';
       const label = event.reason === 'wall' ? obstacle(event.at, world, legend) : null;
       return label ? `Blocked: ${label}.` : BUMP_LINES[event.reason];
     }

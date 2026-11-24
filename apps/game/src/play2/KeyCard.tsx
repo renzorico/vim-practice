@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { HelpKey } from './help/keys.js';
 
 export const EXAMPLE_KEY_MS = 400;
 const KEYS_PER_CARD = 3;
 const RESULT_HOLD_TICKS = 4;
+/** A player tapping Enter through the last dialogue line must not dismiss the card unseen. */
+export const CARD_GUARD_MS = 300;
 
 /** Brackets in reference examples identify the cursor; they are not buffer text. */
 function ExampleRow({ row }: { readonly row: string }) {
@@ -43,26 +45,37 @@ function KeyExample({ entry }: { readonly entry: HelpKey }) {
 }
 
 /** Captures the whole overlay's input before App's listener, without a session action. */
-export function KeyCard({ entries, onDismiss }: {
+export function KeyCard({ entries, onDismiss, suspended = false }: {
   readonly entries: readonly HelpKey[];
   readonly onDismiss: () => void;
+  /** True while `:help` covers the card and owns the keyboard. */
+  readonly suspended?: boolean;
 }) {
   const [page, setPage] = useState(0);
+  const [openedAt] = useState(() => Date.now());
   const pages = Math.ceil(entries.length / KEYS_PER_CARD);
   const advance = () => {
     if (page + 1 < pages) setPage(page + 1);
     else onDismiss();
   };
+  // A ref keeps the listener (and its order among other capture listeners) stable across renders.
+  const advanceRef = useRef(advance);
+  advanceRef.current = advance;
   useEffect(() => {
+    if (suspended) return;
     const handle = (event: KeyboardEvent) => {
-      if (event.metaKey || event.altKey) return;
-      event.preventDefault();
+      // F1 opens help, the rest (reload, dev tools) belongs to the browser; the game ignores them all.
+      if (event.metaKey || /^F\d+$/.test(event.key)) return;
+      // No Vim key may reach the game behind the card, but browser shortcuts still work.
       event.stopImmediatePropagation();
-      if (!event.repeat && (event.key === 'Enter' || event.key === 'Escape')) advance();
+      if (event.ctrlKey || event.altKey) return;
+      event.preventDefault();
+      const ready = Date.now() - openedAt >= CARD_GUARD_MS;
+      if (ready && !event.repeat && (event.key === 'Enter' || event.key === 'Escape')) advanceRef.current();
     };
     window.addEventListener('keydown', handle, true);
     return () => window.removeEventListener('keydown', handle, true);
-  }, [page, pages, onDismiss]);
+  }, [suspended, openedAt]);
   if (!entries.length) return null;
   return <section className="play-panel key-card" role="dialog" aria-modal="true" aria-labelledby="key-card-title">
     <h2 id="key-card-title">Your new keys{pages > 1 ? ` · ${page + 1} of ${pages}` : ''}</h2>
