@@ -1,7 +1,7 @@
 import { SKILLS } from '@escape/curriculum';
 import { stages as storyStages } from './content.js';
 import { createEngine, type Key, type Position } from '@escape/engine';
-import { createWorldSim, type BumpReason, type Legend, type Stage, type WorldEvent } from '@escape/world';
+import { createWorldSim, type BumpReason, type Legend, type Stage, type WorldEvent, type WorldState } from '@escape/world';
 import { stageCommands, type Session, type SessionStage } from './session.js';
 import { darknessAlpha, darknessFor } from '../scene/darkness.js';
 
@@ -13,9 +13,28 @@ export const BUMP_LINES: Readonly<Record<BumpReason, string>> = {
   fixed: 'That stone is fixed.',
   edge: 'The edge of the world.',
 };
-export function blockedReason(events: readonly WorldEvent[]): string | null {
+/** Enter with nobody in reach: the engine has no such motion on an empty spot. */
+const UNKNOWN_ENTER = 'Unknown command: <CR>';
+
+/** Names what is in the way ("river", "bedrock"), so water is never called a wall. */
+function obstacle(at: Position, world?: WorldState, legend?: Legend): string | null {
+  const char = world?.engine.lines[at.line]?.[at.col];
+  return char === undefined ? null : legend?.tiles.find(tile => tile.char === char)?.label ?? null;
+}
+export function blockedReason(events: readonly WorldEvent[], stage?: Stage, world?: WorldState, legend?: Legend): string | null {
   for (const event of events) {
-    if (event.type === 'bump') return BUMP_LINES[event.reason];
+    if (event.type === 'bump') {
+      const entity = world?.entities.find(entity => entity.at.line === event.at.line && entity.at.col === event.at.col);
+      const interact = entity && stage?.triggers.some(trigger => trigger.on === 'interact'
+        && trigger.target.type === 'entity' && trigger.target.entity === entity.id
+        && (!trigger.once || !world?.firedTriggers.includes(trigger.id))
+        && (!trigger.onlyIf || world?.flags[trigger.onlyIf]) && (!trigger.unless || !world?.flags[trigger.unless]));
+      if (interact && entity) return entity.def.kind === 'prop' && ['note', 'sign', 'book', 'plaque'].includes(entity.def.sprite)
+        ? 'Press Enter to read.' : entity.def.kind === 'npc' ? 'Press Enter to talk.' : 'Press Enter here.';
+      const label = event.reason === 'wall' ? obstacle(event.at, world, legend) : null;
+      return label ? `Blocked: ${label}.` : BUMP_LINES[event.reason];
+    }
+    if (event.type === 'engine-error' && event.error.message === UNKNOWN_ENTER) return 'Nothing here to talk to or read.';
     if (event.type === 'engine-error') return event.error.code === 'nothing-to-undo' ? 'Nothing to undo.' : event.error.message;
   }
   return null;

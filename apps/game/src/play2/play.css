@@ -176,3 +176,28 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .help-reference__example { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
 .help-reference pre { margin: 0; max-width: 100%; overflow-x: auto; font: 14px/1.6 var(--font-mono); scrollbar-color: var(--you) var(--surface); }
 @media (max-width: 540px) { .help-reference__entry { grid-template-columns: minmax(0, 1fr); gap: 8px; } .help-reference dt { flex-direction: row; } }
+
+/* Instruction surfaces use the same keycaps and palette as the field. */
+.objective-guide { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--text-muted); margin-top: 8px; }
+.objective-guide--ready, .play-controls output { color: var(--you); }
+.objective-guide kbd, .keycap { font-family: var(--font-mono); }
+.dialogue--instruction { border-left: 1px solid var(--you); }
+.dialogue__try { color: var(--you); font-weight: 600; }
+.pending-prompt { font-size: 0.875rem; max-width: 32ch; }
+.key-card { max-height: 100svh; overflow-y: auto; justify-content: safe center; }
+.key-card__example { font-family: var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.key-card__entry { width: min(100%, 36rem); display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 4px 16px; margin: 12px 0; text-align: left; }
+.key-card__key { font-size: 1.75rem; align-self: start; padding: 8px; border: 1px solid var(--line-strong); text-align: center; }
+.key-card__entry p { margin: 0; line-height: 1.5; }
+.key-card__example { grid-column: 2; }
+.key-card__row { margin: 8px 0; padding: 8px 12px; font: inherit; font-size: 1.5rem; line-height: 1.4; background: rgb(0 0 0 / 25%); border: 1px solid var(--line-strong); white-space: pre-wrap; }
+.key-card__row mark { background: var(--you); color: var(--bg); }
+.key-card__typed { min-height: 2em; font-size: 1.125rem; color: var(--you); display: flex; flex-wrap: wrap; gap: 4px; }
+.key-card__hint { margin-top: 12px; font-size: 0.875rem; color: var(--text-soft); }
+.objective-guide kbd { border: 1px solid var(--line-strong); padding: 2px 6px; opacity: 0.7; }
+.objective-guide--ready kbd { opacity: 1; color: var(--you); }
+@media (max-width: 600px) {
+  .play-controls { flex-wrap: wrap; gap: 8px 12px; }
+  .key-card { padding: 16px; }
+  .key-card__entry { grid-template-columns: 3rem minmax(0, 1fr); gap: 4px 12px; }
+}

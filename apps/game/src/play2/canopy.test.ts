@@ -79,16 +79,16 @@ it('f@ bumps on thorns, t@ stops on the branch at (5,10)', () => {
   const tierC = dismiss(keys(start(), 'fH2j,2j'));
   expect(tierC.story.flags['canopy.knows-t']).toBe(true);
   expect(learnedKeycaps(tierC.story.flags)).toEqual(expect.arrayContaining(['t', 't@']));
-  expect(screen(keys(tierC, 't'))).toContain('t…');
+  expect(screen(keys(tierC, 't'))).toContain('>t</output>');
   const bumped = keys(tierC, 'f@');
   expect(bumped.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump' }));
   expect(bumped.world.turn).toBe(tierC.world.turn);
   expect(keys(tierC, 't@').world.engine.cursor).toEqual({ line: 5, col: 10 });
 });
-it('shows pending f… and failed finds cost no turn', () => {
+it('shows engine pending f and failed finds cost no turn', () => {
   const initial = start();
   const pending = keys(initial, 'f');
-  expect(screen(pending)).toContain('f…');
+  expect(screen(pending)).toContain('>f</output>');
   const failed = controller.reduce(pending, 'z');
   expect(failed.lastEvents).toEqual([{ type: 'bump', reason: 'edge', at: canopy.start }]);
   expect(keys(initial, 'f<Esc>').lastEvents).toEqual([]);

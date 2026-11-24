@@ -44,6 +44,7 @@ export function App() {
   const swallowRepeats = useRef(false);
   const openHelp = useCallback(() => { setHelpCommand(null); setHelpOpen(true); }, []);
   const closeHelp = useCallback(() => { swallowRepeats.current = true; setHelpOpen(false); }, []);
+  const [clearedSince, setClearedSince] = useState<readonly string[]>([]);
   const [started, setStarted] = useState(false);
   const [showSource, setShowSource] = useState(false);
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
@@ -62,6 +63,7 @@ export function App() {
     else {
       dispatch({ type: 'new', best: saved?.best });
       setSaved(null);
+      setClearedSince([]);
     }
     setReplayStage(null);
     setShowSource(false);
@@ -167,6 +169,10 @@ export function App() {
   }, [started, session, saved, ending, replayStage]);
   useEffect(() => { if (!started) setHelpCommand(null); }, [started]);
   useEffect(() => {
+    const cleared = session.story.clearedStages;
+    setClearedSince(known => cleared.every(id => known.includes(id)) ? known : [...new Set([...known, ...cleared])]);
+  }, [session.story.clearedStages]);
+  useEffect(() => {
     if (started && ending === 'delete') { setStarted(false); setChoice(0); }
   }, [started, ending]);
   useEffect(() => {
@@ -201,6 +207,8 @@ export function App() {
   </main>);
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
-  return withHelp(<PlayScreen soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
+  // Replays run on the story from before the clear, so remember what this game has cleared since.
+  const clearedStages = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
+  return withHelp(<PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
     onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />);
 }

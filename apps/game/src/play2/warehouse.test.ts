@@ -8,7 +8,7 @@ import { lintStage } from '../../../../tools/maps/lint.js';
 import { content, warehouse, warehouseLegend, jetty, portLegend, stages } from './content.js';
 import { createSession, PORT_COMMANDS, WAREHOUSE_COMMANDS, stageCommands, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
-import { learnedKeycaps, pendingKeyLabel, PlayScreen } from './PlayScreen.js';
+import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { saveProgress, readProgress } from './progress.js';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
@@ -62,7 +62,7 @@ it('yw costs a turn, preserves the tally and copies only its four oil jars', () 
   expect(screen(initial)).toContain('Yanked: empty');
   expect(screen(yanked)).toContain('Yanked: oooo');
   expect(learnedKeycaps({}, false, 'warehouse')).toEqual(expect.arrayContaining(['y', 'yw', 'p']));
-  expect(pendingKeyLabel(keys(initial, 'y').world.engine.pendingKeys)).toBe('y…');
+  expect(keys(initial, 'y').world.engine.pendingKeys.join('')).toBe('y');
 });
 it('yw f[ p stocks the top shelf and lands on its last jar', () => {
   const stocked = keys(move(start(), 1, 2), 'ywf[p');

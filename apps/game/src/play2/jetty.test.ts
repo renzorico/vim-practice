@@ -8,7 +8,7 @@ import { lintStage } from '../../../../tools/maps/lint.js';
 import { content, jetty, portLegend, manifest, manifestLegend, stages } from './content.js';
 import { createSession, PORT_COMMANDS, stageCommands, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
-import { learnedKeycaps, pendingKeyLabel, PlayScreen } from './PlayScreen.js';
+import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { saveProgress, readProgress } from './progress.js';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
@@ -60,7 +60,7 @@ it('introduces the ferry, then teaches d and db on the first interaction', () =>
   expect(queued(keys(taught, '<CR>'))).toEqual(['jetty.bitt-wait']);
   expect(learnedKeycaps(taught.story.flags, false, 'jetty')).toEqual(expect.arrayContaining(['d', 'db']));
   expect(learnedKeycaps({ 'shaft.knows-dot': true }, false, 'jetty')).toContain('.');
-  expect(pendingKeyLabel(keys(taught, 'd').world.engine.pendingKeys)).toBe('d…');
+  expect(keys(taught, 'd').world.engine.pendingKeys.join('')).toBe('d');
 });
 it('db from (3,20) deletes only the nets and lands at (3,14), remapping Bitt and the post', () => {
   const deleted = keys(move(start(), 3, 20), 'db');

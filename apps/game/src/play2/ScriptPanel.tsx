@@ -1,3 +1,4 @@
+import { KeyText } from './KeyText.js';
 import type { EngineState } from '@escape/engine';
 import type { Script } from '@escape/world';
 import { useLayoutEffect, useRef } from 'react';
@@ -58,7 +59,7 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
   return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
       <h2>{script.title}</h2>
-      <p className="script-goal">{script.goalText}</p>
+      <p className="script-goal"><KeyText text={script.goalText} /></p>
     </header>
     <div className="script-columns">
       <div className="script-editor">
@@ -83,7 +84,7 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
       </aside>}
     </div>
     <div className="script-hints" aria-live="polite">
-      {visibleHints(script, keys).map(hint => <p key={hint}>{hint}</p>)}
+      {visibleHints(script, keys).map(hint => <p key={hint}><KeyText text={hint} /></p>)}
     </div>
     {solved && <div className="script-stamp" role="status">Set right</div>}
   </section>;

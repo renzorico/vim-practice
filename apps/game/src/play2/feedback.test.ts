@@ -6,7 +6,7 @@ import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
 import { BUMP_LINES, blockedReason, landingMarkers, newMotionKeys, countMotionUses, solutionCaps } from './feedback.js';
 import { createSession, stageCommands, type Session } from './session.js';
-import { content, stages, lowlands, lowlandsLegend, gallery, stage, canopy, canopyLegend, mouth, shaft, shaftLegend, ledger, ledgerLegend } from './content.js';
+import { content, stages, lowlands, lowlandsLegend, gallery, stage, legend, canopy, canopyLegend, mouth, shaft, shaftLegend, ledger, ledgerLegend } from './content.js';
 import { recordBest, starsFor, readProgress, saveProgress, PROGRESS_KEY } from './progress.js';
 import { StageClearCard } from './StageClearCard.js';
 import { ObjectiveHud } from '../story-ui/ObjectiveHud.js';
@@ -199,4 +199,31 @@ it('shows only a clear and hearts on the Margin card', () => {
   expect(html).toContain('cleared');
   expect(html).toContain('hearts left');
   expect(html).not.toMatch(/par|stars|Turns:/);
+});
+
+it.each(['note', 'sign', 'book', 'plaque', 'ash'])('names the interaction when bumping %s', sprite => {
+  const spawn = stage.entities[0];
+  if (!spawn) throw new Error('Missing fixture entity');
+  const at = { line: 3, col: 3 };
+  const entity = { ...spawn, id: 'speaker', sprite, kind: sprite === 'ash' ? 'npc' as const : 'prop' as const, at };
+  const world = sim.init(stage, legend, { learnedCommands: [], flags: {} });
+  const targetStage = { ...stage, triggers: [{ id: 'talk', once: false, on: 'interact' as const, target: { type: 'entity' as const, entity: 'speaker' } }] };
+  const state = { ...world, entities: [{ id: 'speaker', at, def: entity, pathIndex: 0 }] };
+  expect(blockedReason([{ type: 'bump', reason: 'solid-entity', at }], targetStage, state)).toBe(sprite === 'ash' ? 'Press Enter to talk.' : 'Press Enter to read.');
+  expect(blockedReason([{ type: 'bump', reason: 'solid-entity', at }], { ...targetStage, triggers: [] }, state)).toBe(BUMP_LINES['solid-entity']);
+});
+it('names the obstacle, so water is not called a wall', () => {
+  const world = sim.init(lowlands, lowlandsLegend, { learnedCommands: [], flags: {} });
+  const line = world.engine.lines.findIndex(row => [...row].some(char => lowlandsLegend.tiles.some(tile => tile.char === char && !tile.walkable)));
+  const row = world.engine.lines[line] ?? '';
+  const col = [...row].findIndex(char => lowlandsLegend.tiles.some(tile => tile.char === char && !tile.walkable));
+  const label = lowlandsLegend.tiles.find(tile => tile.char === row[col])?.label;
+  const bump = [{ type: 'bump' as const, reason: 'wall' as const, at: { line, col } }];
+  expect(label).toBeTruthy();
+  expect(blockedReason(bump, lowlands, world, lowlandsLegend)).toBe(`Blocked: ${label}.`);
+  expect(blockedReason(bump)).toBe(BUMP_LINES.wall);
+});
+it('Enter with nobody in reach says so instead of showing an engine error', () => {
+  const error = { code: 'unknown-command' as const, message: 'Unknown command: <CR>' };
+  expect(blockedReason([{ type: 'engine-error', error }])).toBe('Nothing here to talk to or read.');
 });

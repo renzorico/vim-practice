@@ -159,3 +159,8 @@ it('only intercepts exactly :e! followed by Enter', () => {
   const after = controller.reduce(before, '<CR>');
   expect(after.lastEvents).not.toContainEqual({ type: 'checkpoint-restored' });
 });
+
+it('keeps the river aligned after the learner deletes four rubble cells', () => {
+  const open = keys(edge(), '4x');
+  for (let line = 1; line <= 11; line++) expect(open.world.engine.lines[line]?.slice(31, 35), `row ${line}`).toBe('~~~~');
+});
