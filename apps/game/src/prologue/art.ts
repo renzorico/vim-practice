@@ -1,7 +1,7 @@
 import type { WorldId } from '@escape/world';
-import { SPRITES } from '../scene/sprites/index.js';
+import { legend as marginLegend } from '../play2/content.js';
+import { paintSprite, paintTableau } from '../scene/terrain/tableau.js';
 import { WORLD_PALETTES } from '../scene/palette.js';
-import { groundArt } from '../scene/terrain/art.js';
 import { WORLDS } from './data.js';
 
 export const WIDTH = 352;
@@ -18,16 +18,16 @@ const TOP = 16;
 const CELLS = ROWS * COLUMNS;
 const BACKGROUND = '#1d2021';
 const PAPER = '#f6efd4';
+/** In the Margin's own letters: T tree, H house, O well, '.' road. */
 const VILLAGE = [
-  '  t       t    t    t ',
-  '    rrr     t   rrr   ',
-  '    HHH   O     HHH  t',
-  '======================',
-  ' t      t      t    t ',
-  '   t        t      t  ',
-  't     t         t     ',
+  'TTTTT TT   TTTT TTTTTT',
+  'T   HHH     T  HHH   T',
+  'T   HHH   O    HHH    ',
+  '......................',
+  ' T      T      T    T ',
+  '   T        T      T  ',
+  'T  T  T     T  T  T  T',
 ];
-const OBJECTS: Readonly<Record<string, string>> = { t: 'tree', r: 'house-roof', H: 'house-wall', O: 'well', '=': 'road' };
 const POSITIONS = [[8, 4], [7, 4], [7, 5], [7, 4], [8, 4]] as const;
 const KEYS = ['h', 'j', 'k', 'l'];
 export const VIGNETTE_TILES: Readonly<Record<WorldId, readonly string[]>> = {
@@ -41,22 +41,6 @@ export const VIGNETTE_TILES: Readonly<Record<WorldId, readonly string[]>> = {
   'last-page': ['page-paper', 'page-paper', 'page-margin', 'page-corner'],
 };
 const hex = (value: number): string => `#${value.toString(16).padStart(6, '0')}`;
-function paintSprite(context: CanvasRenderingContext2D, name: string, x: number, y: number, grey = false): void {
-  const art = SPRITES[name];
-  if (!art) return;
-  const rows = art.frames[0];
-  if (!rows) return;
-  for (let row = 0; row < rows.length; row++) {
-    const pixels = rows[row] ?? '';
-    for (let col = 0; col < pixels.length; col++) {
-      const color = art.palette[pixels[col] ?? ''];
-      if (color && color !== 'transparent') {
-        context.fillStyle = grey ? '#8c8b88' : color;
-        context.fillRect(x + col, y + row, 1, 1);
-      }
-    }
-  }
-}
 function surface(width: number, height: number): HTMLCanvasElement | null {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
@@ -76,18 +60,11 @@ function prepare(): ArtCache | null {
   const context = village?.getContext('2d'); const text = characters?.getContext('2d'); const actors = sprites?.getContext('2d');
   if (!village || !characters || !sprites || !context || !text || !actors) return null;
   text.fillStyle = '#ebdbb2'; text.font = '12px monospace';
-  for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLUMNS; col++) {
-    const x = col * TILE; const y = TOP + row * TILE; const char = VILLAGE[row]?.[col] ?? ' ';
-    context.fillStyle = hex(WORLD_PALETTES.margin.ground); context.fillRect(x, y, TILE, TILE);
-    for (const pixel of groundArt('margin', (col + row) % 4)) {
-      context.globalAlpha = pixel.alpha; context.fillStyle = hex(pixel.color);
-      context.fillRect(x + pixel.x, y + pixel.y, pixel.width, pixel.height);
-    }
-    context.globalAlpha = 1;
-    const object = OBJECTS[char]; if (object) paintSprite(context, object, x, y);
-    text.fillText(char === ' ' ? '.' : char, x + 3, y + 12);
-  }
-  paintSprite(actors, 'player', 0, 0); paintSprite(actors, 'unwriter', 16, 0, true); paintSprite(actors, 'dust-puff', 32, 0);
+  paintTableau(context, VILLAGE, marginLegend, 'margin', 0, TOP);
+  VILLAGE.forEach((row, line) => [...row].forEach((char, col) => {
+    text.fillText(char === ' ' ? '\u00b7' : char, col * TILE + 3, TOP + line * TILE + 12);
+  }));
+  paintSprite(actors, 'player', 0, 0); paintSprite(actors, 'unwriter', 16, 0, '#8c8b88'); paintSprite(actors, 'dust-puff', 32, 0);
   const strips = WORLDS.map(world => {
     const strip = surface(32, 48);
     const brush = strip?.getContext('2d');

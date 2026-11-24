@@ -1,10 +1,7 @@
 import { Prologue } from './prologue/Prologue.js';
 import { CurrentWorld } from './prologue/WorldMap.js';
 import { clearSeenKeys } from './play2/notebook/seen.js';
-import { SPRITES } from './scene/sprites/index.js';
-import { WORLD_PALETTES } from './scene/palette.js';
-import { groundArt } from './scene/terrain/art.js';
-import { groundVariant, titleRowGone, TITLE_ROW_CLOCK_MS } from './scene/terrain/life.js';
+import { TitleScene } from './title/TitleScene.js';
 import { bannerBrowserKey, WorldBanner, useWorldBanner } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import { learnedReference } from './play2/help/learned.js';
@@ -220,6 +217,7 @@ export function App() {
   if (!started) return withHelp(<main className="play-title">
     <TitleScene />
     <div className="play-title__menu">
+    <p className="play-title__file" aria-hidden="true">folio.txt [+]</p>
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
@@ -228,8 +226,8 @@ export function App() {
       <button aria-current={choice === (canContinue ? 2 : 1) ? 'true' : undefined} onClick={openHelp}>Keys</button>
       <button aria-current={choice === (canContinue ? 3 : 2) ? 'true' : undefined} onClick={watchIntro}>Intro</button>
       <button aria-current={choice === (canContinue ? 4 : 3) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
-      <div className="play-menu__sound" data-selected={choice === (canContinue ? 5 : 4)}>
-        <SoundButton enabled={sound.enabled} onToggle={sound.toggle} />
+      <div className="play-menu__sound">
+        <SoundButton selected={choice === (canContinue ? 5 : 4)} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
@@ -243,74 +241,4 @@ export function App() {
     {banner.visible && <WorldBanner world={banner.visible} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
     onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
-}
-
-const TITLE_WIDTH = 384;
-const TITLE_HEIGHT = 240;
-/** A small original Margin tableau drawn from the same tile atlas as the field. */
-const TITLE_TILE_SIZE = 16;
-const TITLE_FIRST_ROW = 4;
-const TITLE_ROWS = 15;
-const TITLE_COLS = 24;
-const TITLE_PAPER_COL = 16;
-const TITLE_ROAD_ROW = 10;
-const TITLE_SKY_HEIGHT = 38;
-const TITLE_TREES = [1, 4, 8, 12];
-const TITLE_HOUSE_COLS = [3, 4, 5];
-const TITLE_TILDE_COL = 17;
-const TITLE_GLYPH_BASELINE = 12;
-const TITLE_TREE_ROWS = [5, 13];
-const TITLE_ROOF_ROW = 7;
-const TITLE_HOUSE_ROW = 8;
-const TITLE_WELL = { col: 10, line: 8 };
-const TITLE_STONE = { col: 7, line: 11 };
-const TITLE_PLAYER = { col: 14, line: 9 };
-function TitleScene() {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const context = canvas.current?.getContext('2d');
-    if (!context) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let tick = 0;
-    const palette = WORLD_PALETTES.margin;
-    const hex = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
-    const tile = (sprite: string, col: number, line: number): void => {
-      const art = SPRITES[sprite];
-      if (!art) return;
-      art.frames[0]?.forEach((row, y) => [...row].forEach((pixel, x) => {
-        const color = art.palette[pixel];
-        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(col * TITLE_TILE_SIZE + x, line * TITLE_TILE_SIZE + y, 1, 1); }
-      }));
-    };
-    const draw = (): void => {
-      context.clearRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
-      context.fillStyle = '#d9ad82'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
-      context.fillStyle = '#edcca2'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_SKY_HEIGHT);
-      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) for (let col = 0; col < TITLE_COLS; col++) {
-        const paper = col >= TITLE_PAPER_COL || (titleRowGone(tick, reduced.matches) && line === TITLE_ROAD_ROW);
-        if (paper) { context.fillStyle = hex(palette.paper); context.fillRect(col * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE, TITLE_TILE_SIZE, TITLE_TILE_SIZE); continue; }
-        const road = line === TITLE_ROAD_ROW;
-        tile(road ? 'road' : 'grass', col, line);
-        if (!road) for (const pixel of groundArt('margin', groundVariant(line, col))) {
-          context.globalAlpha = pixel.alpha; context.fillStyle = hex(pixel.color);
-          context.fillRect(col * TITLE_TILE_SIZE + pixel.x, line * TITLE_TILE_SIZE + pixel.y, pixel.width, pixel.height);
-        }
-        context.globalAlpha = 1;
-      }
-      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) {
-        context.fillStyle = '#687b74'; context.font = '12px monospace';
-        context.fillText('~', TITLE_TILDE_COL * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE + TITLE_GLYPH_BASELINE);
-      }
-      for (const col of TITLE_TREES) for (const line of TITLE_TREE_ROWS) tile('tree', col, line);
-      for (const col of TITLE_HOUSE_COLS) { tile('house-roof', col, TITLE_ROOF_ROW); tile('house-wall', col, TITLE_HOUSE_ROW); }
-      tile('well', TITLE_WELL.col, TITLE_WELL.line); tile('save-stone', TITLE_STONE.col, TITLE_STONE.line);
-      tile('player', TITLE_PLAYER.col, TITLE_PLAYER.line);
-    };
-    draw();
-    const timer = setInterval(() => { if (!reduced.matches) { tick++; draw(); } }, TITLE_ROW_CLOCK_MS);
-    const change = (): void => { tick = 0; draw(); };
-    reduced.addEventListener('change', change);
-    return () => { clearInterval(timer); reduced.removeEventListener('change', change); };
-  }, []);
-  return <canvas className="title-scene" ref={canvas} width={TITLE_WIDTH} height={TITLE_HEIGHT} aria-hidden="true" />;
 }

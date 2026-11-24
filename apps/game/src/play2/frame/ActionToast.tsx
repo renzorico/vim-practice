@@ -40,6 +40,6 @@ export function ActionToast({ events, stage, world, legend, hidden }: ActionToas
   const visible = !hidden && !successful && slip !== null && slip.turn === world.turn;
   return <div className="action-toast" role="status" aria-live="polite" aria-atomic="true"
     data-visible={visible}>
-    {visible ? <span className="action-toast__slip" key={slip.generation}>{slip.text}</span> : null}
+    {visible ? <span key={slip.generation}>{slip.text}</span> : null}
   </div>;
 }

@@ -762,7 +762,7 @@ it('keeps the new title menu indices correct with and without Continue', () => {
   key('k'); expect(appHtml()).toMatch(/aria-current="true">Keys/);
   key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
   key('Escape'); key('j'); key('j'); key('j'); key('j'); key('j');
-  expect(appHtml()).toContain('data-selected="true"');
+  expect(appHtml()).toContain('data-sound-toggle="true" aria-label="Sound: on" aria-pressed="true" aria-current="true"');
 });
 it('uses quiet dialogue ticks, one low tone on beat four, and no cues when muted', () => {
   autoSkipIntro = false;
