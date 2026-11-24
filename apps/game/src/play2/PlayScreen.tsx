@@ -92,8 +92,9 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
     return !nearest || distance(at) < distance(nearest) ? at : nearest;
   }, null);
   const targetEntity = target ? world.entities.find(entity => entity.at.line === target.line && entity.at.col === target.col)?.id : undefined;
-  const hints = useHints(session, script?.hints ?? stage.hints, objectives[0] ?? '', guide?.keys ?? [], hintRequests);
   const quiet = session.queue.length > 0 || Boolean(session.clearCard) || showKeyCard || scriptStamp || world.status !== 'playing';
+  const hints = useHints({ session, hints: script?.hints ?? stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
+    requests: hintRequests, quiet, scriptId: script?.id ?? '' });
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
@@ -111,7 +112,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
       <HintSlip hint={quiet ? null : hints.hint}
-        place={(note, key) => <DialoguePlacement key={key} field={field} world={world} stage={stage}>{note}</DialoguePlacement>} />
+        place={(note, key) => <DialoguePlacement key={key} field={field} world={world} stage={stage} follow>{note}</DialoguePlacement>} />
       <ActionToast events={session.lastEvents} stage={stage} world={world} legend={legend}
         hidden={Boolean(presentation || session.clearCard || showKeyCard || scriptStamp || world.status !== 'playing')} />
       {dialogue && presentation && !scriptStamp && world.status !== 'dead' && <DialoguePlacement key={dialogue.id} field={field} world={world} stage={stage}>

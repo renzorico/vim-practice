@@ -281,6 +281,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .hint-slip .hint-slip__label { margin-bottom: 4px; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted); }
 .hint-slip .hint-slip__more { margin-top: 8px; font-size: 12px; color: var(--ink-muted); }
 .hint-slip .keycap { padding: 0 0.3em; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
+.status-hint { color: var(--text); }
 .status-hint[data-stuck='true'] { color: var(--ink); background: var(--tab-gold); padding: 0 8px; }
 .status-hint[data-stuck='true'] kbd { color: var(--ink); }
 .dialogue-placement { position: absolute; inset: 0; pointer-events: none; z-index: 20; }

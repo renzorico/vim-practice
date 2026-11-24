@@ -998,7 +998,7 @@ Tags: `#design` `#gates`
 
 **Why:** Renzo got stuck on the planks. Every stage had hints written, but field stages never showed them; only the text stages did.
 
-**What:** `:hint` (or its button in the status line) shows the stage's hints one at a time as a note in the margin, the one for the current objective first; after the last it puts them away. No turn, no star lost, nothing in the world changes. After 14 turns on one objective, or 4 blocked moves in a row, the button lights up and asks "stuck?". A new objective puts the note away. Nothing new on the Session.
+**What:** `:hint` (or its button in the status line) shows the stage's hints one at a time as a note in the margin: only those for the current objective when one names its keys, so later ones are not given away. After the last it puts them away. No turn, no star lost, nothing in the world changes. After 14 turns on one objective, or 4 blocked moves in a row, the button lights up and asks "stuck?". A new objective puts the note away. Nothing new on the Session.
 
 ---
 

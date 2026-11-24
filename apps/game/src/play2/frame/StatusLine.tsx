@@ -44,7 +44,7 @@ export function StatusLine({ engine, learned, textStage, restartTaught, prompt, 
       <output aria-label="Pending keys" aria-live="off">{helpCommand ?? engine.pendingKeys.join('')}</output>
       {prompt && <span className="pending-prompt">{prompt}</span>}
       {!textStage && <span className="status-tab"><kbd>Tab</kbd> file view</span>}
-      {onAskHint && <button className="help-link status-hint" data-stuck={stuck} onClick={onAskHint} onMouseDown={event => event.preventDefault()}><kbd>:hint</kbd> {stuck ? 'stuck?' : 'hint'}</button>}
+      {onAskHint && <button className="status-hint" tabIndex={-1} data-stuck={stuck} onClick={onAskHint} onMouseDown={event => event.preventDefault()}><kbd>:hint</kbd> {stuck ? 'stuck?' : 'hint'}</button>}
       {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
       {restartTaught && <span className="status-restart"><kbd>:e!</kbd> start over</span>}
       {sound}

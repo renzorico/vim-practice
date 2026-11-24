@@ -6,20 +6,23 @@ export const STUCK_BUMPS = 4;
 
 const keysIn = (text: string): readonly string[] => keyParts(text).filter(part => part.keycap).map(part => part.text);
 
-/** The hints that name a key of the current objective or guide first; otherwise as written. */
-export function orderHints(hints: readonly string[], objective: string, guideKeys: readonly string[]): readonly string[] {
+/** Only the hints that name a key of the current objective or guide, so none gives a later one away; if none does, all as written. */
+export function hintsFor(hints: readonly string[], objective: string, guideKeys: readonly string[]): readonly string[] {
   const wanted = new Set([...keysIn(objective), guideKeys.join('')]);
   const fits = (hint: string): boolean => keysIn(hint).some(key => wanted.has(key));
-  return [...hints.filter(fits), ...hints.filter(hint => !fits(hint))];
+  const fitting = hints.filter(fits);
+  return fitting.length > 0 ? fitting : hints;
 }
 
 export interface Effort { readonly objective: string; readonly sinceTurn: number; readonly bumps: number }
 export function startEffort(objective: string, turn: number): Effort { return { objective, sinceTurn: turn, bumps: 0 }; }
-/** One reduction: a new objective (or a restart) starts over; bumps count in a row. */
-export function updateEffort(effort: Effort, objective: string, turn: number, bumped: boolean, moved: boolean): Effort {
-  if (effort.objective !== objective || turn < effort.sinceTurn) return startEffort(objective, turn);
-  if (bumped) return { ...effort, bumps: effort.bumps + 1 };
-  return moved && effort.bumps > 0 ? { ...effort, bumps: 0 } : effort;
+/** What one key press did, as far as being stuck goes. */
+export type Outcome = 'bump' | 'turn' | 'restart' | 'nothing';
+/** A new objective or a restart starts over; only bumps with no turn between them add up. */
+export function updateEffort(effort: Effort, objective: string, turn: number, outcome: Outcome): Effort {
+  if (effort.objective !== objective || turn < effort.sinceTurn || outcome === 'restart') return startEffort(objective, turn);
+  if (outcome === 'bump') return { ...effort, bumps: effort.bumps + 1 };
+  return outcome === 'turn' && effort.bumps > 0 ? { ...effort, bumps: 0 } : effort;
 }
 export function isStuck(effort: Effort, turn: number): boolean {
   return turn - effort.sinceTurn >= STUCK_TURNS || effort.bumps >= STUCK_BUMPS;
