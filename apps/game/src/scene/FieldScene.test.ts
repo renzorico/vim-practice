@@ -366,13 +366,13 @@ it('re-creates river tiles at the current idle frame', () => {
   const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
   expect(river).toBeDefined();
 });
-it('prompts Enter to use beside the quarry gate', () => {
+it('prompts Enter to go south beside the quarry gate', () => {
   const sim = createWorldSim(createEngine());
   const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
   const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
     state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
   scene.create();
-  expect(fake.texts.some(text => text.text === 'Enter: use')).toBe(true);
+  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
 });
 
 it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after the clock', command => {
@@ -474,7 +474,7 @@ it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the
   expect(player?.x).toBe(30 * 16 + 8);
   const liftState = sim.apply(jumped.state, [{ type: 'move-player', to: { line: 7, col: 27 } }], canopy, canopyLegend);
   scene.present({ ...initial, ...liftState });
-  expect(fake.texts.some(text => text.text === 'Enter: use')).toBe(true);
+  expect(fake.texts.some(text => text.text === 'Enter: take lift')).toBe(true);
 });
 
 it('renders Glades terrain and actors and follows G and gg over all eighteen rows', async () => {
