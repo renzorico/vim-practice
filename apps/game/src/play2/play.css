@@ -224,7 +224,8 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .play-title__menu .play-menu-hint { font-size: 13px; margin: 20px 0 0; color: var(--ink-muted); line-height: 1.7; }
 .play-title__menu kbd { padding: 0 5px; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
 /* The story's last edit: two letters deleted. */
-.play-ending { position: fixed; inset: 0; z-index: 30; }
+.play-ending { position: fixed; inset: 0; z-index: 30; overflow-y: auto; }
+.play-ending .title-scene { position: fixed; }
 .play-ending h1 s { color: var(--paper-edge); text-decoration: none; animation: letters-go 1.6s ease-in 600ms both; }
 @keyframes letters-go { from { color: var(--ink); } to { color: var(--paper-edge); } }
 .play-ending .play-title__menu button { color: var(--ink); background: var(--tab-gold); border: 1px solid var(--ink); border-bottom-width: 3px; }

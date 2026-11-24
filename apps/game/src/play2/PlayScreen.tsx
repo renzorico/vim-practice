@@ -121,7 +121,12 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
-      {!session.clearCard && presentation?.type === 'ending' && <section className="play-title play-ending" role="dialog" aria-label="Ending">
+      {!session.clearCard && presentation?.type === 'ending' && presentation.ending !== 'recover' && <section className="play-panel" role="dialog" aria-label="Ending">
+        <h1>UNSAVED</h1>
+        <p>{result.keys} keys typed.</p><p>{result.hearts} of {stage.hearts} hearts left.</p>
+        <button onClick={onAdvance}>Enter to go on</button>
+      </section>}
+      {!session.clearCard && presentation?.type === 'ending' && presentation.ending === 'recover' && <section className="play-title play-ending" role="dialog" aria-label="Ending">
         <TitleScene saved />
         <div className="play-title__menu">
           <p className="play-title__file">folio.txt written</p>

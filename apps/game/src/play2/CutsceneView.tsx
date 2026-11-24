@@ -32,12 +32,13 @@ export function CutsceneView({ id, index, beat, stage, legend, onAdvance }: {
   const kind = chapter ? 'chapter' : beat.type === 'terminal' ? 'terminal' : beat.type === 'title' && beat.text === CARVED ? 'carving' : 'caption';
   return <section className="story-scene" role="dialog" aria-label="Story">
     {picture}
-    <div className={`story-scene__${kind}`} aria-live="polite" key={index}>
+    {/* The region outlives its beats, so each new one is announced. */}
+    <div aria-live="polite"><div className={`story-scene__${kind}`} key={index}>
       {beat.type === 'line' && <h2>{beat.line.text}</h2>}
       {beat.type === 'title' && <h2><KeyText text={beat.text} /></h2>}
       {beat.type === 'terminal' && <pre className="play-terminal">{beat.lines.join('\n')}</pre>}
       {beat.type === 'image' && <div role="img" aria-label={beat.image} data-image={beat.image} />}
       <Advance onAdvance={onAdvance} />
-    </div>
+    </div></div>
   </section>;
 }
