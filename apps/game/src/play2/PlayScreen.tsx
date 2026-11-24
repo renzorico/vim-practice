@@ -92,6 +92,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
     const distance = (cell: Position) => Math.abs(cell.line - activeEngine.cursor.line) + Math.abs(cell.col - activeEngine.cursor.col);
     return !nearest || distance(at) < distance(nearest) ? at : nearest;
   }, null);
+  const targetEntity = target ? world.entities.find(entity => entity.at.line === target.line && entity.at.col === target.col)?.id : undefined;
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
@@ -105,7 +106,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
-      objectiveTarget={showKeyCard ? null : nearestStand ?? target} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
+      objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
       <ActionToast events={session.lastEvents} stage={stage} world={world} legend={legend}

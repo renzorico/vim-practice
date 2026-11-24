@@ -34,6 +34,7 @@ import { WELL } from './well.js';
 import { GATE } from './gate.js';
 import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
+import { CHARACTER_FIELDS } from './characters.js';
 import { tallBody } from './tall.js';
 import type { PixelSprite } from './sprite.js';
 const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
@@ -121,5 +122,11 @@ const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
 };
 
 export const SPRITES: Readonly<Record<string, PixelSprite>> = Object.fromEntries(
-  Object.entries(BASE_SPRITES).map(([name, sprite]) => [name, tallBody(name, sprite)]),
+  Object.entries(BASE_SPRITES).map(([name, sprite]) => {
+    // NPC art gains a one-pixel breath without moving feet or adding display objects.
+    const person = name !== 'player' && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, name);
+    const idle = person && sprite.frames.length === 1 ? { ...sprite, frames: [sprite.frames[0] ?? [],
+      (sprite.frames[0] ?? []).map((row, y, frame) => y >= 3 && y < 14 ? frame[y + 1] ?? row : row)] } : sprite;
+    return [name, tallBody(name, idle)];
+  }),
 );

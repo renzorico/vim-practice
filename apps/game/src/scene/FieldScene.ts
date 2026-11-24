@@ -1,3 +1,9 @@
+import { movementFacing, playerFrame, isPerson, npcFacing, personIdleFrame, interactionLabel, slipPosition, type Facing } from './characters.js';
+import { treeArt, treeMask, treeVariant } from './terrain/forest.js';
+import { surroundingFor } from './terrain/atmosphere.js';
+import { erasedArt, erasedColumn } from './terrain/erased.js';
+import { findBuildings, intactBuildings, buildingAt, buildingArt, type Building } from './terrain/buildings.js';
+import { wornCells, wearArt, belowBuilding, villageDecoration } from './terrain/village.js';
 import { chasmArt, chasmBanks } from './terrain/chasm.js';
 import { AtmosphereLayer } from './terrain/AtmosphereLayer.js';
 import { replacesGround, substrate, surface } from './terrain/surfaces.js';
@@ -40,6 +46,8 @@ export interface FieldFrame {
   readonly hazards?: readonly Area[];
   readonly markers?: readonly LandingMarker[];
   readonly objectiveTarget?: Position | null;
+  /** Person to mark; objectiveTarget remains the nearest stand cell. */
+  readonly objectiveEntity?: string;
   readonly hideCursor?: boolean;
   readonly hideObjective?: boolean;
   readonly standAt?: readonly Position[];
@@ -119,6 +127,13 @@ export class FieldScene extends Phaser.Scene {
   private shownMarkers: readonly { key: string; line: number; col: number; alpha: number }[] = [];
   private landingLabels: Phaser.GameObjects.Container | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
+  private objectiveTexture?: string;
+  private playerFacing: Facing = 'down';
+  private layoutRows?: readonly string[];
+  private layoutStage?: Stage;
+  private buildings: readonly Building[] = [];
+  private wear: ReadonlySet<string> = new Set<string>();
+  private people: ReadonlySet<string> = new Set<string>();
   private facing = new Map<string, boolean>();
   private idleFrame = 0;
   private idleElapsed = 0;
@@ -173,6 +188,8 @@ export class FieldScene extends Phaser.Scene {
     this.cameras.main.setZoom(TILE_SCALE).setRoundPixels(true);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeView, this);
     this.ready = true;
+    // Warm finite animation shapes once; walking never creates a player texture.
+    for (let frame = 0; frame < (SPRITES.player?.frames.length ?? 0); frame++) this.texture('player', frame);
     this.present(this.frame);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.ready = false;
@@ -236,7 +253,8 @@ export class FieldScene extends Phaser.Scene {
     for (let index = 0; index < this.actorImages.length; index++) {
       const actor = this.actorImages[index];
       if (!actor) continue;
-      const phase = actorIdleFrame(actor.id, this.idleElapsed);
+      if (actor.id === 'player') continue;
+      const phase = this.people.has(actor.id) ? personIdleFrame(actor.id, this.idleElapsed) : actorIdleFrame(actor.id, this.idleElapsed);
       if (this.actorFrames.get(actor.id) === phase) continue;
       actor.image.setTexture(this.texture(actor.sprite, phase));
       this.actorFrames.set(actor.id, phase);
@@ -278,7 +296,7 @@ export class FieldScene extends Phaser.Scene {
       && this.frame.legend === frame.legend && this.frame.stage === frame.stage;
     if (sameFrame) {
       // Presentation options can change without interrupting the active clock.
-      if (this.frame.showSource !== frame.showSource) { this.frame = frame; this.syncCells(); this.setSourceVisible(frame.showSource); }
+      if (this.frame.showSource !== frame.showSource) { this.frame = frame; this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
       this.frame = frame;
       this.syncLandingMarkers();
@@ -299,7 +317,7 @@ export class FieldScene extends Phaser.Scene {
       this.previousState = frame.state;
       this.previousEvents = frame.events;
       if (frame.events.some(event => event.type === 'rows-changed')) { this.syncCells(); this.syncTerrain(); }
-      if (sourceChanged) { this.syncCells(); this.setSourceVisible(frame.showSource); }
+      if (sourceChanged) { this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
       this.syncLandingMarkers();
       this.syncGuidance();
@@ -323,10 +341,14 @@ export class FieldScene extends Phaser.Scene {
       || this.previousState?.engine.cursor.col !== frame.state.engine.cursor.col) this.cursorElapsed = 0;
     this.frame = frame;
     if (!this.ready) return;
+    // A new stage, or the same one started over.
+    if (this.previousState?.stage !== frame.state.stage || frame.state.turn < this.previousState.turn) this.playerFacing = 'down';
     for (const event of frame.events) {
+      if (event.type === 'bump') this.playerFacing = movementFacing(frame.state.engine.cursor, event.at, this.playerFacing);
+      if (event.type === 'player-moved') this.playerFacing = movementFacing(event.from, event.to, this.playerFacing);
       if (event.type === 'player-moved' || event.type === 'entity-moved') {
         const id = event.type === 'player-moved' ? 'player' : event.entity;
-        if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
+        if (id !== 'player' && event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
       }
     }
     this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.world === 'last-page' ? '#f6efd4' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
@@ -336,6 +358,7 @@ export class FieldScene extends Phaser.Scene {
     this.captureDust(frame);
     this.captureUnwriting(frame);
     this.captureArchiveRows(frame);
+    this.syncVillage();
     this.syncCells();
     this.syncTerrain();
     this.syncWarehouseDecorations();
@@ -392,7 +415,11 @@ export class FieldScene extends Phaser.Scene {
       } else if (shape === 'range') graphics.fillRect(1, 1, TILE_SIZE - 2, TILE_SIZE - 2);
       else if (shape === 'insert') graphics.fillRect(0, 0, 2, TILE_SIZE);
       else if (shape === 'operator-pending') graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
-      else if (shape === 'arrow') {
+      else if (shape === 'person') {
+        graphics.fillStyle(0x20252b).fillRect(2, 0, 12, 11);
+        graphics.fillStyle(0xf6efd4).fillRect(3, 1, 10, 9).fillRect(7, 10, 3, 3);
+        graphics.fillStyle(0x20252b).fillRect(7, 2, 2, 4).fillRect(7, 7, 2, 1);
+      } else if (shape === 'arrow') {
         // A filled down-pointing triangle with a dark outline, so it reads on grass, roofs and paper.
         graphics.fillStyle(ARROW_OUTLINE);
         for (let row = 0; row < 7; row++) graphics.fillRect(1 + row, 4 + row, TILE_SIZE - 2 - row * 2, 1);
@@ -428,7 +455,8 @@ export class FieldScene extends Phaser.Scene {
       if (mark) mark.setAlpha(this.reducedMotion || String(mark.texture.key ?? mark.texture).includes('stand-ready') ? 1
         : 0.65 + 0.35 * Math.cos(this.guidanceElapsed * Math.PI * 2 / GUIDANCE_PERIOD_MS));
     }
-    const target = this.frame.objectiveTarget;
+    const entity = state.entities.find(entity => entity.id === this.frame.objectiveEntity && isPerson(entity.def.kind));
+    const target = this.frame.objectiveTarget ?? entity?.at;
     const visible = target && stage.type !== 'text' && !this.frame.hideObjective
       && !this.frame.darkness && !DARK_STAGES[stage.id];
     if (!visible) { this.objectiveArrow?.setVisible(false); return; }
@@ -437,14 +465,21 @@ export class FieldScene extends Phaser.Scene {
     const halfWidth = this.scale.width / zoom / 2;
     const halfHeight = this.scale.height / zoom / 2;
     const inset = TILE_SIZE / 2;
-    const targetX = center(target.col);
-    const targetY = center(target.line);
+    const actor = entity ? this.entities.get(entity.id) : undefined;
+    const person = actor && actor.visible && actor.alpha > 0
+      && Math.abs(actor.x - this.cameraX) <= halfWidth - inset
+      && Math.abs(actor.y - this.cameraY) <= halfHeight - inset;
+    const targetX = person ? actor.x : center(target.col);
+    const targetY = person ? actor.y : center(target.line);
     const offscreen = Math.abs(targetX - this.cameraX) > halfWidth - inset
       || Math.abs(targetY - this.cameraY) > halfHeight - inset;
     const x = Math.max(this.cameraX - halfWidth + inset, Math.min(this.cameraX + halfWidth - inset, targetX));
     const bob = this.reducedMotion ? 0 : Math.sin(this.guidanceElapsed * Math.PI * 2 / GUIDANCE_PERIOD_MS) * OBJECTIVE_BOB_PX;
     const y = Math.max(this.cameraY - halfHeight + inset,
       Math.min(this.cameraY + halfHeight - inset, targetY - TILE_SIZE + bob));
+    const shape = this.guidanceTexture(person ? 'person' : 'arrow');
+    if (this.objectiveTexture !== shape) this.objectiveArrow.setTexture(shape);
+    this.objectiveTexture = shape;
     this.objectiveArrow.setVisible(true).setPosition(x, y)
       .setAngle(offscreen ? Math.atan2(targetY - y, targetX - x) * 180 / Math.PI - 90 : 0);
   }
@@ -646,6 +681,7 @@ export class FieldScene extends Phaser.Scene {
     this.positionLabel();
     this.positionCamera();
     this.positionDanger();
+    this.syncPrompts();
   }
 
   /**
@@ -696,6 +732,14 @@ export class FieldScene extends Phaser.Scene {
     return key;
   }
 
+  private syncVillage(): void {
+    const { stage, state, legend } = this.frame;
+    if (this.layoutRows === state.engine.lines && this.layoutStage === stage) return;
+    this.buildings = intactBuildings(findBuildings(stage.map, legend), stage.map, state.engine.lines);
+    this.wear = stage.id === 'margin' ? wornCells(state.engine.lines, legend, this.buildings) : new Set<string>();
+    this.layoutRows = state.engine.lines; this.layoutStage = stage;
+  }
+
   private syncCells(): void {
     const live = new Set<string>();
     tileGrid(this.frame.state.engine.lines, this.frame.legend).forEach((row, line) => row.forEach((sprite, col) => {
@@ -717,7 +761,14 @@ export class FieldScene extends Phaser.Scene {
         : (sprite === 'cave-floor' || sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor' || sprite === 'vault-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       const definition = tileAt(this.frame.state.engine.lines, { line, col }, this.frame.legend);
       const group = terrainGroup(definition);
-      const texture = replacesGround(definition) ? this.groundTexture(line, col, definition)
+      const building = !this.frame.showSource ? buildingAt(this.buildings, line, col) : undefined;
+      const mask = sprite === 'tree' ? treeMask(this.frame.state.engine.lines, line, col, this.frame.legend, surroundingFor(this.frame.stage.world, this.frame.stage.id) === 'forest') : 0;
+      const crown = treeVariant(line, col);
+      const texture = building ? this.pixelTexture(`village:house:${building.width}:${building.height}:${building.roof}:${line - building.line}:${col - building.col}`,
+        () => buildingArt(building, line - building.line, col - building.col))
+        : sprite === 'tree' && !this.frame.showSource ? this.pixelTexture(`village:tree:${this.frame.stage.world}:${mask}:${crown}`,
+          () => treeArt(this.frame.stage.world, mask, crown))
+        : replacesGround(definition) ? this.groundTexture(line, col, definition)
         : group === 'paper' ? this.missingTexture(line, col) : this.texture(sprite, variant);
       live.add(key);
       const cell = this.cells.get(key);
@@ -762,7 +813,17 @@ export class FieldScene extends Phaser.Scene {
   private groundTexture(line: number, col: number, tile: ReturnType<typeof tileAt>): string {
     const world = this.frame.stage.world;
     const variant = groundVariant(line, col);
-    const decorated = !this.frame.showSource && decorationAt(tile, line, col);
+    const erased = !this.frame.showSource && tile?.walkable && tile.kind === 'ground'
+      && this.frame.state.engine.lines[line] === this.frame.stage.map[line]
+      ? erasedColumn(this.frame.stage.id, line, col) : undefined;
+    if (erased !== undefined) return this.pixelTexture(`village:erased:${erased}`, () =>
+      [...groundArt(world, variant), ...erasedArt(erased)]);
+    const decorated = !this.frame.showSource && (world === 'margin'
+      ? villageDecoration(this.frame.state.engine.lines, this.frame.legend, line, col) : decorationAt(tile, line, col));
+    const worn = !this.frame.showSource && this.wear.has(`${line}:${col}`) && tile?.walkable && tile.kind === 'ground';
+    const shadow = belowBuilding(this.buildings, line, col);
+    if (worn || shadow && !this.frame.showSource) return this.pixelTexture(`village:wear:${world}:${variant}:${Number(decorated)}:${Number(worn)}:${Number(shadow)}`,
+      () => [...groundArt(world, variant, decorated), ...(worn ? wearArt(variant, shadow) : wearArt(variant, true).slice(-1))]);
     return this.pixelTexture(`terrain:ground-tile:${world}:${variant}:${Number(decorated)}`,
       () => groundArt(world, variant, decorated));
   }
@@ -818,9 +879,10 @@ export class FieldScene extends Phaser.Scene {
         const sprite = cell?.sprite ?? '';
         const banks = sprite === 'chasm' ? chasmBanks(state.engine.lines, at, legend) : undefined;
         const base = `terrain:${banks ? `chasm-${banks.join(',')}:` : ''}${edges.group === 'object' ? sprite : ''}:${stage.world}:${edges.group}:${edges.mask}:${edges.shore}:${Number(edges.cast)}:${Number(edges.posts)}:${variant}`;
-        const art = (phase: number): readonly PixelRect[] => [...(banks ? chasmArt(banks) : []), ...terrainArt(edges, stage.world, variant, false, phase, sprite === 'chasm'),
+        const custom = !this.frame.showSource && (sprite === 'tree' || buildingAt(this.buildings, line, col) !== undefined);
+        const art = (phase: number): readonly PixelRect[] => custom ? [] : [...(banks ? chasmArt(banks) : []), ...terrainArt(edges, stage.world, variant, false, phase, sprite === 'chasm'),
           ...(edges.group === 'object' ? outlineArt(SPRITES[sprite], WORLD_PALETTES[stage.world].ink, phase) : [])];
-        const first = this.pixelTexture(`${base}:0`, () => art(0));
+        const first = this.pixelTexture(custom ? 'village:clear' : `${base}:0`, () => art(0));
         const animated = edges.group === 'water';
         const second = animated ? this.pixelTexture(`${base}:1`, () => art(1)) : first;
         const frames: readonly [string, string] = [first, second];
@@ -1004,6 +1066,7 @@ export class FieldScene extends Phaser.Scene {
 
   private addEntity(id: string, sprite: string, at: Position): void {
     if (sprite === 'minotaur' || (this.frame.stage.id === 'last-page' && (id === 'unwriter' || id === 'margin'))) return;
+    for (let frame = 0; frame < (SPRITES[this.entitySprite(sprite)]?.frames.length ?? 0); frame++) this.texture(this.entitySprite(sprite), frame);
     const offset = this.pileOffsets.get(id) ?? 0;
     const image = this.add.image(center(at.col) - offset, center(at.line) - offset, this.texture(this.entitySprite(sprite), this.reducedMotion ? 0 : (this.actorFrames.get(id) ?? 0))).setFlipX(this.facing.get(id) ?? false);
     this.actors?.add(image);
@@ -1063,7 +1126,9 @@ export class FieldScene extends Phaser.Scene {
       this.player = this.add.image(0, 0, this.texture('player')).setDepth(1);
       this.actors?.add(this.player);
     }
-    this.player.setTexture(this.texture('player', this.reducedMotion ? 0 : (this.actorFrames.get('player') ?? 0))).setFlipX(this.facing.get('player') ?? false);
+    const standing = playerFrame(this.playerFacing);
+    this.actorFrames.set('player', standing);
+    this.player.setTexture(this.texture('player', standing)).setFlipX(this.playerFacing === 'right');
     this.player.setPosition(center(at.col), center(at.line))
       .setAlpha(1).clearTint();
     for (const [id, image] of this.entities) {
@@ -1087,6 +1152,7 @@ export class FieldScene extends Phaser.Scene {
         && !this.frame.events.some(event => event.type === 'entity-removed' && event.entity === id)) this.pileOffsets.delete(id);
     }
     for (const entity of this.frame.state.entities) {
+      if (isPerson(entity.def.kind)) this.facing.set(entity.id, npcFacing(entity.at, this.frame.state.engine.cursor, this.facing.get(entity.id)));
       const image = this.entities.get(entity.id);
       if (!image) this.addEntity(entity.id, entity.def.sprite, entity.at);
       else {
@@ -1097,20 +1163,9 @@ export class FieldScene extends Phaser.Scene {
           .setFlipX(this.facing.get(entity.id) ?? false);
       }
     }
-    this.prompts?.removeAll(true);
-    for (const entity of this.frame.state.entities) {
-      const at = this.frame.state.engine.cursor;
-      const canTalk = this.frame.stage.triggers.some(trigger => trigger.on === 'interact'
-        && trigger.target.type === 'entity' && trigger.target.entity === entity.id
-        && (!trigger.once || !this.frame.state.firedTriggers.includes(trigger.id))
-        && (trigger.onlyIf === undefined || this.frame.state.flags[trigger.onlyIf] === true)
-        && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
-      if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
-        this.prompts?.add(this.add.text(center(entity.at.col), center(entity.at.line) - 13, entity.def.sprite === 'quarry-gate' ? 'Enter: go south' : entity.def.sprite === 'lift' ? 'Enter: take lift' : 'Enter: talk', {
-          fontFamily: 'monospace', fontSize: '7px', color: '#f6efd4', backgroundColor: '#20252b', padding: { x: 2, y: 1 },
-        }).setOrigin(0.5, 1));
-      }
-    }
+    this.positionCamera(at);
+    this.syncPrompts();
+    this.people = new Set(this.frame.state.entities.filter(entity => isPerson(entity.def.kind)).map(entity => entity.id));
     this.actorImages = [{ id: 'player', sprite: 'player', image: this.player }];
     for (const [id, image] of this.entities) {
       const entity = this.frame.state.entities.find(entity => entity.id === id);
@@ -1125,6 +1180,32 @@ export class FieldScene extends Phaser.Scene {
     this.syncTerrainLight();
     this.updateAmbient(0);
     this.syncActorShadows();
+  }
+
+  /** The "Enter: ..." slips, placed against the camera as it is now. */
+  private syncPrompts(): void {
+    this.prompts?.setVisible(!this.animating);
+    this.prompts?.removeAll(true);
+    for (const entity of this.frame.state.entities) {
+      const at = this.frame.state.engine.cursor;
+      const canTalk = this.frame.stage.triggers.some(trigger => trigger.on === 'interact'
+        && trigger.target.type === 'entity' && trigger.target.entity === entity.id
+        && (!trigger.once || !this.frame.state.firedTriggers.includes(trigger.id))
+        && (trigger.onlyIf === undefined || this.frame.state.flags[trigger.onlyIf] === true)
+        && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
+      if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
+        const text = interactionLabel(entity, this.frame.stage, this.frame.state);
+        const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+        const halfWidth = this.scale.width / zoom / 2; const halfHeight = this.scale.height / zoom / 2;
+        const point = slipPosition(entity.at, this.frame.state.engine.cursor, text.length * 4.3 + 6, 10, {
+          left: this.cameraX - halfWidth, right: this.cameraX + halfWidth,
+          top: this.cameraY - halfHeight, bottom: this.cameraY + halfHeight,
+        });
+        this.prompts?.add(this.add.text(point.x, point.y, text, {
+          fontFamily: 'monospace', fontSize: '7px', color: '#20252b', backgroundColor: '#f6efd4', padding: { x: 3, y: 1 },
+        }).setOrigin(0, 0));
+      }
+    }
   }
 
   private syncDarkness(): void {
@@ -1329,6 +1410,11 @@ export class FieldScene extends Phaser.Scene {
             center(drawnFrom.col + (step.to.col - drawnFrom.col) * progress) - offset,
             center(drawnFrom.line + (step.to.line - drawnFrom.line) * progress) - arc - bob - offset,
           );
+          if (step.type !== 'entity-move') {
+            const frame = playerFrame(this.playerFacing, cellsBetween(drawnFrom, step.to) * progress, step.type === 'walk' && fraction < 1, this.reducedMotion);
+            this.actorFrames.set('player', frame);
+            target.setTexture(this.texture('player', frame)).setFlipX(this.playerFacing === 'right');
+          }
           this.syncActorShadows();
           if (landingJump) {
             const landing = Math.max(0, Math.min(1, (elapsed - flightDuration) / LANDING_DURATION_MS));
@@ -1342,7 +1428,7 @@ export class FieldScene extends Phaser.Scene {
             const trailProgress = Math.max(0, progress - (index + 1) * 0.12);
             ghost.setVisible(progress > 0 && fraction < 1)
               .setTexture(this.texture('player', (this.actorFrames.get('player') ?? 0)))
-              .setFlipX(this.facing.get('player') ?? false)
+              .setFlipX(this.playerFacing === 'right')
               .setTint(this.player?.tintTopLeft ?? 0xffffff)
               .setAlpha((TRAIL_ALPHAS[index] ?? 0) * (1 - fraction))
               .setPosition(center(drawnFrom.col + (step.to.col - drawnFrom.col) * trailProgress),
@@ -1378,6 +1464,7 @@ export class FieldScene extends Phaser.Scene {
     }
     this.syncTerrainVisibility();
     this.animating = true;
+    this.prompts?.setVisible(false);
     // Draw the first frame now, so nothing shows at its destination before the tween's first update.
     clock.value = 0;
     render();
@@ -1392,6 +1479,9 @@ export class FieldScene extends Phaser.Scene {
         this.bumpDust?.setVisible(false);
         this.player?.setScale(1);
         this.animating = false;
+        this.actorFrames.set('player', playerFrame(this.playerFacing));
+        this.player?.setTexture(this.texture('player', playerFrame(this.playerFacing)));
+        this.syncPrompts();
         this.hiddenTerrainRows.clear();
         this.syncTerrainVisibility();
       },

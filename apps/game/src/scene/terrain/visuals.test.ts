@@ -134,7 +134,7 @@ it('hides every upper eight-pixel overhang in source view and only crowns the to
   for (const sprite of TALL_SPRITES) {
     expect(overhangVisible(sprite, undefined, false)).toBe(true);
     expect(overhangVisible(sprite, undefined, true)).toBe(false);
-    expect(overhangVisible(sprite, sprite, false)).toBe(false);
+    expect(overhangVisible(sprite, sprite, false)).toBe(sprite === 'tree');
   }
   expect(overhangVisible('grass', undefined, false)).toBe(false);
 });

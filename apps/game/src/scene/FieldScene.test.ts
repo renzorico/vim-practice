@@ -366,13 +366,13 @@ it('re-creates river tiles at the current idle frame', () => {
   const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
   expect(river).toBeDefined();
 });
-it('prompts Enter to go south beside the quarry gate', () => {
+it('prompts Enter to use beside the quarry gate', () => {
   const sim = createWorldSim(createEngine());
   const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
   const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
     state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
   scene.create();
-  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
+  expect(fake.texts.some(text => text.text === 'Enter: use')).toBe(true);
 });
 
 it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after the clock', command => {
@@ -468,13 +468,13 @@ it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the
   expect(fake.tween).toHaveBeenCalled();
   const playback = fake.tween.mock.calls.at(-1)?.[0];
   playback.targets.value = 0.5; playback.onUpdate();
-  const player = fake.images.find(image => image.texture === 'field:player');
+  const player = fake.images.find(image => image.texture === 'field:player:7');
   expect(player?.y).toBeLessThan(24);
   scene.finish();
   expect(player?.x).toBe(30 * 16 + 8);
   const liftState = sim.apply(jumped.state, [{ type: 'move-player', to: { line: 7, col: 27 } }], canopy, canopyLegend);
   scene.present({ ...initial, ...liftState });
-  expect(fake.texts.some(text => text.text === 'Enter: take lift')).toBe(true);
+  expect(fake.texts.some(text => text.text === 'Enter: use')).toBe(true);
 });
 
 it('renders Glades terrain and actors and follows G and gg over all eighteen rows', async () => {
@@ -575,7 +575,7 @@ it.each([false, true])('tips Jetty junk, splashes, then slides the row and actor
   scene.present({ ...initial, ...deleted });
   const junk = fake.images.filter(image => image.texture === 'field:nets' && image.depth === 3);
   const splashes = fake.images.filter(image => image.texture === 'field:splash');
-  const player = fake.images.find(image => image.texture === 'field:player');
+  const player = fake.images.find(image => image.texture === 'field:player:7');
   const post = fake.images.find(image => image.texture === 'field:pier-post' && image.x === (reducedMotion ? 23 : 29) * 16 + 8 && image.y === 56);
   if (reducedMotion) {
     expect(fake.tween).not.toHaveBeenCalled();
@@ -1630,7 +1630,7 @@ it('gates overhang alpha and row visibility by both its own and covered cell', (
   const initial = { ...frame, showSource: false, stage: { ...frame.stage, map: rows }, state: { ...frame.state,
     entities: [], engine: { ...frame.state.engine, lines: rows, cursor: { line: 2, col: 1 } } } };
   const layer = atmosphere(); layer.sync(initial, 24, 24);
-  const top = fake.images.find(image => image.texture === 'overhang:tree');
+  const top = fake.images.find(image => image.texture.startsWith('overhang:tree:'));
   expect(top?.visible).toBe(true);
   layer.setHiddenRows(new Set([0])); expect(top?.visible).toBe(false);
   layer.setHiddenRows(new Set([1])); expect(top?.visible).toBe(false);
@@ -1687,4 +1687,72 @@ it('sorts trail ghosts directly behind the player and bump dust directly in fron
   const dust = fake.images.find(image => image.texture === 'field:dust-puff');
   const bumpPlayer = fake.images.filter(image => image.texture === 'field:player').at(-1);
   expect(dust?.depth).toBe((bumpPlayer?.depth ?? 0) + 0.1);
+});
+
+it('marks an explicit on-screen person above their head, keeping stand cells separate', async () => {
+  const { stage, legend } = await import('../play2/content.js');
+  const state = createWorldSim(createEngine()).init(stage, legend, { learnedCommands: [], flags: {} });
+  const elder = state.entities.find(entity => entity.id === 'elder');
+  expect(elder).toBeDefined();
+  const initial = { state, stage, legend, events: [], showSource: false,
+    objectiveTarget: { line: 4, col: 6 }, objectiveEntity: 'elder' };
+  const scene = new FieldScene(initial, true); scene.create();
+  const bubble = fake.images.find(image => image.texture.startsWith('guidance:person:'));
+  expect(bubble?.visible).toBe(true);
+  expect(bubble?.x).toBe(6 * 16 + 8); expect(bubble?.y).toBe(3 * 16 + 8 - 16);
+  expect(fake.images.filter(image => image.visible && image.texture.startsWith('guidance:arrow:'))).toHaveLength(0);
+  const { objectiveEntity: _person, ...withoutPerson } = initial;
+  scene.present(withoutPerson);
+  expect(bubble?.texture).toMatch(/^guidance:arrow:/);
+  expect(bubble?.y).toBe(4 * 16 + 8 - 16);
+  scene.present({ ...initial, objectiveTarget: null }); expect(bubble?.texture).toMatch(/^guidance:person:/);
+  scene.present({ ...initial, objectiveEntity: 'missing' }); expect(bubble?.texture).toMatch(/^guidance:arrow:/);
+  scene.present({ ...initial, objectiveEntity: 'elder', state: { ...state,
+    entities: state.entities.map(entity => entity.id === 'elder' ? { ...entity, at: { line: 3, col: 100 } } : entity) } });
+  expect(bubble?.texture).toMatch(/^guidance:arrow:/);
+  scene.present({ ...initial, state: { ...state, entities: [] } }); expect(bubble?.texture).toMatch(/^guidance:arrow:/);
+});
+
+it.each([false, true])('turns on directional bumps, preserves facing at edges (reduced: %s)', reduced => {
+  const scene = new FieldScene(frame, reduced); scene.create();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const cursor = frame.state.engine.cursor;
+  const bump = (at: { line: number; col: number }) => scene.present({ ...frame,
+    events: [{ type: 'bump', at, reason: 'edge' }] });
+  bump({ line: cursor.line, col: cursor.col - 1 }); scene.finish();
+  expect(player?.texture).toBe('field:player:7');
+  bump(cursor); scene.finish(); expect(player?.texture).toBe('field:player:7');
+  bump({ line: cursor.line - 1, col: cursor.col }); scene.finish();
+  expect(player?.texture).toBe('field:player:4');
+  bump(cursor); scene.finish(); expect(player?.texture).toBe('field:player:4');
+});
+
+it('bounds Margin texture creation, reuses all walking shapes, and restores source art', async () => {
+  const { stage, legend } = await import('../play2/content.js');
+  const sim = createWorldSim(createEngine());
+  const options = { learnedCommands: ['h', 'j', 'k', 'l'], flags: {} };
+  let state = sim.init(stage, legend, options);
+  const initial = { state, stage, legend, events: [], showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  // Includes glyphs, finite terrain masks, ten player frames/outlines, glows and surroundings.
+  // 612 today; a texture per cell would add hundreds.
+  expect(fake.textures.size).toBeLessThanOrEqual(620);
+  const textures = new Set(fake.textures);
+  const erased = fake.images.find(image => image.texture === 'village:erased:0');
+  expect(erased).toBeDefined();
+  for (const key of ['j', 'l', 'l', 'h', 'k']) {
+    const step = sim.step(state, key, stage, legend, options); state = step.state;
+    scene.present({ ...initial, ...step });
+    const clock = fake.tween.mock.calls.at(-1)?.[0];
+    if (clock) { clock.targets.value = 0.5; clock.onUpdate(); clock.targets.value = 1; clock.onUpdate(); }
+    scene.finish(); scene.update(600, 600);
+  }
+  expect(fake.textures).toEqual(textures);
+  const smoke = fake.images.filter(image => image.texture === 'village:smoke');
+  expect(smoke).toHaveLength(9); expect(smoke.some(image => image.visible)).toBe(true);
+  scene.setReducedMotion(true); expect(smoke.every(image => !image.visible)).toBe(true);
+  scene.present({ ...initial, state, showSource: true });
+  expect(erased?.texture).toMatch(/^terrain:ground-tile:/);
+  expect(fake.images.filter(image => image.visible && image.texture.startsWith('overhang:'))).toHaveLength(0);
+  expect(smoke.every(image => !image.visible)).toBe(true);
 });

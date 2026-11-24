@@ -926,6 +926,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-20: Life in the field (characters, forest, houses, the erased row)
+**Who:** Codex (build, second round), Sonnet (review), Opus (brief, forest and path art, fixes, browser check).
+
+**Why:** Renzo likes the visuals and wants more. The design lead's play found a player that slid without turning, tree columns like totem poles, houses made of repeated doors, and a first line ("a whole row of the village is gone") that nothing on screen showed.
+
+**What:** Tilde faces where she walks and has a walk cycle; people breathe and turn to look at you; the person to talk to has a "!" bubble (the arrow used to point at the empty cell beside them). Trees are round crowns that join into a forest; the forest outside the map is a canopy in three distances; the Library's outside is shelves of varied width with gaps and ladders. Houses have a roof, one door, lit windows and chimney smoke. In the Margin the erased row is visible: torn paper, a `~`, and the pencil outline of Tilde's house. Worn paths lead from the doors. The label says talk, read or use. The clear card is a paper card over the map.
+
+**Review fixes:** labels not moved on resize; a search through all entities for every actor on every frame; buildings searched on every key; the facing kept after a restart; the erased strip would have covered a line moved into its place; keepers said "use"; a seam at the map's left and right edges.
+
+**Textures:** entering the Margin creates 612 (test limit 620), walking creates none.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
