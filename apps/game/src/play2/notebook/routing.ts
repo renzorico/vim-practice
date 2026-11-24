@@ -18,8 +18,9 @@ export interface Routed {
   readonly preventDefault: boolean;
   readonly action: PageAction;
 }
-export interface RouteEvent extends KeyEventLike { readonly repeat: boolean }
+export interface RouteEvent extends KeyEventLike { readonly repeat: boolean; readonly onButton?: boolean }
 
+const NOTHING: PageAction = { type: 'none' };
 const PASS: Routed = { stop: false, preventDefault: false, action: { type: 'none' } };
 
 /**
@@ -29,6 +30,9 @@ const PASS: Routed = { stop: false, preventDefault: false, action: { type: 'none
  */
 export function routeKey(event: RouteEvent, page: PageModel, ready: boolean): Routed {
   if (event.metaKey || /^F\d+$/.test(event.key)) return PASS;
+  // Tab moves between the page's two buttons; a focused button keeps Enter and Space.
+  if (event.key === 'Tab') return { stop: true, preventDefault: false, action: NOTHING };
+  if (event.onButton && (event.key === 'Enter' || event.key === ' ')) return { stop: true, preventDefault: event.repeat, action: NOTHING };
   const mapped = mapKeyEvent(event);
   const held: Routed = { stop: true, preventDefault: mapped.preventDefault, action: { type: 'none' } };
   if (mapped.key === null || event.repeat) return held;

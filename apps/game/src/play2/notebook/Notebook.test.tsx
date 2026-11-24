@@ -66,7 +66,7 @@ afterEach(() => { hooks.effects.forEach(effect => effect.cleanup?.()); window.di
 it('shows one grouped movement page, a tile canvas, the Scribe and two page dots', () => {
   expect(html).toContain('From the Scribe');
   expect(html).toContain('Move: left, down, up, right.');
-  expect(html).toContain('Move one character or line in Normal mode.');
+  expect(html).toContain('One key press, one step.');
   expect(html).not.toContain('Move one line down.');
   expect(html).toContain('<canvas'); expect(html).toContain('dialogue__portrait');
   expect(html).toContain('Page 1 of 2');

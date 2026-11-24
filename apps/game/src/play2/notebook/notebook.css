@@ -38,3 +38,5 @@
   .notebook__footer button { padding: 4px; }
 }
 @media (prefers-reduced-motion: reduce) { .notebook, .notebook__prompt--miss { animation: none; } }
+.notebook:focus { outline: none; }
+.notebook__prompt > span { display: inline-block; }

@@ -74,13 +74,22 @@ const ownedBy = (stageId: string, id: string): boolean => contentPrefixes(stageI
  * Keys of a stage that no dialogue of it names but an objective does. They open after the intro, at most
  * `MAX_OBJECTIVE_PAGES`; later ones get no page. Death hints are not dialogues the player reads in the queue.
  */
-export function objectiveOnlyKeys(content: StoryContent, stageId: string, candidates: readonly string[], hints: readonly string[] = []): readonly string[] {
+export function objectiveOnlyKeys(content: StoryContent, stageId: string, candidates: readonly string[], hints: readonly string[] = [],
+  pageOf: (key: string) => string = key => key): readonly string[] {
   const inDialogue = new Set(content.dialogues.filter(item => ownedBy(stageId, item.id) && !item.id.endsWith('death-hint'))
     .flatMap(item => item.lines.flatMap(line => keysNamedIn(line.text))));
   const inObjective = new Set(content.quests.filter(quest => ownedBy(stageId, quest.id) || quest.id.endsWith(`.${stageId}`)
     || quest.steps.some(step => step.completeWhen.type === 'stage-cleared' && step.completeWhen.stage === stageId))
     .flatMap(quest => quest.steps.flatMap(step => keysNamedIn(step.objective))).concat(hints.flatMap(keysNamedIn)));
-  return candidates.filter(key => !inDialogue.has(key) && inObjective.has(key)).slice(0, MAX_OBJECTIVE_PAGES);
+  // The limit counts pages, not keys: grouped keys (`{` and `}`) share one.
+  const pages = new Set<string>();
+  return candidates.filter(key => {
+    if (inDialogue.has(key) || !inObjective.has(key)) return false;
+    const page = pageOf(key);
+    if (!pages.has(page) && pages.size >= MAX_OBJECTIVE_PAGES) return false;
+    pages.add(page);
+    return true;
+  });
 }
 
 /**

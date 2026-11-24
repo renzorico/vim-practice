@@ -2,6 +2,15 @@ import { expect, it } from 'vitest';
 import { HELP_KEYS } from '../help/keys.js';
 import { openPage, pressKey } from './pageModel.js';
 import { routeKey } from './routing.js';
+it('accepts punctuation that the layout types with Option or AltGr, and leaves Tab and focused buttons alone', () => {
+  const entry = HELP_KEYS.find(item => item.example.keys[0] === '{')!;
+  const page = openPage(entry, true);
+  expect(routeKey({ ...event('{'), altKey: true, mac: true }, page, true).action).toEqual({ type: 'demo', key: '{' });
+  expect(routeKey({ ...event('{'), altKey: true, ctrlKey: true, altGraph: true }, page, true).action).toEqual({ type: 'demo', key: '{' });
+  expect(routeKey(event('Tab'), page, true)).toEqual({ stop: true, preventDefault: false, action: { type: 'none' } });
+  expect(routeKey({ ...event('Enter'), onButton: true }, page, true)).toEqual({ stop: true, preventDefault: false, action: { type: 'none' } });
+  expect(routeKey({ ...event(' '), onButton: true, repeat: true }, page, true).preventDefault).toBe(true);
+});
 const event = (key: string) => ({ key, repeat: false, metaKey: false, ctrlKey: false, altKey: false });
 it('guards navigation, blocks held keys, and preserves browser shortcuts', () => {
   const page = openPage(HELP_KEYS[0]!, true);

@@ -16,7 +16,7 @@ import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } 
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
-import { shouldLeaveToBrowser } from './input/capture.js';
+import { modalOpen, shouldLeaveToBrowser } from './input/capture.js';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
@@ -177,7 +177,7 @@ export function App() {
           }
         } else if (event.key === ':' || helpCommand !== null) onKey(event.key === 'Enter' ? '<CR>' : event.key);
         else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
-      } else if (started && event.key === 'Tab' && !browserKey) {
+      } else if (started && event.key === 'Tab' && !browserKey && !modalOpen()) {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
       }
     };

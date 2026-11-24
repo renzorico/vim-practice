@@ -69,7 +69,7 @@ export function track(tracker: Tracker | null, session: Session, context: TrackC
   if (ended !== null) {
     const allowed = new Set(context.candidates);
     const named = keysNamedByDialogue(context.content, ended).filter(key => allowed.has(key) && introducedAt[key] === context.stage.id);
-    const fromObjectives = ended === `${context.stage.id}.intro` ? objectiveOnlyKeys(context.content, context.stage.id, context.candidates, context.stage.hints) : [];
+    const fromObjectives = ended === `${context.stage.id}.intro` ? objectiveOnlyKeys(context.content, context.stage.id, context.candidates, context.stage.hints, lessonKey) : [];
     queue = dialogueEnded(queue, [...named, ...fromObjectives].map(lessonKey),
       new Set([...context.seen].map(lessonKey))); 
   }

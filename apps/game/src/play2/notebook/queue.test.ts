@@ -1,3 +1,4 @@
+import { lessonKey } from './lessons.js';
 import { expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
@@ -97,4 +98,9 @@ it('opens paired lessons as one page at their first dialogue, with no leftovers 
     expect(tracker.queue.group, dialogue).toEqual(expected);
     expect(tracker.queue.waiting, dialogue).toEqual([]);
   }
+});
+it('counts pages, not keys, against the objective limit', () => {
+  const bare = { ...content, dialogues: [], quests: [] };
+  const keys = objectiveOnlyKeys(bare, 'glades', ['{', '}', 'gg', 'G', '%'], ['`{` `}` `gg` `G` `%`'], lessonKey);
+  expect(keys).toEqual(['{', '}', 'gg', 'G']);
 });

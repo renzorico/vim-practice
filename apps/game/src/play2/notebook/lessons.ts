@@ -35,7 +35,7 @@ interface AuthoredLesson {
 const at = (line: number, col: number): Position => ({ line, col });
 /** These are little pieces of the actual places, not a second implementation of Vim. */
 export const AUTHORED_LESSONS: readonly AuthoredLesson[] = [
-  { key: 'h', keycaps: ['h', 'j', 'k', 'l'], description: 'Move one character or line in Normal mode.', instruction: 'Move: left, down, up, right.',
+  { key: 'h', keycaps: ['h', 'j', 'k', 'l'], description: 'One key press, one step.', instruction: 'Move: left, down, up, right.',
     rows: ['     ', ' ... ', ' ... '], cursor: at(1, 1), keys: 'ljhk',
     result: { rows: ['     ', ' ... ', ' ... '], cursor: at(1, 1) }, ground: ' ' },
   { key: '3l', keycaps: ['3l'], instruction: 'A number repeats the move.',
