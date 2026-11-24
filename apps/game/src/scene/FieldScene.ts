@@ -1,6 +1,11 @@
+import { outlineArt } from './terrain/outline.js';
+import { edgesFor, tileAt } from './terrain/edges.js';
+import { groundArt, terrainArt, shadowArt, type PixelRect } from './terrain/art.js';
+import { decorationAt, groundVariant, particleCount, particleX, particleY, shadowScale, PARTICLE_CAP } from './terrain/life.js';
+import { WORLD_PALETTES } from './palette.js';
 import { rangePreview } from '../play2/showcmd.js';
 import type { LandingMarker } from '../play2/feedback.js';
-import { darknessAlpha, darknessFor, stageLights, type Darkness } from './darkness.js';
+import { darknessAlpha, darknessFor, stageLights, DARK_STAGES, type Darkness } from './darkness.js';
 import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
 import { counterStamp, type CounterStamp } from './counterStamp.js';
 import { warehouseTransfer, type WarehouseTransfer } from './warehouseTransfer.js';
@@ -57,6 +62,18 @@ const TRAIL_ALPHAS = [0.35, 0.25, 0.15] as const;
 
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
+  private terrainImages: { image: Phaser.GameObjects.Image; frames: readonly [string, string]; animated: boolean; at: Position }[] = [];
+  private underImages: { image: Phaser.GameObjects.Image; at: Position }[] = [];
+  private terrainRows: readonly string[] | undefined;
+  private terrainLegend: Legend | undefined;
+  private terrainWorld: WorldId | undefined;
+  private outlineImages: Phaser.GameObjects.Image[] = [];
+  private outlineKeys = new Map<string, string>();
+  private shadowImages: Phaser.GameObjects.Image[] = [];
+  private ambientImages: Phaser.GameObjects.Image[] = [];
+  private ambientElapsed = 0;
+  private ambientWidth = 1;
+  private ambientHeight = 1;
   private ready = false;
   private pulsing = new Set<Phaser.GameObjects.Image>();
   private animating = false;
@@ -123,6 +140,7 @@ export class FieldScene extends Phaser.Scene {
       if (this.reducedMotion) return;
       this.idleFrame = (this.idleFrame + 1) % 2;
       this.syncGateMarks();
+      for (const overlay of this.terrainImages) if (overlay.animated) overlay.image.setTexture(overlay.frames[this.idleFrame === 0 ? 0 : 1]);
       for (const cell of this.cells.values()) {
         if ((cell.sprite === 'port-water' || cell.sprite === 'water' || cell.sprite === 'river' || cell.sprite === 'chasm' || cell.sprite === 'fake')) cell.tile.setTexture(this.texture(cell.sprite, this.idleFrame));
       }
@@ -153,6 +171,13 @@ export class FieldScene extends Phaser.Scene {
       this.clearStamp();
       this.clearArchiveRows();
       this.cells.clear();
+      this.terrainImages = [];
+      this.underImages = [];
+      this.shadowImages = [];
+      this.outlineImages = [];
+      this.outlineKeys.clear();
+      this.ambientImages = [];
+      this.terrainRows = undefined;
       this.previousState = undefined;
       this.previousEvents = undefined;
       this.tweens.killAll();
@@ -165,6 +190,8 @@ export class FieldScene extends Phaser.Scene {
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value;
+    for (const overlay of this.terrainImages) if (overlay.animated) overlay.image.setTexture(overlay.frames[0]);
+    this.updateAmbient(0);
     this.cursorElapsed = 0;
     this.syncGuidance();
     if (value) {
@@ -178,6 +205,8 @@ export class FieldScene extends Phaser.Scene {
 
   /** Each actor owns a stable phase; tile animation uses its separate, slower clock. */
   override update(_time: number, delta: number): void {
+    this.updateAmbient(delta);
+    this.syncActorShadows();
     this.guidanceElapsed += delta;
     if (!this.reducedMotion) this.cursorElapsed = (this.cursorElapsed + delta) % GUIDANCE_PERIOD_MS;
     if (this.reducedMotion) { this.syncGuidance(); return; }
@@ -227,6 +256,7 @@ export class FieldScene extends Phaser.Scene {
       this.frame = frame;
       this.syncLandingMarkers();
       this.syncGuidance();
+      this.syncTerrainLight();
       return;
     }
     const discontinuity = this.previousState?.stage !== frame.state.stage || this.frame.stage !== frame.stage
@@ -240,7 +270,7 @@ export class FieldScene extends Phaser.Scene {
       this.frame = frame;
       this.previousState = frame.state;
       this.previousEvents = frame.events;
-      if (frame.events.some(event => event.type === 'rows-changed')) this.syncCells();
+      if (frame.events.some(event => event.type === 'rows-changed')) { this.syncCells(); this.syncTerrain(); }
       if (sourceChanged) this.setSourceVisible(frame.showSource);
       this.syncHazards(frame);
       this.syncLandingMarkers();
@@ -279,6 +309,7 @@ export class FieldScene extends Phaser.Scene {
     this.captureUnwriting(frame);
     this.captureArchiveRows(frame);
     this.syncCells();
+    this.syncTerrain();
     this.syncWarehouseDecorations();
     this.syncHazards(frame);
     this.setSourceVisible(frame.showSource);
@@ -674,6 +705,146 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
+  /** Cached pixel textures and reusable image slots; only buffer/legend/world changes rebuild edges. */
+  private pixelTexture(key: string, pixels: () => readonly PixelRect[]): string {
+    if (!this.textures.exists(key)) {
+      const graphics = this.make.graphics({ x: 0, y: 0 });
+      for (const pixel of pixels()) graphics.fillStyle(pixel.color, pixel.alpha).fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+      graphics.generateTexture(key, TILE_SIZE, TILE_SIZE);
+      graphics.destroy();
+    }
+    return key;
+  }
+
+  private syncTerrain(): void {
+    const { state, legend, stage } = this.frame;
+    if (this.terrainRows === state.engine.lines && this.terrainLegend === legend && this.terrainWorld === stage.world) {
+      this.syncTerrainLight(); return;
+    }
+
+    this.terrainRows = state.engine.lines; this.terrainLegend = legend; this.terrainWorld = stage.world;
+    let index = 0;
+    let under = 0;
+    const width = Math.max(legend.emptyRow === undefined ? 0 : 1, bufferSize(state.engine.lines).width);
+    this.ambientWidth = width * TILE_SIZE;
+    this.ambientHeight = state.engine.lines.length * TILE_SIZE;
+    for (let line = 0; line < state.engine.lines.length; line++) for (let col = 0; col < width; col++) {
+      const at = { line, col };
+      const edges = edgesFor(state.engine.lines, at, legend);
+      const variant = groundVariant(line, col);
+      const decorated = decorationAt(tileAt(state.engine.lines, at, legend), line, col);
+      const base = `terrain:${edges.group === 'object' ? tileAt(state.engine.lines, at, legend)?.sprite : ''}:${stage.world}:${edges.group}:${edges.mask}:${edges.shore}:${Number(edges.cast)}:${Number(edges.posts)}:${variant}:${Number(decorated)}`;
+      const frames: readonly [string, string] = [
+        this.pixelTexture(`${base}:0`, () => [...terrainArt(edges, stage.world, variant, decorated, 0), ...(edges.group === 'object' ? outlineArt(SPRITES[tileAt(state.engine.lines, at, legend)?.sprite ?? ''], WORLD_PALETTES[stage.world].ink) : [])]),
+        this.pixelTexture(`${base}:1`, () => [...terrainArt(edges, stage.world, variant, decorated, 1), ...(edges.group === 'object' ? outlineArt(SPRITES[tileAt(state.engine.lines, at, legend)?.sprite ?? ''], WORLD_PALETTES[stage.world].ink) : [])]),
+      ];
+      let slot = this.terrainImages[index];
+      const animated = edges.group === 'water';
+      if (edges.group === 'object') this.placeUnder(under++, at, variant);
+      if (!slot) {
+        slot = { image: this.add.image(0, 0, frames[0]).setDepth(0.3), frames, animated, at };
+        this.terrainImages.push(slot);
+      }
+      slot.frames = frames; slot.animated = animated; slot.at = at;
+      slot.image.setPosition(center(col), center(line)).setTexture(frames[this.reducedMotion || this.idleFrame === 0 ? 0 : 1]).setVisible(true);
+      index++;
+    }
+    for (; index < this.terrainImages.length; index++) this.terrainImages[index]?.image.setVisible(false);
+    for (; under < this.underImages.length; under++) this.underImages[under]?.image.setVisible(false);
+    const particleTexture = this.ambientTexture();
+    for (const image of this.ambientImages) image.setTexture(particleTexture);
+    this.updateAmbient(0);
+    this.syncTerrainLight();
+  }
+
+  /** Ground shows through a sprite's transparent pixels instead of the camera background. */
+  private placeUnder(index: number, at: Position, variant: number): void {
+    const world = this.frame.stage.world;
+    const texture = this.pixelTexture(`terrain:under:${world}:${variant}`, () => groundArt(world, variant));
+    let slot = this.underImages[index];
+    if (!slot) {
+      slot = { image: this.add.image(0, 0, texture).setDepth(-1), at };
+      this.underImages.push(slot);
+    }
+    slot.at = at;
+    slot.image.setTexture(texture).setPosition(center(at.col), center(at.line)).setVisible(true);
+  }
+
+  private syncTerrainLight(): void {
+    for (const slot of this.underImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness));
+    for (const slot of this.terrainImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness));
+  }
+
+  private actorShadow(index: number, actor: Phaser.GameObjects.Image, groundX: number, groundY: number): void {
+    let shadow = this.shadowImages[index];
+    if (!shadow) {
+      const texture = this.pixelTexture('terrain:actor-shadow', shadowArt);
+      shadow = this.add.image(0, 0, texture).setDepth(1.1);
+      this.shadowImages.push(shadow);
+    }
+    shadow.setPosition(groundX, groundY).setScale(shadowScale(groundY - actor.y))
+      .setAlpha(actor.alpha).setVisible(actor.visible);
+  }
+
+  private syncActorOutline(index: number, actor: Phaser.GameObjects.Image, id: string): void {
+    const texture = this.outlineKeys.get(id);
+    if (!texture) return;
+    let image = this.outlineImages[index];
+    if (!image) { image = this.add.image(0, 0, texture).setDepth(1.8); this.outlineImages.push(image); }
+    image.setTexture(texture).setPosition(actor.x, actor.y).setAlpha(actor.alpha).setVisible(actor.visible)
+      .setFlipX(actor.flipX).setScale(actor.scaleX, actor.scaleY);
+  }
+
+  private prepareOutline(id: string, sprite: string): void {
+    const world = this.frame.stage.world;
+    const key = this.pixelTexture(`terrain:outline:${world}:${sprite}`, () => outlineArt(SPRITES[sprite], WORLD_PALETTES[world].ink));
+    this.outlineKeys.set(id, key);
+  }
+
+  private syncActorShadows(): void {
+    let index = 0;
+    if (this.player) {
+      const ground = this.groundPosition ?? this.frame.state.engine.cursor;
+      this.syncActorOutline(index, this.player, 'player');
+      this.actorShadow(index++, this.player, center(ground.col), center(ground.line));
+    }
+    for (const [id, actor] of this.entities) {
+      this.syncActorOutline(index, actor, id);
+      this.actorShadow(index++, actor, actor.x, actor.y);
+    }
+    for (let unused = index; unused < this.outlineImages.length; unused++) this.outlineImages[unused]?.setVisible(false);
+    for (; index < this.shadowImages.length; index++) this.shadowImages[index]?.setVisible(false);
+  }
+
+  private ambientTexture(): string {
+    const world = this.frame.stage.world;
+    const key = `terrain:particle:${world}`;
+    this.pixelTexture(key, () => {
+      const color = WORLD_PALETTES[world].accent;
+      if (world === 'lowlands') return [{ x: 1, y: 7, width: 12, height: 1, color, alpha: 0.08 }];
+      if (world === 'copper-port') return [{ x: 5, y: 8, width: 3, height: 1, color: 0x10141d, alpha: 0.35 }, { x: 8, y: 9, width: 3, height: 1, color: 0x10141d, alpha: 0.35 }];
+      if (world === 'library') return [{ x: 7, y: 6, width: 2, height: 3, color, alpha: 0.2 }, { x: 9, y: 8, width: 1, height: 1, color, alpha: 0.2 }];
+      return [{ x: 7, y: 7, width: world === 'wordwood' ? 3 : 1, height: 1, color, alpha: 0.3 }];
+    });
+    return key;
+  }
+
+  private updateAmbient(delta: number): void {
+    const count = particleCount(this.reducedMotion, Boolean(this.frame.darkness || DARK_STAGES[this.frame.stage.id]), this.frame.stage.world);
+    if (count > 0) this.ambientElapsed += delta;
+    for (let index = 0; index < PARTICLE_CAP; index++) {
+      let image = this.ambientImages[index];
+      if (!image && index < count) {
+        const key = this.ambientTexture();
+        image = this.add.image(0, 0, key).setDepth(2.2);
+        this.ambientImages.push(image);
+      }
+      if (!image) continue;
+      image.setVisible(index < count);
+      if (index < count) image.setPosition(particleX(index, this.ambientElapsed, this.ambientWidth), particleY(index, this.ambientElapsed, this.ambientHeight));
+    }
+  }
+
   private syncHazards(frame: FieldFrame): void {
     this.hazards?.removeAll(true);
     for (const area of frame.hazards ?? []) {
@@ -827,10 +998,14 @@ export class FieldScene extends Phaser.Scene {
         }).setOrigin(0.5, 1));
       }
     }
+    this.prepareOutline('player', 'player');
+    for (const entity of this.frame.state.entities) this.prepareOutline(entity.id, this.entitySprite(entity.def.sprite));
     this.groundPosition = at;
     this.positionCamera(at);
     this.positionDanger();
     this.syncDarkness();
+    this.syncTerrainLight();
+    this.syncActorShadows();
   }
 
   private syncDarkness(): void {
@@ -1035,6 +1210,7 @@ export class FieldScene extends Phaser.Scene {
             center(drawnFrom.col + (step.to.col - drawnFrom.col) * progress) - offset,
             center(drawnFrom.line + (step.to.line - drawnFrom.line) * progress) - arc - bob - offset,
           );
+          this.syncActorShadows();
           if (landingJump) {
             const landing = Math.max(0, Math.min(1, (elapsed - flightDuration) / LANDING_DURATION_MS));
             const squash = elapsed >= flightDuration ? (1 - landing) ** 2 : 0;

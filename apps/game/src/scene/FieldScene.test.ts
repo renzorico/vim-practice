@@ -3,22 +3,31 @@ import { createWorldSim, playKeys, FIXTURE_LEGEND, FIXTURE_STAGE, type WorldStep
 import { FIXTURE_INITIAL_STATE } from './fixtureFrames.js';
 
 const fake = vi.hoisted(() => {
-  const object = () => ({
-    x: 0, y: 0, alpha: 1, depth: 0, texture: '', text: '', visible: true,
-    setPosition(x: number, y: number) { this.x = x; this.y = y; return this; },
-    setAlpha(value: number) { this.alpha = value; return this; },
-    setDepth(value: number) { this.depth = value; return this; },
-    setVisible(value: boolean) { this.visible = value; return this; },
-    setTexture: vi.fn(function (this: { texture: string }, value: string) { this.texture = value; return this; }),
-    setText(value: string) { this.text = value; return this; },
-    setAngle: vi.fn().mockReturnThis(),
-    setFlipX: vi.fn().mockReturnThis(),
-    setDisplaySize: vi.fn().mockReturnThis(), setScale: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(),
-    setOrigin: vi.fn().mockReturnThis(), setTintFill: vi.fn().mockReturnThis(), clearTint: vi.fn().mockReturnThis(),
-    addAt: vi.fn().mockReturnThis(), setTint: vi.fn().mockReturnThis(),
-    add: vi.fn().mockReturnThis(), removeAll: vi.fn(), destroy: vi.fn(),
-    setStroke: vi.fn().mockReturnThis(),
-  });
+  /** Mocks are made on first use: vitest keeps every mock alive, and a terrain map has thousands of images. */
+  const lazyMocks = <Name extends string>(target: object, names: readonly Name[], make: () => ReturnType<typeof vi.fn>) => {
+    for (const name of names) Object.defineProperty(target, name, { configurable: true, enumerable: true, get() {
+      const value = make();
+      Object.defineProperty(target, name, { value, configurable: true, enumerable: true, writable: true });
+      return value;
+    } });
+    return target as Record<Name, ReturnType<typeof vi.fn>>;
+  };
+  const CHAINED = ['setAngle', 'setFlipX', 'setDisplaySize', 'setScale', 'setScrollFactor', 'setOrigin', 'setTintFill',
+    'clearTint', 'addAt', 'setTint', 'add', 'setStroke'] as const;
+  const object = () => {
+    const base = {
+      x: 0, y: 0, alpha: 1, depth: 0, texture: '', text: '', visible: true,
+      setPosition(x: number, y: number) { this.x = x; this.y = y; return this; },
+      setAlpha(value: number) { this.alpha = value; return this; },
+      setDepth(value: number) { this.depth = value; return this; },
+      setVisible(value: boolean) { this.visible = value; return this; },
+      setText(value: string) { this.text = value; return this; },
+    };
+    lazyMocks(base, CHAINED, () => vi.fn().mockReturnThis());
+    lazyMocks(base, ['removeAll', 'destroy'], () => vi.fn());
+    lazyMocks(base, ['setTexture'], () => vi.fn(function (this: { texture: string }, value: string) { this.texture = value; return this; }));
+    return base as typeof base & Record<typeof CHAINED[number] | 'removeAll' | 'destroy' | 'setTexture', ReturnType<typeof vi.fn>>;
+  };
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
     pixels: new Map<string, number[][]>(), strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
@@ -29,14 +38,14 @@ vi.mock('phaser', () => ({ default: {
   Scene: class {
     add = {
       image: (x: number, y: number, texture: string) => {
-        const result = fake.object().setPosition(x, y); result.texture = texture; fake.images.push(result); return result;
+        const result = fake.object(); result.setPosition(x, y); result.texture = texture; fake.images.push(result); return result;
       },
       text: (_x: number, _y: number, text: string, style: { backgroundColor?: string }) => {
         const result = Object.assign(fake.object(), { style }); result.text = text; fake.texts.push(result); return result;
       },
       container: () => { const result = fake.object(); fake.containers.push(result); return result; },
       rectangle: (x: number, y: number) => {
-        const result = fake.object().setPosition(x, y); result.texture = 'rectangle'; fake.images.push(result); return result;
+        const result = fake.object(); result.setPosition(x, y); result.texture = 'rectangle'; fake.images.push(result); return result;
       },
     };
     make = { graphics: () => {
@@ -1396,4 +1405,55 @@ it('draws dashed standing markers, makes the occupied marker solid, and hides th
   scene.setReducedMotion(true); scene.update(1000, 500); expect(dashed?.alpha).toBe(1);
   scene.present({ ...frame, standAt: [at, other], hideObjective: true });
   expect(solid?.destroy).toHaveBeenCalled(); expect(dashed?.destroy).toHaveBeenCalled();
+});
+
+it('pools terrain, particles and shadows and hides ambient motion immediately on reduction', () => {
+  const scene = new FieldScene(frame, false); scene.create();
+  const particles = fake.images.filter(image => image.texture.startsWith('terrain:particle:'));
+  const shadows = fake.images.filter(image => image.texture === 'terrain:actor-shadow');
+  expect(particles).toHaveLength(24);
+  expect(shadows.length).toBeGreaterThan(0);
+  const images = fake.images.length;
+  for (let tick = 0; tick < 20; tick++) scene.update(tick * 16, 16);
+  expect(fake.images).toHaveLength(images);
+  scene.setReducedMotion(true);
+  expect(particles.every(image => !image.visible)).toBe(true);
+  scene.setReducedMotion(false);
+  expect(fake.images).toHaveLength(images);
+  expect(particles.every(image => image.visible)).toBe(true);
+});
+it('freezes shoreline phase on the existing water clock with reduced motion', () => {
+  const initial = { ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...frame.state, engine: { ...frame.state.engine, lines: [' ~ ', ' ~ ', '   '] } } };
+  const scene = new FieldScene(initial, false); scene.create();
+  const water = fake.images.find(image => image.texture.startsWith('terrain:') && image.texture.includes(':water:') && image.x === 24 && image.y === 8);
+  const first = water?.texture;
+  const callback = fake.idle.mock.calls[0]?.[0].callback;
+  callback(); expect(water?.texture).not.toBe(first);
+  scene.setReducedMotion(true); expect(water?.texture).toBe(first);
+  callback(); expect(water?.texture).toBe(first);
+});
+it('updates shore neighbours immediately after a row shift without replacing overlay images', () => {
+  const initial = { ...frame, stage: quarry, legend: quarryLegend,
+    state: { ...frame.state, engine: { ...frame.state.engine, lines: [' ~ ', '   '] } } };
+  const scene = new FieldScene(initial, true); scene.create();
+  const neighbour = fake.images.find(image => image.texture.startsWith('terrain:') && image.texture.includes(':ground:') && image.x === 24 && image.y === 24);
+  const before = neighbour?.texture;
+  const imageCount = fake.images.length;
+  scene.present({ ...initial, state: { ...initial.state, engine: { ...initial.state.engine, lines: ['  ', '   '] } } });
+  expect(neighbour?.texture).not.toBe(before);
+  expect(fake.images).toHaveLength(imageCount);
+});
+it('keeps jump shadows on the ground and shrinks them with actor height', () => {
+  const { scene, key } = feelField();
+  key('G');
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.5; clock.onUpdate();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const shadow = fake.images.find(image => image.texture === 'terrain:actor-shadow');
+  expect(shadow?.y).toBeGreaterThan(player?.y ?? Infinity);
+  expect(shadow?.setScale).toHaveBeenLastCalledWith(expect.any(Number));
+  expect(shadow?.setScale.mock.calls.at(-1)?.[0]).toBeLessThan(1);
+  scene.setReducedMotion(true);
+  expect(shadow?.setScale).toHaveBeenLastCalledWith(1);
 });
