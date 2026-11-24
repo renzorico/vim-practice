@@ -1,7 +1,10 @@
+import { chasmArt, chasmBanks } from './terrain/chasm.js';
+import { AtmosphereLayer } from './terrain/AtmosphereLayer.js';
+import { replacesGround, substrate, surface } from './terrain/surfaces.js';
 import { outlineArt } from './terrain/outline.js';
 import { changedTerrainRows, edgesFor, terrainGroup, tileAt } from './terrain/edges.js';
 import { groundArt, terrainArt, shadowArt, type PixelRect } from './terrain/art.js';
-import { decorationAt, groundVariant, particleCount, particleX, particleY, shadowScale, PARTICLE_CAP } from './terrain/life.js';
+import { decorationAt, groundVariant, particleCount, particleInside, particleX, particleY, shadowScale, PARTICLE_CAP } from './terrain/life.js';
 import { WORLD_PALETTES } from './palette.js';
 import { rangePreview } from '../play2/showcmd.js';
 import type { LandingMarker } from '../play2/feedback.js';
@@ -15,6 +18,7 @@ import { createEngine } from '@escape/engine';
 import type { Position } from '@escape/engine';
 import type { Area, Legend, Stage, WorldEvent, WorldId, WorldState } from '@escape/world';
 import { unwritingAlpha, unwritingPlan } from './unwrite.js';
+import { paletteColor } from './sprites/tall.js';
 import { SPRITES } from './sprites/index.js';
 import {
   rowAnimationStart, animationSteps, PLAYBACK_BUDGET_MS, LANDING_DURATION_MS,
@@ -62,8 +66,9 @@ const TRAIL_ALPHAS = [0.35, 0.25, 0.15] as const;
 
 export class FieldScene extends Phaser.Scene {
   private frame: FieldFrame;
+  private atmosphere?: AtmosphereLayer;
   private terrainImages: { image: Phaser.GameObjects.Image; frames: readonly [string, string]; animated: boolean; at: Position }[] = [];
-  private underImages: { image: Phaser.GameObjects.Image; at: Position }[] = [];
+  private underImages: { image: Phaser.GameObjects.Image; at: { line: number; col: number } }[] = [];
   private terrainRows: readonly string[] | undefined;
   private terrainLegend: Legend | undefined;
   private terrainWorld: WorldId | undefined;
@@ -74,6 +79,7 @@ export class FieldScene extends Phaser.Scene {
   private terrainSprites = new Map<string, string>();
   private ambientHidden = false;
   private underCount = 0;
+  private readonly terrainAt = { line: 0, col: 0 };
   private guidanceDirty = true;
   private shadowImages: Phaser.GameObjects.Image[] = [];
   private ambientImages: Phaser.GameObjects.Image[] = [];
@@ -153,6 +159,7 @@ export class FieldScene extends Phaser.Scene {
     } });
     this.tiles = this.add.container(0, 0);
     this.actors = this.add.container(0, 0).setDepth(2);
+    this.atmosphere = new AtmosphereLayer(this, this.actors);
     this.source = this.add.container(0, 0).setDepth(1);
     this.gateMarks = this.add.container(0, 0).setDepth(1);
     this.landingLabels = this.add.container(0, 0).setDepth(3);
@@ -202,6 +209,7 @@ export class FieldScene extends Phaser.Scene {
     if (!this.ready) return;
     for (const overlay of this.terrainImages) if (overlay.animated) overlay.image.setTexture(overlay.frames[0]);
     this.updateAmbient(0);
+    this.atmosphere?.update(0, value);
     this.cursorElapsed = 0;
     this.guidanceDirty = true;
     this.syncGuidance();
@@ -218,6 +226,7 @@ export class FieldScene extends Phaser.Scene {
   override update(_time: number, delta: number): void {
     if (!this.ready) return;
     this.updateAmbient(delta);
+    this.atmosphere?.update(delta, this.reducedMotion);
     if (this.animating) this.syncActorShadows();
     this.guidanceElapsed += delta;
     if (!this.reducedMotion) this.cursorElapsed = (this.cursorElapsed + delta) % GUIDANCE_PERIOD_MS;
@@ -275,6 +284,7 @@ export class FieldScene extends Phaser.Scene {
       this.syncLandingMarkers();
       this.syncGuidance();
       this.syncTerrainLight();
+      this.atmosphere?.sync(this.frame, this.cameraX, this.cameraY);
       return;
     }
     const discontinuity = this.previousState?.stage !== frame.state.stage || this.frame.stage !== frame.stage
@@ -319,7 +329,7 @@ export class FieldScene extends Phaser.Scene {
         if (event.to.col !== event.from.col) this.facing.set(id, event.to.col < event.from.col);
       }
     }
-    this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.id === 'last-page' ? '#f6efd4' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
+    this.cameras.main.setBackgroundColor(frame.darkness ? '#000000' : frame.stage.world === 'last-page' ? '#f6efd4' : frame.stage.id === 'lighthouse' ? '#eee5cf' : BACKGROUND);
     this.stamp = this.reducedMotion ? null : counterStamp(this.previousState, frame.state, frame.events);
     this.captureTransfer(frame);
     this.captureJunk(frame);
@@ -406,7 +416,7 @@ export class FieldScene extends Phaser.Scene {
     const { stage, state } = this.frame;
     const mode = state.engine.mode;
     const texture = this.guidanceTexture(mode);
-    if (!this.cursorMark) this.cursorMark = this.add.image(0, 0, texture).setDepth(1.9);
+    if (!this.cursorMark) this.cursorMark = this.add.image(0, 0, texture).setDepth(4.2);
     else if (this.cursorTexture !== texture) this.cursorMark.setTexture(texture);
     this.cursorTexture = texture;
     this.cursorMark.setPosition(this.player.x, this.player.y)
@@ -447,7 +457,7 @@ export class FieldScene extends Phaser.Scene {
     while (this.standMarks.length > cells.length) this.standMarks.pop()?.destroy();
     cells.forEach((at, index) => {
       const ready = at.line === state.engine.cursor.line && at.col === state.engine.cursor.col;
-      const mark = this.standMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('stand')).setDepth(0.8);
+      const mark = this.standMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('stand')).setDepth(3.1);
       this.standMarks[index] = mark;
       mark.setTexture(this.guidanceTexture(ready ? 'stand-ready' : 'stand'))
         .setPosition(center(at.col), center(at.line))
@@ -457,7 +467,7 @@ export class FieldScene extends Phaser.Scene {
     const range = preview?.cells ?? NO_CELLS;
     while (this.rangeMarks.length > range.length) this.rangeMarks.pop()?.destroy();
     range.forEach((at, index) => {
-      const mark = this.rangeMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('range')).setDepth(0.9);
+      const mark = this.rangeMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('range')).setDepth(3.1);
       this.rangeMarks[index] = mark;
       mark.setPosition(center(at.col), center(at.line)).setAlpha(0.4).clearTint();
       if (preview?.invalid) mark.setTintFill(0xe06464);
@@ -653,6 +663,7 @@ export class FieldScene extends Phaser.Scene {
     this.cameraY = target.y;
     this.cameraX = target.x;
     this.cameras.main.centerOn(target.x, target.y);
+    this.atmosphere?.sync(this.frame, target.x, target.y);
     this.updateAmbient(0);
     this.syncGuidance();
   }
@@ -661,6 +672,7 @@ export class FieldScene extends Phaser.Scene {
     this.source?.setVisible(visible || this.frame.stage.id === 'last-page');
     this.label?.setText(visible ? BUFFER_NAME : '').setVisible(visible);
     this.decorations?.setVisible(!visible);
+    this.atmosphere?.sync(this.frame, this.cameraX, this.cameraY);
     this.updateAmbient(0);
   }
 
@@ -705,7 +717,7 @@ export class FieldScene extends Phaser.Scene {
         : (sprite === 'cave-floor' || sprite === 'boards' || sprite === 'grass' || sprite === 'dirt' || sprite === 'branch' || sprite === 'moss' || sprite === 'warehouse-floor' || sprite === 'customs-floor' || sprite === 'counter-floor' || sprite === 'vault-floor') ? ((line * 73856093 ^ col * 19349663) >>> 0) % 2 : 0;
       const definition = tileAt(this.frame.state.engine.lines, { line, col }, this.frame.legend);
       const group = terrainGroup(definition);
-      const texture = group === 'ground' ? this.groundTexture(line, col, definition)
+      const texture = replacesGround(definition) ? this.groundTexture(line, col, definition)
         : group === 'paper' ? this.missingTexture(line, col) : this.texture(sprite, variant);
       live.add(key);
       const cell = this.cells.get(key);
@@ -770,6 +782,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private syncTerrainVisibility(): void {
+    this.atmosphere?.setHiddenRows(this.hiddenTerrainRows);
     for (const slot of this.terrainImages) slot.image.setVisible(!this.hiddenTerrainRows.has(slot.at.line));
     for (let index = 0; index < this.underImages.length; index++) {
       const slot = this.underImages[index];
@@ -781,33 +794,37 @@ export class FieldScene extends Phaser.Scene {
   private syncTerrain(): void {
     const { state, legend, stage } = this.frame;
     const full = this.terrainLegend !== legend || this.terrainWorld !== stage.world;
-    const dirty = changedTerrainRows(full ? undefined : this.terrainRows, state.engine.lines);
+    const dirty = changedTerrainRows(full ? undefined : this.terrainRows, state.engine.lines,
+      legend.tiles.some(tile => tile.sprite === 'chasm') ? 4 : 1);
     for (const [key, cell] of this.cells) if (this.terrainSprites.get(key) !== cell.sprite) dirty.add(cell.line);
-    const previous = new Map(this.terrainImages.map(slot => [`${slot.at.line}:${slot.at.col}`, slot]));
+    const previous = new Map<string, typeof this.terrainImages[number]>();
+    for (const slot of this.terrainImages) previous.set(`${slot.at.line}:${slot.at.col}`, slot);
     this.terrainRows = state.engine.lines; this.terrainLegend = legend; this.terrainWorld = stage.world;
     this.terrainImages = [];
     let under = 0;
     const width = Math.max(legend.emptyRow === undefined ? 0 : 1, bufferSize(state.engine.lines).width);
     for (let line = 0; line < state.engine.lines.length; line++) for (let col = 0; col < width; col++) {
       const key = `${line}:${col}`;
-      const at = { line, col };
+      let slot = previous.get(key);
+      const at = slot?.at ?? this.terrainAt;
+      this.terrainAt.line = line; this.terrainAt.col = col;
       const cell = this.cells.get(key);
       const tile = tileAt(state.engine.lines, at, legend);
       if (terrainGroup(tile) === 'object') this.placeUnder(under++, at, groundVariant(line, col));
-      let slot = previous.get(key);
       previous.delete(key);
       if (!slot || dirty.has(line)) {
         const edges = edgesFor(state.engine.lines, at, legend);
         const variant = groundVariant(line, col);
         const sprite = cell?.sprite ?? '';
-        const base = `terrain:${edges.group === 'object' ? sprite : ''}:${stage.world}:${edges.group}:${edges.mask}:${edges.shore}:${Number(edges.cast)}:${Number(edges.posts)}:${variant}`;
-        const art = (phase: number): readonly PixelRect[] => [...terrainArt(edges, stage.world, variant, false, phase),
+        const banks = sprite === 'chasm' ? chasmBanks(state.engine.lines, at, legend) : undefined;
+        const base = `terrain:${banks ? `chasm-${banks.join(',')}:` : ''}${edges.group === 'object' ? sprite : ''}:${stage.world}:${edges.group}:${edges.mask}:${edges.shore}:${Number(edges.cast)}:${Number(edges.posts)}:${variant}`;
+        const art = (phase: number): readonly PixelRect[] => [...(banks ? chasmArt(banks) : []), ...terrainArt(edges, stage.world, variant, false, phase, sprite === 'chasm'),
           ...(edges.group === 'object' ? outlineArt(SPRITES[sprite], WORLD_PALETTES[stage.world].ink, phase) : [])];
         const first = this.pixelTexture(`${base}:0`, () => art(0));
         const animated = edges.group === 'water';
         const second = animated ? this.pixelTexture(`${base}:1`, () => art(1)) : first;
         const frames: readonly [string, string] = [first, second];
-        if (!slot) slot = { image: this.add.image(center(col), center(line), first).setDepth(0.3), at, frames, animated };
+        if (!slot) slot = { image: this.add.image(center(col), center(line), first).setDepth(0.3), at: { line, col }, frames, animated };
         slot.frames = frames; slot.animated = animated;
         slot.image.setTexture(frames[this.reducedMotion || this.idleFrame === 0 ? 0 : 1]);
       }
@@ -828,19 +845,22 @@ export class FieldScene extends Phaser.Scene {
   /** Ground shows through a sprite's transparent pixels instead of the camera background. */
   private placeUnder(index: number, at: Position, variant: number): void {
     const world = this.frame.stage.world;
-    const texture = this.pixelTexture(`terrain:under:${world}:${variant}`, () => groundArt(world, variant));
+    const floor = substrate(this.frame.state.engine.lines, at, this.frame.legend);
+    const texture = floor === 'paper' || surface(floor) === 'paper' ? this.paperTexture()
+      : surface(floor) === 'natural' ? this.pixelTexture(`terrain:under:${world}:${variant}`, () => groundArt(world, variant))
+      : this.texture(floor);
     let slot = this.underImages[index];
     if (!slot) {
-      slot = { image: this.add.image(0, 0, texture).setDepth(-1), at };
+      slot = { image: this.add.image(0, 0, texture).setDepth(-1), at: { line: at.line, col: at.col } };
       this.underImages.push(slot);
     }
-    slot.at = at;
+    slot.at.line = at.line; slot.at.col = at.col;
     slot.image.setTexture(texture).setPosition(center(at.col), center(at.line)).setVisible(true);
   }
 
   private syncTerrainLight(): void {
-    for (const slot of this.underImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness));
-    for (const slot of this.terrainImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness));
+    for (const slot of this.underImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness) === 0 ? 0 : 1);
+    for (const slot of this.terrainImages) slot.image.setAlpha(darknessAlpha(slot.at, this.frame.state.engine.cursor, this.frame.darkness) === 0 ? 0 : 1);
   }
 
   private actorShadow(index: number, actor: Phaser.GameObjects.Image, groundX: number, groundY: number): void {
@@ -884,6 +904,13 @@ export class FieldScene extends Phaser.Scene {
       this.syncActorOutline(index, actor.image, actor.id);
       this.actorShadow(index++, actor.image, actor.image.x, actor.image.y);
     }
+    if (this.player) {
+      this.player.setDepth(this.player.y);
+      for (const ghost of this.trail) ghost.setDepth(this.player.y - 0.1);
+      this.bumpDust?.setDepth(this.player.y + 0.1);
+    }
+    for (const actor of this.actorImages) actor.image.setDepth(actor.image.y);
+    this.actors?.sort('depth');
     for (let unused = index; unused < this.outlineImages.length; unused++) this.outlineImages[unused]?.setVisible(false);
     for (; index < this.shadowImages.length; index++) this.shadowImages[index]?.setVisible(false);
   }
@@ -893,7 +920,7 @@ export class FieldScene extends Phaser.Scene {
     const key = `terrain:particle:${world}`;
     this.pixelTexture(key, () => {
       const color = WORLD_PALETTES[world].accent;
-      if (world === 'lowlands') return [{ x: 1, y: 7, width: 12, height: 1, color, alpha: 0.08 }];
+      if (world === 'lowlands') return [{ x: 7, y: 7, width: 1, height: 2, color: 0x655f43, alpha: 0.22 }];
       if (world === 'copper-port') return [{ x: 5, y: 8, width: 3, height: 1, color: 0x10141d, alpha: 0.35 }, { x: 8, y: 9, width: 3, height: 1, color: 0x10141d, alpha: 0.35 }];
       if (world === 'library') return [{ x: 7, y: 6, width: 2, height: 3, color, alpha: 0.2 }, { x: 9, y: 8, width: 1, height: 1, color, alpha: 0.2 }];
       return [{ x: 7, y: 7, width: world === 'wordwood' ? 3 : 1, height: 1, color, alpha: 0.3 }];
@@ -919,7 +946,12 @@ export class FieldScene extends Phaser.Scene {
       }
       if (!image) continue;
       image.setVisible(index < count);
-      if (index < count) image.setPosition(this.cameraX - this.ambientWidth / 2 + particleX(index, this.ambientElapsed, this.ambientWidth), this.cameraY - this.ambientHeight / 2 + particleY(index, this.ambientElapsed, this.ambientHeight));
+      if (index < count) {
+        const x = this.cameraX - this.ambientWidth / 2 + 8 + particleX(index, this.ambientElapsed, Math.max(1, this.ambientWidth - 16));
+        const y = this.cameraY - this.ambientHeight / 2 + 8 + particleY(index, this.ambientElapsed, Math.max(1, this.ambientHeight - 16));
+        const inside = particleInside(this.frame.state.engine.lines, x, y, this.frame.legend);
+        image.setVisible(inside).setPosition(x, y);
+      }
     }
   }
 
@@ -951,8 +983,8 @@ export class FieldScene extends Phaser.Scene {
       const graphics = this.make.graphics({ x: 0, y: 0 });
       if (art && pixels) {
         pixels.forEach((row, y) => [...row].forEach((pixel, x) => {
-          const color = art.palette[pixel];
-          if (color && color !== 'transparent') graphics.fillStyle(Number.parseInt(color.slice(1), 16)).fillRect(x, y, 1, 1);
+          const color = paletteColor(art.palette[pixel]);
+          if (color !== undefined) graphics.fillStyle(color).fillRect(x, y, 1, 1);
         }));
       } else {
         const color = spriteColor(sprite);
@@ -1100,7 +1132,7 @@ export class FieldScene extends Phaser.Scene {
     for (const [key, cell] of this.cells) {
       const at = { line: cell.line, col: Number(key.split(':')[1]) };
       const alpha = darknessAlpha(at, this.frame.state.engine.cursor, this.frame.darkness);
-      cell.tile.setAlpha(alpha);
+      cell.tile.setAlpha(alpha === 0 ? 0 : 1);
       cell.glyph.setAlpha(alpha);
     }
     for (const entity of this.frame.state.entities) {
@@ -1144,13 +1176,13 @@ export class FieldScene extends Phaser.Scene {
     const jump = steps.find(step => step.type === 'jump');
     if (jump && this.trail.length === 0) {
       for (const _alpha of TRAIL_ALPHAS) {
-        const ghost = this.add.image(0, 0, this.texture('player')).setVisible(false);
+        const ghost = this.add.image(0, 0, this.texture('player')).setDepth((this.player?.y ?? 0) - 0.1).setVisible(false);
         this.actors?.addAt(ghost, 0);
         this.trail.push(ghost);
       }
     }
     if (steps.some(step => step.type === 'bump') && !this.bumpDust) {
-      this.bumpDust = this.add.image(0, 0, this.texture('dust-puff')).setVisible(false).setDisplaySize(3, 3);
+      this.bumpDust = this.add.image(0, 0, this.texture('dust-puff')).setDepth((this.player?.y ?? 0) + 0.1).setVisible(false).setDisplaySize(3, 3);
       this.actors?.add(this.bumpDust);
     }
     const clock = { value: 0 };
@@ -1331,12 +1363,13 @@ export class FieldScene extends Phaser.Scene {
           const ground = this.groundPosition ?? cursor;
           target.setPosition(center(ground.col) + direction.col * lean, center(ground.line) + direction.line * lean);
           cameraCell = ground;
-          this.bumpDust?.setVisible(progress > 0 && progress < 1)
+          this.bumpDust?.setDepth(target.y + 0.1).setVisible(progress > 0 && progress < 1)
             .setAlpha(Math.sin(Math.PI * progress))
             .setPosition(center(step.at.col) - direction.col * TILE_SIZE / 2,
               center(step.at.line) - direction.line * TILE_SIZE / 2);
         }
       }
+      this.actors?.sort('depth');
       this.positionCamera(cameraCell);
     };
     for (const event of this.frame.events) if (event.type === 'rows-changed') {

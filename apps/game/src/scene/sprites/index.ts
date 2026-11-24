@@ -34,8 +34,9 @@ import { WELL } from './well.js';
 import { GATE } from './gate.js';
 import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
+import { tallBody } from './tall.js';
 import type { PixelSprite } from './sprite.js';
-export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
   'page-ink': PAGE_PAPER, 'page-paper': PAGE_PAPER, 'page-blank': PAGE_PAPER, 'page-void': PAGE_PAPER, 'page-corner': PAGE_MARGIN, 'page-margin': PAGE_MARGIN, 'page-door': PAGE_DOOR, 'page-smear': PAGE_SMEAR,
 
   ...RUNE_LEVERS, 'rune-lever': RUNE_LEVER, 'minotaur-lair': MINOTAUR_LAIR, hoofprint: HOOFPRINT, minotaur: MINOTAUR,
@@ -118,3 +119,7 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
   'save-stone': SAVE_STONE,
   'tree': TREE,
 };
+
+export const SPRITES: Readonly<Record<string, PixelSprite>> = Object.fromEntries(
+  Object.entries(BASE_SPRITES).map(([name, sprite]) => [name, tallBody(name, sprite)]),
+);

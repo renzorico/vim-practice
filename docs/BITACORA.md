@@ -891,6 +891,15 @@ Tags: `#design` `#gates`
 
 **Review fixes:** a second run started on the old beat or closed at once; a hidden tab could skip beats; the whole app re-rendered 45 times a second; art was redrawn pixel by pixel every frame; banners repeated after every return to the title; the last beat started the game by itself.
 
+## 2026-11-24 · P-18: Visuals 2 (surroundings, light, tall things)
+**Who:** Codex (build, fix round), Sonnet (review), Opus (brief, Save Stone, glow, browser check).
+
+**Why:** Renzo likes the new visuals and wants more; and the design lead's tour of every world found that P-15 had broken the Lighthouse (its floor became open sea), the Lowlands (land that read as water), the Cut and the Last Page.
+
+**What:** Built floors keep their own sprites; the Lowlands are a chalk meadow; the Cut is a real drop; the Last Page is plain paper. Outside each map there is now a place (sea, rock, forest, bookcases, cave), dimmed and never walkable, instead of a void. Soft vignettes, light pools on lamps, windows, crystals and Save Stones, and a smooth falloff in dark stages (the same cells stay hidden). Trees, pillars, shelves, lamps and Save Stones are 24 px tall and overlap actors correctly; source view hides the overhang.
+
+**Review fixes:** trees wore a square block; one texture per cell and cursor in dark stages; the hidden map's outline showed in the dark; deleted text got a border or sea; mixed paper colours.
+
 ---
 
 ## Parking lot
