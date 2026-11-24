@@ -49,7 +49,7 @@ it('replays the provided solution in 15 turns with three hearts and delays recov
   expect(screen(next)).toContain('cleared');
   next = controller.reduce(next, '<CR>');
   expect(screen(next)).toContain('folio.txt written');
-  expect(screen({ ...next, queue: [{ type: 'ending', ending: 'quit' }] })).not.toContain('folio.txt written');
+  expect(screen({ ...next, queue: [{ type: 'ending', ending: 'delete' }] })).not.toContain('folio.txt written');
   expect(endingProgress(next.stageEntry, next.story).story.ending).toBe('recover');
 });
 it('undo immediately restores torn doors; late undo restores the player’s doubled word', () => {
