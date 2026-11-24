@@ -1,8 +1,8 @@
 import { SPRITES } from './scene/sprites/index.js';
 import { WORLD_PALETTES } from './scene/palette.js';
-import { terrainArt } from './scene/terrain/art.js';
+import { groundArt } from './scene/terrain/art.js';
 import { groundVariant, titleRowGone, TITLE_ROW_CLOCK_MS } from './scene/terrain/life.js';
-import { WorldBanner, useWorldBanner } from './scene/WorldBanner.js';
+import { bannerBrowserKey, WorldBanner, useWorldBanner } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import { learnedReference } from './play2/help/learned.js';
 import { routeHelpCommand } from './play2/help/command.js';
@@ -115,10 +115,11 @@ export function App() {
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
-    enabled: started && !helpOpen && (session.world.status !== 'dead' || helpCommand !== null) });
+    enabled: started && !helpOpen && !banner.visible && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
-      if (started && banner.dismiss()) {
+      if (started && banner.visible && bannerBrowserKey(event)) return;
+      if (started && banner.dismiss(event)) {
         swallowRepeats.current = true;
         event.preventDefault(); event.stopImmediatePropagation(); return;
       }
@@ -169,7 +170,7 @@ export function App() {
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss]);
+  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible]);
   useEffect(() => {
     if (!started) return;
     const entry = replayStage ? session.stageEntry : endingProgress(session.stageEntry, session.story);
@@ -232,6 +233,23 @@ export function App() {
 const TITLE_WIDTH = 384;
 const TITLE_HEIGHT = 240;
 /** A small original Margin tableau drawn from the same tile atlas as the field. */
+const TITLE_TILE_SIZE = 16;
+const TITLE_FIRST_ROW = 4;
+const TITLE_ROWS = 15;
+const TITLE_COLS = 24;
+const TITLE_PAPER_COL = 16;
+const TITLE_ROAD_ROW = 10;
+const TITLE_SKY_HEIGHT = 38;
+const TITLE_TREES = [1, 4, 8, 12];
+const TITLE_HOUSE_COLS = [3, 4, 5];
+const TITLE_TILDE_COL = 17;
+const TITLE_GLYPH_BASELINE = 12;
+const TITLE_TREE_ROWS = [5, 13];
+const TITLE_ROOF_ROW = 7;
+const TITLE_HOUSE_ROW = 8;
+const TITLE_WELL = { col: 10, line: 8 };
+const TITLE_STONE = { col: 7, line: 11 };
+const TITLE_PLAYER = { col: 14, line: 9 };
 function TitleScene() {
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -246,32 +264,32 @@ function TitleScene() {
       if (!art) return;
       art.frames[0]?.forEach((row, y) => [...row].forEach((pixel, x) => {
         const color = art.palette[pixel];
-        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(col * 16 + x, line * 16 + y, 1, 1); }
+        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(col * TITLE_TILE_SIZE + x, line * TITLE_TILE_SIZE + y, 1, 1); }
       }));
     };
     const draw = (): void => {
       context.clearRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
       context.fillStyle = '#d9ad82'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
-      context.fillStyle = '#edcca2'; context.fillRect(0, 0, TITLE_WIDTH, 38);
-      for (let line = 4; line < 15; line++) for (let col = 0; col < 24; col++) {
-        const paper = col >= 16 || (titleRowGone(tick, reduced.matches) && line === 10);
-        if (paper) { context.fillStyle = hex(palette.paper); context.fillRect(col * 16, line * 16, 16, 16); continue; }
-        const road = line === 10;
+      context.fillStyle = '#edcca2'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_SKY_HEIGHT);
+      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) for (let col = 0; col < TITLE_COLS; col++) {
+        const paper = col >= TITLE_PAPER_COL || (titleRowGone(tick, reduced.matches) && line === TITLE_ROAD_ROW);
+        if (paper) { context.fillStyle = hex(palette.paper); context.fillRect(col * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE, TITLE_TILE_SIZE, TITLE_TILE_SIZE); continue; }
+        const road = line === TITLE_ROAD_ROW;
         tile(road ? 'road' : 'grass', col, line);
-        if (!road) for (const pixel of terrainArt({ group: 'ground', mask: 0, shore: 0, cast: false, posts: false }, 'margin', groundVariant(line, col), false, 0)) {
+        if (!road) for (const pixel of groundArt('margin', groundVariant(line, col))) {
           context.globalAlpha = pixel.alpha; context.fillStyle = hex(pixel.color);
-          context.fillRect(col * 16 + pixel.x, line * 16 + pixel.y, pixel.width, pixel.height);
+          context.fillRect(col * TITLE_TILE_SIZE + pixel.x, line * TITLE_TILE_SIZE + pixel.y, pixel.width, pixel.height);
         }
         context.globalAlpha = 1;
       }
-      for (let line = 4; line < 15; line++) {
+      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) {
         context.fillStyle = '#687b74'; context.font = '12px monospace';
-        context.fillText('~', 17 * 16, line * 16 + 12);
+        context.fillText('~', TITLE_TILDE_COL * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE + TITLE_GLYPH_BASELINE);
       }
-      for (const col of [1, 4, 8, 12]) { tile('tree', col, 5); tile('tree', col, 13); }
-      for (const col of [3, 4, 5]) { tile('house-roof', col, 7); tile('house-wall', col, 8); }
-      tile('well', 10, 8); tile('save-stone', 7, 11);
-      tile('player', 14, 9);
+      for (const col of TITLE_TREES) for (const line of TITLE_TREE_ROWS) tile('tree', col, line);
+      for (const col of TITLE_HOUSE_COLS) { tile('house-roof', col, TITLE_ROOF_ROW); tile('house-wall', col, TITLE_HOUSE_ROW); }
+      tile('well', TITLE_WELL.col, TITLE_WELL.line); tile('save-stone', TITLE_STONE.col, TITLE_STONE.line);
+      tile('player', TITLE_PLAYER.col, TITLE_PLAYER.line);
     };
     draw();
     const timer = setInterval(() => { if (!reduced.matches) { tick++; draw(); } }, TITLE_ROW_CLOCK_MS);

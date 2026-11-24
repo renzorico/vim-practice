@@ -3,7 +3,7 @@ import { WORLD_PALETTES } from '../palette.js';
 import type { TerrainEdges } from './edges.js';
 
 export interface PixelRect { readonly x: number; readonly y: number; readonly width: number; readonly height: number; readonly color: number; readonly alpha: number }
-export function terrainArt(edges: TerrainEdges, world: WorldId, variant: number, decorated: boolean, phase: number): readonly PixelRect[] {
+export function terrainArt(edges: TerrainEdges, world: WorldId, variant: number, _decorated: boolean, phase: number): readonly PixelRect[] {
   const palette = WORLD_PALETTES[world];
   const pixels: PixelRect[] = [];
   const rect = (x: number, y: number, width: number, height: number, color: number, alpha = 1): void => {
@@ -15,13 +15,6 @@ export function terrainArt(edges: TerrainEdges, world: WorldId, variant: number,
     if (mask & 4) rect(0, 16 - thickness, 16, thickness, color, alpha);
     if (mask & 8) rect(0, 0, thickness, 16, color, alpha);
   };
-  if (edges.group === 'ground') {
-    rect(0, 0, 16, 16, palette.ground);
-    // Quiet, sparse surface grain: four arrangements, never an obstacle silhouette.
-    rect(2 + variant * 3, 4 + variant % 2 * 6, 2, 1, palette.grain);
-    rect(12 - variant * 2, 12 - variant, 1, 1, palette.light, 0.35);
-  }
-  if (edges.group === 'paper') rect(0, 0, 16, 16, palette.paper);
   if (edges.group === 'water') {
     rect(0, 0, 16, 16, palette.water, 0.75);
     side(edges.mask & 15, 1, palette.foam, 0.55);
@@ -56,11 +49,28 @@ export function terrainArt(edges: TerrainEdges, world: WorldId, variant: number,
   for (const [index, x, y] of [[4, 0, 0], [5, 15, 0], [6, 15, 15], [7, 0, 15]] as const) {
     if (edges.group === 'road' && edges.mask & (1 << index)) rect(x, y, 1, 1, palette.shade);
   }
+  // Ink separates low-contrast obstacle fills from the surrounding ground.
+  if (edges.group === 'water' || edges.group === 'wall' || edges.group === 'roof') side(edges.mask & 15, 1, palette.ink);
   // Damp land: darker toward the water, so the bank reads as a place to stand.
   side(edges.shore, 3, palette.shade, 0.35);
   side(edges.shore, 1, palette.shade, 0.6);
   if (edges.posts) { rect(1, 10, 2, 6, palette.face); rect(13, 10, 2, 6, palette.face); rect(1, 9, 2, 1, palette.wall); rect(13, 9, 2, 1, palette.wall); }
-  if (decorated && edges.group === 'ground') {
+  if (edges.cast) { rect(0, 0, 16, 2, palette.ink, 0.28); rect(0, 2, 16, 1, palette.ink, 0.12); }
+  return pixels;
+}
+
+/** Ground cells own this texture; transparent objects use an undecorated copy underneath. */
+export function groundArt(world: WorldId, variant: number, decorated = false): readonly PixelRect[] {
+  const palette = WORLD_PALETTES[world];
+  const pixels: PixelRect[] = [];
+  const rect = (x: number, y: number, width: number, height: number, color: number, alpha = 1): void => {
+    pixels.push({ x, y, width, height, color, alpha });
+  };
+  rect(0, 0, 16, 16, palette.ground);
+  // Quiet, sparse surface grain: four arrangements, never an obstacle silhouette.
+  rect(2 + variant * 3, 4 + variant % 2 * 6, 2, 1, palette.grain);
+  rect(12 - variant * 2, 12 - variant, 1, 1, palette.light, 0.35);
+  if (decorated) {
     // Every motif fits in a five-pixel band and contains no text or Vim glyphs.
     if (world === 'margin') {
       rect(5, 10, 1, 4, palette.light); rect(4, 10, 3, 1, palette.accent); rect(10, 12, 1, 2, palette.light);
@@ -78,13 +88,7 @@ export function terrainArt(edges: TerrainEdges, world: WorldId, variant: number,
       rect(4, 12, 3, 2, palette.face); rect(9, 11, 2, 1, palette.wall);
     }
   }
-  if (edges.cast) { rect(0, 0, 16, 2, palette.ink, 0.28); rect(0, 2, 16, 1, palette.ink, 0.12); }
   return pixels;
-}
-
-/** Plain ground under sprites with transparent pixels (trees, stones, tents). */
-export function groundArt(world: WorldId, variant: number): readonly PixelRect[] {
-  return terrainArt({ group: 'ground', mask: 0, shore: 0, cast: false, posts: false }, world, variant, false, 0);
 }
 
 /** Soft oval assembled from translucent pixel bands; texture is shared by every actor. */

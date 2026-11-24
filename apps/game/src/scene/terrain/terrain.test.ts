@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import type { Legend, TileDef } from '@escape/world';
-import { edgesFor, tileAt } from './edges.js';
+import { changedTerrainRows, edgesFor, terrainGroup, tileAt } from './edges.js';
 import { decorationAt, groundVariant, particleCount, positionHash, shadowScale, titleRowGone, TITLE_ROW_CLOCK_MS } from './life.js';
 import { groundArt, terrainArt } from './art.js';
 import { WORLD_PALETTES, contrastRatio } from '../palette.js';
@@ -100,4 +100,65 @@ it('puts an opaque ground under see-through objects, and leaves drops and blanks
   expect(edges.group).toBe('open');
   expect(terrainArt(edges, 'quarry', 0, false, 0)).toEqual([]);
   expect(edgesFor([' '], { line: 0, col: 3 }, chasm).group).toBe('paper');
+});
+
+it('limits cast shadows to receiving ground, road, water and objects', () => {
+  const types = ['dirt', 'plank', 'river', 'stone', 'bedrock', 'house-roof', 'air'];
+  for (const above of ['bedrock', 'house-roof']) for (const sprite of types) {
+    const local: Legend = { ...legend, tiles: [tile('#', above, 'barrier', false), tile('x', sprite, sprite === 'dirt' ? 'ground' : 'object', true)] };
+    expect(edgesFor(['#', 'x'], { line: 1, col: 0 }, local).cast, `${above} -> ${sprite}`)
+      .toBe(['dirt', 'plank', 'river', 'stone'].includes(sprite));
+    expect(edgesFor(['#', ''], { line: 1, col: 1 }, local).cast).toBe(false);
+  }
+});
+it('rebuilds only changed rows and adjacent joins, or the suffix when row count changes', () => {
+  const rows = ['a', 'b', 'c', 'd', 'e', 'f'];
+  expect([...changedTerrainRows(rows, [...rows])]).toEqual([]);
+  expect([...changedTerrainRows(rows, ['a', 'b', 'X', 'd', 'e', 'f'])]).toEqual([1, 2, 3]);
+  expect([...changedTerrainRows(rows, ['a', 'b', 'c', 'e', 'f'])]).toEqual([2, 3, 4]);
+  expect([...changedTerrainRows(rows, ['a', 'b', 'X', 'c', 'd', 'e', 'f'])]).toEqual([1, 2, 3, 4, 5, 6]);
+});
+it('keeps ground and paper out of edge overlays; decoration belongs to ground art', () => {
+  for (const group of ['ground', 'paper'] as const) expect(terrainArt({ group, mask: 0, shore: 0, cast: false, posts: false }, 'margin', 0, true, 0)).toEqual([]);
+  expect(groundArt('margin', 0, true).length).toBeGreaterThan(groundArt('margin', 0).length);
+});
+it('builds a distinct outline for every drawn idle frame', async () => {
+  const { outlineArt } = await import('./outline.js');
+  const art = { palette: { x: '#ffffff' }, frames: [[' x '], ['   ', ' x ']] };
+  expect(outlineArt(art, 0)).not.toEqual(outlineArt(art, 0, 1));
+});
+it('provides 3:1 fills or a 3:1 ink silhouette for obstacles on every ground', async () => {
+  const { SPRITES } = await import('../sprites/index.js');
+  const { outlineArt } = await import('./outline.js');
+  for (const [world, palette] of Object.entries(WORLD_PALETTES)) {
+    const fills = [palette.face, palette.wall, palette.water, ...['house-roof', 'gate', 'tree', 'stone', 'blot'].flatMap(name =>
+      Object.values(SPRITES[name]?.palette ?? {}).filter(color => color !== 'transparent').map(color => Number.parseInt(color.slice(1), 16)))];
+    for (const ground of [palette.ground, palette.grain, palette.light]) for (const fill of fills) {
+      expect(Math.max(contrastRatio(fill, ground), contrastRatio(palette.ink, ground)), `${world}: ${fill}`).toBeGreaterThanOrEqual(3);
+    }
+    for (const name of ['gate', 'tree', 'stone', 'blot']) expect(outlineArt(SPRITES[name], palette.ink).length).toBeGreaterThan(0);
+    for (const group of ['wall', 'roof', 'water'] as const) expect(terrainArt({ group, mask: 15, shore: 0, cast: false, posts: false }, world as keyof typeof WORLD_PALETTES, 0, false, 0)).toContainEqual(expect.objectContaining({ color: palette.ink, alpha: 1 }));
+  }
+});
+it('classifies every shipped legend sprite explicitly, without substring matches', () => {
+  const intended = {
+    ground: ["archive-aisle", "clearing", "dirt", "grass", "page-paper", "shelf-gap", "stone-floor"],
+    object: ["archive-post", "archive-rail", "atlas-shelf", "bible-shelf", "book", "bramble", "cave-floor", "chain", "clause-quote", "clause-text", "clerk-desk", "counter-floor", "crate-end", "crate-lip", "crates", "crystal-dark", "customs-floor", "customs-post", "dust", "echo-rune", "fake", "fern", "gallery", "gate", "gate-close", "gate-open", "gravel", "hollow", "hoofprint", "keys", "knot", "ladder", "lamp", "lamp-oil", "leaves", "lighthouse-door", "lock-left", "lock-right", "minotaur-lair", "misfiled-shelf", "mortar", "moss", "nets", "notary-desk", "oil", "page-ink", "page-margin", "pier-post", "pillar", "reading-floor", "reading-post", "rock", "rope", "rubble", "rune-lever", "save-stone", "scaffold", "seal-left", "seal-right", "shackle-open-left", "shackle-open-right", "shelf-end", "shelf-lip", "shelf-post", "stone", "stone-floor", "tag-close", "tag-open", "tag-slash", "tent", "thorns", "tree", "unknown", "vault-floor", "warehouse", "warehouse-floor", "wax", "well"],
+    open: ["air", "blank", "chasm", "clause-gap", "page-blank", "page-void"],
+    road: ["boards", "branch", "crystal-ledge", "jetty", "ledge", "plank", "platform", "road"],
+    wall: ["bedrock", "cave-rock", "counter-wall", "customs-wall", "heartwood", "house-wall", "library-wall", "tower-wall", "trunk", "vault-wall", "warehouse-wall"],
+    water: ["river", "water"],
+  };
+  const legends = import.meta.glob<Legend>('../../../../../packages/world/content/**/*.legend.json', { eager: true, import: 'default' });
+  expect(Object.keys(legends).length).toBeGreaterThan(20);
+  for (const legend of Object.values(legends)) for (const tile of [...legend.tiles, legend.fallback, ...(legend.emptyRow ? [legend.emptyRow] : [])]) {
+    // stone-floor appears as both a ground character and a barrier character in the source legends.
+    const expected = tile.sprite === 'stone-floor' ? (tile.kind === 'ground' ? 'ground' : 'object')
+      : Object.entries(intended).find(([, sprites]) => (sprites as readonly string[]).includes(tile.sprite))?.[0];
+    expect(expected, tile.sprite).toBeDefined();
+    expect(terrainGroup(tile), `${legend.id}: ${tile.sprite}`).toBe(expected);
+  }
+  for (const sprite of ['stairs', 'minotaur-lair', 'waterfall-sign', 'wallflower', 'roadside-sign']) {
+    expect(terrainGroup(tile('x', sprite, 'object', true))).toBe('object');
+  }
 });

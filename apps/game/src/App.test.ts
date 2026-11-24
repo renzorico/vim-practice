@@ -617,3 +617,19 @@ it('shows a new world banner once and does not show it on a same-session revisit
   hooks.session = { ...session(), world: { ...session().world, stage: 'margin' } }; flush();
   expect(bannerWorld(appTree)).toBeUndefined();
 });
+
+it('swallows held repeats without dismissing the world banner', () => {
+  flush(); key('Enter');
+  const before = session();
+  const held = new KeyEvent('j', true); window.dispatchEvent(held); flush();
+  expect(held.defaultPrevented).toBe(true);
+  expect(bannerWorld(appTree)).toBe('margin'); expect(session()).toBe(before);
+});
+it.each([new KeyEvent('Shift'), new KeyEvent('F1'), new KeyEvent('F12'),
+  new KeyEvent('r', false, true), new KeyEvent('r', false, false, true), new KeyEvent('r', false, false, false, true)])
+('keeps the world banner on modifier and browser keys (%s)', event => {
+  flush(); key('Enter');
+  const before = session(); window.dispatchEvent(event); flush();
+  expect(bannerWorld(appTree)).toBe('margin'); expect(session()).toBe(before);
+  if (event.key !== 'Shift') expect(event.defaultPrevented).toBe(false);
+});

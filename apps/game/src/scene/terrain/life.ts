@@ -2,10 +2,6 @@ import type { WorldId, TileDef } from '@escape/world';
 import { terrainGroup } from './edges.js';
 
 export const PARTICLE_CAP = 24;
-export const WORLD_LIFE: Readonly<Record<WorldId, string>> = {
-  margin: 'flowers', lowlands: 'chalk', quarry: 'pebbles', wordwood: 'mushrooms',
-  'copper-port': 'rope', library: 'pages', 'echo-caves': 'crystals', 'last-page': 'paper',
-};
 export function positionHash(line: number, col: number): number {
   let hash = Math.imul(line + 1, 73856093) ^ Math.imul(col + 1, 19349663);
   hash = Math.imul(hash ^ hash >>> 16, 0x45d9f3b);

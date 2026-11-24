@@ -8,6 +8,10 @@ export const WORLD_NAMES: Readonly<Record<WorldId, readonly [string, string]>> =
   wordwood: ['3', 'Wordwood'], 'copper-port': ['4', 'Copper Port'], library: ['5', 'The Library'],
   'echo-caves': ['6', 'Echo Caves'], 'last-page': ['F', 'The Last Page'],
 };
+export function bannerBrowserKey(event: KeyboardEvent): boolean {
+  return event.isComposing || event.metaKey || event.ctrlKey || event.altKey || /^F\d+$/.test(event.key)
+    || event.key === 'Meta' || event.key === 'Control' || event.key === 'Alt';
+}
 /** App's capture listener owns dismissal so the same event cannot reach either game listener. */
 export function useWorldBanner(world: WorldId, active: boolean) {
   const seen = useRef(new Set<WorldId>());
@@ -21,8 +25,10 @@ export function useWorldBanner(world: WorldId, active: boolean) {
     const timer = setTimeout(() => { blocking.current = false; setVisible(null); }, BANNER_DURATION_MS);
     return () => { clearTimeout(timer); blocking.current = false; setVisible(null); };
   }, [world, active]);
-  const dismiss = useCallback((): boolean => {
+  const dismiss = useCallback((event?: KeyboardEvent): boolean => {
     if (!blocking.current) return false;
+    if (event && bannerBrowserKey(event)) return false;
+    if (event?.repeat || event?.key === 'Shift') return true;
     blocking.current = false; setVisible(null); return true;
   }, []);
   return { visible, dismiss };

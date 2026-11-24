@@ -2,8 +2,8 @@ import type { PixelSprite } from '../sprites/sprite.js';
 import type { PixelRect } from './art.js';
 
 /** A one-pixel readable silhouette around original art; never changes its pixels or character design. */
-export function outlineArt(art: PixelSprite | undefined, color: number): readonly PixelRect[] {
-  const frame = art?.frames[0];
+export function outlineArt(art: PixelSprite | undefined, color: number, phase = 0): readonly PixelRect[] {
+  const frame = art?.frames[phase % art.frames.length];
   if (!art || !frame) return [];
   const opaque = (x: number, y: number): boolean => {
     const pixel = frame[y]?.[x];
