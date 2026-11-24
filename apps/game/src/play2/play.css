@@ -273,6 +273,14 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .frame-accessible { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .action-toast { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 15; max-width: calc(100% - 32px); padding: 8px 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-muted); border-bottom-width: 3px; font: 13px/1.4 var(--font-mono); pointer-events: none; }
 .action-toast[data-visible='false'] { visibility: hidden; }
+.hint-slip { position: absolute; z-index: 14; left: 16px; bottom: 16px; box-sizing: border-box; width: min(340px, calc(100% - 32px)); padding: 12px 16px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-muted); border-left: 6px solid var(--tab-gold); border-bottom-width: 3px; box-shadow: 3px 4px 0 var(--frame-shadow); font: 15px/1.55 var(--font-ui); pointer-events: none; animation: slip-arrive 160ms ease-out; }
+.dialogue-placement--top .hint-slip { top: 16px; bottom: auto; }
+.hint-slip p { margin: 0; white-space: pre-line; }
+.hint-slip .hint-slip__label { margin-bottom: 4px; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted); }
+.hint-slip .hint-slip__more { margin-top: 8px; font-size: 12px; color: var(--ink-muted); }
+.hint-slip .keycap { padding: 0 0.3em; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
+.status-hint[data-stuck='true'] { color: var(--ink); background: var(--tab-gold); padding: 0 8px; }
+.status-hint[data-stuck='true'] kbd { color: var(--ink); }
 .dialogue-placement { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
 .dialogue-placement > .dialogue { pointer-events: auto; position: absolute; bottom: 16px; }
 .dialogue-placement--top > .dialogue { top: 16px; bottom: auto; }
@@ -339,6 +347,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .status-right { gap: 4px; }
 }
 @media (max-width: 540px) { .play-controls span:first-child { flex-basis: auto; } .status-identity { flex-basis: auto; } .status-right .pending-prompt { max-width: 18ch; } .help-link { display: none; } }
-@media (prefers-reduced-motion: reduce) { .play-panel.play-card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hint-slip, .play-panel.play-card { animation: none; } }
 
 .script-panel--contract { --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }

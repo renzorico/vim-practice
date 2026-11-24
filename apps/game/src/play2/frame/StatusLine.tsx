@@ -14,9 +14,11 @@ interface StatusLineProps {
   readonly prompt: string | null;
   readonly helpCommand?: string | null | undefined;
   readonly onOpenHelp?: (() => void) | undefined;
+  readonly onAskHint?: () => void;
+  readonly stuck?: boolean;
   readonly sound?: ReactNode;
 }
-export function StatusLine({ engine, learned, textStage, restartTaught, prompt, helpCommand, onOpenHelp, sound }: StatusLineProps) {
+export function StatusLine({ engine, learned, textStage, restartTaught, prompt, helpCommand, onOpenHelp, onAskHint, stuck = false, sound }: StatusLineProps) {
   const [limit, setLimit] = useState(6);
   useEffect(() => {
     if (!window.matchMedia) return;
@@ -42,6 +44,7 @@ export function StatusLine({ engine, learned, textStage, restartTaught, prompt, 
       <output aria-label="Pending keys" aria-live="off">{helpCommand ?? engine.pendingKeys.join('')}</output>
       {prompt && <span className="pending-prompt">{prompt}</span>}
       {!textStage && <span className="status-tab"><kbd>Tab</kbd> file view</span>}
+      {onAskHint && <button className="help-link status-hint" data-stuck={stuck} onClick={onAskHint} onMouseDown={event => event.preventDefault()}><kbd>:hint</kbd> {stuck ? 'stuck?' : 'hint'}</button>}
       {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
       {restartTaught && <span className="status-restart"><kbd>:e!</kbd> start over</span>}
       {sound}
