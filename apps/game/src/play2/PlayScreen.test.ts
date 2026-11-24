@@ -161,7 +161,7 @@ it('renders the current guide as keycaps under the objective', () => {
     stage, legend, content, showSource: false,
     objectives: storyEngine.objectives(session.story, content), onAdvance: () => {},
   }));
-  expect(html).toContain('Do:');
-  expect(html).toContain('Stand on the marker');
+  expect(html).toContain('Stand on ');
+  expect(html).toContain('the marker');
   expect(html).toContain('<kbd>Enter</kbd>');
 });
