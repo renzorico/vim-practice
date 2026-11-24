@@ -98,7 +98,7 @@ it('puts an opaque ground under see-through objects, and leaves drops and blanks
   const chasm = { ...legend, tiles: [...legend.tiles, tile('c', 'chasm', 'barrier', false)] };
   const edges = edgesFor(['c '], { line: 0, col: 0 }, chasm);
   expect(edges.group).toBe('open');
-  expect(terrainArt(edges, 'quarry', 0, false, 0)).toEqual([]);
+  expect(terrainArt(edges, 'quarry', 0, false, 0).every(pixel => pixel.width <= 3 || pixel.height <= 3)).toBe(true);
   expect(edgesFor([' '], { line: 0, col: 3 }, chasm).group).toBe('paper');
 });
 

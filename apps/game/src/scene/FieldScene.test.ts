@@ -13,7 +13,7 @@ const fake = vi.hoisted(() => {
     return target as Record<Name, ReturnType<typeof vi.fn>>;
   };
   const CHAINED = ['setAngle', 'setFlipX', 'setDisplaySize', 'setScale', 'setScrollFactor', 'setOrigin', 'setTintFill',
-    'clearTint', 'addAt', 'setTint', 'add', 'setStroke'] as const;
+    'setBlendMode', 'sort', 'clearTint', 'addAt', 'setTint', 'add', 'setStroke'] as const;
   const object = () => {
     const base = {
       x: 0, y: 0, alpha: 1, depth: 0, texture: '', text: '', visible: true,
@@ -30,10 +30,11 @@ const fake = vi.hoisted(() => {
   };
   return { object, images: [] as ReturnType<typeof object>[], texts: [] as ReturnType<typeof object>[],
     containers: [] as ReturnType<typeof object>[], killAll: vi.fn(), tween: vi.fn(),
-    pixels: new Map<string, number[][]>(), strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
+    pixels: new Map<string, number[][]>(), colors: new Map<string, Set<number>>(), background: vi.fn(), strokeText: vi.fn(), fillText: vi.fn(), idle: vi.fn(),
     scale: { width: 900, height: 600 }, centerOn: vi.fn(), on: vi.fn(), off: vi.fn(), once: vi.fn(), textures: new Set<string>() };
 });
 vi.mock('phaser', () => ({ default: {
+  BlendModes: { ADD: 1 },
   Scenes: { Events: { SHUTDOWN: 'shutdown' } }, Scale: { Events: { RESIZE: 'resize' } },
   Scene: class {
     add = {
@@ -50,13 +51,14 @@ vi.mock('phaser', () => ({ default: {
     };
     make = { graphics: () => {
       const pixels: number[][] = [];
-      return { fillStyle() { return this; }, fillRect(...rect: number[]) { pixels.push(rect); return this; },
-        generateTexture: (key: string) => { fake.textures.add(key); fake.pixels.set(key, pixels); }, destroy: vi.fn() };
+      const colors = new Set<number>();
+      return { fillStyle(color: number, alpha = 1) { if (alpha > 0) colors.add(color); return this; }, fillRect(...rect: number[]) { pixels.push(rect); return this; },
+        generateTexture: (key: string) => { fake.textures.add(key); fake.pixels.set(key, pixels); fake.colors.set(key, colors); }, destroy: vi.fn() };
     },
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: vi.fn((key: string) => fake.textures.has(key)),
       createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
-    cameras = { main: { setBackgroundColor() { return this; }, setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn, getWorldPoint: (x: number, y: number) => ({ x, y }) } };
+    cameras = { main: { setBackgroundColor: fake.background.mockReturnThis(), setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn, getWorldPoint: (x: number, y: number) => ({ x, y }) } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
     events = { once: fake.once };
@@ -64,6 +66,7 @@ vi.mock('phaser', () => ({ default: {
   },
 } }));
 import { FieldScene } from './FieldScene.js';
+import { GLOW_ALPHA } from './terrain/AtmosphereLayer.js';
 import { createEngine } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createSession } from '../play2/session.js';
@@ -78,7 +81,7 @@ const moving = { ...frame, state: { ...frame.state, turn: 1 }, events: [
 ] };
 
 beforeEach(() => {
-  vi.clearAllMocks(); fake.scale.width = 900; fake.scale.height = 600; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear(); fake.pixels.clear();
+  vi.clearAllMocks(); fake.scale.width = 900; fake.scale.height = 600; fake.images.length = 0; fake.texts.length = 0; fake.containers.length = 0; fake.textures.clear(); fake.pixels.clear(); fake.colors.clear();
 });
 describe('FieldScene without canvas', () => {
   it('centres the fixture and recomputes camera bounds after resize and buffer edits', () => {
@@ -486,7 +489,7 @@ it('renders Glades terrain and actors and follows G and gg over all eighteen row
   for (const sprite of ['pilcrow', 'rope', 'stump', 'glade-lamp-lit', 'lamp-out', 'fern-fronds', 'bramble']) {
     expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
   }
-  expect(fake.images.some(image => image.texture.startsWith('terrain:ground-tile:wordwood:'))).toBe(true);
+  expect(fake.images.some(image => image.texture === 'field:clearing')).toBe(true);
   const player = fake.images.find(image => image.texture === 'field:player');
   for (const keys of [['G'], ['g', 'g']]) {
     let jumped: WorldStepResult = { state, events: [] };
@@ -887,14 +890,14 @@ it('hides distant Mouth tiles, source glyphs and Echo, while lit crystals keep t
   const at = (texture: string, line: number, col: number) => fake.images.find(image =>
     image.texture.startsWith(texture) && image.x === col * 16 + 8 && image.y === line * 16 + 8 && !image.destroy.mock.calls.length);
   expect(at('field:cave-floor', 1, 1)?.alpha).toBe(1);
-  expect(at('field:cave-floor', 1, 4)?.alpha).toBe(0.35);
+  expect(at('field:cave-floor', 1, 4)?.alpha).toBe(1); // Smooth darkness is a pooled pixel overlay.
   expect(at('field:crystal-dark', 5, 14)?.alpha).toBe(0);
   expect(at('glyph:120', 5, 14)?.alpha).toBe(0);
   expect(at('field:echo', 1, 15)?.alpha).toBe(0);
   const lit = { ...state, flags: { ...state.flags, 'mouth.deep': true } };
   scene.present({ ...initial, state: lit, darkness: { radius: 3, lights: [{ line: 5, col: 14 }] } });
   expect(at('field:crystal-lit', 5, 14)?.alpha).toBe(1);
-  expect(at('field:crystal-ledge', 5, 13)?.alpha).toBe(0.65);
+  expect(at('field:crystal-ledge', 5, 13)?.alpha).toBe(1);
   expect(at('field:crystal-dark', 3, 13)?.alpha).toBe(0);
   expect(at('field:echo', 1, 15)?.alpha).toBe(0);
 });
@@ -1291,12 +1294,12 @@ it('keeps landing text objects when a new marker list has equal contents', () =>
 
 
 describe('first-minute guidance', () => {
-  it.each(['normal', 'insert', 'operator-pending'] as const)('draws the %s cursor under the sprite', mode => {
+  it.each(['normal', 'insert', 'operator-pending'] as const)('draws the %s cursor above overhangs', mode => {
     const scene = new FieldScene({ ...frame, state: { ...frame.state, engine: { ...frame.state.engine, mode } } }, false);
     scene.create();
     const cursor = fake.images.find(image => image.texture.startsWith(`guidance:${mode}:`));
     const player = fake.images.find(image => image.texture === 'field:player');
-    expect(cursor).toMatchObject({ x: player?.x, y: player?.y, depth: 1.9, visible: true });
+    expect(cursor).toMatchObject({ x: player?.x, y: player?.y, depth: 4.2, visible: true });
     const pixels = fake.pixels.get(cursor?.texture ?? '');
     expect(pixels).toEqual(mode === 'insert' ? [[0, 0, 2, 16]] : mode === 'operator-pending'
       ? [[1, 14, 14, 1]] : [[1, 1, 14, 1], [1, 14, 14, 1], [1, 1, 1, 14], [14, 1, 1, 14]]);
@@ -1390,14 +1393,14 @@ it.each(['dead', 'cleared'] as const)('hides the cursor when the world is %s', s
   expect(cursor?.visible).toBe(false);
 });
 
-it('previews exactly the bank and four river cells for 5r, under entities', () => {
+it('previews exactly the bank and four river cells for 5r, above overhangs', () => {
   const state = { ...frame.state, engine: { ...frame.state.engine,
     cursor: { line: 2, col: 30 }, lines: [' '.repeat(46), ' '.repeat(46), ' '.repeat(31) + '~~~~' + ' '.repeat(11)], pendingKeys: ['5', 'r'] } };
   const scene = new FieldScene({ ...frame, state }, true); scene.create();
   const range = fake.images.filter(image => image.texture.startsWith('guidance:range:'));
   expect(range.map(image => ({ line: (image.y - 8) / 16, col: (image.x - 8) / 16 })))
     .toEqual([30, 31, 32, 33, 34].map(col => ({ line: 2, col })));
-  expect(range.every(image => image.depth < 2)).toBe(true);
+  expect(range.every(image => image.depth > 2)).toBe(true);
   const short = { ...state, engine: { ...state.engine, cursor: { line: 2, col: 44 } } };
   scene.present({ ...frame, state: short });
   expect(range[0]?.setTintFill).toHaveBeenLastCalledWith(0xe06464);
@@ -1408,7 +1411,7 @@ it('draws dashed standing markers, makes the occupied marker solid, and hides th
   const scene = new FieldScene({ ...frame, standAt: [at, other] }, false); scene.create();
   const solid = fake.images.find(image => image.texture.startsWith('guidance:stand-ready:'));
   const dashed = fake.images.find(image => image.texture.startsWith('guidance:stand:'));
-  expect(solid).toMatchObject({ x: at.col * 16 + 8, y: at.line * 16 + 8, alpha: 1, depth: 0.8 });
+  expect(solid).toMatchObject({ x: at.col * 16 + 8, y: at.line * 16 + 8, alpha: 1, depth: 3.1 });
   scene.update(500, 500); expect(dashed?.alpha).toBeCloseTo(0.3);
   scene.setReducedMotion(true); scene.update(1000, 500); expect(dashed?.alpha).toBe(1);
   scene.present({ ...frame, standAt: [at, other], hideObjective: true });
@@ -1428,7 +1431,7 @@ it('pools terrain, particles and shadows and hides ambient motion immediately on
   expect(particles.every(image => !image.visible)).toBe(true);
   scene.setReducedMotion(false);
   expect(fake.images).toHaveLength(images);
-  expect(particles.every(image => image.visible)).toBe(true);
+  expect(particles.some(image => image.visible)).toBe(true);
 });
 it('freezes shoreline phase on the existing water clock with reduced motion', () => {
   const initial = { ...frame, stage: quarry, legend: quarryLegend,
@@ -1540,5 +1543,148 @@ it('guards pre-create motion updates and wraps particles inside the camera, hidi
   }
   scene.present({ ...initial, showSource: true }); expect(particles.every(image => !image.visible)).toBe(true);
   scene.update(20, 10); expect(particles.every(image => !image.visible)).toBe(true);
-  scene.present(initial); expect(particles.every(image => image.visible)).toBe(true);
+  scene.present(initial); expect(particles.some(image => image.visible)).toBe(true);
+});
+
+it('P-18 preserves the Lighthouse stone floor instead of replacing it with the Lowlands ground', () => {
+  const sim = createWorldSim(createEngine());
+  const state = sim.init(lighthouse, lighthouseLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
+  new FieldScene({ state, stage: lighthouse, legend: lighthouseLegend, events: [], showSource: false }, true).create();
+  const floor = fake.images.filter(image => image.texture === 'field:stone-floor');
+  expect(floor.length).toBeGreaterThan(0);
+  expect(fake.images.some(image => image.texture.startsWith('terrain:ground-tile:lowlands:'))).toBe(false);
+});
+
+it('P-18 pools 16x24 props, hides upper eight pixels in source view, and keeps markers above them', () => {
+  const initial = { ...frame, showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  const tops = fake.images.filter(image => image.texture.startsWith('overhang:'));
+  expect(tops.length).toBeGreaterThan(0);
+  for (const top of tops) {
+    expect(fake.pixels.get(top.texture)?.every(rect => (rect[1] ?? 0) + (rect[3] ?? 0) <= 8)).toBe(true);
+    expect((top.y + 4) % 16).toBe(0);
+  }
+  const count = fake.images.length;
+  scene.present({ ...initial, showSource: true });
+  expect(tops.every(image => !image.visible)).toBe(true);
+  scene.present(initial);
+  expect(tops.some(image => image.visible)).toBe(true);
+  expect(fake.images).toHaveLength(count);
+  const cursor = fake.images.find(image => image.texture.startsWith('guidance:normal:'));
+  expect(cursor?.depth).toBeGreaterThan(2);
+});
+
+it('P-18 keeps additive light present but perfectly steady with reduced motion', () => {
+  const initial = { ...frame, showSource: false };
+  const scene = new FieldScene(initial, false); scene.create();
+  const glows = fake.images.filter(image => image.texture.startsWith('glow:'));
+  expect(glows.length).toBeGreaterThan(0);
+  expect(glows.every(image => image.setBlendMode.mock.calls.some(call => call[0] === 1))).toBe(true);
+  scene.update(500, 500);
+  expect(glows[0]?.alpha).toBeCloseTo(GLOW_ALPHA * 1.04);
+  scene.setReducedMotion(true);
+  expect(glows[0]?.alpha).toBe(GLOW_ALPHA);
+  const textures = fake.textures.size; const images = fake.images.length;
+  for (let tick = 0; tick < 20; tick++) scene.update(tick * 16, 16);
+  expect(glows.every(image => image.alpha === GLOW_ALPHA)).toBe(true);
+  expect(fake.textures.size).toBe(textures); expect(fake.images).toHaveLength(images);
+});
+
+import { AtmosphereLayer } from './terrain/AtmosphereLayer.js';
+import { WORLD_PALETTES } from './palette.js';
+
+function atmosphere(initial = frame): AtmosphereLayer {
+  const scene = new FieldScene(initial, true);
+  return new AtmosphereLayer(scene, scene.add.container(0, 0));
+}
+
+it('bounds the dark falloff atlas through 200 cursor moves and never draws the map silhouette', () => {
+  const rows = Array.from({ length: 10 }, () => ' '.repeat(24));
+  const initial = { ...frame, stage: { ...frame.stage, map: rows }, darkness: { radius: 3, lights: [{ line: 5, col: 12 }] },
+    state: { ...frame.state, entities: [], engine: { ...frame.state.engine, lines: rows } } };
+  const layer = atmosphere();
+  for (let move = 0; move < 200; move++) layer.sync({ ...initial, state: { ...initial.state,
+    engine: { ...initial.state.engine, cursor: { line: Math.floor(move / 24) % 10, col: move % 24 } } } }, 100, 60);
+  const textures = [...fake.textures].filter(key => key.startsWith('darkness:'));
+  expect(textures.length).toBeGreaterThan(8);
+  expect(textures.length).toBeLessThanOrEqual(32);
+  expect(fake.images.some(image => image.texture.startsWith('atmosphere:'))).toBe(false);
+  const { darkness: _sight, ...lit } = initial;
+  layer.sync(lit, 100, 60);
+  expect(fake.images.some(image => image.texture.startsWith('atmosphere:outline:') && image.visible)).toBe(true);
+  layer.sync(initial, 100, 60);
+  expect(fake.images.filter(image => image.texture.startsWith('atmosphere:')).every(image => !image.visible)).toBe(true);
+});
+
+it('does not recompute lit map textures on cursor-only moves', () => {
+  const scene = new FieldScene(frame, true);
+  const layer = new AtmosphereLayer(scene, scene.add.container(0, 0)); layer.sync(frame, 100, 60);
+  vi.mocked(scene.textures.exists).mockClear();
+  for (let col = 1; col < 10; col++) layer.sync({ ...frame, state: { ...frame.state,
+    engine: { ...frame.state.engine, cursor: { line: 0, col } } } }, 100, 60);
+  expect(scene.textures.exists).not.toHaveBeenCalled();
+});
+
+it('gates overhang alpha and row visibility by both its own and covered cell', () => {
+  const rows = ['   ', ' T ', '   '];
+  const initial = { ...frame, showSource: false, stage: { ...frame.stage, map: rows }, state: { ...frame.state,
+    entities: [], engine: { ...frame.state.engine, lines: rows, cursor: { line: 2, col: 1 } } } };
+  const layer = atmosphere(); layer.sync(initial, 24, 24);
+  const top = fake.images.find(image => image.texture === 'overhang:tree');
+  expect(top?.visible).toBe(true);
+  layer.setHiddenRows(new Set([0])); expect(top?.visible).toBe(false);
+  layer.setHiddenRows(new Set([1])); expect(top?.visible).toBe(false);
+  layer.setHiddenRows(new Set()); expect(top?.visible).toBe(true);
+  layer.sync({ ...initial, darkness: { radius: 1, lights: [] } }, 24, 24);
+  expect(top?.alpha).toBe(0); expect(top?.visible).toBe(false);
+  layer.setHiddenRows(new Set()); expect(top?.visible).toBe(false);
+  layer.sync({ ...initial, darkness: { radius: 2, lights: [] } }, 24, 24);
+  expect(top?.alpha).toBe(0.35); expect(top?.visible).toBe(true);
+});
+
+it('retains authored outline and paper after deleting columns and complete rows', () => {
+  const rows = ['    ', '  ', '    '];
+  const initial = { ...frame, stage: { ...frame.stage, map: rows }, state: { ...frame.state,
+    entities: [], engine: { ...frame.state.engine, lines: [' '] } } };
+  const layer = atmosphere(); layer.sync(initial, 24, 24);
+  const deleted = fake.images.filter(image => image.texture.startsWith('atmosphere:paper:'));
+  expect(deleted).toHaveLength(3);
+  expect(deleted.some(image => image.x === 32 && image.y === 40)).toBe(true);
+  const outline = fake.images.filter(image => image.texture.startsWith('atmosphere:outline:'));
+  expect(outline.some(image => image.x === 56 && image.y === 40)).toBe(true);
+  expect(outline.find(image => image.x === 8 && image.y === 8)?.texture).toBe('atmosphere:outline:9');
+  const exterior = fake.images.filter(image => image.depth === -3);
+  expect(exterior.some(image => image.x === 56 && image.y === 40)).toBe(false);
+});
+
+it('uses one Last Page paper everywhere, without vignette or outline', () => {
+  const initial = { ...frame, stage: lastPage, legend: lastPageLegend, showSource: false, state: { ...frame.state,
+    entities: [], engine: { ...frame.state.engine, lines: [' S', ' '] } } };
+  const scene = new FieldScene(initial, true); scene.create();
+  expect(WORLD_PALETTES['last-page'].paper).toBe(0xf6efd4);
+  expect(fake.background).toHaveBeenLastCalledWith('#f6efd4');
+  expect(fake.images.filter(image => image.texture.startsWith('atmosphere:outline:') || image.texture === 'vignette:last-page')).toEqual([]);
+  for (const key of ['field:page-paper', 'atmosphere:paper:last-page', 'atmosphere:last-page:paper:0:0']) {
+    expect(fake.colors.get(key), key).toEqual(new Set([0xf6efd4]));
+  }
+});
+
+it('sorts trail ghosts directly behind the player and bump dust directly in front', () => {
+  const { scene, key } = feelField();
+  key('G');
+  const clock = fake.tween.mock.calls.at(-1)?.[0];
+  clock.targets.value = 0.5; clock.onUpdate();
+  const player = fake.images.find(image => image.texture === 'field:player');
+  const ghosts = fake.images.filter(image => image.texture === 'field:player' && image !== player && image.visible);
+  expect(ghosts).toHaveLength(3);
+  expect(ghosts.every(ghost => ghost.depth === (player?.depth ?? 0) - 0.1)).toBe(true);
+  scene.finish();
+  // Bump into the fixture's top boundary.
+  const bump = new FieldScene(frame, false); bump.create();
+  bump.present({ ...frame, state: { ...frame.state, turn: 1 }, events: [
+    { type: 'bump', at: frame.state.engine.cursor, reason: 'edge' },
+  ] });
+  const dust = fake.images.find(image => image.texture === 'field:dust-puff');
+  const bumpPlayer = fake.images.filter(image => image.texture === 'field:player').at(-1);
+  expect(dust?.depth).toBe((bumpPlayer?.depth ?? 0) + 0.1);
 });

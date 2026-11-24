@@ -1,12 +1,12 @@
 import { CHARACTER_FIELDS } from './characters.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
-const palette = { ...PALETTE, M: '#526749', L: '#a9c478', B: '#233c32', o: '#9aa19b', O: '#656f71', Y: '#ffe6a2' };
+const palette = { ...PALETTE, M: '#526749', m: '#7d8e5b', n: '#5b7157', L: '#a9c478', B: '#233c32', o: '#9aa19b', O: '#656f71', Y: '#ffe6a2' };
 const surface = (pixel: (x: number, y: number) => string): string[] =>
   Array.from({ length: 16 }, (_, y) => Array.from({ length: 16 }, (_, x) => pixel(x, y)).join(''));
 const art = (...frames: string[][]): PixelSprite => ({ palette, frames });
 function moss(x: number, y: number, seed = 0): string {
-  return (x * 7 + y * 11 + seed * 13) % 23 < 4 ? 'a' : (x + y + seed) % 7 === 0 ? 'g' : 'M';
+  return (x * 7 + y * 11 + seed * 13) % 23 < 4 ? 'm' : (x + y + seed) % 7 === 0 ? 'n' : 'M';
 }
 export const MOSS = art(...[0, 1].map(seed => surface((x, y) => moss(x, y, seed))));
 export const FERNS = art(surface((x, y) => {

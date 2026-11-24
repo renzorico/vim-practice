@@ -35,3 +35,34 @@ export function darknessAlpha(at: Position, player: Position, darkness?: Darknes
     distance(light) === 0 ? 1 : distance(light) === 1 ? 0.65 : 0), 0);
   return Math.max(nearby, glow);
 }
+
+/** Smooth sub-cell illumination, gated by the original Manhattan visibility set. */
+export function darknessSample(at: Position, x: number, y: number, player: Position, darkness: Darkness): number {
+  if (darknessAlpha(at, player, darkness) === 0) return 0;
+  const falloff = (light: Position, radius: number): number => {
+    const distance = Math.abs(at.line + y - light.line) + Math.abs(at.col + x - light.col);
+    const t = Math.max(0, Math.min(1, distance / (radius + 1)));
+    return 1 - t * t * (3 - 2 * t);
+  };
+  let alpha = falloff(player, darkness.radius);
+  for (const light of darkness.lights) alpha = Math.max(alpha, falloff(light, 1));
+  return alpha;
+}
+
+export const FALLOFF_LEVELS = 8;
+export interface FalloffPattern { readonly level: number; readonly horizontal: number; readonly vertical: number }
+/** A fixed 8-level, four-quadrant atlas. No cursor coordinates enter a texture key. */
+export function falloffPattern(line: number, col: number, player: Position, darkness: Darkness, out: { level: number; horizontal: number; vertical: number }): void {
+  let light = player;
+  let distance = Math.abs(line - player.line) + Math.abs(col - player.col);
+  let radius = darkness.radius;
+  for (const candidate of darkness.lights) {
+    const next = Math.abs(line - candidate.line) + Math.abs(col - candidate.col);
+    if (next <= 1 && next / 2 < distance / (radius + 1)) { light = candidate; distance = next; radius = 1; }
+  }
+  const visible = distance <= radius;
+  const t = Math.min(1, distance / (radius + 1));
+  out.level = visible ? Math.max(1, Math.round((1 - t * t * (3 - 2 * t)) * (FALLOFF_LEVELS - 1))) : 0;
+  out.horizontal = col < light.col ? -1 : 1;
+  out.vertical = line < light.line ? -1 : 1;
+}
