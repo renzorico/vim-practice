@@ -1,7 +1,7 @@
 import { KeyText } from './KeyText.js';
 import { activeGuide } from './guides.js';
-import { KeyCard } from './KeyCard.js';
-import { keyCardEntries } from './introducedAt.js';
+import { Notebook } from './notebook/Notebook.js';
+import { useNotebook } from './notebook/useNotebook.js';
 import { pendingPrompt } from './showcmd.js';
 import { stageCommands } from './session.js';
 import { SoundButton } from '../audio/SoundButton.js';
@@ -9,7 +9,7 @@ import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
 import { objectiveTarget } from './objectiveTarget.js';
 import { useMotionUses } from './useMotionUses.js';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { StageClearCard } from './StageClearCard.js';
 import { useBlockedReason } from './useBlockedReason.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
@@ -60,11 +60,8 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
 }
 export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
-  const [dismissedEntry, setDismissedEntry] = useState<Session['stageEntry'] | null>(null);
-  const cardEntries = keyCardEntries(stage.id, session.story, clearedStages);
-  const showKeyCard = session.queue.length === 0 && world.status === 'playing' && world.turn === 0
-    && dismissedEntry !== session.stageEntry && cardEntries.length > 0;
-  const dismissKeyCard = () => setDismissedEntry(session.stageEntry);
+  const notebook = useNotebook(session, stage, content, clearedStages);
+  const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
   const reason = useBlockedReason(session.lastEvents, stage, world, legend);
   const uses = useMotionUses(session);
@@ -118,7 +115,7 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
-    {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} suspended={helpOpen} onDismiss={dismissKeyCard} />}
+    {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>

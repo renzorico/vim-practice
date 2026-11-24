@@ -136,16 +136,16 @@ it('resolves objective targets only when an arrow can show', () => {
   expect(objectiveTarget).not.toHaveBeenCalled();
 });
 
-it('shows Quarry instructions after its intro, and never on a cleared replay', () => {
+it('keeps Quarry visible without pages before Ash or on a cleared replay', () => {
   const quarryGame = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage: quarry, legend: quarryLegend, content });
   const session = quarryGame.init(false);
   const render = (current: typeof session) => renderToStaticMarkup(createElement(PlayScreen, {
     session: current, stage: quarry, legend: quarryLegend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
   const html = render(session);
-  expect(html).toContain('Your new keys');
-  expect(html).toContain('Delete the character under you.');
-  expect(html).toContain('Replace one character');
+  expect(html).not.toContain("From the Scribe&#x27;s notebook");
+  expect(html).not.toContain('Delete the character under you.');
+  expect(html).not.toContain('Replace one character');
   expect(html).not.toContain('Delete the whole line.');
   expect(render({ ...session, queue: [{ type: 'dialogue', dialogue: 'quarry-road.intro', index: 0 }] })).not.toContain('Your new keys');
   expect(render({ ...session, story: { ...session.story, clearedStages: ['quarry-road'] } })).not.toContain('Your new keys');

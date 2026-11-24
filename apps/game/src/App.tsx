@@ -1,5 +1,6 @@
 import { Prologue } from './prologue/Prologue.js';
 import { CurrentWorld } from './prologue/WorldMap.js';
+import { clearSeenKeys } from './play2/notebook/seen.js';
 import { SPRITES } from './scene/sprites/index.js';
 import { WORLD_PALETTES } from './scene/palette.js';
 import { groundArt } from './scene/terrain/art.js';
@@ -83,7 +84,7 @@ export function App() {
     setIntro(null);
     if (intro !== 'new') return;
     banner.reset();
-    dispatch({ type: 'new', best: saved?.best });
+    clearSeenKeys(); dispatch({ type: 'new', best: saved?.best });
     setSaved(null); setClearedSince([]); setReplayStage(null); setShowSource(false); setStarted(true);
   }, [intro, saved, banner.reset]);
   const openStages = useCallback(() => {
