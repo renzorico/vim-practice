@@ -706,7 +706,7 @@ export class FieldScene extends Phaser.Scene {
       const definition = tileAt(this.frame.state.engine.lines, { line, col }, this.frame.legend);
       const group = terrainGroup(definition);
       const texture = group === 'ground' ? this.groundTexture(line, col, definition)
-        : group === 'paper' ? this.paperTexture() : this.texture(sprite, variant);
+        : group === 'paper' ? this.missingTexture(line, col) : this.texture(sprite, variant);
       live.add(key);
       const cell = this.cells.get(key);
       if (cell) {
@@ -753,6 +753,14 @@ export class FieldScene extends Phaser.Scene {
     const decorated = !this.frame.showSource && decorationAt(tile, line, col);
     return this.pixelTexture(`terrain:ground-tile:${world}:${variant}:${Number(decorated)}`,
       () => groundArt(world, variant, decorated));
+  }
+
+  /** Paper marks what was deleted. Past the end of an authored row nothing was ever there, so nothing is drawn. */
+  private missingTexture(line: number, col: number): string {
+    if (col < (this.frame.stage.map[line]?.length ?? 0)) return this.paperTexture();
+    return this.pixelTexture('terrain:never-written', () => [
+      { x: 0, y: 0, width: TILE_SIZE, height: TILE_SIZE, color: 0, alpha: 0 },
+    ]);
   }
 
   private paperTexture(): string {

@@ -335,6 +335,14 @@ it('draws missing row ends as unwritten paper without source glyphs', () => {
   expect(source?.visible).toBe(false);
   expect(initial.state.engine.lines[1]).toHaveLength(1);
 });
+it('draws nothing past the end of an authored row: only deleted text leaves paper', () => {
+  const uneven = { ...frame, stage: { ...frame.stage, map: ['ooo', 'o'] },
+    state: { ...frame.state, engine: { ...frame.state.engine, lines: ['ooo', 'o'] } } };
+  const scene = new FieldScene(uneven, false); scene.create();
+  expect(fake.images.some(image => image.texture.startsWith('terrain:paper-tile:'))).toBe(false);
+  scene.present({ ...uneven, state: { ...uneven.state, turn: 1, engine: { ...uneven.state.engine, lines: ['oo', 'ooo'] } } });
+  expect(fake.images.some(image => image.x === 40 && image.y === 8 && image.texture.startsWith('terrain:paper-tile:'))).toBe(true);
+});
 it('uses sequential edit offsets for dust, including edits across rows', () => {
   const lines = ['abcd', 'efgh'];
   const initial = { ...frame, state: { ...frame.state, engine: { ...frame.state.engine, lines } } };
