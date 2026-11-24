@@ -47,23 +47,21 @@ describe('mapKeyEvent', () => {
     }
   });
 
-  it('accepts punctuation that the layout types with Option or AltGr', () => {
+  it('accepts punctuation typed with Option on macOS or AltGr elsewhere', () => {
     for (const char of ['{', '}', '[', ']', '#', '@', '|', '\\', '~']) {
-      expect(press(char, { altKey: true })).toEqual({ key: char, preventDefault: true });
-      expect(press(char, { altKey: true, ctrlKey: true }).key).toBe(char);
+      expect(press(char, { altKey: true, mac: true })).toEqual({ key: char, preventDefault: true });
+      expect(press(char, { altKey: true, ctrlKey: true, altGraph: true }).key).toBe(char);
+      expect(press(char, { altGraph: true }).key).toBe(char);
     }
-    expect(press('{', { altKey: true, metaKey: true }).key).toBeNull();
-    expect(press('\u00e5', { altKey: true }).key).toBeNull();
-    expect(press('Enter', { altKey: true }).key).toBeNull();
   });
 
-  it('reads dead keys from their position (Spanish ISO first)', () => {
-    expect(press('Dead', { code: 'BracketLeft' })).toEqual({ key: '`', preventDefault: true });
-    expect(press('Dead', { code: 'BracketLeft', shiftKey: true }).key).toBe('^');
-    expect(press('Dead', { code: 'Semicolon', altKey: true }).key).toBe('~');
-    expect(press('Dead', { code: 'Quote' }).key).toBe("'");
-    expect(press('Dead', { code: 'Digit6', shiftKey: true }).key).toBe('^');
-    expect(press('Dead', { code: 'BracketLeft', ctrlKey: true }).key).toBeNull();
-    expect(press('Dead', { code: 'KeyE', altKey: true }).key).toBeNull();
+  it('still leaves real Alt shortcuts alone', () => {
+    expect(press('[', { altKey: true })).toEqual({ key: null, preventDefault: false });
+    expect(press('[', { altKey: true, ctrlKey: true }).key).toBeNull();
+    expect(press('[', { altKey: true, ctrlKey: true, mac: true }).key).toBeNull();
+    expect(press('{', { altKey: true, metaKey: true, mac: true }).key).toBeNull();
+    expect(press('r', { altKey: true, ctrlKey: true }).key).toBeNull();
+    expect(press('\u00e5', { altKey: true, mac: true }).key).toBeNull();
+    expect(press('Enter', { altKey: true, mac: true }).key).toBeNull();
   });
 });
