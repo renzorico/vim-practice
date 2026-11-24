@@ -913,6 +913,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-19: The frame (HUD, dialogue, status line, desk)
+**Who:** Codex (build), Sonnet (review), Opus (brief, fixes, browser check).
+
+**Why:** the header grew from 84 to 124 px as the objective and guide rows appeared, so the map was resized under it and its top rows were cut off; and everything around the map was dark rounded web-app boxes.
+
+**What:** A header of constant height: one row of facts, and a paper strip that says what to do now. The footer is Vim's status line (mode block, buffer name, pending keys, the last six keys learned). Blocked messages are a paper slip over the field that fades, instead of staying in the footer. Dialogue is paper and ink with a framed portrait and a name tab; instruction boxes have a gold edge, a "Try this" stamp and raised keycaps; the box moves to the top when the player stands low on the map. Text stages are sheets on a desk. The clear and death panels match.
+
+**Review fixes:** the toast hid a message when the turn also ended, and its live region was remounted; the old keycap rule won over the new one; the quest strip repeated keycaps; the focus ring vanished on paper; the footer could spill to a second row; the desk heading no longer stayed in view; a copied dialogue sequence; dead code. Matched target rows are ticked in green, not struck through (in a Vim game that reads as "delete").
+
+**Known:** in the Gates, after `Ctrl-d` scrolls the window, the side the dialogue takes is computed without the scroll.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
