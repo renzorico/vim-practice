@@ -37,8 +37,9 @@ export function StatusLine({ engine, learned, textStage, restartTaught, prompt, 
         : <><span className="status-buffer">{BUFFER_NAME}</span>{textStage && <span>{engine.cursor.line + 1}:{engine.cursor.col + 1}</span>}</>}
     </div>
     <span className="status-learned" aria-label="Learned commands">
-      {learned.slice(Math.max(0, learned.length - limit)).map((key, index) => <kbd className="learned-key" key={`${index}:${key}`}>{key}</kbd>)}
-      {learned.length > limit && <button className="status-more" onClick={onOpenHelp} aria-label={`Show all ${learned.length} learned commands`}>+{learned.length - limit}</button>}
+      {/* While Vim waits for a key, what it waits for takes this room. */}
+      {!prompt && learned.slice(Math.max(0, learned.length - limit)).map((key, index) => <kbd className="learned-key" key={`${index}:${key}`}>{key}</kbd>)}
+      {!prompt && learned.length > limit && <button className="status-more" onClick={onOpenHelp} aria-label={`Show all ${learned.length} learned commands`}>+{learned.length - limit}</button>}
     </span>
     <div className="status-right">
       <output aria-label="Pending keys" aria-live="off">{helpCommand ?? engine.pendingKeys.join('')}</output>
