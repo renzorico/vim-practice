@@ -1,3 +1,4 @@
+import { KeyText, keyParts, keyTextLength } from '../play2/KeyText.js';
 import { useDialogueSound } from '../audio/hooks.js';
 import { useEffect, useState } from 'react';
 import { Portrait } from '../scene/sprites/Portrait.js';
@@ -39,16 +40,16 @@ function RevealedText({ text, speaker }: { readonly text: string; readonly speak
     const started = Date.now();
     const timer = window.setInterval(() => {
       const count = Math.floor((Date.now() - started) * CHARACTERS_PER_SECOND / 1000);
-      setShown(Math.min(text.length, count));
-      if (count >= text.length) window.clearInterval(timer);
+      setShown(Math.min(keyTextLength(text), count));
+      if (count >= keyTextLength(text)) window.clearInterval(timer);
     }, REVEAL_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [text, reduced]);
-  const visible = reduced ? text.length : shown;
+  const visible = reduced ? keyTextLength(text) : shown;
   useDialogueSound(speaker, visible, reduced);
   return <>
-    <span className="dialogue__accessible" aria-live="polite" aria-atomic="true">{text}</span>
-    <span aria-hidden="true">{text.slice(0, visible)}<span className="dialogue__unrevealed">{text.slice(visible)}</span></span>
+    <span className="dialogue__accessible" aria-live="polite" aria-atomic="true">{keyParts(text).map(part => part.text).join('')}</span>
+    <span aria-hidden="true">{keyParts(text).some(part => part.keycap) ? <KeyText text={text} visible={visible} /> : <>{text.slice(0, visible)}<span className="dialogue__unrevealed">{text.slice(visible)}</span></>}</span>
   </>;
 }
 
@@ -81,9 +82,10 @@ function DialogueLine({ line, mood, onAdvance }: {
   const name = speakerName(line);
   const speaker = line.speaker === 'npc' ? line.name ?? '' : line.speaker;
   return (
-    <div className={`dialogue dialogue--${line.speaker}`} role="dialog" aria-label={name || 'Message'}>
+    <div className={`dialogue dialogue--${line.speaker}${keyParts(line.text).some(part => part.keycap) ? ' dialogue--instruction' : ''}`} role="dialog" aria-label={name || 'Message'}>
       <Portrait sprite={speaker} mood={mood} />
       {name !== '' && <div className="dialogue__name" style={{ color: speakerAccent(speaker) }}>{name}</div>}
+      {keyParts(line.text).some(part => part.keycap) && <div className="dialogue__try">Try this</div>}
       <p className="dialogue__text"><RevealedText text={line.text} speaker={speaker} /></p>
       {onAdvance ? <button type="button" className="dialogue__hint" onClick={onAdvance}>
         <kbd className="keycap">Enter</kbd> to go on

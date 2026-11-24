@@ -1,3 +1,4 @@
+import { rangePreview } from '../play2/showcmd.js';
 import type { LandingMarker } from '../play2/feedback.js';
 import { darknessAlpha, darknessFor, stageLights, type Darkness } from './darkness.js';
 import { archiveRows, archiveRowPose, type ArchiveRows } from './archiveRows.js';
@@ -32,6 +33,7 @@ export interface FieldFrame {
   readonly objectiveTarget?: Position | null;
   readonly hideCursor?: boolean;
   readonly hideObjective?: boolean;
+  readonly standAt?: readonly Position[];
 }
 
 const presentationEngine = createEngine();
@@ -100,6 +102,8 @@ export class FieldScene extends Phaser.Scene {
   private guidanceTextures = new Map<WorldId, Map<string, string>>();
   private cursorTexture: string | undefined;
   private cursorMark: Phaser.GameObjects.Image | undefined;
+  private standMarks: Phaser.GameObjects.Image[] = [];
+  private rangeMarks: Phaser.GameObjects.Image[] = [];
   private objectiveArrow: Phaser.GameObjects.Image | undefined;
   private groundPosition: Position | undefined;
   private scrollOffset = 0;
@@ -319,7 +323,14 @@ export class FieldScene extends Phaser.Scene {
     if (!this.textures.exists(key)) {
       const graphics = this.make.graphics({ x: 0, y: 0 });
       graphics.fillStyle(color);
-      if (shape === 'insert') graphics.fillRect(0, 0, 2, TILE_SIZE);
+      if (shape === 'stand' || shape === 'stand-ready') {
+        for (let pixel = 1; pixel < TILE_SIZE - 1; pixel++) {
+          if (shape === 'stand' && pixel % 4 >= 2) continue;
+          graphics.fillRect(pixel, 1, 1, 1); graphics.fillRect(pixel, TILE_SIZE - 2, 1, 1);
+          graphics.fillRect(1, pixel, 1, 1); graphics.fillRect(TILE_SIZE - 2, pixel, 1, 1);
+        }
+      } else if (shape === 'range') graphics.fillRect(1, 1, TILE_SIZE - 2, TILE_SIZE - 2);
+      else if (shape === 'insert') graphics.fillRect(0, 0, 2, TILE_SIZE);
       else if (shape === 'operator-pending') graphics.fillRect(1, TILE_SIZE - 2, TILE_SIZE - 2, 1);
       else if (shape === 'arrow') {
         // A filled down-pointing triangle with a dark outline, so it reads on grass, roofs and paper.
@@ -351,6 +362,7 @@ export class FieldScene extends Phaser.Scene {
     this.cursorMark.setPosition(this.player.x, this.player.y)
       .setVisible(state.status === 'playing' && stage.type !== 'text' && !this.frame.hideCursor
         && (this.reducedMotion || this.cursorElapsed < CURSOR_ON_MS));
+    this.syncInstructionMarks();
     const target = this.frame.objectiveTarget;
     const visible = target && stage.type !== 'text' && !this.frame.hideObjective
       && !this.frame.darkness && !darknessFor(stage, state.flags);
@@ -370,6 +382,31 @@ export class FieldScene extends Phaser.Scene {
       Math.min(this.cameraY + halfHeight - inset, targetY - TILE_SIZE + bob));
     this.objectiveArrow.setVisible(true).setPosition(x, y)
       .setAngle(offscreen ? Math.atan2(targetY - y, targetX - x) * 180 / Math.PI - 90 : 0);
+  }
+
+  private syncInstructionMarks(): void {
+    const { stage, state } = this.frame;
+    const visible = stage.type !== 'text' && state.status === 'playing' && !this.frame.hideObjective
+      && !this.frame.darkness && !darknessFor(stage, state.flags);
+    const cells = visible ? this.frame.standAt ?? [] : [];
+    while (this.standMarks.length > cells.length) this.standMarks.pop()?.destroy();
+    cells.forEach((at, index) => {
+      const ready = at.line === state.engine.cursor.line && at.col === state.engine.cursor.col;
+      const mark = this.standMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('stand')).setDepth(0.8);
+      this.standMarks[index] = mark;
+      mark.setTexture(this.guidanceTexture(ready ? 'stand-ready' : 'stand'))
+        .setPosition(center(at.col), center(at.line))
+        .setAlpha(ready || this.reducedMotion ? 1 : 0.65 + 0.35 * Math.cos(this.guidanceElapsed * Math.PI * 2 / GUIDANCE_PERIOD_MS));
+    });
+    const preview = visible ? rangePreview(state.engine) : null;
+    const range = preview?.cells ?? [];
+    while (this.rangeMarks.length > range.length) this.rangeMarks.pop()?.destroy();
+    range.forEach((at, index) => {
+      const mark = this.rangeMarks[index] ?? this.add.image(0, 0, this.guidanceTexture('range')).setDepth(0.9);
+      this.rangeMarks[index] = mark;
+      mark.setPosition(center(at.col), center(at.line)).setAlpha(0.4).clearTint();
+      if (preview?.invalid) mark.setTintFill(0xe06464);
+    });
   }
 
   private syncWarehouseDecorations(): void {

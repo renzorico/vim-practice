@@ -1372,3 +1372,28 @@ it.each(['dead', 'cleared'] as const)('hides the cursor when the world is %s', s
   scene.update(16, 16);
   expect(cursor?.visible).toBe(false);
 });
+
+it('previews exactly the bank and four river cells for 5r, under entities', () => {
+  const state = { ...frame.state, engine: { ...frame.state.engine,
+    cursor: { line: 2, col: 30 }, lines: [' '.repeat(46), ' '.repeat(46), ' '.repeat(31) + '~~~~' + ' '.repeat(11)], pendingKeys: ['5', 'r'] } };
+  const scene = new FieldScene({ ...frame, state }, true); scene.create();
+  const range = fake.images.filter(image => image.texture.startsWith('guidance:range:'));
+  expect(range.map(image => ({ line: (image.y - 8) / 16, col: (image.x - 8) / 16 })))
+    .toEqual([30, 31, 32, 33, 34].map(col => ({ line: 2, col })));
+  expect(range.every(image => image.depth < 2)).toBe(true);
+  const short = { ...state, engine: { ...state.engine, cursor: { line: 2, col: 44 } } };
+  scene.present({ ...frame, state: short });
+  expect(range[0]?.setTintFill).toHaveBeenLastCalledWith(0xe06464);
+});
+it('draws dashed standing markers, makes the occupied marker solid, and hides them in overlays', () => {
+  const at = frame.state.engine.cursor;
+  const other = { line: at.line, col: at.col + 1 };
+  const scene = new FieldScene({ ...frame, standAt: [at, other] }, false); scene.create();
+  const solid = fake.images.find(image => image.texture.startsWith('guidance:stand-ready:'));
+  const dashed = fake.images.find(image => image.texture.startsWith('guidance:stand:'));
+  expect(solid).toMatchObject({ x: at.col * 16 + 8, y: at.line * 16 + 8, alpha: 1, depth: 0.8 });
+  scene.update(500, 500); expect(dashed?.alpha).toBeCloseTo(0.3);
+  scene.setReducedMotion(true); scene.update(1000, 500); expect(dashed?.alpha).toBe(1);
+  scene.present({ ...frame, standAt: [at, other], hideObjective: true });
+  expect(solid?.destroy).toHaveBeenCalled(); expect(dashed?.destroy).toHaveBeenCalled();
+});

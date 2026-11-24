@@ -134,3 +134,30 @@ it('resolves objective targets only when an arrow can show', () => {
   render({ world: { ...session.world, status: 'dead' } });
   expect(objectiveTarget).not.toHaveBeenCalled();
 });
+
+it('shows Quarry instructions after its intro, and never on a cleared replay', () => {
+  const quarryGame = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage: quarry, legend: quarryLegend, content });
+  const session = quarryGame.init(false);
+  const render = (current: typeof session) => renderToStaticMarkup(createElement(PlayScreen, {
+    session: current, stage: quarry, legend: quarryLegend, content, showSource: false, objectives: [], onAdvance: () => {},
+  }));
+  const html = render(session);
+  expect(html).toContain('Your new keys');
+  expect(html).toContain('Delete the character under you.');
+  expect(html).toContain('Replace one character');
+  expect(html).not.toContain('Delete the whole line.');
+  expect(render({ ...session, queue: [{ type: 'dialogue', dialogue: 'quarry-road.intro', index: 0 }] })).not.toContain('Your new keys');
+  expect(render({ ...session, story: { ...session.story, clearedStages: ['quarry-road'] } })).not.toContain('Your new keys');
+  expect(session.world.turn).toBe(0);
+});
+it('renders the current guide as keycaps under the objective', () => {
+  const session = controller.init(false);
+  const html = renderToStaticMarkup(createElement(PlayScreen, {
+    session: { ...session, story: { ...session.story, clearedStages: ['margin'] } },
+    stage, legend, content, showSource: false,
+    objectives: storyEngine.objectives(session.story, content), onAdvance: () => {},
+  }));
+  expect(html).toContain('Do:');
+  expect(html).toContain('Stand on the marker');
+  expect(html).toContain('<kbd>Enter</kbd>');
+});

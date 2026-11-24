@@ -1,9 +1,15 @@
+import { KeyText } from './KeyText.js';
+import { activeGuide } from './guides.js';
+import { KeyCard } from './KeyCard.js';
+import { keyCardEntries } from './introducedAt.js';
+import { pendingPrompt } from './showcmd.js';
+import { stageCommands } from './session.js';
 import { SoundButton } from '../audio/SoundButton.js';
 import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
 import { objectiveTarget } from './objectiveTarget.js';
 import { useMotionUses } from './useMotionUses.js';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StageClearCard } from './StageClearCard.js';
 import { useBlockedReason } from './useBlockedReason.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
@@ -13,6 +19,7 @@ import { darknessFor } from '../scene/darkness.js';
 import { NotaryGauge } from './NotaryGauge.js';
 import { CounterGauge } from './CounterGauge.js';
 import { YankedSlot } from './YankedSlot.js';
+import type { Position } from '@escape/engine';
 import { createEngine } from '@escape/engine';
 import { ScriptPanel } from './ScriptPanel.js';
 import type { Beat } from '@escape/story';
@@ -42,16 +49,21 @@ interface PlayScreenProps {
 function BeatView({ beat }: { readonly beat: Beat | undefined }) {
   if (!beat) return null;
   switch (beat.type) {
-    case 'line': return <p className="dialogue__text">{beat.line.text}</p>;
-    case 'title': return <h1>{beat.text}</h1>;
+    case 'line': return <p className="dialogue__text"><KeyText text={beat.line.text} /></p>;
+    case 'title': return <h1><KeyText text={beat.text} /></h1>;
     case 'terminal': return <pre className="play-terminal">{beat.lines.join('\n')}</pre>;
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
 export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
+  const [dismissedEntry, setDismissedEntry] = useState<Session['stageEntry'] | null>(null);
+  const cardEntries = keyCardEntries(stage.id, session.story);
+  const showKeyCard = session.queue.length === 0 && world.status === 'playing' && world.turn === 0
+    && dismissedEntry !== session.stageEntry && cardEntries.length > 0;
+  const dismissKeyCard = () => setDismissedEntry(session.stageEntry);
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
-  const reason = useBlockedReason(session.lastEvents);
+  const reason = useBlockedReason(session.lastEvents, stage, world, legend);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
     [world, stage, legend, uses, session.queue.length]);
@@ -68,34 +80,45 @@ export function PlayScreen({ onOpenHelp, helpCommand, session, stage, legend, co
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   const canShowObjective = !darkness && stage.type !== 'text' && !script
     && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
+  const guide = activeGuide(content, session.story);
+  const visibleGuide = session.queue.length === 0 && !session.clearCard && !showKeyCard && world.status === 'playing' ? guide : null;
+  const mapGuide = canShowObjective ? visibleGuide : null;
+  const positioned = Boolean(visibleGuide?.standAt?.some(at => at.line === activeEngine.cursor.line && at.col === activeEngine.cursor.col));
   const target = useMemo(() => canShowObjective ? objectiveTarget(content, session.story, stage, world) : null,
     [content, session.story, stage, world.entities, canShowObjective]);
+  const nearestStand = mapGuide?.standAt?.reduce<Position | null>((nearest, at) => {
+    const distance = (cell: Position) => Math.abs(cell.line - activeEngine.cursor.line) + Math.abs(cell.col - activeEngine.cursor.col);
+    return !nearest || distance(at) < distance(nearest) ? at : nearest;
+  }, null);
+  const prompt = pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
       <h1>{stage.title}</h1>
       {stage.id === 'counter' && <CounterGauge world={world} />}
       {stage.id === 'notary' && <NotaryGauge world={world} />}
       {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      <ObjectiveHud objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
+      <ObjectiveHud guide={visibleGuide} positioned={positioned} objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
     <div className="play-field">
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
       keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
-      objectiveTarget={target} hideCursor={presentation?.type === 'cutscene'}
-      hideObjective={session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
+      objectiveTarget={showKeyCard ? null : nearestStand ?? target} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
+      hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
     <footer className="play-controls">
       {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
       <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
       {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{helpCommand ?? reason ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : pendingKeyLabel(activeEngine.pendingKeys))}</output>
+      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{helpCommand ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : activeEngine.pendingKeys.join('') || reason || '')}</output>
+      {prompt && <span className="pending-prompt">{prompt}</span>}
       {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
+    {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} onDismiss={dismissKeyCard} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
-      <h2>You were unwritten.</h2><p>{deathHint(content, world.stage)}</p>
+      <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : scriptStamp ? null : <>
       {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
