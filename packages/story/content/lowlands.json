@@ -137,7 +137,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand anywhere on the jetty.\nPress `$`: you land at the Lighthouse door."
+          "text": "Stand on the jetty's row, left of this note.\nPress `$`: you land at the Lighthouse door."
         }
       ],
       "then": [

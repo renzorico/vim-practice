@@ -36,13 +36,9 @@
       "id": "reading.intro",
       "lines": [
         {
-          "speaker": "system",
-          "text": "The reading room. Chains lie across the floor,\neach held by a pair of shackles, ( and )."
-        },
-        {
           "speaker": "npc",
           "name": "Folio",
-          "text": "Folio, reader, chained to my chair. Free the\nroom and me, and I'll show you the way."
+          "text": "Folio, reader. Chains hold this room, and me,\neach shackled ( to ). Free us, I'll guide you."
         },
         {
           "speaker": "system",
@@ -61,7 +57,7 @@
         },
         {
           "speaker": "system",
-          "text": "A chain inside a chain: press `d2a(`: both go,\nand the room is clear."
+          "text": "Stand on the outer ( of the double chain.\nPress `d2a(`: both chains go."
         }
       ],
       "then": []

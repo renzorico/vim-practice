@@ -43,7 +43,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stay at the lip. Press `10dd`: ten rows go and\nthe shaft rises. Or `3dd`, then `.` each time."
+          "text": "Stay at the lip. Press `10dd`: the shaft rises.\nShort of the Mason? `.` repeats your last `dd`."
         }
       ],
       "then": [

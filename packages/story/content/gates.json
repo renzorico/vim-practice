@@ -19,7 +19,7 @@
         },
         {
           "id": "ope",
-          "objective": "Find Ope: on the ) by Shut, press `%`.",
+          "objective": "Find Ope: on the ) under Shut, press `%`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.asked",
@@ -49,7 +49,7 @@
         },
         {
           "id": "tell",
-          "objective": "Tell Shut about the lamps: `G`, then `Enter`.",
+          "objective": "Tell Shut: `G`, walk next to him, `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.shut-ready",
@@ -59,7 +59,7 @@
         },
         {
           "id": "open",
-          "objective": "Go back up to Ope: on the ) by Shut, press `%`.",
+          "objective": "Go back up to Ope: on the ) under Shut, press `%`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gates"
@@ -95,7 +95,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the ) next to Shut. Press `%`:\nyou jump to its partner, at the top."
+          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to its partner, at the top."
         }
       ],
       "then": [
@@ -142,7 +142,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand over the hollow in the trunk.\nPress `Ctrl-d`: half a screen down, to the lamp."
+          "text": "Stand over the hollow, top of the trunk. Press\n`Ctrl-d` four times: down to the lower lamp."
         }
       ],
       "then": [
@@ -173,7 +173,7 @@
         },
         {
           "speaker": "system",
-          "text": "Now the upper lamp. Press `Ctrl-u`:\nhalf a screen up."
+          "text": "Now the upper lamp. Press `Ctrl-u` twice:\nhalf a screen up each time."
         }
       ],
       "then": [
@@ -296,7 +296,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the ) next to Shut. Press `%`:\nyou jump to Ope's (."
+          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to Ope's (."
         }
       ],
       "then": []

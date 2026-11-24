@@ -14,6 +14,7 @@ import { readProgress, saveProgress } from './progress.js';
 import { darknessFor } from '../scene/darkness.js';
 import { tileGrid } from '../scene/tiles.js';
 import { SPRITES } from '../scene/sprites/index.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 
 vi.mock('../scene/FieldView.js', () => ({ FieldView: () => null }));
 const sim = createWorldSim(createEngine());
@@ -115,7 +116,7 @@ it('loses without a mark on turn 12; each retry resets levers, marks, story reac
     const dead = dismiss(session);
     expect(dead.world.status).toBe('dead');
     expect(dead.world.hearts).toBe(0);
-    expect(markup(dead)).toContain('Mark the stair: `ma`. Search each rune: `?x`,');
+    expect(visibleText(markup(dead))).toContain(plainText('Mark the stair: `ma`. Search each rune: `?x`,'));
     attempt = controller.reduce(dead, 'j');
     expect(attempt.world.turn).toBe(0);
     expect(attempt.world.hearts).toBe(3);

@@ -10,6 +10,7 @@ import { objectiveTarget } from './objectiveTarget.js';
 import { deathHint, learnedKeycaps, PlayScreen } from './PlayScreen.js';
 import { createSession } from './session.js';
 import { stage, legend, content, lighthouse, lighthouseLegend, quarry, quarryLegend, ledger, ledgerLegend } from './content.js';
+import { plainText, visibleText } from '../test-utils/visibleText';
 const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content });
 it('renders the story objective rather than the stage goal', () => {
@@ -18,7 +19,7 @@ it('renders the story objective rather than the stage goal', () => {
     session, stage, legend, content, showSource: false,
     objectives: storyEngine.objectives(session.story, content), onAdvance: () => {},
   }));
-  expect(html).toContain('Meet the Elder: walk `h` `j` `k` `l`, talk `Enter`.');
+  expect(visibleText(html)).toContain(plainText('Meet the Elder: walk `h` `j` `k` `l`, talk `Enter`.'));
 });
 it('shows the authored death hint and any-key recovery', () => {
   const session = controller.init(false);
@@ -27,7 +28,7 @@ it('shows the authored death hint and any-key recovery', () => {
     stage, legend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
   expect(html).toContain('You were unwritten.');
-  expect(html).toContain('`30l`: one move');
+  expect(visibleText(html)).toContain(plainText('`30l`: one move'));
   expect(html).toContain('Press any key to return');
 });
 it('shows keys and hearts on clear, with no unteachable best score', () => {
@@ -64,7 +65,7 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
     session: { ...session, world: { ...session.world, stage: 'lighthouse', status: 'dead', hearts: 0 } },
     stage: lighthouse, legend: lighthouseLegend, content, showSource: false, objectives: [], onAdvance: () => {},
   }));
-  expect(dead).toContain('Climb in big jumps: `8k` goes up eight rows.\n`w` and `0` jump along a row.');
+  expect(visibleText(dead)).toContain(plainText('Climb in big jumps: `8k` goes up eight rows.\n`w` and `0` jump along a row.'));
   const talking = renderToStaticMarkup(createElement(PlayScreen, {
     session: { ...session, queue: [{ type: 'dialogue', dialogue: 'lighthouse.lamplighter', index: 0 }] },
     stage: lighthouse, legend: lighthouseLegend, content, showSource: false, objectives: [], onAdvance: () => {},

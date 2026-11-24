@@ -134,6 +134,6 @@
   ],
   "hints": [
     "Stay at the lip. `10dd` deletes 10 rows: the shaft rises to you.",
-    "Or `3dd` once, then press `.` to repeat it."
+    "Short of the Mason? `.` repeats your last `dd`."
   ]
 }

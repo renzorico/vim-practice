@@ -51,13 +51,9 @@
       "id": "stacks.intro",
       "lines": [
         {
-          "speaker": "system",
-          "text": "The Library: chained doors, dusty shelves. Dust\nhas been shelved between the books."
-        },
-        {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Quire, the librarian. I may not touch a book,\nand you need my door open. So: you dust."
+          "text": "Quire, librarian. Dust sits between the books,\nand I may not touch one. You need my door: dust."
         },
         {
           "speaker": "system",
