@@ -14,6 +14,7 @@ export const LABEL_HEIGHT = 30;
 /** Widest glyph of the label face at its size, so the estimate is never too small. */
 const LABEL_ADVANCE = 10;
 const LABEL_PADDING = 24;
+const LARGE_VIEW = 1600;
 const GAP = 4;
 const MARGIN = 6;
 const COST = { person: 60, label: 80, content: 24, floor: 4, guide: 40, outside: 400 } as const;
@@ -23,7 +24,9 @@ const BELOW_COST = 10;
 /** How far along the row a label may slide to find a free place, as shares of its own width. */
 const SLIDES = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1] as const;
 
-export const labelWidth = (text: string): number => text.length * LABEL_ADVANCE + LABEL_PADDING;
+/** On a large screen the labels grow by a third: 18 px letters become 24. */
+export const labelScale = (view: { readonly width: number }): number => view.width >= LARGE_VIEW ? 4 / 3 : 1;
+export const labelWidth = (text: string, scale = 1): number => Math.ceil((text.length * LABEL_ADVANCE + LABEL_PADDING) * scale);
 export const cellBox = (line: number, from: number, to: number, tile: number): Box =>
   ({ x: from * tile, y: line * tile, width: (to - from + 1) * tile, height: tile });
 export const overlap = (a: Box, b: Box): number =>
@@ -66,6 +69,9 @@ export function layoutLabels(requests: readonly LabelRequest[], obstacles: reado
       ...SLIDES.map(slide => [centre - width / 2 + slide * width, names.y - GAP - height] as const),
       ...SLIDES.map(slide => [centre - width / 2 + slide * width, names.y + names.height + GAP, BELOW_COST] as const),
       [names.x + names.width + GAP, beside], [names.x - GAP - width, beside]];
+    // Only what a candidate could touch: a map has thousands of cells.
+    const reach = grow(names, width * 1.5 + height);
+    const near = obstacles.filter(item => overlap(reach, item.box) > 0);
     let best: { readonly box: Box; readonly cost: number } | null = null;
     for (const [left, top, extra = 0] of candidates) {
       const box: Box = { x: Math.round(left), y: Math.round(top), width, height };
@@ -74,7 +80,7 @@ export function layoutLabels(requests: readonly LabelRequest[], obstacles: reado
       const distance = Math.hypot(box.x + width / 2 - centre, box.y + height / 2 - (names.y + names.height / 2));
       const cost = extra + hidden / (tile * tile) * COST.outside + distance * DISTANCE_COST
         + overlap(box, names) / (tile * tile) * COST.content
-        + obstacles.reduce((sum, item) => sum + overlap(padded, item.box) / (tile * tile) * item.cost, 0)
+        + near.reduce((sum, item) => sum + overlap(padded, item.box) / (tile * tile) * item.cost, 0)
         + placed.reduce((sum, other) => sum + (overlap(padded, other) > 0 ? COST.label + overlap(padded, other) / (tile * tile) * COST.label : 0), 0);
       if (!best || cost < best.cost) best = { box, cost };
     }

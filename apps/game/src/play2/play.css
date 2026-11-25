@@ -393,12 +393,22 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 /* While somebody speaks, only they do. */
 .field-labels[data-quiet='true'] { opacity: 0; }
 .field-labels > div { position: absolute; left: 0; top: 0; will-change: transform; }
-.field-label { position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; color: var(--ink); background: var(--paper); box-shadow: 0 -2px 0 var(--ink), 0 2px 0 var(--ink), -2px 0 0 var(--ink), 2px 0 0 var(--ink); font: 18px/1 var(--font-ui); white-space: nowrap; transition: opacity 120ms linear; }
+.field-label { position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; color: var(--ink); background: var(--paper); box-shadow: 0 -2px 0 var(--ink), 0 2px 0 var(--ink), -2px 0 0 var(--ink), 2px 0 0 var(--ink); font: calc(18px * var(--label-scale, 1))/1 var(--font-ui); white-space: nowrap; transition: opacity 120ms linear; }
 /* The key that would land here, on the foot of its tile: the arrow is over its head. */
-.field-key { position: absolute; left: 0; top: 0; padding: 0 5px; color: var(--you); background: var(--ink); border: 1px solid var(--you); font: 600 13px/16px var(--font-mono); }
-.field-label svg { width: 16px; height: 14px; fill: currentColor; }
+.field-key { position: absolute; left: 0; top: 0; padding: 0 5px; color: var(--you); background: var(--ink); border: 1px solid var(--you); font: 600 calc(13px * var(--label-scale, 1))/1.25 var(--font-mono); }
+.field-label svg { width: calc(16px * var(--label-scale, 1)); height: auto; fill: currentColor; }
 .field-label[data-done='true'] { color: var(--paper); background: var(--green-ink); }
 /* The player walks behind it: the label gives way. */
 .field-label[data-under='true'] { opacity: 0.3; }
 .field-label[data-target='true']:not([data-done='true']), .field-label--prompt { background: var(--tab-gold); }
-.field-label--prompt kbd { padding: 0 5px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom-width: 3px; font: 13px/16px var(--font-mono); }
+.field-label--prompt kbd { padding: 0 5px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom-width: 3px; font: calc(13px * var(--label-scale, 1))/1.25 var(--font-mono); }
+
+/* A large screen: everything the game says grows by a third, so it keeps its place beside larger tiles. */
+@media (min-width: 1600px) and (min-height: 820px) {
+  .play-header { flex-basis: 96px; height: 96px; }
+  .play-controls { flex-basis: 53px; height: 53px; }
+  .objective-hud, .play-controls > *, .dialogue, .hint-slip, .action-toast, .play-panel.play-card > *, .play-title__menu, .world-banner__card, .notebook { zoom: 1.3333; }
+  .play-screen .objective-hud { height: 72px; }
+  .stage-select, .help-reference { zoom: 1.2; }
+  .stage-select { min-height: 83.4svh; }
+}
