@@ -71,7 +71,7 @@ export function App() {
   const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
   useMusic({ screen: intro ? 'opening' : selecting ? 'stages' : !started ? 'title' : ending ? 'ending' : 'stage',
     world: currentWorld, text: stages.find(item => item.stage.id === session.world.stage)?.stage.type === 'text',
-    dead: session.world.status === 'dead', overlay: !!banner.visible || helpOpen || !!session.clearCard || !!session.queue.length || scriptStamp }, sound.mode);
+    dead: session.world.status === 'dead', cleared: session.world.status === 'cleared', overlay: !!banner.visible || helpOpen || !!session.clearCard || !!session.queue.length || scriptStamp }, sound.mode);
   const canContinue = saved !== null && saved.story.ending !== 'recover';
   const terminal = session.world.status === 'cleared' && !session.clearCard && session.queue.length === 0;
   const watchIntro = useCallback(() => { setIntroRun(value => value + 1); setIntro('title'); }, []);

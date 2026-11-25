@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { musicChoice, type MusicView } from './useMusic.js';
 import { SCORES, type ScoreId } from './score.js';
-const view: MusicView = { screen: 'stage', world: 'margin', dead: false, text: false, overlay: false };
+const view: MusicView = { screen: 'stage', world: 'margin', dead: false, text: false, overlay: false, cleared: false };
 it.each(['title', 'opening', 'stages'] as const)('%s chooses title even with a stale world/death', screen => {
-  expect(musicChoice({ ...view, screen, world: 'quarry', dead: true })).toEqual({ score: 'title', level: 1 });
+  expect(musicChoice({ ...view, screen, world: 'quarry', dead: true })).toEqual({ score: 'title', level: 1, resolved: false });
 });
 it.each(Object.keys(SCORES).filter(id => id !== 'title') as Exclude<ScoreId, 'title'>[])('%s chooses its world and lowers text stages', world => {
-  expect(musicChoice({ ...view, world })).toEqual({ score: world, level: 1 });
-  expect(musicChoice({ ...view, world, text: true, overlay: true })).toEqual({ score: world, level: 0.6 });
+  expect(musicChoice({ ...view, world })).toEqual({ score: world, level: 1, resolved: false });
+  expect(musicChoice({ ...view, world, text: true, overlay: true })).toEqual({ score: world, level: 0.6, resolved: false });
 });
 it('chooses the ending, cuts death, and restarts after retry', () => {
   expect(musicChoice({ ...view, screen: 'ending' }).score).toBe('last-page');
@@ -22,7 +22,7 @@ const harness = vi.hoisted(() => ({
   pending: [] as (() => void)[],
 }));
 const fake = vi.hoisted(() => ({ create: vi.fn(() => ({
-  setScore: vi.fn(), setEnabled: vi.fn(), setLevel: vi.fn(), duck: vi.fn(),
+  setResolved: vi.fn(), setScore: vi.fn(), setEnabled: vi.fn(), setLevel: vi.fn(), duck: vi.fn(),
   setHidden: vi.fn(), dispose: vi.fn(),
 })) }));
 vi.mock('./music.js', () => ({ createMusic: fake.create }));
@@ -88,4 +88,15 @@ it('recreates the player and visibility listener on StrictMode mount, unmount, m
   expect(second.setHidden).toHaveBeenLastCalledWith(true);
   expect(second.setScore).toHaveBeenLastCalledWith('margin', 1.5);
   expect(add).toHaveBeenCalledTimes(2); expect(remove).toHaveBeenCalledTimes(1);
+});
+
+it('holds resolution through cleared-stage overlays and resets on replay and title', () => {
+  render(); const music = fake.create.mock.results[0]!.value;
+  for (const overlay of [false, true, false]) {
+    render({ ...view, cleared: true, overlay });
+    expect(music.setResolved).toHaveBeenLastCalledWith(true);
+  }
+  render(); expect(music.setResolved).toHaveBeenLastCalledWith(false);
+  render({ ...view, screen: 'title', cleared: true });
+  expect(music.setResolved).toHaveBeenLastCalledWith(false);
 });

@@ -1050,6 +1050,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-33: The music says the stage is done
+**Who:** Opus (design, cadences, levels), Codex (build), Sonnet (review).
+
+**Root cause:** a cleared stage only ducked the music, and the clear effect was a C major arpeggio that fits no score.
+
+**What changed:** each score has a cadence in its own key. When a stage is cleared the plucked voices fade at the next beat, the cadence plays over the held pad, and the score then goes on "resolved" (pad only, brighter filter) until the next stage. With effects only, the old clear effect stays.
+
+**Measured in the browser (Margin):** the first build's figure was a click (its notes were 10 ms long) and came two seconds late (it waited for free audio nodes under a cap of 24). Notes now last a beat, the cap is 48, and the cadence sits 2 dB over the music (about -32 dB against -35 dB RMS). Nobody has listened to it yet.
+
+**Other options considered:** voices that join as objectives are done, so a place "wakes up" while you play (best next step, needs a listen first); a tempo change at the end (rejected: it fights the walking rhythm).
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

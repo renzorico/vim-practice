@@ -305,7 +305,7 @@ it.each([true, false])('holds pads and decays plucks before release (sustain=%s)
 
 it('steals the oldest pluck with a 10ms fade and admits the new note under the cap', () => {
   const original = SCORES.title;
-  const pluck = { ...original.voices[0]!, sustain: false, notes: Array.from({ length: 9 }, (_, index) =>
+  const pluck = { ...original.voices[0]!, sustain: false, notes: Array.from({ length: 21 }, (_, index) =>
     ({ step: 0, midi: 60 + index, length: 20 })) };
   const pad = { ...pluck, sustain: true, notes: [{ step: 0, midi: 40, length: 20 }] };
   const newcomer = { ...pluck, notes: [{ step: 2, midi: 90, length: 20 }] };
@@ -323,4 +323,127 @@ it('steals the oldest pluck with a 10ms fade and admits the new note under the c
     expect(sources().find(node => node.frequency.setValueAtTime.mock.calls[0]?.[0] === 440 * 2 ** ((40 - 69) / 12))?.disconnected).toBe(false);
     expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
   } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+});
+
+function cadenceSources(context: ClockContext): Node[] {
+  // Cadence envelopes bypass the duck bus and connect to their own filtered gain.
+  const filter = context.nodes[1];
+  return context.nodes.filter(node => {
+    if (!node.start.mock.calls.length) return false;
+    const envelope = node.connect.mock.calls[0]?.[0] as Node | undefined;
+    const gain = envelope?.connect.mock.calls[0]?.[0] as Node | undefined;
+    return gain?.connect.mock.calls[0]?.[0] === filter && gain !== context.nodes[0];
+  });
+}
+it('plays one cadence per clear on the next beat, outside the duck bus', () => {
+  const { music, context } = setup(); music.setScore('margin');
+  vi.advanceTimersByTime(400); music.setResolved(true); music.setResolved(true); music.duck(true);
+  vi.advanceTimersByTime(12000);
+  const cadence = cadenceSources(context);
+  expect(cadence).toHaveLength(12);
+  const beat = 60 / SCORES.margin.bpm;
+  expect(cadence[0]!.start.mock.calls[0]![0]).toBeCloseTo(0.03 + beat);
+  const gain = (cadence[0]!.connect.mock.calls[0]![0] as Node).connect.mock.calls[0]![0] as Node;
+  expect(gain.gain.value).toBe(MUSIC_LEVEL);
+  expect(context.nodes[1]!.frequency.linearRampToValueAtTime).toHaveBeenCalledWith(3400, 1.03 + beat);
+  music.setResolved(true); vi.advanceTimersByTime(10000);
+  expect(cadenceSources(context)).toHaveLength(12);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+});
+it('silences plucks and bass while resolved and restores their gain at a bar', () => {
+  const { music, context, sources } = setup(); music.setScore('lowlands');
+  vi.advanceTimersByTime(700); music.setResolved(true);
+  vi.advanceTimersByTime(5000);
+  const layers = context.nodes.filter(node => node.gain.linearRampToValueAtTime.mock.calls.some(([value, at]) =>
+    value === 0 && at > 0.7 && at < 2));
+  expect(layers.length).toBeGreaterThan(0);
+  for (const layer of layers) expect(layer.gain.at(context.currentTime)).toBe(0);
+  const count = sources().length;
+  vi.advanceTimersByTime(6000);
+  // Any newly scheduled bed sources are sustained voices, never the melody/bass.
+  const padFrequencies = SCORES.lowlands.voices.filter(voice => voice.sustain)
+    .flatMap(voice => voice.notes.map(note => 440 * 2 ** ((note.midi - 69) / 12)));
+  for (const node of sources().slice(count)) expect(padFrequencies).toContain(node.frequency.setValueAtTime.mock.calls[0]![0]);
+  music.setResolved(false);
+  const bar = stepSeconds(SCORES.lowlands) * SCORES.lowlands.steps;
+  const boundary = 0.03 + Math.ceil((context.currentTime - 0.03) / bar) * bar;
+  vi.advanceTimersByTime((boundary - context.currentTime + 0.7) * 1000);
+  for (const layer of layers) {
+    expect(layer.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(1, boundary + 0.6);
+    expect(layer.gain.at(boundary - 0.01)).toBe(0);
+    expect(layer.gain.at(boundary + 0.3)).toBeCloseTo(0.5);
+  }
+});
+it('starts a changed score unresolved and can cadence again on replay', () => {
+  const { music, context } = setup(); music.setScore('title'); music.setResolved(true);
+  vi.advanceTimersByTime(5000); music.setScore('quarry');
+  vi.advanceTimersByTime(2000);
+  expect(context.nodes[1]!.frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(2200, 6);
+  const count = cadenceSources(context).length;
+  music.setResolved(true); vi.advanceTimersByTime(10000);
+  expect(cadenceSources(context).length - count).toBe(12);
+  music.setResolved(false); vi.advanceTimersByTime(5000);
+  music.setResolved(true); vi.advanceTimersByTime(10000);
+  expect(cadenceSources(context).length - count).toBe(24);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+});
+it.each(['hidden', 'disabled', 'missing', 'disposed'] as const)('does not play a late cadence when resolved while %s', state => {
+  const { music, context, output } = setup();
+  if (state === 'missing') output.mockReturnValue(null);
+  music.setScore('library');
+  if (state === 'hidden') music.setHidden(true);
+  if (state === 'disabled') music.setEnabled(false);
+  if (state === 'disposed') music.dispose();
+  music.setResolved(true); vi.advanceTimersByTime(1000);
+  if (state === 'hidden') music.setHidden(false);
+  if (state === 'disabled') music.setEnabled(true);
+  if (state === 'missing') output.mockReturnValue({ context: context as unknown as AudioContext, master: new Node() as unknown as GainNode });
+  vi.advanceTimersByTime(10000);
+  expect(cadenceSources(context)).toHaveLength(0);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+});
+it.each(Object.keys(SCORES) as ScoreId[])('%s reserves cadence nodes under the cap', id => {
+  const { music, context } = setup(); music.setScore(id);
+  vi.advanceTimersByTime(1000); music.setResolved(true); vi.advanceTimersByTime(20000);
+  expect(cadenceSources(context)).toHaveLength(12);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+  music.dispose(); expect(context.nodes.every(node => node.disconnected)).toBe(true);
+});
+
+it.each([true, false])('keeps interrupted resolved fades within 8%% per 10ms (hold=%s)', hold => {
+  const { music, context } = setup();
+  if (!hold) {
+    const create = context.createGain;
+    context.createGain = () => {
+      const node = create();
+      Object.defineProperty(node.gain, 'cancelAndHoldAtTime', { value: undefined });
+      return node;
+    };
+  }
+  music.setScore('margin'); vi.advanceTimersByTime(1000);
+  music.setResolved(true);
+  const previous = new Map<Node, number>();
+  const sample = (ms: number): void => {
+    for (let elapsed = 0; elapsed < ms; elapsed += 10) {
+      vi.advanceTimersByTime(10);
+      const layers = context.nodes.filter(node => {
+        const destination = node.connect.mock.calls.at(-1)?.[0] as Node | undefined;
+        return destination === context.nodes[2] && node.gain.value === 1;
+      });
+      for (const layer of layers) {
+        const value = layer.gain.at(context.currentTime);
+        expect(Math.abs(value - (previous.get(layer) ?? 1))).toBeLessThanOrEqual(0.080001);
+        previous.set(layer, value);
+      }
+    }
+  };
+  sample(300); music.setResolved(false); sample(100);
+  music.setResolved(true); sample(700); music.setResolved(false); sample(4000);
+});
+
+it('retains only the quietest voice at half level when a score has no sustain', () => {
+  const { music, context } = setup(); music.setScore('title');
+  music.setResolved(true); vi.advanceTimersByTime(1000);
+  const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
+  expect(layers.map(layer => layer.gain.at(context.currentTime))).toEqual([0, 0.5, 0]);
 });

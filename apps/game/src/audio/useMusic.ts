@@ -10,12 +10,13 @@ export interface MusicView {
   readonly world: WorldId;
   readonly text: boolean;
   readonly dead: boolean;
+  readonly cleared: boolean;
   readonly overlay: boolean;
 }
-export function musicChoice(view: MusicView): { readonly score: ScoreId | null; readonly level: number } {
-  if (view.screen === 'stage' && view.dead) return { score: null, level: 1 };
+export function musicChoice(view: MusicView): { readonly score: ScoreId | null; readonly level: number; readonly resolved: boolean } {
+  if (view.screen === 'stage' && view.dead) return { score: null, level: 1, resolved: false };
   return { score: view.screen === 'ending' ? 'last-page' : view.screen === 'stage' ? view.world : 'title',
-    level: view.screen === 'stage' && view.text ? 0.6 : 1 };
+    level: view.screen === 'stage' && view.text ? 0.6 : 1, resolved: view.screen === 'stage' && view.cleared };
 }
 
 /** Ducking follows presentation state; only visibility uses a browser event. */
@@ -38,6 +39,7 @@ export function useMusic(view: MusicView, mode: SoundMode): void {
     music?.setEnabled(mode === 'on');
     music?.setLevel(choice.level);
     music?.setScore(choice.score, view.dead ? 0.2 : 1.5);
+    music?.setResolved(choice.resolved);
     music?.duck(view.overlay || notebookDucking.getSnapshot());
-  }, [mode, choice.score, choice.level, view.dead, view.overlay]);
+  }, [mode, choice.score, choice.level, view.dead, view.overlay, choice.resolved]);
 }
