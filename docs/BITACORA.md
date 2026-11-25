@@ -1078,6 +1078,23 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-34: A written exercise after each stage
+**Who:** Opus (design, texts, code), Sonnet (review).
+
+**Why:** Renzo: people need to practise the keys on real text. The field makes a key memorable; the text shows what it is for.
+
+**What:** after the clear card of 18 field stages the same keys are used once on a short text (a letter, a list, a bill): three to five tasks, under a minute. Moving tasks count only when the cell is reached with the key they teach; editing tasks end at a target text, on the same sheet as the text stages (`script/Sheet.tsx`, now shared). Esc twice skips; a finished one is not offered again. The exercise has its own buffer and never touches the session, so turns, stars, story and replays are unchanged (`play2/draft/`).
+
+**Tests:** every exercise is played with the keys its instructions name, using only keys the player has learned by then.
+
+**Not done:** Lighthouse, Counterfeiter and Labyrinth teach no key of their own and have no exercise. Closing the browser during an exercise repeats the stage, as closing it on the clear card already did.
+
+**Review:** two traps fixed: the clear card's button kept the focus, so Enter could not finish the exercise after a mouse click; Tab walked out of the sheet. Also fixed: copies are checked by what is in the pocket they name, every editing task outlines where to stand, a text damaged beyond its tasks says so and offers `u` or Start again, and keys typed faster than renders are kept.
+
+**Also:** the `5$` route left "Cross the blank field" on screen in the Lighthouse; clearing the Lowlands now completes that step.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

@@ -370,3 +370,19 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @media (prefers-reduced-motion: reduce) { .hint-slip, .play-panel.play-card { animation: none; } }
 
 .script-panel--contract { --sheet-size: clamp(14px, 1.2vw, 18px); --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }
+
+/* The written exercise after a stage: the same desk as a text stage, over the whole play screen. */
+.draft-sheet { position: fixed; inset: 0; z-index: 30; outline: none; }
+.draft-sheet__buttons { display: flex; gap: 8px; }
+.draft-sheet .script-panel { box-sizing: border-box; }
+.draft-sheet__aside { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: -4px 0 12px; color: var(--ink-muted); }
+.draft-sheet__aside button { padding: 4px 12px; border: 1px solid var(--ink-muted); background: var(--paper-secondary); color: var(--ink); font: inherit; cursor: pointer; }
+.draft-sheet__note { min-height: 27px; margin: 16px 0 0; color: var(--paper); line-height: 27px; }
+.script-panel .cell--target { outline: 2px dashed var(--red-ink); outline-offset: -1px; }
+/* An exercise is short: larger letters, in the middle of the desk. */
+.draft-sheet .script-panel { --sheet-size: clamp(16px, 1.55vw, 26px); padding: clamp(24px, 8vh, 80px) 24px 24px; }
+.draft-sheet .script-heading, .draft-sheet .script-columns, .draft-sheet__note { width: 100%; max-width: 1280px; margin-inline: auto; box-sizing: border-box; }
+.draft-sheet .script-heading { position: static; }
+.script-columns:not(:has(> .script-target)) { grid-template-columns: minmax(0, 1fr); }
+/* Only there to be made inert under the exercise; it takes no part in the layout. */
+.play-behind { display: contents; }

@@ -23,8 +23,9 @@
           "id": "cross",
           "objective": "Cross the blank field, stone to stone: `w`.",
           "completeWhen": {
-            "type": "trigger",
-            "trigger": "lowlands.far-side"
+            "type": "flag",
+            "flag": "lowlands.crossed",
+            "value": true
           },
           "then": []
         },
@@ -318,6 +319,21 @@
       ]
     },
     {
+      "id": "lowlands.far-side",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.far-side"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.crossed",
+          "value": true
+        }
+      ]
+    },
+    {
       "id": "lowlands.cleared",
       "when": {
         "type": "stage-cleared",
@@ -325,6 +341,11 @@
       },
       "once": true,
       "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.crossed",
+          "value": true
+        },
         {
           "type": "dialogue",
           "dialogue": "lowlands.end"
