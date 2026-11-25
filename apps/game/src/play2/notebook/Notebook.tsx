@@ -3,12 +3,13 @@ import type { HelpKey } from '../help/keys.js';
 import { routeHelpCommand } from '../help/command.js';
 import { Portrait } from '../../scene/sprites/Portrait.js';
 import { useDialogueSound } from '../../audio/hooks.js';
-import { exampleFrames, expectedKey, openPage, pressKey, skipWatching, watchStep } from './pageModel.js';
+import { exampleFrames, belongsToDemo, expectedKey, openPage, pressKey, skipWatching, watchStep } from './pageModel.js';
 import { newDeadKeyMemory, readKey, resolveDeadKey } from '../../input/keyReader.js';
 import type { KeyEventLike } from '../../input/keys.js';
 import { PAGE_GUARD_MS, routeKey, type Routed } from './routing.js';
 import { markKeysSeen } from './seen.js';
 import { holdRepeats } from './keyHold.js';
+import { keyLabel } from '../keyLabel.js';
 import { TileStrip } from './TileStrip.js';
 import { lessonFor, notebookLessons, type Lesson } from './lessons.js';
 import './notebook.css';
@@ -83,7 +84,7 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
         const key = action.type === 'demo' ? action.key : typed.key === 'Enter' ? '<CR>' : typed.key === 'Escape' ? '<Esc>' : typed.key;
         const help = routeHelpCommand(pendingHelp.current, key);
         pendingHelp.current = help.pending;
-        if (help.open) current.onOpenHelp?.();
+        if (help.open === 'help') current.onOpenHelp?.();
         return routed;
       }
       if (action.type === 'demo') setPage(previous => pressKey(previous, action.key));
@@ -106,15 +107,15 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
       <header className="notebook__header"><h2 id="notebook-title">From the Scribe's notebook</h2><Portrait sprite="scribe" /></header>
       <div className="notebook__lesson"><LessonKeycaps lesson={entry} typed={typed} /><div><p className="notebook__instruction">{entry.instruction}</p><p className="notebook__description">{entry.description}</p></div></div>
       <TileStrip state={shown} lesson={entry} typed={typed} />
-      <div className="notebook__typed" aria-label="Example keys">{entry.example.keys.map((key, at) => <kbd key={at} data-typed={at < typed}>{key}</kbd>)}</div>
+      <div className="notebook__typed" aria-label="Example keys">{entry.example.keys.map((key, at) => <kbd key={at} data-typed={at < typed}>{keyLabel(key)}</kbd>)}</div>
       <p className="notebook__prompt" aria-live="polite"><span key={page.misses} className={page.expected ? 'notebook__prompt--miss' : undefined}>
         {page.phase === 'watch' ? 'Watch Tilde try it.' : page.phase === 'done' ? <><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m2 8 4 4 8-9" /></svg> That's it.</>
-          : <>{page.expected ? 'Try again: press ' : 'Your turn: press '}<kbd>{expectedKey(page)}</kbd>.</>}
+          : <>{page.expected ? 'Try again: press ' : 'Your turn: press '}<kbd>{keyLabel(expectedKey(page) ?? '')}</kbd>.</>}
       </span></p>
       <footer className="notebook__footer">
         {total > 1 && <span className="notebook__dots" aria-label={`Page ${index + 1} of ${total}`}>{Array.from({ length: total }, (_, dot) => <i key={dot} data-current={dot === index} />)}</span>}
-        <button data-complete={page.phase === 'done'} type="button" onClick={() => guarded(onNext)}><kbd>Enter</kbd>: {page.phase === 'done' ? 'on you go' : 'skip practice'}</button>
-        {(index + 1 < total || page.phase !== 'done') && <button type="button" onClick={() => guarded(onSkip)}><kbd>Esc</kbd>: {index + 1 < total ? 'skip the rest' : 'skip'}</button>}
+        <button data-complete={page.phase === 'done'} type="button" onClick={() => guarded(onNext)}>{!belongsToDemo(page, '<CR>') && <><kbd>Enter</kbd>: </>}{page.phase === 'done' ? 'on you go' : 'skip practice'}</button>
+        {(index + 1 < total || page.phase !== 'done') && <button type="button" onClick={() => guarded(onSkip)}>{!belongsToDemo(page, '<Esc>') && <><kbd>Esc</kbd>: </>}{index + 1 < total ? 'skip the rest' : 'skip'}</button>}
       </footer>
     </section>
   </div>;
@@ -123,7 +124,7 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
 function LessonKeycaps({ lesson, typed }: { readonly lesson: Lesson; readonly typed: number }) {
   const used = lesson.example.keys.slice(0, typed).join('');
   return <div className="notebook__keycaps" data-grouped={lesson.keycaps.length > 1}>
-    {lesson.keycaps.map(key => <kbd className="notebook__key" key={key} data-long={key.length > 2}
-      data-used={used.includes(key)}>{key}</kbd>)}
+    {lesson.keycaps.map(key => <kbd className="notebook__key" key={key} data-long={keyLabel(key).length > 2}
+      data-used={used.includes(key)}>{keyLabel(key)}</kbd>)}
   </div>;
 }

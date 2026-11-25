@@ -147,7 +147,8 @@ it('a counted scroll that fails at the top leaves Ctrl-d working', () => {
 });
 it('Shut sees the lamps without overlapping his introduction when the player skipped him', () => {
   const lit = dismiss(keys(start(), 'h%<CR>2l25G13G'));
-  expect(lit.story.flags['gates.met-shut']).toBeUndefined();
+  // Ope's errand counts as having met Shut, so the objective moves on to what Ope asked for.
+  expect(lit.story.flags['gates.met-shut']).toBe(true);
   expect(keys(lit, 'G2h<CR>').queue).toEqual([{ type: 'dialogue', dialogue: 'gates.shut-sees', index: 0 }]);
 });
 it('every bundled stage solution replays with only that stage\'s own commands', () => {

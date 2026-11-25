@@ -1,5 +1,6 @@
 import type { EngineState, Mode } from '@escape/engine';
 import { useEffect, useState, type ReactNode } from 'react';
+import { keyLabel } from '../keyLabel.js';
 import { BUFFER_NAME } from '../../scene/palette.js';
 
 export const MODE_LABELS: Readonly<Record<Mode, string>> = {
@@ -38,7 +39,7 @@ export function StatusLine({ engine, learned, textStage, restartTaught, prompt, 
     </div>
     <span className="status-learned" aria-label="Learned commands">
       {/* While Vim waits for a key, what it waits for takes this room. */}
-      {!prompt && learned.slice(Math.max(0, learned.length - limit)).map((key, index) => <kbd className="learned-key" key={`${index}:${key}`}>{key}</kbd>)}
+      {!prompt && learned.slice(Math.max(0, learned.length - limit)).map((key, index) => <kbd className="learned-key" key={`${index}:${key}`}>{keyLabel(key)}</kbd>)}
       {!prompt && learned.length > limit && <button className="status-more" onClick={onOpenHelp} aria-label={`Show all ${learned.length} learned commands`}>+{learned.length - limit}</button>}
     </span>
     <div className="status-right">

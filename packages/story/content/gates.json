@@ -148,6 +148,11 @@
       "then": [
         {
           "type": "set-flag",
+          "flag": "gates.met-shut",
+          "value": true
+        },
+        {
+          "type": "set-flag",
           "flag": "gates.asked",
           "value": true
         }

@@ -32,7 +32,7 @@ it('tracks real session dialogue dismissals without spending a turn, and honours
   expect(reset.queue).toEqual(emptyQueue);
   expect(dialogueEnded(emptyQueue, ['h'], new Set(['h'])).waiting).toEqual([]);
 });
-it('never opens over another presentation, a script, a clear card or death', () => {
+it('never opens over another presentation, a script under way, a clear card or death', () => {
   const ready = dialogueEnded(emptyQueue, ['x'], new Set());
   const game = createSession({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), stage, legend, content, stages });
   const playing = game.init(false);
@@ -47,7 +47,11 @@ it('never opens over another presentation, a script, a clear card or death', () 
   if (!ledger) throw new Error('Missing Ledger');
   const script = createSession({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), ...ledger, content, stages }).init(false);
   expect(script.world.script).not.toBeNull();
-  expect(openIfIdle(ready, isIdle(script)).group).toBeNull();
+  // Before the first key the sheet is only lying there: its new keys are practised then, and not again.
+  expect(openIfIdle(ready, isIdle(script)).group).not.toBeNull();
+  const under = script.world.script;
+  if (!under) throw new Error('Missing script');
+  expect(openIfIdle(ready, isIdle({ ...script, world: { ...script.world, script: { ...under, keys: 1 } } })).group).toBeNull();
 });
 it('limits objectives and hints to two and excludes keys already named by dialogue', () => {
   expect(objectiveOnlyKeys(content, 'quarry-road', ['x', 'r'])).toEqual([]);

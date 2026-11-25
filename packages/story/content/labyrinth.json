@@ -31,7 +31,7 @@
         },
         {
           "speaker": "system",
-          "text": "On the stair, press `ma`: it marks the way home.\nLater, `` `a `` brings you back."
+          "text": "You stand on the stair. Press `ma` to mark it.\nLater, `` `a `` brings you back."
         }
       ],
       "then": []

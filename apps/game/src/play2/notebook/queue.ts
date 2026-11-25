@@ -53,9 +53,12 @@ function headId(session: Session): string | null {
   return head?.type === 'cutscene' ? head.cutscene : null;
 }
 
-/** The page group opens only when no dialogue, cutscene, clear card, script or death is on screen. */
+/**
+ * The page group opens only when no dialogue, cutscene, clear card, death or script in use is on screen.
+ * A text stage opens its script at once, so an untouched script (no key typed in it) does not block.
+ */
 export const isIdle = (session: Session): boolean => session.queue.length === 0
-  && session.world.status === 'playing' && !session.clearCard && session.world.script === null;
+  && session.world.status === 'playing' && !session.clearCard && (session.world.script?.keys ?? 0) === 0;
 
 /**
  * One look at the session: notices a dialogue that just ended, remembers the keys it named, and opens a

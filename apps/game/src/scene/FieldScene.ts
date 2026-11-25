@@ -36,6 +36,10 @@ import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE 
 import { blankEdges, tileGrid } from './tiles.js';
 import { bufferSize, cameraTarget, stageZoom } from './camera.js';
 
+/** Letters are drawn this many times finer than tiles, so the buffer reads as text at any zoom. */
+const GLYPH_DETAIL = 4;
+/** Phaser.Textures.FilterMode.LINEAR. */
+const LINEAR_FILTER = 0;
 export interface FieldFrame {
   readonly state: WorldState;
   readonly events: readonly WorldEvent[];
@@ -552,7 +556,7 @@ export class FieldScene extends Phaser.Scene {
     this.archiveFold = null;
     for (const cell of this.cells.values()) {
       cell.tile.setScale(1);
-      cell.glyph.setScale(1);
+      cell.glyph.setScale(1 / GLYPH_DETAIL);
     }
   }
 
@@ -727,18 +731,21 @@ export class FieldScene extends Phaser.Scene {
     const paper = this.frame.stage.id === 'last-page';
     const key = `glyph:${paper ? (door ? 'door:' : 'ink:') : ''}${char.charCodeAt(0)}`;
     if (!this.textures.exists(key)) {
-      const texture = this.textures.createCanvas(key, TILE_SIZE, TILE_SIZE);
+      const size = TILE_SIZE * GLYPH_DETAIL;
+      const texture = this.textures.createCanvas(key, size, size);
       if (!texture) throw new Error('Could not create source glyph texture');
       const context = texture.context;
-      context.font = door ? 'bold 14px monospace' : '12px monospace';
+      context.font = door ? `bold ${14 * GLYPH_DETAIL}px monospace` : `${12 * GLYPH_DETAIL}px monospace`;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.strokeStyle = '#182523';
-      context.lineWidth = 2;
-      if (!paper) context.strokeText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.lineWidth = 2 * GLYPH_DETAIL;
+      if (!paper) context.strokeText(char === '\t' ? '→' : char, size / 2, size / 2);
       context.fillStyle = paper ? '#292c2a' : '#ffffff';
-      context.fillText(char === '\t' ? '→' : char, TILE_SIZE / 2, TILE_SIZE / 2);
+      context.fillText(char === '\t' ? '→' : char, size / 2, size / 2);
       texture.refresh();
+      // Text is not pixel art: smooth it, where everything else is drawn pixel by pixel.
+      texture.setFilter(LINEAR_FILTER);
     }
     return key;
   }
@@ -796,7 +803,7 @@ export class FieldScene extends Phaser.Scene {
         cell.char = char;
       } else {
         const tile = this.add.image(center(col), center(line), texture);
-        const glyph = this.add.image(center(col), center(line), this.glyphTexture(glyphChar, door));
+        const glyph = this.add.image(center(col), center(line), this.glyphTexture(glyphChar, door)).setScale(1 / GLYPH_DETAIL);
         this.tiles?.add(tile);
         glyph.setVisible(char !== '');
         this.source?.add(glyph);
@@ -983,7 +990,8 @@ export class FieldScene extends Phaser.Scene {
       for (const ghost of this.trail) ghost.setDepth(this.player.y - 0.1);
       this.bumpDust?.setDepth(this.player.y + 0.1);
     }
-    for (const actor of this.actorImages) actor.image.setDepth(actor.image.y);
+    // On a shared cell (a shelf's sign, a crate's post) the player is the one in front.
+    for (const actor of this.actorImages) actor.image.setDepth(actor.image.y - (actor.id === 'player' ? 0 : 0.01));
     this.actors?.sort('depth');
     for (let unused = index; unused < this.outlineImages.length; unused++) this.outlineImages[unused]?.setVisible(false);
     for (; index < this.shadowImages.length; index++) this.shadowImages[index]?.setVisible(false);
@@ -1358,7 +1366,7 @@ export class FieldScene extends Phaser.Scene {
         for (const cell of this.cells.values()) {
           const pose = archiveRowPose(this.archiveFold, cell.line, clock.value);
           cell.tile.setPosition(cell.tile.x, center(pose.line)).setScale(1, pose.scale);
-          cell.glyph.setPosition(cell.glyph.x, center(pose.line)).setScale(1, pose.scale);
+          cell.glyph.setPosition(cell.glyph.x, center(pose.line)).setScale(1 / GLYPH_DETAIL, pose.scale / GLYPH_DETAIL);
         }
       }
       let cameraCell: { line: number; col: number } | undefined;

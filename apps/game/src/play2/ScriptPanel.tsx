@@ -3,9 +3,8 @@ import type { EngineState } from '@escape/engine';
 import type { Script } from '@escape/world';
 import { useLayoutEffect, useRef } from 'react';
 import { Buffer } from '../ui/Buffer.js';
+import { scriptHint } from './scriptHints.js';
 
-const FIRST_HINT_KEYS = 60;
-const NEXT_HINT_KEYS = 30;
 const SHOWN_MODES: ReadonlySet<string> = new Set(['insert', 'visual', 'visual-line', 'visual-block']);
 const SIDESCROLL_CELLS = 8;
 
@@ -31,11 +30,6 @@ function keepCursorVisible(viewport: HTMLDivElement): void {
 
 export const SET_RIGHT_MS = 400;
 
-export function visibleHints(script: Script, keys: number): readonly string[] {
-  const count = keys < FIRST_HINT_KEYS ? 0 : 1 + Math.floor((keys - FIRST_HINT_KEYS) / NEXT_HINT_KEYS);
-  return script.hints.slice(0, count);
-}
-
 interface ScriptPanelProps {
   readonly script: Script;
   readonly engine: EngineState;
@@ -55,11 +49,16 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
     observer.observe(viewport);
     return () => observer.disconnect();
   }, [engine, script.id]);
+  const hint = scriptHint(script, engine.lines, keys);
   const target = script.goals.find(goal => goal.type === 'transform');
   return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
       <h2>{script.title}</h2>
       <p className="script-goal"><KeyText text={script.goalText} /></p>
+      {/* In the sticky heading: below a long sheet it would be out of sight. */}
+      <div className="script-hints" aria-live="polite">
+        {hint !== undefined && <p key={hint}><KeyText text={hint} /></p>}
+      </div>
     </header>
     <div className="script-columns">
       <div className="script-editor">
@@ -82,9 +81,6 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
           </li>;
         })}</ol>
       </aside>}
-    </div>
-    <div className="script-hints" aria-live="polite">
-      {visibleHints(script, keys).map(hint => <p key={hint}><KeyText text={hint} /></p>)}
     </div>
     {solved && <div className="script-stamp" role="status">Set right</div>}
   </section>;

@@ -1027,6 +1027,29 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-31: Played as a newcomer, Copper Port to the ending
+**Who:** Opus (play, fixes), Sonnet (review).
+
+**How:** a save built by replaying every stage's solution, then each field stage from World 4 to the ending played in the browser, reading every box against what is on screen.
+
+**What playing showed, and the fix:**
+- A player who takes `5$` in the Lowlands (the par route the game itself shows) kept "Cross the blank field" as the objective, with its markers, for the rest of the game. The screen now follows the latest quest begun (`currentQuest.ts`).
+- Text stages never opened practice pages, so `o`, `D`, `c`, `C`, `P`, `yy`, `V` and `Ctrl-v` were taught in one line. They have pages now, as words on a sheet, before the first key.
+- The "should read" sheet dropped blank rows, which looked like an instruction to delete them.
+- The player was hidden behind crate props; a crate pallet covered its own post.
+- Instructions named things not on screen ("tally word", "a shelf's [", "crate two", "the atlases", "the stair"). They now name jars, signs, posts, colours, and the labyrinth's stair is drawn.
+- Keycaps showed Vim notation (`<Esc>`, `<C-v>`); they show the key's printed name.
+- The yank slot was barely visible; letters of the buffer (Tab view, the Last Page) were blurred by the zoom.
+- The hints of the text stages sat below the sheet, out of sight, and the first one named work already done. They are in the heading now, and follow the first unfinished part (`scriptHints.ts`).
+- Practice pages whose example ends in Enter said "Enter: skip practice", but Enter only answered "Try again". Enter and Esc now do what the buttons say until the practice begins, and the buttons drop their keycap while it runs.
+- The sheets of the contract and the manifest scrolled sideways, and the manifest's target hid the last full stop. The target now takes the width of its longest row. The manifest's intro said five fixes; there are six.
+- In the Gates, a player who took the jump before talking to Shut kept "Talk to Shut" as the objective after Ope had sent them for the lamps.
+- The next stage's objective was already on screen during the closing dialogue of the one just cleared.
+
+**Review:** 5 risks. Fixed: the ending's key count (it counts since the file was opened), the keys filter (it matches "Ctrl" and "Enter" too), "the brown one" (the bibles are dark), "the crate's post" in the customs shed (there is a post of that name). Kept: practice pages may open over any script with no key typed in it; only text stages open one that way.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

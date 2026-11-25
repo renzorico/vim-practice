@@ -1,6 +1,7 @@
 import { useContext, type ReactNode } from 'react';
 import { CurrentWorld } from '../prologue/WorldMap.js';
 import { goalLine } from '../prologue/data.js';
+import { keyLabel } from '../play2/keyLabel.js';
 import { keyParts, KeyText } from '../play2/KeyText.js';
 import type { Guide } from '../play2/guides.js';
 import { heartsText, turnText } from './hud';
@@ -52,7 +53,7 @@ export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, 
       {guide && !named && <div className={`objective-guide${positioned ? ' objective-guide--ready' : ''}`}>
         {guide.standAt ? <>Stand on <svg aria-label="the marker" width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="none" stroke="currentColor" strokeDasharray="2 2" /></svg> then</>
           : guide.kind === 'do' ? 'Do:' : 'Use:'}
-        {guide.keys.map((key, index) => <kbd key={index}>{key === '<CR>' ? 'Enter' : key}</kbd>)}
+        {guide.keys.map((key, index) => <kbd key={index}>{keyLabel(key)}</kbd>)}
       </div>}
         </div>
       </div>

@@ -48,11 +48,11 @@ it('appears, is replaced immediately, expires at 2.5s, and clears on a successfu
   expect(show(bump)).toContain('The edge of the world.');
   vi.advanceTimersByTime(1000);
   const next: readonly WorldEvent[] = [{ type: 'bump', reason: 'fixed', at: { line: 0, col: 0 } }];
-  expect(show(next)).toContain('That stone is fixed.');
+  expect(show(next)).toContain('It is fixed in place.');
   vi.advanceTimersByTime(2499);
-  expect(show(next)).toContain('That stone is fixed.');
+  expect(show(next)).toContain('It is fixed in place.');
   vi.advanceTimersByTime(1);
-  expect(show(next)).not.toContain('That stone is fixed.');
+  expect(show(next)).not.toContain('It is fixed in place.');
   expect(show([...bump])).toContain('The edge of the world.');
   expect(show([])).toContain('The edge of the world.');
   expect(show([{ type: 'turn-ended', turn: 1 }])).toContain('data-visible="false"');

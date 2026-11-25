@@ -11,7 +11,10 @@ for (const authored of AUTHORED_LESSONS) it(`practises ${authored.keycaps.join('
   const entry = HELP_KEYS.find(item => item.key === authored.key)!;
   const lesson = lessonFor(entry);
   const legend = stages.find(item => item.stage.id === lesson.stageId)!.legend;
-  for (const row of authored.rows) for (const char of row) {
+  expect(lesson.terrain).toBe(!authored.letters);
+  // A desk lesson is words on a page; it may only belong to a stage that is one.
+  if (authored.letters) expect(stages.find(item => item.stage.id === lesson.stageId)!.stage.type).toBe('text');
+  else for (const row of authored.rows) for (const char of row) {
     const tile = legend.tiles.find(tile => tile.char === char);
     expect(tile, `unknown ${JSON.stringify(char)} in ${lesson.stageId}`).toBeDefined();
     expect(SPRITES[tile!.sprite]).toBeDefined();

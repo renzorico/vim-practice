@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "stock",
-          "objective": "Stock the shelves: `yw`, then `p` on each.",
+          "objective": "Stock the shelves: `yw`, then `p` on each sign.",
           "completeWhen": {
             "type": "flag",
             "flag": "warehouse.stocked",
@@ -41,7 +41,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the tally word. Press `yw`.\nThen on a shelf's [ press `p`: the oil lands."
+          "text": "Stand on the first oil jar. Press `yw`. Then\non a shelf's sign press `p`: the oil lands."
         }
       ],
       "then": []
@@ -56,7 +56,7 @@
         },
         {
           "speaker": "system",
-          "text": "On the next shelf's [, press `p` again:\nthe same oil goes down again."
+          "text": "On the next shelf's sign, press `p` again:\nthe same oil goes down again."
         }
       ],
       "then": [
