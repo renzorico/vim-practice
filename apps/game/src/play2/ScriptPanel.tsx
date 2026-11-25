@@ -1,12 +1,16 @@
-import { KeyText } from './KeyText.js';
 import type { EngineState } from '@escape/engine';
 import type { Script } from '@escape/world';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { Buffer } from '../ui/Buffer.js';
-import { scriptHint } from './scriptHints.js';
+import { alignRows, differentPart, nearMiss } from './script/diff.js';
+import { HowText } from './script/HowText.js';
+import { tasksFor } from './script/tasks.js';
 
 const SHOWN_MODES: ReadonlySet<string> = new Set(['insert', 'visual', 'visual-line', 'visual-block']);
 const SIDESCROLL_CELLS = 8;
+/** What the sheet is called above its target text. */
+const TARGET_NAMES: Readonly<Record<string, string>> = { 'study.book': 'index', 'contract.book': 'contract', 'manifest.book': 'manifest' };
+const NO_LINES: readonly string[] = [];
 
 /**
  * Scroll this buffer only; never move the page or wrap a Vim buffer line. Like Vim's `nowrap`:
@@ -33,11 +37,10 @@ export const SET_RIGHT_MS = 400;
 interface ScriptPanelProps {
   readonly script: Script;
   readonly engine: EngineState;
-  readonly keys: number;
   readonly solved?: boolean;
 }
 
-export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPanelProps) {
+export function ScriptPanel({ script, engine, solved = false }: ScriptPanelProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   // Layout effect: scroll before paint, so the cursor never shows a frame off-screen.
   useLayoutEffect(() => {
@@ -49,21 +52,40 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
     observer.observe(viewport);
     return () => observer.disconnect();
   }, [engine, script.id]);
-  const hint = scriptHint(script, engine.lines, keys);
   const target = script.goals.find(goal => goal.type === 'transform');
+  const targetLines = target?.targetLines ?? NO_LINES;
+  const tasks = tasksFor(script.id, engine.lines);
+  const current = tasks.find(task => !task.done);
+  const pairs = useMemo(() => alignRows(engine.lines, targetLines), [engine.lines, targetLines]);
+  const partner = new Map(pairs.flatMap(pair => pair.target === null || pair.buffer === null ? [] : [[pair.target, engine.lines[pair.buffer] ?? ''] as const]));
+  const extraRows = new Set(pairs.flatMap(pair => pair.target === null && pair.buffer !== null ? [pair.buffer] : []));
+  const wrongCells = new Map(pairs.flatMap(({ buffer, target: row }) => {
+    const mine = buffer === null ? undefined : engine.lines[buffer]; const wanted = row === null ? undefined : targetLines[row];
+    return buffer === null || mine === undefined || wanted === undefined || mine === wanted ? [] : [[buffer, differentPart(mine, wanted)] as const];
+  }));
+  const rightRows = targetLines.filter((line, index) => partner.get(index) === line).length;
+  const textIsRight = target !== undefined && rightRows === targetLines.length && extraRows.size === 0;
+  // While a word is being typed every row is briefly "nearly right": the note waits for Normal mode.
+  const note = target === undefined || engine.mode === 'insert' ? null : nearMiss(engine.lines, targetLines);
   return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
       <h2>{script.title}</h2>
-      <p className="script-goal"><KeyText text={script.goalText} /></p>
+      {tasks.length > 0 ? <ol className="script-tasks" aria-label="What to do">
+        {tasks.map(task => <li key={task.task} data-state={task.done ? 'done' : task === current ? 'now' : 'later'}
+          {...(task === current ? { 'aria-current': 'step' as const } : {})}>
+          {task.done && <Tick />}{task.task}</li>)}
+      </ol> : <p className="script-goal">{script.goalText}</p>}
       {/* In the sticky heading: below a long sheet it would be out of sight. */}
-      <div className="script-hints" aria-live="polite">
-        {hint !== undefined && <p key={hint}><KeyText text={hint} /></p>}
+      <div className="script-how" aria-live="polite">
+        {textIsRight ? <p key="right"><b>Done</b><span>Every row is right. {engine.mode === 'insert' ? <>Press <kbd>Esc</kbd> to finish.</> : null}</span></p>
+          : note !== null ? <p key={note}><b>Look</b><span><HowText text={note} /></span></p>
+          : current ? <p key={current.how}><b>How</b><span><HowText text={current.how} /></span></p> : null}
       </div>
     </header>
     <div className="script-columns">
       <div className="script-editor">
         <div className="script-buffer-viewport" ref={viewportRef}>
-          <Buffer state={engine} />
+          <Buffer state={engine} showTrailing extraRows={extraRows} wrongCells={wrongCells} />
         </div>
         {/* Like Vim: the mode line names insert and visual modes only; normal mode shows nothing. */}
         <output className="script-mode" aria-label="Vim mode">
@@ -71,17 +93,26 @@ export function ScriptPanel({ script, engine, keys, solved = false }: ScriptPane
         </output>
       </div>
       {target && <aside className="script-target" aria-label="Target text">
-        <h3>{script.id === 'study.book' ? 'The index should read:' : script.id === 'contract.book' ? 'The contract should read:' : script.id === 'manifest.book' ? 'The manifest should read:' : 'The ledger should read:'}</h3>
-        <ol>{target.targetLines.map((line, index) => {
-          const matches = engine.lines[index] === line;
+        <h3>The {TARGET_NAMES[script.id] ?? 'ledger'} should read: <span className="script-count">{rightRows} of {targetLines.length} rows right</span></h3>
+        <ol>{targetLines.map((line, index) => {
+          const mine = partner.get(index);
+          const matches = mine === line;
           return <li key={index} data-matched={matches}>
-            <span className="script-tick" aria-label={matches ? 'Line matches' : 'Line needs editing'}>
-              {matches && <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg>}
-            </span><span>{line}</span>
+            <span className="script-tick" aria-label={matches ? 'Line matches' : 'Line needs editing'}>{matches && <Tick />}</span>
+            <span><TargetRow line={line} mine={mine} /></span>
           </li>;
         })}</ol>
       </aside>}
     </div>
     {solved && <div className="script-stamp" role="status">Set right</div>}
   </section>;
+}
+
+const Tick = () => <svg className="script-tick__mark" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg>;
+
+/** The target row, with the part the player's row does not have yet marked. */
+function TargetRow({ line, mine }: { readonly line: string; readonly mine: string | undefined }) {
+  if (mine === line) return <>{line}</>;
+  const { from, to } = mine === undefined ? { from: 0, to: line.length } : differentPart(line, mine);
+  return <>{line.slice(0, from)}<mark>{line.slice(from, to)}</mark>{line.slice(to)}</>;
 }

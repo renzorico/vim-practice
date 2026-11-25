@@ -56,7 +56,10 @@ export interface FieldFrame {
   readonly hideCursor?: boolean;
   readonly hideObjective?: boolean;
   readonly standAt?: readonly Position[];
+  readonly signs?: readonly FieldSign[];
 }
+/** A paper label on the field; `col` may be fractional, so a label can sit over the middle of a pile. */
+export interface FieldSign { readonly at: Position; readonly text: string; readonly done?: boolean }
 
 const presentationEngine = createEngine();
 const NO_CELLS: readonly Position[] = [];
@@ -129,6 +132,10 @@ export class FieldScene extends Phaser.Scene {
   private deletion: JettyDeletion | null = null;
   private danger: Phaser.GameObjects.Image | undefined;
   private gateMarks: Phaser.GameObjects.Container | undefined;
+  private threads: Phaser.GameObjects.Container | undefined;
+  private shownThreads = '';
+  private signs: Phaser.GameObjects.Container | undefined;
+  private shownSigns = '';
   private shownMarkers: readonly { key: string; line: number; col: number; alpha: number }[] = [];
   private landingLabels: Phaser.GameObjects.Container | undefined;
   private prompts: Phaser.GameObjects.Container | undefined;
@@ -182,6 +189,8 @@ export class FieldScene extends Phaser.Scene {
     this.atmosphere = new AtmosphereLayer(this, this.actors);
     this.source = this.add.container(0, 0).setDepth(1);
     this.gateMarks = this.add.container(0, 0).setDepth(1);
+    this.threads = this.add.container(0, 0).setDepth(1);
+    this.signs = this.add.container(0, 0).setDepth(2);
     this.landingLabels = this.add.container(0, 0).setDepth(3);
     this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
@@ -304,6 +313,7 @@ export class FieldScene extends Phaser.Scene {
       if (this.frame.showSource !== frame.showSource) { this.frame = frame; this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
       this.frame = frame;
+      this.syncSigns();
       this.syncLandingMarkers();
       this.syncGuidance();
       this.syncTerrainLight();
@@ -367,6 +377,7 @@ export class FieldScene extends Phaser.Scene {
     this.syncCells();
     this.syncTerrain();
     this.syncWarehouseDecorations();
+    this.syncSigns();
     this.syncHazards(frame);
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
@@ -533,7 +544,7 @@ export class FieldScene extends Phaser.Scene {
       this.decorations?.add(this.add.image(center(1), center(0), this.texture('index')));
       this.decorations?.add(this.add.image(center(2), center(0), this.texture('filed-stamp')));
       this.decorations?.add(this.add.text(center(2), center(0) - 6, 'FILED', {
-        fontFamily: 'monospace', fontSize: '4px', color: '#752f39', backgroundColor: '#e1d1a6',
+        fontFamily: 'monospace', fontSize: '5px', color: '#752f39', backgroundColor: '#e1d1a6', resolution: GLYPH_DETAIL,
       }).setOrigin(0.5, 1));
       return;
     }
@@ -544,9 +555,20 @@ export class FieldScene extends Phaser.Scene {
     if (this.frame.stage.id !== 'warehouse') return;
     // The remote counter is visible before the shelf extends the field to Ream.
     this.decorations?.add(this.add.image(center(13), center(4), this.texture('counter-end')));
-    for (const line of [1, 5]) this.decorations?.add(this.add.text(center(1), center(line) - 7, 'TALLY', {
-      fontFamily: 'monospace', fontSize: '5px', color: '#18292b', backgroundColor: '#d39b69',
-    }).setOrigin(0.5, 1));
+  }
+
+  /** Labels drawn at screen size, so their letters stay sharp at any zoom. */
+  private syncSigns(): void {
+    const signs = this.frame.signs ?? [];
+    const zoom = Math.max(1, Math.round(stageZoom(this.frame.stage, this.scale)));
+    const shown = JSON.stringify([zoom, signs]);
+    if (shown === this.shownSigns) return;
+    this.shownSigns = shown;
+    this.signs?.removeAll(true);
+    for (const sign of signs) this.signs?.add(this.add.text(center(sign.at.col), center(sign.at.line), `${sign.done ? '\u2713 ' : ''}${sign.text}`, {
+      fontFamily: 'monospace', fontSize: '5.5px', color: sign.done ? '#3e5a34' : '#20252b',
+      backgroundColor: sign.done ? '#dfe3c3' : '#f6efd4', padding: { x: 3, y: 1 }, resolution: zoom,
+    }).setOrigin(0.5, 0.5));
   }
 
   private clearArchiveRows(): void {
@@ -1097,6 +1119,7 @@ export class FieldScene extends Phaser.Scene {
 
   private syncGateMarks(): void {
     this.gateMarks?.removeAll(true);
+    this.syncThreads();
     if (this.frame.stage.id !== 'gates') return;
     const engine = this.frame.state.engine;
     const char = engine.lines[engine.cursor.line]?.[engine.cursor.col];
@@ -1110,6 +1133,28 @@ export class FieldScene extends Phaser.Scene {
       const pulse = partner?.line === cell.line && partner.col === column;
       if (outer || pulse) this.gateMarks?.add(this.add.image(center(column), center(cell.line), this.texture('gate-glint'))
         .setAlpha(pulse ? (this.reducedMotion ? 0.6 : this.idleFrame ? 0.85 : 0.35) : 0.2));
+    }
+  }
+
+  /** A dotted thread from an opening bracket down to its partner: which two belong together, seen before `%` is pressed. */
+  private syncThreads(): void {
+    const { stage, state: { engine } } = this.frame;
+    const { line, col } = engine.cursor;
+    const pairs = stage.id !== 'gates' ? [] : engine.lines.flatMap((text, start) => [...text].flatMap((char, column) => {
+      if (char !== '(') return [];
+      const end = presentationEngine.step({ ...engine, cursor: { line: start, col: column }, pendingKeys: [] }, '%').state.cursor;
+      return end.col === column && end.line > start ? [{ col: column, start, end: end.line, held: col === column && (line === start || line === end.line) }] : [];
+    }));
+    const shown = JSON.stringify(pairs);
+    if (shown === this.shownThreads) return;
+    this.shownThreads = shown;
+    this.threads?.removeAll(true);
+    for (const pair of pairs) {
+      // Beside the bracket's column, so Shut and the nook's knothole do not cover it.
+      const x = center(pair.col) + (pair.col === 3 ? 7 : -7);
+      for (let y = center(pair.start) + 6; y < center(pair.end) - 4; y += 6) {
+        this.threads?.add(this.add.rectangle(x, y, 1, 3, pair.held ? 0xfabd2f : 0xe9d9a8, pair.held ? 0.95 : 0.45));
+      }
     }
   }
 
@@ -1206,14 +1251,19 @@ export class FieldScene extends Phaser.Scene {
   private syncPrompts(): void {
     this.prompts?.setVisible(!this.animating);
     this.prompts?.removeAll(true);
+    const at = this.frame.state.engine.cursor;
+    // Enter fires the first trigger in reach: between two things, only that one is labelled.
+    const reached = this.frame.stage.triggers.flatMap(trigger => {
+      if (trigger.on !== 'interact' || trigger.target.type !== 'entity'
+        || trigger.once && this.frame.state.firedTriggers.includes(trigger.id)
+        || trigger.onlyIf !== undefined && this.frame.state.flags[trigger.onlyIf] !== true
+        || trigger.unless !== undefined && this.frame.state.flags[trigger.unless] === true) return [];
+      const id = trigger.target.entity;
+      const entity = this.frame.state.entities.find(item => item.id === id);
+      return entity && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1 ? [entity.id] : [];
+    })[0];
     for (const entity of this.frame.state.entities) {
-      const at = this.frame.state.engine.cursor;
-      const canTalk = this.frame.stage.triggers.some(trigger => trigger.on === 'interact'
-        && trigger.target.type === 'entity' && trigger.target.entity === entity.id
-        && (!trigger.once || !this.frame.state.firedTriggers.includes(trigger.id))
-        && (trigger.onlyIf === undefined || this.frame.state.flags[trigger.onlyIf] === true)
-        && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
-      if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
+      if (entity.id === reached) {
         const text = interactionLabel(entity, this.frame.stage, this.frame.state);
         const zoom = stageZoom(this.frame.stage, this.scale);
         const halfWidth = this.scale.width / zoom / 2; const halfHeight = this.scale.height / zoom / 2;

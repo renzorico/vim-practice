@@ -18,8 +18,18 @@
           "then": []
         },
         {
+          "id": "note",
+          "objective": "Try the left ) under Shut: press `%`.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "gates.knows-pair",
+            "value": true
+          },
+          "then": []
+        },
+        {
           "id": "ope",
-          "objective": "Find Ope: on the ) under Shut, press `%`.",
+          "objective": "Find Ope: `%` back down, then `%` on the right ).",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.asked",
@@ -59,7 +69,7 @@
         },
         {
           "id": "open",
-          "objective": "Go back up to Ope: on the ) under Shut, press `%`.",
+          "objective": "Go back up to Ope: on the right ), press `%`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "gates"
@@ -95,7 +105,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to its partner, at the top."
+          "text": "Each ) down here is half of a pair. Stand on the\nleft one and press `%`: you jump to its partner."
         }
       ],
       "then": [
@@ -122,7 +132,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The top. You jumped from Shut's ) to this (, its\npartner. So there's another keeper."
+          "text": "The top. From the right ) to this (: one pair,\nwith the whole trunk between. And a keeper."
         }
       ],
       "then": []
@@ -149,6 +159,11 @@
         {
           "type": "set-flag",
           "flag": "gates.met-shut",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "gates.knows-pair",
           "value": true
         },
         {
@@ -301,7 +316,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the ) right under Shut. Press `%`:\nyou jump to Ope's (."
+          "text": "Stand on the right ). Press `%`: you jump to\nOpe's (, its partner."
         }
       ],
       "then": []
@@ -341,10 +356,30 @@
         },
         {
           "speaker": "system",
-          "text": "Brackets nest: the inner pair closes first.\nStand on the ( here and press `%`: you're out."
+          "text": "The inner pair is this nook. The outer pair is\nthe tree: its ( is at the very top."
         }
       ],
       "then": []
+    },
+    {
+      "id": "gates.nook",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "From the left ) to this (: a pair. Press `%`\nhere and it takes you back."
+        },
+        {
+          "speaker": "system",
+          "text": "The right ) has a partner too, too far up to\nsee. `%` finds it all the same."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "gates.knows-pair",
+          "value": true
+        }
+      ]
     },
     {
       "id": "gates.crack",
@@ -399,6 +434,20 @@
       ],
       "onlyIf": "gates.met-shut",
       "unless": "gates.lamp-b"
+    },
+    {
+      "id": "gates.nook",
+      "when": {
+        "type": "trigger",
+        "trigger": "gates.nook"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "gates.nook"
+        }
+      ]
     },
     {
       "id": "gates.top",

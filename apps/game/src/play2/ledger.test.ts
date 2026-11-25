@@ -110,7 +110,7 @@ it('Continue reloads stage entry with the ledger open and story preserved', () =
 it('shows the goal, ghost, cursor, insert mode, and one tick per matching line', () => {
   const session = start();
   const html = screen(session);
-  expect(html).toContain(book.goalText.replaceAll("'", '&#x27;'));
+  expect(visibleText(html)).toContain('Strike the wall rows');
   expect(html).toContain('The ledger should read:');
   expect(html.match(/aria-label="Line matches"/g)).toHaveLength(1);
   expect(html).toContain('cell--cursor-block');
@@ -118,15 +118,15 @@ it('shows the goal, ghost, cursor, insert mode, and one tick per matching line',
   expect(screen(keys(session, 'o'))).toContain('-- INSERT --');
   const target = book.goals.find(goal => goal.type === 'transform');
   if (!target) throw new Error('Missing transform');
-  const matched = renderToStaticMarkup(createElement(ScriptPanel, { script: book, keys: 38,
+  const matched = renderToStaticMarkup(createElement(ScriptPanel, { script: book,
     engine: createEngine().init(target.targetLines) }));
   expect(matched.match(/aria-label="Line matches"/g)).toHaveLength(6);
 });
-it('reveals a hint at 60 keys', () => {
-  let session = start();
-  for (let count = 0; count < 59; count += 1) session = controller.reduce(session, '<Esc>');
-  expect(visibleText(screen(session))).not.toContain(plainText(book.hints[0]!));
-  expect(visibleText(screen(controller.reduce(session, '<Esc>')))).toContain(plainText(book.hints[0]!));
+it('explains the first unfinished task from the start, and the next once it is done', () => {
+  const struck = keys(start(), 'jdd3j.2j.');
+  expect(visibleText(screen(start()))).toContain('Go to a row that says wall.');
+  expect(visibleText(screen(struck))).not.toContain('Go to a row that says wall.');
+  expect(visibleText(screen(struck))).toContain('Cursor on the u of unpaid.');
 });
 it('validates content, the text-stage map and the raw world replay', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);

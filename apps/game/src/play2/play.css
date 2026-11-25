@@ -59,12 +59,24 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-target li[data-matched="true"] { color: var(--bg); }
 .script-tick { display: inline-block; flex: 0 0 16px; width: 16px; }
 .script-tick svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
-.script-hints { line-height: 1.5; }
-.script-hints p { margin: 0 0 16px; padding-left: 12px; border-left: 3px solid var(--line-strong); }
-@media (min-width: 1001px) {
-  .script-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; }
-  .script-heading h2 { grid-column: 1 / -1; }
-}
+.script-tasks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.script-tasks li { display: flex; align-items: center; gap: 4px; padding: 2px 10px; border: 1px solid var(--paper-edge); color: var(--ink-muted); font-size: 14px; line-height: 1.6; }
+.script-tasks li[data-state='done'] { color: var(--green-ink); border-color: var(--green-ink); }
+.script-tasks li[data-state='now'] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 600; }
+.script-tick__mark { flex: 0 0 auto; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+/* Two rows are kept for the instructions, so the sheets below never jump between tasks. */
+.script-how { min-height: 54px; }
+.script-how p { display: flex; align-items: baseline; gap: 12px; margin: 0; line-height: 27px; }
+.script-how b { flex: 0 0 auto; padding: 0 8px; background: var(--tab-gold); color: var(--ink); font-size: 12px; line-height: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+.typed-text { padding: 1px 4px; background: var(--paper-secondary); border-bottom: 2px solid var(--tab-gold); color: var(--ink); font-family: var(--font-mono); white-space: pre-wrap; }
+.script-count { margin-left: 8px; font-weight: 400; }
+.script-target mark { background: none; color: var(--ink); border-bottom: 2px solid var(--red-ink); }
+.script-panel .cell--wrong { box-shadow: inset 0 -2px 0 var(--red-ink); }
+.script-panel .cell--trailing { position: relative; background: color-mix(in srgb, var(--tab-gold) 45%, transparent); }
+.script-panel .cell--trailing::after { content: '·'; position: absolute; inset: 0; text-align: center; color: var(--ink); }
+.script-panel .cell--cursor-block.cell--trailing { background: var(--bg); }
+.script-panel .buffer__line[data-extra] .buffer__gutter { color: var(--red-ink); font-weight: 700; }
+.script-panel .buffer__line[data-extra] .buffer__text { text-decoration: line-through; text-decoration-color: var(--red-ink); }
 .script-stamp { position: absolute; inset: 40% auto auto 50%; transform: translateX(-50%) rotate(-8deg); padding: 12px 24px; border: 3px solid currentColor; background: var(--text); color: var(--bg); font: 600 32px var(--font-mono); white-space: nowrap; }
 @media (max-width: 680px) {
   .script-columns { grid-template-columns: minmax(0, 1fr); gap: 24px; }

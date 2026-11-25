@@ -9,6 +9,7 @@ import { SoundButton } from '../audio/SoundButton.js';
 import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
 import { objectiveTarget } from './objectiveTarget.js';
+import { signsFor } from './stageGuides.js';
 import { useMotionUses } from './useMotionUses.js';
 import { useMemo, useRef } from 'react';
 import { StatusLine } from './frame/StatusLine.js';
@@ -36,6 +37,9 @@ import { DialogueBox } from '../story-ui/DialogueBox.js';
 import { ObjectiveHud } from '../story-ui/ObjectiveHud.js';
 import { resultData, type Session } from './session.js';
 import type { StoryContent } from '@escape/story';
+
+/** A script shows its own instructions. */
+const NO_HINTS: readonly string[] = [];
 
 interface PlayScreenProps {
   readonly onOpenHelp?: () => void;
@@ -81,7 +85,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   const canShowObjective = !darkness && stage.type !== 'text' && !script
     && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
-  const active = activeGuide(content, session.story);
+  const active = activeGuide(content, session.story, world);
   const guide = active && guideApplies(active, activeEngine.cursor, world.engine.lines) ? active : null;
   const overtaken = active !== null && guide === null && Boolean(active.whileRow);
   const visibleGuide = session.queue.length === 0 && !session.clearCard && !showKeyCard && world.status === 'playing' ? guide : null;
@@ -95,7 +99,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   }, null);
   const targetEntity = target ? world.entities.find(entity => entity.at.line === target.line && entity.at.col === target.col)?.id : undefined;
   const quiet = session.queue.length > 0 || Boolean(session.clearCard) || showKeyCard || scriptStamp || world.status !== 'playing';
-  const hints = useHints({ session, hints: script?.hints ?? stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
+  const hints = useHints({ session, hints: script ? NO_HINTS : stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
     requests: hintRequests, quiet, scriptId: script?.id ?? '' });
   // Clearing a stage begins the next quest at once; its objective waits for its own stage.
   const shownObjectives = world.status === 'cleared' ? [] : objectives;
@@ -110,9 +114,8 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
     </header>
     <div className="play-field" ref={field}>
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
-      {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
-      keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
-      objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
+      {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
+      objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} signs={signsFor(world)} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
       markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
       <HintSlip hint={quiet ? null : hints.hint}

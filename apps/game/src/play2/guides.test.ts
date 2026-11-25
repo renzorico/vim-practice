@@ -84,8 +84,9 @@ describe('authored objective guides', () => {
   });
   it('derives only the current unfinished main objective', () => {
     const story = storyEngine.init(content);
-    expect(activeGuide(content, story)).toBe(guideFor('margin.warning', 'meet-elder'));
-    expect(activeGuide(content, { ...story, quests: { 'margin.warning': { step: 3, done: true } } })).toBeNull();
+    const { world } = gameFor('margin').init();
+    expect(activeGuide(content, story, world)).toBe(guideFor('margin.warning', 'meet-elder'));
+    expect(activeGuide(content, { ...story, quests: { 'margin.warning': { step: 3, done: true } } }, world)).toBeNull();
   });
   it('offers walkable cells at each tutorial step, including after the quarry deletion', () => {
     const tutorialRoutes: Readonly<Record<string, readonly string[]>> = {
