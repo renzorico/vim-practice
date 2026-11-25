@@ -447,3 +447,149 @@ it('retains only the quietest voice at half level when a score has no sustain', 
   const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
   expect(layers.map(layer => layer.gain.at(context.currentTime))).toEqual([0, 0.5, 0]);
 });
+
+it.each(['hidden', 'disabled', 'missing', 'suspended', 'failed', 'disposed'] as const)('reports no cadence when %s', state => {
+  const { music, context, output } = setup();
+  if (state === 'missing') output.mockReturnValue(null);
+  if (state === 'suspended') context.state = 'suspended';
+  if (state === 'failed') context.createOscillator = () => { throw new Error('device'); };
+  music.setScore('margin');
+  if (state === 'hidden') music.setHidden(true);
+  if (state === 'disabled') music.setEnabled(false);
+  if (state === 'disposed') music.dispose();
+  expect(music.setResolved(true)).toBe(false);
+});
+
+it('reports an immediate scheduling failure and does not cadence after recovery', () => {
+  const { music, context } = setup(); music.setScore('margin');
+  const create = context.createGain;
+  context.createGain = () => { throw new Error('device'); };
+  expect(music.setResolved(true)).toBe(false);
+  context.createGain = create; music.setScore('margin'); vi.advanceTimersByTime(5000);
+  expect(cadenceSources(context)).toHaveLength(0);
+});
+
+it.each([500, 2100])('preserves a delayed-start cadence only for a recent request (%sms)', delay => {
+  const { music, context } = setup();
+  // Occupy track buses with crossfades so the final track must wait for slots.
+  const ids = Object.keys(SCORES) as ScoreId[];
+  for (let index = 0; index < 100; index++) music.setScore(ids[index % ids.length]!);
+  music.setScore('margin');
+  expect(music.setResolved(true)).toBe(true);
+  // Move the audio clock without running the timer: the pending start is genuinely late.
+  vi.setSystemTime(delay); music.tick(); vi.advanceTimersByTime(12000);
+  expect(cadenceSources(context).length).toBe(delay < 2000 ? 12 : 0);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+});
+
+it('anchors late resolution ramps and all figure offsets to the current clock', () => {
+  const { music, context } = setup(); music.setScore('margin');
+  vi.setSystemTime(100); expect(music.setResolved(true)).toBe(true);
+  expect(cadenceSources(context)).toHaveLength(0);
+  vi.setSystemTime(2000); music.tick();
+  const filter = context.nodes[1]!;
+  expect(filter.frequency.setValueAtTime.mock.calls.at(-1)?.[1]).toBe(2);
+  expect(filter.frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(3400, 3);
+  vi.advanceTimersByTime(10000);
+  const starts = cadenceSources(context).map(node => node.start.mock.calls[0]![0]);
+  const beat = 60 / SCORES.margin.bpm;
+  expect(starts[0]).toBe(2);
+  expect(new Set(starts).size).toBeGreaterThan(1);
+  expect(starts).toContain(2 + beat);
+});
+
+it('un-resolving removes queued cadence notes and fades sounding cadence over 200ms', () => {
+  const { music, context } = setup(); music.setScore('margin');
+  music.setResolved(true); vi.advanceTimersByTime(100);
+  const cadence = cadenceSources(context); expect(cadence.length).toBeGreaterThan(0);
+  const gain = (cadence[0]!.connect.mock.calls[0]![0] as Node).connect.mock.calls[0]![0] as Node;
+  music.setResolved(false);
+  expect(gain.gain.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(0);
+  expect(gain.gain.linearRampToValueAtTime.mock.calls.at(-1)?.[1]).toBeCloseTo(0.3);
+  music.duck(true); // Other mix updates must not re-enable the cancelled cadence bus.
+  vi.advanceTimersByTime(5000);
+  expect(gain.gain.at(context.currentTime)).toBe(0);
+  expect(cadenceSources(context)).toHaveLength(cadence.length);
+  music.setResolved(true); vi.advanceTimersByTime(5000);
+  expect(gain.gain.at(context.currentTime)).toBe(MUSIC_LEVEL);
+  expect(cadenceSources(context).length).toBeGreaterThan(cadence.length);
+});
+
+it('restores resolved layers without a cadence when explicitly requested', () => {
+  const { music, context } = setup(); music.setScore('margin');
+  expect(music.setResolved(true, { cadence: false })).toBe(false);
+  vi.advanceTimersByTime(5000);
+  expect(cadenceSources(context)).toHaveLength(0);
+  expect(context.nodes[1]!.frequency.at(context.currentTime)).toBe(3400);
+});
+
+it('keeps score notes running during blocked layer allocation and expires its cadence', () => {
+  const original = SCORES.title;
+  const voices = Array.from({ length: MUSIC_NODE_CAP }, () => ({ ...original.voices[0]!,
+    notes: [{ step: 0, midi: 60, length: 0.1 }, { step: 2, midi: 62, length: 0.1 }] }));
+  Object.defineProperty(SCORES, 'title', { value: { ...original, voices }, configurable: true });
+  try {
+    const { music, context, sources } = setup(); music.setScore('title');
+    const before = sources().length; expect(music.setResolved(true)).toBe(true);
+    vi.advanceTimersByTime(1500);
+    expect(sources().length).toBeGreaterThan(before);
+    // Release the impossible allocation after the retry deadline.
+    voices.splice(1); vi.advanceTimersByTime(3000);
+    expect(cadenceSources(context)).toHaveLength(0);
+    expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+});
+
+it('keeps score notes running during a blocked cadence group and gives it up after 1s', () => {
+  const original = SCORES.title;
+  const figure: [number, number, number][] = Array.from({ length: 30 }, () => [0, 100, 1]);
+  Object.defineProperty(SCORES, 'title', { value: { ...original,
+    voices: [{ ...original.voices[0]!, sustain: true,
+      notes: [{ step: 0, midi: 60, length: 0.1 }, { step: 2, midi: 62, length: 0.1 }] }],
+    cadence: { ...original.cadence, figure } }, configurable: true });
+  try {
+    const { music, context, sources } = setup(); music.setScore('title');
+    const before = sources().length; expect(music.setResolved(true)).toBe(true);
+    vi.advanceTimersByTime(1500);
+    expect(sources().length).toBeGreaterThan(before);
+    figure.splice(1); vi.advanceTimersByTime(5000);
+    expect(cadenceSources(context)).toHaveLength(0);
+    expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+});
+
+it('does not skip a muted layer note after a pending un-resolve boundary', () => {
+  const original = SCORES.title;
+  const voices = [
+    { ...original.voices[0]!, sustain: false, notes: [
+      { step: 0, midi: 60, length: 0.1 }, { step: original.steps, midi: 90, length: 0.1 },
+    ] },
+    { ...original.voices[0]!, sustain: true, notes: [] },
+  ];
+  Object.defineProperty(SCORES, 'title', { value: { ...original, voices }, configurable: true });
+  try {
+    const { music, sources } = setup(); music.setScore('title');
+    music.setResolved(true, { cadence: false }); vi.advanceTimersByTime(1000);
+    // Force the un-resolve to wait for layer slots, while its score cursor keeps moving.
+    voices.push(...Array.from({ length: MUSIC_NODE_CAP }, () => ({ ...voices[1]!, notes: [] })));
+    music.setResolved(false);
+    const boundary = 0.03 + original.steps * stepSeconds(original);
+    vi.setSystemTime((boundary - 0.5) * 1000); music.tick();
+    const frequency = 440 * 2 ** ((90 - 69) / 12);
+    expect(sources().some(node => node.frequency.setValueAtTime.mock.calls[0]?.[0] === frequency
+      && node.start.mock.calls[0]?.[0] === boundary)).toBe(true);
+  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+});
+
+it.each([200, 1100])('retries a blocked transition but expires its cadence before recovery (%sms)', delay => {
+  const original = SCORES.title;
+  const voices = Array.from({ length: MUSIC_NODE_CAP }, () => ({ ...original.voices[0]!, notes: [] }));
+  Object.defineProperty(SCORES, 'title', { value: { ...original, voices }, configurable: true });
+  try {
+    const { music, context } = setup(); music.setScore('title');
+    expect(music.setResolved(true)).toBe(true);
+    vi.setSystemTime(delay); voices.splice(1); music.tick();
+    vi.advanceTimersByTime(10000);
+    expect(cadenceSources(context)).toHaveLength(delay < 1000 ? 12 : 0);
+  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+});

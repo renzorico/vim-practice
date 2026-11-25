@@ -19,6 +19,9 @@ const KNOCK_DECAY = 0.06;
 const ENVELOPE_FLOOR = 0.0001;
 const FAILURE_WINDOW_MS = 60_000;
 const MAX_FAILURES = 3;
+const CADENCE_START_MAX_AGE_MS = 2000;
+const CADENCE_RETRY_SECONDS = 1;
+const CADENCE_CANCEL_SECONDS = 0.2;
 interface AudioOutput { readonly context: AudioContext; readonly master: GainNode }
 interface EventNote { readonly step: number; readonly midi: number; readonly length: number; readonly voice: ScoreVoice | null; readonly tick?: 'knock' }
 interface Track {
@@ -28,6 +31,7 @@ interface Track {
   readonly layers: Map<ScoreVoice | null, GainNode>;
   cadenceGain: GainNode | null;
   cadence: { at: number; event: EventNote }[];
+  cadenceBlockedAt: number | null;
   origin: number;
   cursor: number;
   waiting: boolean;
@@ -63,7 +67,7 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
   let ducked = false;
   let level = 1;
   let resolved = false;
-  let transition: { value: boolean; at: number; cadence: boolean } | null = null;
+  let transition: { value: boolean; at: number; cadence: boolean; requestedAt: number; blockedAt: number | null } | null = null;
   let resumeBar = 0;
   let silenceAt: number | null = null;
   let failed = false;
@@ -104,19 +108,20 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
     try { action(); } catch {
       failures.push(Date.now());
       failed = true;
+      if (transition) transition.cadence = false;
       reset();
     }
   }
   function updateLevel(seconds: number): void {
     if (hidden && silenceAt !== null && audio) seconds = Math.max(0, Math.min(seconds, silenceAt - audio.context.currentTime));
-    for (const track of tracks) if (track.cadenceGain && track.retireAt === null)
+    for (const track of tracks) if (track.cadenceGain && track.retireAt === null && resolved)
       ramp(track.cadenceGain.gain, enabled && !hidden ? MUSIC_LEVEL * level : 0, seconds);
     if (bus) ramp(bus.gain, enabled && !hidden ? MUSIC_LEVEL * level * (ducked ? 0.55 : 1) : 0, seconds);
   }
   function initialise(): boolean {
     if (audio) return audio.context.state === 'running';
     audio = output();
-    if (!audio) return false;
+    if (!audio || audio.context.state !== 'running') { audio = null; return false; }
     bus = audio.context.createGain(); bus.gain.value = 0;
     filter = audio.context.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 2200;
     bus.connect(filter); filter.connect(audio.master);
@@ -148,7 +153,7 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
     const score = SCORES[desired];
     const gain = audio.context.createGain();
     // Register ownership before connecting, so even a failed connection is disposed.
-    const track: Track = { score, gain, layers: new Map(), cadenceGain: null, cadence: [], origin: audio.context.currentTime + START_DELAY,
+    const track: Track = { score, gain, layers: new Map(), cadenceGain: null, cadence: [], cadenceBlockedAt: null, origin: audio.context.currentTime + START_DELAY,
       cursor: 0, waiting: false, retireAt: null, events: [
         ...score.voices.flatMap(voice => voice.notes.map(note => ({ ...note, voice }))),
         ...(score.ambience?.steps.map(step => ({ step, midi: 36, length: 0.12, voice: null })) ?? []),
@@ -157,14 +162,17 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
     gain.gain.value = 0; gain.connect(bus);
     gain.gain.setValueAtTime(0, audio.context.currentTime);
     ramp(gain.gain, 1, FADE_SECONDS);
-    if (resolved) transition = { value: true, at: audio.context.currentTime, cadence: false };
+    if (resolved) transition = { value: true, at: audio.context.currentTime,
+      cadence: transition?.cadence === true && Date.now() - transition.requestedAt < CADENCE_START_MAX_AGE_MS,
+      requestedAt: transition?.requestedAt ?? Date.now(), blockedAt: null };
   }
   function schedule(track: Track, event: EventNote, at: number, cadence = false): boolean {
     const isKnock = event.tick === 'knock' || (event.voice && 'tick' in event.voice && event.voice.tick === 'knock');
     const voice = isKnock ? null : event.voice;
     const layer = track.layers.get(event.voice);
     const mix = layer ? ramps.get(layer.gain) : undefined;
-    if (!cadence && mix?.to === 0 && at >= mix.end) return true;
+    const audibleAgain = transition?.value === false ? transition.at : Infinity;
+    if (!cadence && mix?.to === 0 && at >= mix.end && at < audibleAgain) return true;
     if (!audio || !reserve(voice ? 2 : 3)) return false;
     const { context } = audio;
     let envelope: GainNode | null = null;
@@ -235,6 +243,7 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
   }
   function applyResolution(track: Track, change: NonNullable<typeof transition>): boolean {
     if (!audio || !filter) return false;
+    const at = Math.max(change.at, audio.context.currentTime);
     const voices = [...track.score.voices, null];
     const missing = voices.filter(voice => !track.layers.has(voice));
     if (!reserve(missing.length + Number(change.cadence && !track.cadenceGain))) return false;
@@ -251,25 +260,27 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
     const hasPad = track.score.voices.some(voice => voice.sustain);
     for (const [voice, layer] of track.layers) {
       const target = !change.value ? 1 : voice?.sustain ? RESOLVED_PAD : !hasPad && voice === quietest ? 0.5 : 0;
-      ramp(layer.gain, target, change.value ? 0.3 : 0.6, change.at);
+      ramp(layer.gain, target, change.value ? 0.3 : 0.6, at);
     }
-    ramp(filter.frequency, change.value ? 3400 : 2200, 1, change.at);
+    ramp(filter.frequency, change.value ? 3400 : 2200, 1, at);
     if (change.cadence) {
       if (!track.cadenceGain) {
         track.cadenceGain = audio.context.createGain();
         track.cadenceGain.gain.value = MUSIC_LEVEL * level;
         track.cadenceGain.connect(filter);
       }
+      ramp(track.cadenceGain.gain, MUSIC_LEVEL * level, 0.02, at);
+      track.cadenceBlockedAt = null;
       const beat = cadenceBeatSeconds(track.score);
       const seconds = stepSeconds(track.score);
       const bell: ScoreVoice = { wave: 'sine', level: 0.24, attackMs: 6, releaseMs: 900, notes: [] };
       const pad: ScoreVoice = { wave: 'triangle', level: 0.06, attackMs: 60, releaseMs: 1500, sustain: true, notes: [] };
       track.cadence = track.score.cadence.figure.flatMap(([offset, midi, length]) => [
-        { at: change.at + offset * beat, event: { step: 0, midi, length: length * beat / seconds, voice: bell } },
-        { at: change.at + offset * beat, event: { step: 0, midi: midi + 12, length: length * beat / seconds,
+        { at: at + offset * beat, event: { step: 0, midi, length: length * beat / seconds, voice: bell } },
+        { at: at + offset * beat, event: { step: 0, midi: midi + 12, length: length * beat / seconds,
           voice: { ...bell, level: 0.04 } } },
       ]);
-      track.cadence.push(...track.score.cadence.chord.map(midi => ({ at: change.at + 4 * beat,
+      track.cadence.push(...track.score.cadence.chord.map(midi => ({ at: at + 4 * beat,
         event: { step: 0, midi, length: track.score.cadence.chordBeats * 60 / track.score.bpm / seconds, voice: pad } })));
     }
     return true;
@@ -290,13 +301,23 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
       if (!current || hidden || !enabled || audio.context.state !== 'running') return;
       const track = current;
       if (transition && transition.at < now + LOOK_AHEAD) {
-        if (!applyResolution(track, transition)) return;
-        transition = null;
+        if (transition.blockedAt !== null && now - transition.blockedAt >= CADENCE_RETRY_SECONDS)
+          transition.cadence = false;
+        if (applyResolution(track, transition)) transition = null;
+        else {
+          transition.blockedAt ??= now;
+        }
       }
+      if (track.cadenceBlockedAt !== null && now - track.cadenceBlockedAt >= CADENCE_RETRY_SECONDS)
+        track.cadence = [];
       while (track.cadence.length && track.cadence[0]!.at < now + LOOK_AHEAD) {
         const at = track.cadence[0]!.at;
         const group = track.cadence.filter(note => note.at === at);
-        if (!reserve(group.length * 2)) break;
+        if (!reserve(group.length * 2)) {
+          track.cadenceBlockedAt ??= now;
+          break;
+        }
+        track.cadenceBlockedAt = null;
         for (const note of group) schedule(track, note.event, Math.max(now, note.at), true);
         track.cadence.splice(0, group.length);
       }
@@ -339,17 +360,26 @@ export function createMusic(output: () => AudioOutput | null = () => synth.audio
         tick();
       });
     },
-    setResolved(value: boolean): void {
+    setResolved(value: boolean, options: { readonly cadence?: boolean } = {}): boolean {
+      let scheduled = false;
       safely(() => {
         if (resolved === value) return;
         resolved = value;
         const now = audio?.context.currentTime ?? 0;
+        if (!value) for (const track of tracks) {
+          track.cadence = [];
+          track.cadenceBlockedAt = null;
+          if (track.cadenceGain) ramp(track.cadenceGain.gain, 0, CADENCE_CANCEL_SECONDS);
+        }
         const unit = current ? stepSeconds(current.score) * (value ? current.score.stepsPerBeat : current.score.steps) : 0;
         const at = current && unit ? current.origin + Math.ceil(Math.max(0, now - current.origin) / unit) * unit : now;
-        transition = { value, at: hidden || !enabled ? now : at,
-          cadence: value && !hidden && enabled && !!audio && audio.context.state === 'running' };
+        scheduled = value && options.cadence !== false && !failed && !hidden && enabled && desired !== null
+          && !!audio && audio.context.state === 'running';
+        transition = { value, at: hidden || !enabled ? now : at, cadence: scheduled,
+          requestedAt: Date.now(), blockedAt: null };
         tick();
       });
+      return scheduled && !failed && !disposed;
     },
     setEnabled(value: boolean): void {
       safely(() => {
