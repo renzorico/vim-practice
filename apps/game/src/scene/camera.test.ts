@@ -85,4 +85,5 @@ it('draws a map that fits larger, in whole steps, and a big one at the usual sca
   expect(stageZoom({ map: map(19, 10) }, view)).toBe(4);
   expect(stageZoom({ map: map(40, 13) }, view)).toBe(3);
   expect(stageZoom({ map: map(14, 7) }, { width: 390, height: 620 })).toBe(3);
+  expect(stageZoom({ map: map(14, 7), windowHeight: 12 }, { width: 900, height: 0 })).toBe(3);
 });

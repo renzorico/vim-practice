@@ -47,6 +47,17 @@ export function cameraTarget(mapSize: Size, viewSize: Size, playerCell: Position
 const LARGEST_SCALE = 5;
 /** The share of the view a map may fill before a larger scale is refused. */
 const FIT_MARGIN = 0.94;
+/** Room for a row put or a few characters typed, so the view does not have to start scrolling. */
+const GROWTH = { rows: 1, cols: 2 } as const;
+/** Asked several times a frame; an authored map never changes. */
+const authoredSizes = new WeakMap<readonly string[], Size>();
+function authoredSize(map: readonly string[]): Size {
+  const known = authoredSizes.get(map);
+  if (known) return known;
+  const size = bufferSize(map);
+  authoredSizes.set(map, size);
+  return size;
+}
 
 /**
  * Whole-number scale for a stage. Its Vim window, when it has one, and the rendered field always have
@@ -54,10 +65,13 @@ const FIT_MARGIN = 0.94;
  * during play never change the scale.
  */
 export function stageZoom(stage: { readonly map: readonly string[]; readonly windowHeight?: number | undefined }, view: Size): number {
+  // A view with no height (a hidden pane, the first layout) has no scale of its own yet.
+  if (view.height <= 0 || view.width <= 0) return TILE_SCALE;
   if (stage.windowHeight !== undefined) return view.height / (stage.windowHeight * TILE_SIZE);
-  const map = bufferSize(stage.map);
+  const map = authoredSize(stage.map);
   for (let scale = LARGEST_SCALE; scale > TILE_SCALE; scale--) {
-    if (map.width * TILE_SIZE * scale <= view.width * FIT_MARGIN && map.height * TILE_SIZE * scale <= view.height * FIT_MARGIN) return scale;
+    if ((map.width + GROWTH.cols) * TILE_SIZE * scale <= view.width * FIT_MARGIN
+      && (map.height + GROWTH.rows) * TILE_SIZE * scale <= view.height * FIT_MARGIN) return scale;
   }
   return TILE_SCALE;
 }

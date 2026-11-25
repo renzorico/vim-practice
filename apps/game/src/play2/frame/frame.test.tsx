@@ -78,10 +78,10 @@ it.each([':w', '/stone', '?scribe'])('shows command line %s in the left half', c
 it('places dialogue opposite the player using the rendered camera', () => {
   const tall = Array.from({ length: 80 }, () => ' '.repeat(30));
   const view = { width: 900, height: 600 };
-  expect(dialogueSide(tall, { line: 0, col: 0 }, view)).toBe('bottom');
-  expect(dialogueSide(tall, { line: 79, col: 0 }, view)).toBe('top');
-  expect(dialogueSide(['abc'], { line: 0, col: 0 }, view)).toBe('bottom');
-  expect(dialogueSide(['abc', 'abc', 'abc'], { line: 2, col: 0 }, view)).toBe('top');
+  expect(dialogueSide(tall, { line: 0, col: 0 }, view, { map: tall })).toBe('bottom');
+  expect(dialogueSide(tall, { line: 79, col: 0 }, view, { map: tall })).toBe('top');
+  expect(dialogueSide(['abc'], { line: 0, col: 0 }, view, { map: ['abc'] })).toBe('bottom');
+  expect(dialogueSide(['abc', 'abc', 'abc'], { line: 2, col: 0 }, view, { map: ['abc', 'abc', 'abc'] })).toBe('top');
   expect(dialogueSide(tall, { line: 79, col: 0 }, view, { map: tall, windowHeight: 28 })).toBe('top');
 });
 

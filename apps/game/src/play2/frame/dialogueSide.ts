@@ -4,7 +4,7 @@ import { TILE_SIZE } from '../../scene/palette.js';
 
 /** Match the field camera, then keep the paper away from the player's drawn cell. */
 export function dialogueSide(lines: readonly string[], player: Position,
-  view: { readonly width: number; readonly height: number }, stage: { readonly map: readonly string[]; readonly windowHeight?: number | undefined } = { map: lines }): 'top' | 'bottom' {
+  view: { readonly width: number; readonly height: number }, stage: { readonly map: readonly string[]; readonly windowHeight?: number | undefined }): 'top' | 'bottom' {
   const zoom = stageZoom(stage, view);
   const camera = cameraTarget(bufferSize(lines), view, player, zoom);
   const screenY = ((player.line + 0.5) * TILE_SIZE - camera.y) * zoom + view.height / 2;
