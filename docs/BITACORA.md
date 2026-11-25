@@ -1095,6 +1095,24 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-35: One typeface, and labels that cover nothing
+**Who:** Opus (design, code), Sonnet (review).
+
+**Why:** Renzo, in the Warehouse: "everything is on top of everything", and the instructions "look like thrown there, not matching the vibe". Causes: the labels on the field were drawn with the browser's default `monospace` in map units, so they grew with the zoom and were placed by hand; the HUD was three full-width bars in three styles; a corporate sans sat on pixel art.
+
+**What:**
+- **Two faces.** Jersey 15, a pixel face (OFL, new dependency `@fontsource/jersey-15` 5.3.0, bundled), for everything the game says; JetBrains Mono only for Vim's own text and keys. IBM Plex Sans is gone. Paper surfaces share one pixel frame (`--paper-frame`).
+- **One HUD band:** where you are, the instruction on a slip of paper in the middle, registers, gauges and turns at the right. The registers left the field.
+- **Field labels are placed, not positioned.** A sign now says which cells it names (`FieldSign`), and `scene/labelLayout.ts` finds the cheapest place above, below or beside them: never over goods, people or another label, on walls when it can. One size on the screen at any zoom, in a layer over the canvas that follows the camera (`scene/FieldLabels.tsx`). The label that names the target turns gold and replaces the arrow; a finished one turns green; all hide while somebody speaks. The Enter prompt and the landing keys use the same layer.
+- **Art:** the oil jar and the rope coil have an outline and a clear shape; the registers show them cut out.
+- Large screens (1600 px and wider) draw the interface a third larger. The sheets say how many rows are too many.
+
+**Tests:** in four stages, three window sizes, before and after the work, no label overlaps goods, people or another label (`scene/labels.test.tsx`).
+
+**Review:** canvas letters wait for their fonts before the first frame; the prompt waits for the last step of a walk; obstacles are computed once per map, not per key; the prompt is announced to screen readers; no sideways scroll at 910, 1024 and 390 px.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

@@ -9,7 +9,7 @@ const NO_SIGNS: readonly FieldSign[] = [];
 
 /** React owns input and simulation. This component only presents snapshots. */
 export function FieldView({ signs = NO_SIGNS, ...props }: FieldFrame & { readonly signs?: readonly FieldSign[] }): JSX.Element {
-  const camera = useRef<LabelCamera>({ x: 0, y: 0, zoom: 1, follow: null });
+  const camera = useRef<LabelCamera>({ x: 0, y: 0, follow: null });
   const [view, setView] = useState({ width: 0, height: 0 });
   const host = useRef<HTMLDivElement>(null);
   const scene = useRef<FieldScene | null>(null);
@@ -23,8 +23,8 @@ export function FieldView({ signs = NO_SIGNS, ...props }: FieldFrame & { readonl
   useEffect(() => {
     if (!host.current) return;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const field = new FieldScene(latest.current, media.matches, (x, y, zoom) => {
-      Object.assign(camera.current, { x, y, zoom });
+    const field = new FieldScene(latest.current, media.matches, (x, y) => {
+      Object.assign(camera.current, { x, y });
       camera.current.follow?.();
     });
     scene.current = field;

@@ -1,4 +1,3 @@
-import type { Position } from '@escape/engine';
 import type { Legend, WorldState } from '@escape/world';
 import { bufferSize } from './camera.js';
 
@@ -11,13 +10,13 @@ export interface PlacedLabel extends Box { readonly id: string }
 interface Obstacle { readonly box: Box; readonly cost: number }
 
 export const LABEL_HEIGHT = 30;
-/** Widest glyph of the label face at its size, so the estimate is never too small. */
+/** A generous average for the label face at 18 px (measured: 8.4 px for the widest label on the field). */
 const LABEL_ADVANCE = 10;
 const LABEL_PADDING = 24;
 const LARGE_VIEW = 1600;
 const GAP = 4;
 const MARGIN = 6;
-const COST = { person: 60, label: 80, content: 24, floor: 4, guide: 40, outside: 400 } as const;
+const COST = { person: 60, label: 80, content: 24, floor: 4, outside: 400 } as const;
 const DISTANCE_COST = 0.12;
 /** Above reads as a sign on a wall; below is for when there is no room. */
 const BELOW_COST = 10;
@@ -39,16 +38,15 @@ export const grow = (box: Box, by: number): Box =>
  * What a label should stay off, and how much. Walls and the void are free: paper hangs there best.
  * The player is left out, or every label would move at each step.
  */
-export function obstaclesFor(world: WorldState, legend: Legend, guides: readonly Position[], tile: number): readonly Obstacle[] {
+export function obstaclesFor(lines: readonly string[], entities: WorldState['entities'], legend: Legend, tile: number): readonly Obstacle[] {
   const kinds = new Map(legend.tiles.map(def => [def.char, def]));
-  const cells = world.engine.lines.flatMap((text, line) => [...text].flatMap((char, col): readonly Obstacle[] => {
+  const cells = lines.flatMap((text, line) => [...text].flatMap((char, col): readonly Obstacle[] => {
     const def = kinds.get(char) ?? legend.fallback;
     const cost = def.kind === 'ground' ? (def.walkable ? COST.floor : 0) : def.walkable || def.kind === 'object' ? COST.content : 0;
     return cost === 0 ? [] : [{ box: cellBox(line, col, col, tile), cost }];
   }));
   return [...cells,
-    ...world.entities.map(entity => ({ box: cellBox(entity.at.line, entity.at.col, entity.at.col, tile), cost: COST.person })),
-    ...guides.map(at => ({ box: cellBox(at.line, at.col, at.col, tile), cost: COST.guide }))];
+    ...entities.map(entity => ({ box: cellBox(entity.at.line, entity.at.col, entity.at.col, tile), cost: COST.person }))];
 }
 
 /** Where a label may hang: the field, or the whole view when the field is smaller. */

@@ -268,6 +268,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 /* P-19: a fixed frame. Both rows exist even before a quest starts. */
 .play-header { flex: 0 0 72px; height: 72px; padding: 0; }
 @media (max-width: 1179px) { .play-header { flex-basis: 98px; height: 98px; } }
+
 .play-header .objective-hud { height: 100%; }
 .play-header h1 { margin: 0; font-size: 24px; line-height: 1; font-weight: 400; white-space: nowrap; }
 .play-controls { flex: 0 0 40px; height: 40px; min-width: 0; flex-wrap: nowrap; gap: 12px; padding: 0 12px 0 0; font: 12px var(--font-mono); background: var(--surface); }
@@ -401,6 +402,9 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 /* The player walks behind it: the label gives way. */
 .field-label[data-under='true'] { opacity: 0.3; }
 .field-label[data-target='true']:not([data-done='true']), .field-label--prompt { background: var(--tab-gold); }
+.field-label--prompt { animation: prompt-arrive 240ms step-end; }
+/* It waits for the last step of the walk. */
+@keyframes prompt-arrive { from { opacity: 0; } }
 .field-label--prompt kbd { padding: 0 5px; color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-bottom-width: 3px; font: calc(13px * var(--label-scale, 1))/1.25 var(--font-mono); }
 
 /* A large screen: everything the game says grows by a third, so it keeps its place beside larger tiles. */
@@ -412,3 +416,6 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .stage-select, .help-reference { zoom: 1.2; }
   .stage-select { min-height: 83.4svh; }
 }
+@media (max-width: 640px) { .play-header h1 { font-size: 18px; } .objective-hud__hearts { font-size: 15px; } .objective-hud__place { gap: 0 6px; } .register-row > span:first-child { font-size: 12px; } .play-header { flex-basis: auto; height: auto; min-height: 98px; } }
+@media (max-width: 899px) { .counter-gauge__slots { display: none; } .counter-gauge { white-space: nowrap; } }
+@media (max-width: 1179px) { .status-buffer { display: none; } .status-identity { flex-basis: auto; } }

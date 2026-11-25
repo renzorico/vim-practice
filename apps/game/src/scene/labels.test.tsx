@@ -35,7 +35,7 @@ it.each(CASES)('%s: no label covers goods, people or another label, before and a
     const signs = signsFor(world);
     expect(signs.length).toBeGreaterThan(1);
     const labels = layoutLabels(signs.map(sign => ({ id: sign.text, names: cellBox(sign.line, sign.from, sign.to, tile), width: labelWidth(sign.text), height: LABEL_HEIGHT })),
-      obstaclesFor(world, legend, [], tile), labelArea(world.engine.lines, tile, view), tile);
+      obstaclesFor(world.engine.lines, world.entities, legend, tile), labelArea(world.engine.lines, tile, view), tile);
     expect(labels).toHaveLength(signs.length);
     const area = labelArea(world.engine.lines, tile, view);
     for (const label of labels) {
@@ -63,7 +63,7 @@ it.each([['quarry-road', { line: 10, col: 42 }, 'Enter: go south'], ['canopy', {
 const render = (id: string, state: WorldState, more: object = {}): string => {
   const { stage, legend } = entry(id);
   return renderToStaticMarkup(createElement(FieldLabels, { frame: { state, events: [], stage, legend, showSource: false, ...more },
-    signs: signsFor(state), named: undefined, view: { width: 1000, height: 600 }, camera: { x: 0, y: 0, zoom: 4, follow: null } }));
+    signs: signsFor(state), named: undefined, view: { width: 1000, height: 600 }, camera: { x: 0, y: 0, follow: null } }));
 };
 it('draws one keycap prompt beside what Enter reaches, and none while somebody speaks', () => {
   const state = standing('quarry-road', { line: 10, col: 42 });

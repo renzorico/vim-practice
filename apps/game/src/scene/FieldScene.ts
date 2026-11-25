@@ -165,7 +165,7 @@ export class FieldScene extends Phaser.Scene {
   private previousEvents: readonly WorldEvent[] | undefined;
 
   /** `onCamera` follows every camera move, in world pixels: the labels over the canvas move with it. */
-  constructor(frame: FieldFrame, reducedMotion: boolean, private readonly onCamera?: (x: number, y: number, zoom: number) => void) {
+  constructor(frame: FieldFrame, reducedMotion: boolean, private readonly onCamera?: (x: number, y: number) => void) {
     super({ key: 'field' });
     this.frame = frame;
     this.reducedMotion = reducedMotion;
@@ -714,7 +714,7 @@ export class FieldScene extends Phaser.Scene {
     this.cameraY = target.y;
     this.cameraX = target.x;
     this.cameras.main.centerOn(target.x, target.y);
-    this.onCamera?.(target.x, target.y, zoom);
+    this.onCamera?.(target.x, target.y);
     this.atmosphere?.sync(this.frame, target.x, target.y);
     this.updateAmbient(0);
     this.syncGuidance();

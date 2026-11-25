@@ -66,13 +66,13 @@ button.dialogue__hint:focus-visible { outline: 2px solid var(--you); outline-off
   .objective-hud__strip { grid-row: 2; grid-column: 1 / -1; justify-self: center; width: fit-content; max-width: 100%; margin: 0 3px; }
   .objective-hud__stats { grid-row: 1; grid-column: 2; flex-wrap: nowrap; }
   .objective-hud__place { flex-wrap: nowrap; white-space: nowrap; }
-  .objective-hud__journey { flex-basis: auto; }
+  .objective-hud__journey { display: none; }
 }
 @media (max-width: 899px) {
-  .objective-hud__journey { display: none; }
   .objective-hud__main, .objective-hud .objective-guide { font-size: 15px; line-height: 18px; }
 }
 @media (max-width: 640px) {
+  .objective-hud__turn { display: none; }
   .objective-hud__strip { grid-template-columns: minmax(0, 1fr) auto; }
   .objective-hud__guide:not(:empty) { grid-column: 1 / -1; border-left: 0; padding: 0 8px 4px; }
 }
