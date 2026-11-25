@@ -47,7 +47,7 @@ it('reveals the objective and stand markers in the dismissal render without anot
   opened.close();
   expect(notebook().entries).toHaveLength(0);
   expect(session).toBe(before);
-  expect(activeGuide(content, session.story)?.standAt?.length).toBeGreaterThan(0);
+  expect(activeGuide(content, session.story, session.world)?.standAt?.length).toBeGreaterThan(0);
   hooks.cursor = 0;
   const html = renderToStaticMarkup(PlayScreen({ ...quarry, session, content, objectives: storyEngine.objectives(session.story, content),
     showSource: false, onAdvance: () => {} }));

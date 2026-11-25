@@ -13,8 +13,9 @@ export const WAREHOUSE_WALL = art((x, y) => y < 4 ? (x % 5 === 0 ? 'V' : 'C')
   : y % 4 === 0 || (x + Math.floor(y / 4) % 2 * 4) % 8 === 0 ? 'K' : 'B');
 export const SHELF_END = art((x, y) => y >= 11 ? (y === 11 ? 'c' : 'W')
   : x >= 2 && x <= 5 ? (x === 2 ? 'K' : 'C') : floor(x, y));
-export const SHELF_LIP = art((x, y) => y >= 3 && y <= 12
-  ? (y === 3 || y === 12 ? 'K' : y === 4 ? 'c' : 'C') : floor(x, y));
+// The other upright of the same rack: `[` and `]` read as one shelf with goods between.
+export const SHELF_LIP = art((x, y) => y >= 11 ? (y === 11 ? 'c' : 'W')
+  : x >= 10 && x <= 13 ? (x === 13 ? 'K' : 'C') : floor(x, y));
 export const OIL = art((x, y) => {
   if (y <= 3 && x >= 6 && x <= 9) return y === 0 ? 'B' : 'N';
   if (y >= 4 && y <= 13 && x >= (y < 6 ? 5 : 3) && x <= (y < 6 ? 10 : 12)) {

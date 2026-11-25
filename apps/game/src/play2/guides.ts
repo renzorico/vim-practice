@@ -1,6 +1,8 @@
 import { currentQuest } from './currentQuest.js';
 import type { Position } from '@escape/engine';
 import type { StoryContent, StoryState } from '@escape/story';
+import type { WorldState } from '@escape/world';
+import { stageGuide } from './stageGuides.js';
 
 export interface Guide {
   /** One keycap each: a key to press, or a whole command (`dap`) where the player already knows its parts. */
@@ -43,13 +45,9 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
   'quarry.mason': { mason: use('10dd') },
   'wordwood.ferry': { canopy: use('fH'), lift: guide(['<CR>']) },
   'wordwood.glades': { floor: use('G'), lamp: use('{'), rope: use('gg'), gate: use('G') },
-  'wordwood.gates': {
-    shut: guide(['<CR>']), ope: use('%'), 'lamp-a': use('<C-d>'),
-    'lamp-b': use('<C-u>'), tell: use('G'), open: use('%'),
-  },
-  'port.jetty': { bitt: guide(['<CR>']), clear: use('db'), ream: guide(['<CR>']) },
-  'port.warehouse': { stock: use('y', 'p'), ream: guide(['<CR>']) },
-  'port.customs': { oil: use('yw', '"0p'), mixed: use('"byw', '"bp'), tare: guide(['<CR>']) },
+  'port.jetty': { bitt: guide(['<CR>']), ream: guide(['<CR>']) },
+  'port.warehouse': { ream: guide(['<CR>']) },
+  'port.customs': { tare: guide(['<CR>']) },
   'library.stacks': { dust: use('daw', 'j', '.'), quire: guide(['<CR>']) },
   'library.reading': { chains: use('da(', 'd2a('), folio: guide(['<CR>']) },
   'library.archive': { file: use('dap', 'p', 'yap', 'P') },
@@ -74,7 +72,9 @@ export function guideApplies(guide: Guide, at: Position, rows: readonly string[]
 }
 
 /** Match the HUD's main quest. Derived; never stored on a session. */
-export function activeGuide(content: StoryContent, story: StoryState): Guide | null {
+export function activeGuide(content: StoryContent, story: StoryState, world: WorldState): Guide | null {
   const current = currentQuest(content, story);
-  return current ? guideFor(current.quest.id, current.step.id) : null;
+  if (!current) return null;
+  const live = stageGuide(current.quest.id, current.step.id, world);
+  return live === undefined ? guideFor(current.quest.id, current.step.id) : live;
 }
