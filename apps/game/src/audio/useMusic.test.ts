@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { musicChoice, type MusicView } from './useMusic.js';
 import { SCORES, type ScoreId } from './score.js';
-const view: MusicView = { screen: 'stage', world: 'margin', dead: false, text: false, overlay: false };
+const view: MusicView = { screen: 'stage', world: 'margin', dead: false, text: false, overlay: false, cleared: false };
 it.each(['title', 'opening', 'stages'] as const)('%s chooses title even with a stale world/death', screen => {
-  expect(musicChoice({ ...view, screen, world: 'quarry', dead: true })).toEqual({ score: 'title', level: 1 });
+  expect(musicChoice({ ...view, screen, world: 'quarry', dead: true })).toEqual({ score: 'title', level: 1, resolved: false });
 });
 it.each(Object.keys(SCORES).filter(id => id !== 'title') as Exclude<ScoreId, 'title'>[])('%s chooses its world and lowers text stages', world => {
-  expect(musicChoice({ ...view, world })).toEqual({ score: world, level: 1 });
-  expect(musicChoice({ ...view, world, text: true, overlay: true })).toEqual({ score: world, level: 0.6 });
+  expect(musicChoice({ ...view, world })).toEqual({ score: world, level: 1, resolved: false });
+  expect(musicChoice({ ...view, world, text: true, overlay: true })).toEqual({ score: world, level: 0.6, resolved: false });
 });
 it('chooses the ending, cuts death, and restarts after retry', () => {
   expect(musicChoice({ ...view, screen: 'ending' }).score).toBe('last-page');
@@ -22,7 +22,7 @@ const harness = vi.hoisted(() => ({
   pending: [] as (() => void)[],
 }));
 const fake = vi.hoisted(() => ({ create: vi.fn(() => ({
-  setScore: vi.fn(), setEnabled: vi.fn(), setLevel: vi.fn(), duck: vi.fn(),
+  setResolved: vi.fn(() => true), setScore: vi.fn(), setEnabled: vi.fn(), setLevel: vi.fn(), duck: vi.fn(),
   setHidden: vi.fn(), dispose: vi.fn(),
 })) }));
 vi.mock('./music.js', () => ({ createMusic: fake.create }));
@@ -41,6 +41,8 @@ vi.mock('react', async original => ({ ...await original<typeof import('react')>(
     });
   },
 }));
+vi.mock('./synth.js', () => ({ synth: { play: vi.fn() } }));
+import { synth } from './synth.js';
 import { useMusic } from './useMusic.js';
 import { useNotebookDucking } from '../play2/notebook/musicDucking.js';
 import type { SoundMode } from './settings.js';
@@ -54,7 +56,7 @@ function render(next: MusicView = view, mode: SoundMode = 'on', notebook = false
   useMusic(next, mode);
   harness.pending.splice(0).forEach(effect => effect());
 }
-beforeEach(() => { fake.create.mockClear(); });
+beforeEach(() => { fake.create.mockClear(); vi.mocked(synth.play).mockClear(); });
 afterEach(() => { unmount(); vi.unstubAllGlobals(); });
 it('passes score, text level, death cut and retry to the player', () => {
   render(); const music = fake.create.mock.results[0]!.value;
@@ -88,4 +90,44 @@ it('recreates the player and visibility listener on StrictMode mount, unmount, m
   expect(second.setHidden).toHaveBeenLastCalledWith(true);
   expect(second.setScore).toHaveBeenLastCalledWith('margin', 1.5);
   expect(add).toHaveBeenCalledTimes(2); expect(remove).toHaveBeenCalledTimes(1);
+});
+
+it('holds resolution through cleared-stage overlays and resets on replay and title', () => {
+  render(); const music = fake.create.mock.results[0]!.value;
+  render({ ...view, cleared: true });
+  expect(music.setResolved).toHaveBeenLastCalledWith(true);
+  for (const overlay of [true, false]) {
+    render({ ...view, cleared: true, overlay });
+    expect(music.setResolved).toHaveBeenLastCalledWith(true, { cadence: false });
+  }
+  render(); expect(music.setResolved).toHaveBeenLastCalledWith(false);
+  render({ ...view, screen: 'title', cleared: true });
+  expect(music.setResolved).toHaveBeenLastCalledWith(false);
+});
+
+it.each(['on', 'effects only', 'off'] as const)('falls back once for an unscheduled live clear in %s', mode => {
+  render(view, mode);
+  const music = fake.create.mock.results[0]!.value;
+  music.setResolved.mockReturnValue(false);
+  render({ ...view, cleared: true }, mode);
+  expect(synth.play).toHaveBeenCalledTimes(mode === 'on' ? 1 : 0);
+  render({ ...view, cleared: true, overlay: true }, mode);
+  expect(synth.play).toHaveBeenCalledTimes(mode === 'on' ? 1 : 0);
+});
+it('suppresses fallback while hidden and when a cadence is scheduled', () => {
+  const page = Object.assign(new EventTarget(), { hidden: true }); vi.stubGlobal('document', page);
+  render(); const music = fake.create.mock.results[0]!.value;
+  music.setResolved.mockReturnValue(false);
+  render({ ...view, cleared: true });
+  page.hidden = false; render(); music.setResolved.mockReturnValue(true);
+  render({ ...view, cleared: true });
+  expect(synth.play).not.toHaveBeenCalled();
+});
+it('restores cleared state without a cadence on mount and stage entry', () => {
+  render({ ...view, cleared: true }); const music = fake.create.mock.results[0]!.value;
+  expect(music.setResolved).toHaveBeenLastCalledWith(true, { cadence: false });
+  render({ ...view, screen: 'stages' });
+  render({ ...view, cleared: true });
+  expect(music.setResolved).toHaveBeenLastCalledWith(true, { cadence: false });
+  expect(synth.play).not.toHaveBeenCalled();
 });
