@@ -66,7 +66,15 @@ vi.mock('react', async importOriginal => {
   };
 });
 vi.mock('./scene/FieldView.js', () => ({ FieldView: () => null }));
+// The written exercises stand between a clear card and the next stage; only their own test turns them on.
+const exercises = vi.hoisted(() => ({ on: false }));
+vi.mock('./play2/draft/drafts.js', async importOriginal => {
+  const original = await importOriginal<typeof import('./play2/draft/drafts.js')>();
+  return { ...original, draftFor: (stage: string) => exercises.on ? original.draftFor(stage) : undefined };
+});
 import { App } from './App.js';
+import { DraftSheet } from './play2/draft/DraftSheet.js';
+import { clearPractised, markPractised } from './play2/draft/practised.js';
 import { stages, content, stage, lowlands, lighthouse, quarry, cut, shaft, ledger, canopy, glades } from './play2/content.js';
 import { PROGRESS_KEY } from './play2/progress.js';
 import { createStoryEngine } from '@escape/story';
@@ -315,6 +323,30 @@ it('saves the entry story on New game and the actual Margin-to-Lowlands change o
   expect(session().story.flags['lowlands.knows-w']).toBe(true);
   expect(savedProgress().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(savedProgress().story).toEqual(entryStory);
+});
+type DraftProps = Parameters<typeof DraftSheet>[0];
+function draftProps(node: ReactNode): DraftProps | undefined {
+  if (Array.isArray(node)) return (node as readonly ReactNode[]).map(draftProps).find(Boolean);
+  if (!isValidElement<{ children?: ReactNode }>(node)) return undefined;
+  return node.type === DraftSheet ? node.props as unknown as DraftProps : draftProps(node.props.children);
+}
+it('offers the written exercise after a clear card, goes on once it closes, and not again once it is done', () => {
+  exercises.on = true;
+  try {
+    flush(); key('Enter');
+    play(stage.solution);
+    for (let count = 0; count < 60 && !draftProps(appTree); count += 1) key('Enter');
+    expect(session().clearCard).toBe(true);
+    expect(draftProps(appTree)?.draft.stage).toBe('margin');
+    // The sheet owns the keys: nothing reaches the game behind it.
+    const before = session();
+    key('Enter'); key('j');
+    expect(session()).toBe(before);
+    draftProps(appTree)?.onClose(); flush();
+    expect(session().world.stage).toBe('lowlands');
+    expect(draftProps(appTree)).toBeUndefined();
+    markPractised('margin');
+  } finally { exercises.on = false; clearPractised(); }
 });
 it('Continue replays the Lowlands entry, including the note and both once-only jetty Blots', () => {
   enterLowlands();

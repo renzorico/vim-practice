@@ -22,6 +22,9 @@ import { createSession, type Session } from './play2/session.js';
 import { endingProgress, readProgress, saveProgress, updateProgress, type Progress } from './play2/progress.js';
 import { isScoredStage } from './play2/feedback.js';
 import { currentObjectives } from './play2/currentQuest.js';
+import { DraftSheet } from './play2/draft/DraftSheet.js';
+import { draftFor, type Draft } from './play2/draft/drafts.js';
+import { clearPractised, readPractised } from './play2/draft/practised.js';
 import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
@@ -47,6 +50,8 @@ function reduce(session: Session, action: Action): Session {
 }
 export function App() {
   const [helpOpen, setHelpOpen] = useState(false);
+  /** The written exercise between a clear card and what comes after it. */
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [helpCommand, setHelpCommand] = useState<string | null>(null);
   // A held q or Esc keeps repeating after the overlay closes; swallow those repeats until the next real press.
   const swallowRepeats = useRef(false);
@@ -88,7 +93,7 @@ export function App() {
     setIntro(null);
     if (intro !== 'new') return;
     banner.reset();
-    clearSeenKeys(); dispatch({ type: 'new', best: saved?.best });
+    clearSeenKeys(); clearPractised(); setDraft(null); dispatch({ type: 'new', best: saved?.best });
     setSaved(null); setClearedSince([]); setReplayStage(null); setShowSource(false); setStarted(true);
   }, [intro, saved, banner.reset]);
   const openStages = useCallback(() => {
@@ -110,8 +115,15 @@ export function App() {
     setSelecting(false); setShowSource(false); setStarted(true);
   }, [saved]);
   const askHint = useCallback(() => setHintRequests(count => count + 1), []);
+  const leaveReplay = useCallback((stage: string) => {
+    setStarted(false); setSelecting(true); setSelectedStage(stage); setReplayStage(null);
+  }, []);
+  const closeDraft = useCallback(() => {
+    setDraft(null);
+    if (replayStage) leaveReplay(replayStage); else dispatch('<CR>');
+  }, [replayStage, leaveReplay]);
   const onKey = useCallback((key: Key) => {
-    if (!started || intro || helpOpen || banner.visible) return;
+    if (!started || intro || helpOpen || banner.visible || draft) return;
     if (scriptStamp) return;
     const active = session.world.script?.engine ?? session.world.engine;
     if (helpCommand !== null || (key === ':' && active.mode === 'normal' && active.pendingKeys.length === 0)) {
@@ -122,17 +134,21 @@ export function App() {
       else for (const forwarded of routed.forward) dispatch(forwarded);
       return;
     }
+    if (session.clearCard && key === '<CR>') {
+      const exercise = draftFor(session.world.stage);
+      if (exercise && !readPractised().has(exercise.stage)) { setDraft(exercise); return; }
+    }
     if (replayStage && session.clearCard && key === '<CR>') {
-      setStarted(false); setSelecting(true); setSelectedStage(replayStage); setReplayStage(null); return;
+      leaveReplay(replayStage); return;
     }
     if (key === '<Tab>') { setShowSource(true); return; }
     if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? 3 : 0); return; }
     dispatch(key);
-  }, [started, intro, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible]);
+  }, [started, intro, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible, draft, leaveReplay]);
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
-    enabled: started && !intro && !helpOpen && !banner.visible && (session.world.status !== 'dead' || helpCommand !== null) });
+    enabled: started && !intro && !helpOpen && !banner.visible && !draft && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
       if (intro) return;
@@ -250,5 +266,6 @@ export function App() {
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
     {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />
+    {draft && <DraftSheet key={draft.stage} draft={draft} suspended={helpOpen} onClose={closeDraft} onOpenHelp={openHelp} />}</CurrentWorld.Provider>);
 }

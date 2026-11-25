@@ -18,12 +18,16 @@ function cross(session: Session, keys: readonly string[]): Session {
 }
 it('a shortcut past an objective does not keep it on screen in later stages', () => {
   let session = game.init();
-  for (const { stage: played } of stages.slice(0, 4)) session = cross(session, played.solution);
+  for (const { stage: played } of stages.slice(0, 2)) session = cross(session, played.solution);
+  // The 5$ route never touched the stepping stones; the next stage asks for its own part all the same.
+  expect(session.world.stage).toBe('lighthouse');
+  expect(currentObjectives(content, session.story)).toEqual(['Climb the Lighthouse to whoever is crying.']);
+  for (const { stage: played } of stages.slice(2, 4)) session = cross(session, played.solution);
   expect(session.world.stage).toBe('cut');
-  // The 5$ route never touched the stepping stones, so that quest is still open underneath.
-  expect(session.story.quests['lowlands.lighthouse']?.done).toBe(false);
-  expect(currentQuest(content, session.story)?.quest.id).toBe('quarry.cut');
-  expect(currentObjectives(content, session.story)).toEqual(['Cross the ledge: `dd` wipes the Blots, `u` restores the ledge.']);
+  // A save from before that fix still has the old quest open underneath.
+  const story = { ...session.story, quests: { ...session.story.quests, 'lowlands.lighthouse': { step: 0, done: false } } };
+  expect(currentQuest(content, story)?.quest.id).toBe('quarry.cut');
+  expect(currentObjectives(content, story)).toEqual(['Cross the ledge: `dd` wipes the Blots, `u` restores the ledge.']);
 });
 it('quests are listed in story order, which "latest" relies on', () => {
   const stageOrder = stages.map(item => item.stage.world);
