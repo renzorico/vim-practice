@@ -7,7 +7,7 @@ const driver = vi.hoisted(() => ({ cleanup: undefined as (() => void) | undefine
 vi.mock('react', async original => ({ ...await original<typeof import('react')>(),
   useEffect: (effect: () => (() => void) | undefined) => { driver.cleanup?.(); driver.cleanup = effect(); },
 }));
-import { useStarChimes } from './hooks.js';
+import { audibleCues, useStarChimes } from './hooks.js';
 import { synth } from './synth.js';
 beforeEach(() => { driver.cleanup = undefined; });
 afterEach(() => { driver.cleanup?.(); vi.restoreAllMocks(); });
@@ -40,4 +40,10 @@ it('renders three distinct compact sound glyphs', () => {
       createElement(SoundButton, { enabled: mode !== 'off', onToggle: vi.fn(), compact: true }))).match(/<svg.*<\/svg>/)?.[0]);
   expect(new Set(glyphs).size).toBe(3);
   expect(glyphs.every(Boolean)).toBe(true);
+});
+
+it.each(['on', 'effects only', 'off'] as const)('selects clear sound at playback in %s mode', mode => {
+  const cues = [{ kind: 'clear', offsetMs: 0 }, { kind: 'hit', offsetMs: 0 }] as const;
+  expect(audibleCues(cues, mode).map(cue => cue.kind)).toEqual(mode === 'on' ? ['hit'] : mode === 'off' ? [] : ['clear', 'hit']);
+  expect(cues).toHaveLength(2);
 });

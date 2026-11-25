@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { SCORES, MODE_PITCH_CLASSES, loopSeconds, midiOf, stepSeconds, tune, type ScoreId } from './score.js';
+import { SCORES, MODE_PITCH_CLASSES, cadenceBeatSeconds, loopSeconds, midiOf, stepSeconds, tune, type ScoreId } from './score.js';
 
 const ids = Object.keys(SCORES) as ScoreId[];
 it.each(ids)('%s is a long, modal, bounded composition with at most four sounding voices', id => {
@@ -74,4 +74,16 @@ it('reads tunes: names, holds over the bar line, rests, and refuses a short bar'
     { step: 0, midi: 60, length: 2 }, { step: 3, midi: 62, length: 3 }, { step: 7, midi: 66, length: 1 }]);
   expect(midiOf('bb3')).toBe(58);
   expect(() => tune(['c4 - .'], 4)).toThrow(/3 of 4/);
+});
+
+it.each(ids)('%s has a bounded modal cadence rooted on its tonic', id => {
+  const score = SCORES[id];
+  expect(score.cadence.figure.map(([beat]) => beat)).toEqual([0, 1, 2, 3]);
+  expect(Math.max(...score.cadence.figure.map(([beat, , length]) => beat + length)) * cadenceBeatSeconds(score)).toBeLessThanOrEqual(3);
+  expect(score.cadence.chordBeats).toBe(6);
+  for (const midi of [...score.cadence.figure.map(([, midi]) => midi), ...score.cadence.chord]) {
+    expect(midi).toBeGreaterThanOrEqual(36); expect(midi).toBeLessThanOrEqual(96);
+    expect(MODE_PITCH_CLASSES[id]).toContain(midi % 12);
+  }
+  expect(Math.min(...score.cadence.chord) % 12).toBe(MODE_PITCH_CLASSES[id][0]);
 });
