@@ -1089,6 +1089,8 @@ Tags: `#design` `#gates`
 
 **Not done:** Lighthouse, Counterfeiter and Labyrinth teach no key of their own and have no exercise. Closing the browser during an exercise repeats the stage, as closing it on the clear card already did.
 
+**Review:** two traps fixed: the clear card's button kept the focus, so Enter could not finish the exercise after a mouse click; Tab walked out of the sheet. Also fixed: copies are checked by what is in the pocket they name, every editing task outlines where to stand, a text damaged beyond its tasks says so and offers `u` or Start again, and keys typed faster than renders are kept.
+
 **Also:** the `5$` route left "Cross the blank field" on screen in the Lighthouse; clearing the Lowlands now completes that step.
 
 ---

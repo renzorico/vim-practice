@@ -43,3 +43,21 @@ it('counts a cell only when it is reached with the key the task is about', () =>
   expect(there.reached).toBe(0);
   expect(reachedOtherwise(draft, there)).toBe(true);
 });
+
+it('outlines a cell to stand on for every task that is not about moving, as long as its text is there', () => {
+  for (const draft of DRAFTS) for (const task of draft.tasks) {
+    if (!task.stand) continue;
+    let state = openDraft(draft);
+    for (const earlier of draft.tasks.slice(0, draft.tasks.indexOf(task))) {
+      for (const key of parseKeys(earlier.keys)) state = draftKey(draft, state, key, draftCommands(draft.stage));
+    }
+    expect(goToCell(draft, state), `${draft.stage}: ${task.task}`).toBeDefined();
+  }
+});
+
+it('wants the copy itself, in the pocket it names', () => {
+  const draft = DRAFTS.find(item => item.stage === 'customs')!;
+  const commands = draftCommands('customs');
+  const wrong = parseKeys('$byw').reduce((state, key) => draftKey(draft, state, key, commands), openDraft(draft));
+  expect(taskDone(draft, wrong, draft.tasks[0]!)).toBe(false);
+});

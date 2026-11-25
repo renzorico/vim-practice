@@ -1,15 +1,18 @@
 import type { Position } from '@escape/engine';
 
-/** What a task asks for: a cell to reach with one of the keys it teaches, a command to use, or a part of the text to finish. */
+/** What a task asks for: a cell to reach with one of the keys it teaches, a command to use, a word to have copied, or a part of the text to finish. */
 type Goal =
   | { readonly type: 'reach'; readonly line: number; readonly text: string; readonly at?: 'start' | 'end'; readonly occurrence?: number; readonly by: readonly string[] }
   | { readonly type: 'use'; readonly command: string }
+  | { readonly type: 'hold'; readonly register: string; readonly text: string }
   | { readonly type: 'edit'; readonly unfinished: (text: string) => boolean };
 
 export interface DraftTask {
   readonly task: string;
   readonly how: string;
   readonly goal: Goal;
+  /** Where to stand for it: this text in this row, outlined while the task is the current one. */
+  readonly stand?: { readonly line: number; readonly text: string; readonly occurrence?: number };
   /** The keys that do it from where the last task ended; the tests follow them. */
   readonly keys: string;
 }
@@ -28,9 +31,13 @@ const start: Position = { line: 0, col: 0 };
 const reach = (task: string, how: string, keys: string, line: number, text: string, by: readonly string[],
   more: { readonly at?: 'start' | 'end'; readonly occurrence?: number } = {}): DraftTask =>
   ({ task, how, keys, goal: { type: 'reach', line, text, by, ...more } });
-const use = (task: string, how: string, keys: string, command: string): DraftTask => ({ task, how, keys, goal: { type: 'use', command } });
-const edit = (task: string, how: string, keys: string, unfinished: (text: string) => boolean): DraftTask =>
-  ({ task, how, keys, goal: { type: 'edit', unfinished } });
+type Stand = readonly [line: number, text: string, occurrence?: number];
+const standAt = (stand: Stand | undefined) => stand ? { stand: { line: stand[0], text: stand[1], ...(stand[2] ? { occurrence: stand[2] } : {}) } } : {};
+const use = (task: string, how: string, keys: string, command: string, stand?: Stand): DraftTask => ({ task, how, keys, goal: { type: 'use', command }, ...standAt(stand) });
+const hold = (task: string, how: string, keys: string, register: string, text: string, stand?: Stand): DraftTask =>
+  ({ task, how, keys, goal: { type: 'hold', register, text }, ...standAt(stand) });
+const edit = (task: string, how: string, keys: string, unfinished: (text: string) => boolean, stand?: Stand): DraftTask =>
+  ({ task, how, keys, goal: { type: 'edit', unfinished }, ...standAt(stand) });
 const has = (part: string | RegExp) => (text: string): boolean => typeof part === 'string' ? text.includes(part) : part.test(text);
 const lacks = (part: string | RegExp) => (text: string): boolean => !has(part)(text);
 
@@ -61,9 +68,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['The gate is opeen.', 'The road is clear of rocts.', 'The river has aaaa bridge.'],
     target: ['The gate is open.', 'The road is clear of rocks.', 'The river has a bridge.'],
     tasks: [
-      edit('One e too many', 'In row 1, cursor on an e of opeen. `x` cuts the letter under the cursor.', 'wwwllx', has('opeen')),
-      edit('One wrong letter', 'In row 2, cursor on the t of rocts. `r` then `k` writes over it.', 'j0wwwwwlllrk', has('rocts')),
-      edit('Three a too many', 'In row 3, cursor on the first a of aaaa. `3x` cuts three letters.', 'j0www3x', has('aaaa')),
+      edit('One e too many', 'In row 1, cursor on an e of opeen. `x` cuts the letter under the cursor.', 'wwwllx', has('opeen'), [0, 'een']),
+      edit('One wrong letter', 'In row 2, cursor on the t of rocts. `r` then `k` writes over it.', 'j0wwwwwlllrk', has('rocts'), [1, 'ts.']),
+      edit('Three a too many', 'In row 3, cursor on the first a of aaaa. `3x` cuts three letters.', 'j0www3x', has('aaaa'), [2, 'aaaa']),
     ],
   },
   {
@@ -71,7 +78,7 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['Ledge one: stone.', '#### a blot ####', '#### a blot ####', 'Ledge two: stone.', '#### a blot ####', 'Ledge three: stone.'],
     target: ['Ledge one: stone.', 'Ledge two: stone.', 'Ledge three: stone.'],
     tasks: [
-      use('Cut a blot row', 'Cursor on a blot row. `dd` cuts the whole row.', 'jdd', 'dd'),
+      use('Cut a blot row', 'Cursor on a blot row. `dd` cuts the whole row.', 'jdd', 'dd', [1, '#']),
       use('Take it back', '`u` undoes the last change: the row is back.', 'u', 'u'),
       use('Cut it again', '`Ctrl-r` redoes what `u` took back.', '<C-r>', '<C-r>'),
       edit('Cut the other two', '`dd` on each blot row that is left.', 'ddjdd', has('blot')),
@@ -82,8 +89,8 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['old rope', 'old lamp', 'old saw', 'old pick'],
     target: ['rope', 'lamp', 'saw', 'pick'],
     tasks: [
-      edit('Cut old once', 'At the start of row 1, `4x` cuts four letters: old and the space.', '4x', has(/^old rope/m)),
-      use('Repeat it', '`j`, then `.` does the same change again.', 'j.', '.'),
+      edit('Cut old once', 'At the start of row 1, `4x` cuts four letters: old and the space.', '4x', has(/^old rope/m), [0, 'old']),
+      use('Repeat it', '`j`, then `.` does the same change again.', 'j.', '.', [1, 'old']),
       edit('And the rest', '`j` and `.` on each row that is left.', 'j.j.', has('old ')),
     ],
   },
@@ -123,9 +130,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['The ferry ferry leaves at noon.', 'Bring nets nets and rope.', 'No crates on the pier, please, thank you.'],
     target: ['The ferry leaves at noon.', 'Bring nets and rope.', 'No crates on the pier.'],
     tasks: [
-      edit('Forward', 'Cursor on the second ferry. `dw` cuts from there to the next word.', 'wwdw', has('ferry ferry')),
-      edit('Backward', 'Cursor on the a of and. `db` cuts back to the start of the word before.', 'j0wwwdb', has('nets nets')),
-      edit('Up to a mark', 'Cursor on the first comma. `dt.` cuts up to the full stop.', 'j0f,dt.', has('please')),
+      edit('Forward', 'Cursor on the second ferry. `dw` cuts from there to the next word.', 'wwdw', has('ferry ferry'), [0, 'ferry', 2]),
+      edit('Backward', 'Cursor on the a of and. `db` cuts back to the start of the word before.', 'j0wwwdb', has('nets nets'), [1, 'and']),
+      edit('Up to a mark', 'Cursor on the first comma. `dt.` cuts up to the full stop.', 'j0f,dt.', has('please'), [2, ',']),
     ],
   },
   {
@@ -133,7 +140,7 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['Cargo: oil', 'Shelf 1: ', 'Shelf 2: '],
     target: ['Cargo: oil', 'Shelf 1: oil', 'Shelf 2: oil'],
     tasks: [
-      use('Copy the word', 'Cursor on the o of oil. `yw` copies the word.', '$byw', 'y'),
+      hold('Copy the word', 'Cursor on the o of oil: `$`, then `b`. `yw` copies the word.', '$byw', '"', 'oil', [0, 'oil']),
       edit('Shelf 1', 'End of row 2: `j`, `$`. `p` puts the copy after the cursor.', 'j$p', lacks('Shelf 1: oil')),
       edit('Shelf 2', 'End of row 3, and `p` again.', 'j$p', lacks('Shelf 2: oil')),
     ],
@@ -143,8 +150,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['Sender: Ream', 'Cargo: rope', 'Paid by: ', 'Carried: '],
     target: ['Sender: Ream', 'Cargo: rope', 'Paid by: Ream', 'Carried: rope'],
     tasks: [
-      use('Ream in pocket a', 'Cursor on Ream. `"ayw` copies it into pocket a.', '$b"ayw', 'y'),
-      edit('Rope in pocket b', 'Cursor on rope. `"byw` copies it into pocket b. Then, at the end of Carried, `"bp`.', 'j$b"byw2j$"bp', lacks('Carried: rope')),
+      hold('Ream in pocket a', 'Cursor on Ream. `"ayw` copies it into pocket a.', '$b"ayw', 'a', 'Ream', [0, 'Ream']),
+      hold('Rope in pocket b', 'Cursor on rope. `"byw` copies it into pocket b.', 'j$b"byw', 'b', 'rope', [1, 'rope']),
+      edit('Carried, from b', 'At the end of Carried (`$`), `"bp` puts pocket b.', '2j$"bp', lacks('Carried: rope')),
       edit('Pay from pocket a', 'At the end of Paid by, `"ap`: pocket a still holds Ream.', 'k$"ap', lacks('Paid by: Ream')),
     ],
   },
@@ -153,9 +161,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['The quiet quiet room.', 'A dusty book lies here.', 'Read it it aloud.'],
     target: ['The quiet room.', 'A book lies here.', 'Read it aloud.'],
     tasks: [
-      edit('Quiet, once', 'Anywhere on the second quiet, `daw` cuts the word and its space.', 'daw', has('quiet quiet')),
-      edit('No dust', 'Anywhere on dusty, `daw`.', 'j03ldaw', has('dusty')),
-      edit('It, once', 'On one it in row 3, `.` repeats the last change.', 'j0w.', has('it it')),
+      edit('Quiet, once', 'Anywhere on the second quiet, `daw` cuts the word and its space.', 'daw', has('quiet quiet'), [0, 'quiet', 2]),
+      edit('No dust', 'Anywhere on dusty, `daw`.', 'j03ldaw', has('dusty'), [1, 'dusty']),
+      edit('It, once', 'On one it in row 3, `.` repeats the last change.', 'j0w.', has('it it'), [2, 'it']),
     ],
   },
   {
@@ -163,9 +171,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['call(now, or later)', 'lamp(lit)(again)', 'vault(door(key))'],
     target: ['call()', 'lamp(lit)', 'vault(door())'],
     tasks: [
-      edit('Empty them', 'Anywhere inside the brackets, `di(` cuts what is in them.', 'f(ldi(', has('now')),
-      edit('Take them too', 'On again, `da(` cuts the brackets as well.', 'j$hda(', has('again')),
-      edit('Only the inner', 'On key, `di(` empties only the brackets around it.', 'j0fkdi(', has('key')),
+      edit('Empty them', 'Anywhere inside the brackets, `di(` cuts what is in them.', 'f(ldi(', has('now'), [0, 'now']),
+      edit('Take them too', 'On again, `da(` cuts the brackets as well.', 'j$hda(', has('again'), [1, 'again']),
+      edit('Only the inner', 'On key, `di(` empties only the brackets around it.', 'j0fkdi(', has('key'), [2, 'key']),
     ],
   },
   {
@@ -182,9 +190,9 @@ export const DRAFTS: readonly Draft[] = [
     lines: ['locks[one, two]', '<seal>shut</seal>', 'vault{gold}'],
     target: ['locks[]', '<seal></seal>', 'vault'],
     tasks: [
-      edit('Inside the square', 'Anywhere inside [ ], `di[`.', 'f[ldi[', has('one')),
-      edit('Between the tags', 'On shut, `dit` cuts what is between the tags.', 'j0fhdit', has('shut')),
-      edit('Curly and all', 'On gold, `da{` cuts the brackets as well.', 'j0fgda{', has('gold')),
+      edit('Inside the square', 'Anywhere inside [ ], `di[`.', 'f[ldi[', has('one'), [0, 'one']),
+      edit('Between the tags', 'On shut, `dit` cuts what is between the tags.', 'j0fhdit', has('shut'), [1, 'shut']),
+      edit('Curly and all', 'On gold, `da{` cuts the brackets as well.', 'j0fgda{', has('gold'), [2, 'gold']),
     ],
   },
   {
@@ -211,7 +219,7 @@ export const DRAFTS: readonly Draft[] = [
     stage: 'marked', title: 'Leave a mark', cursor: { line: 0, col: 6 },
     lines: ['Leave a mark on this row.', 'Walk down.', 'Walk further down.', 'Come back in two keys.'],
     tasks: [
-      use('Mark this place', '`ma` marks the cell you stand on as a.', 'ma', 'm'),
+      use('Mark this place', 'Before you move: `ma` marks the cell you stand on as a.', 'ma', 'm'),
       reach('Walk away', '`G` jumps to the last row.', 'G', 3, 'ack in', ['G']),
       reach('Come back', '`` `a `` jumps back to the very cell of mark a.', '`a', 0, 'a mark', ['`']),
     ],
@@ -220,12 +228,27 @@ export const DRAFTS: readonly Draft[] = [
 
 export const draftFor = (stageId: string): Draft | undefined => DRAFTS.find(draft => draft.stage === stageId);
 
+function columnOf(row: string, text: string, occurrence = 1): number {
+  let from = -1;
+  for (let count = 0; count < occurrence; count += 1) {
+    from = row.indexOf(text, from + 1);
+    if (from < 0) return -1;
+  }
+  return from;
+}
+
+/** Where to stand for a task, in the text as it is now; undefined once that text is gone. */
+export function standOf(task: DraftTask, lines: readonly string[]): Position | undefined {
+  if (!task.stand) return undefined;
+  const col = columnOf(lines[task.stand.line] ?? '', task.stand.text, task.stand.occurrence);
+  return col < 0 ? undefined : { line: task.stand.line, col };
+}
+
 /** The cell a reach task names. */
 export function cellOf(draft: Draft, goal: Extract<Goal, { type: 'reach' }>): Position {
   const row = draft.lines[goal.line] ?? '';
   if (goal.text === '') return { line: goal.line, col: 0 };
-  let from = -1;
-  for (let count = 0; count < (goal.occurrence ?? 1); count += 1) from = row.indexOf(goal.text, from + 1);
+  const from = columnOf(row, goal.text, goal.occurrence);
   if (from < 0) throw new Error(`${draft.stage}: no ${goal.text} in row ${goal.line + 1}`);
   return { line: goal.line, col: goal.at === 'end' ? from + goal.text.length - 1 : from };
 }

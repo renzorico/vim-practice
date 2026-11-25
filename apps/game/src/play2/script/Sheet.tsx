@@ -76,6 +76,8 @@ export function Sheet({ id, title, className = '', goal, tasks, engine, target, 
   const note = target === undefined || engine.mode === 'insert' ? null : nearMiss(engine.lines, targetLines, pairs);
   const instructions = <>
     {current && <p key={current.how}><b>How</b><span><HowText text={current.how} /></span></p>}
+    {!current && tasks.length > 0 && target && !textIsRight && note === null
+      && <p key="else"><b>Look</b><span><HowText text="Something else changed too: see what is underlined. `u` takes back your last change." /></span></p>}
     {note !== null && <p key={note}><b>Look</b><span><HowText text={note} /></span></p>}
   </>;
   return <section className={`script-panel${className}`} aria-label={title}>

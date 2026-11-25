@@ -265,7 +265,8 @@ export function App() {
   const clearedStages = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
     {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
+    <div className="play-behind" {...(draft ? { inert: '' } : {})}>
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} />
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></div>
     {draft && <DraftSheet key={draft.stage} draft={draft} suspended={helpOpen} onClose={closeDraft} onOpenHelp={openHelp} />}</CurrentWorld.Provider>);
 }
