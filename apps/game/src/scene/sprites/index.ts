@@ -8,7 +8,7 @@ import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, 
 import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
-import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
+import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_ICON, ROPE_ICON, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
 import { BOARDS, PORT_WATER, PIER_POST, PORT_LADDER, WAREHOUSE, CRATES, NETS, CART, BITT, REAM, SPLASH } from './port.js';
 import { SEMI } from './manifest.js';
 import { HEARTWOOD, HOLLOW, GATE_OPEN, GATE_CLOSE, GATE_GLINT, OPE, SHUT } from './gates.js';
@@ -79,7 +79,7 @@ const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
   'customs-floor': CUSTOMS_FLOOR, 'customs-wall': CUSTOMS_WALL, 'customs-post': CUSTOMS_POST,
   'crate-end': CRATE_END, 'crate-lip': CRATE_LIP, crate: CRATE_MARK, post: CUSTOMS_POST, tare: TARE,
   'warehouse-floor': WAREHOUSE_FLOOR, 'warehouse-wall': WAREHOUSE_WALL,
-  'shelf-end': SHELF_END, 'shelf-lip': SHELF_LIP, oil: OIL, 'cargo-rope': CARGO_ROPE,
+  'shelf-end': SHELF_END, 'shelf-lip': SHELF_LIP, oil: OIL, 'cargo-rope': CARGO_ROPE, 'oil-icon': OIL_ICON, 'rope-icon': ROPE_ICON,
   'shelf-top': OIL_STENCIL, 'shelf-middle': OIL_STENCIL, 'shelf-bottom': ROPE_STENCIL, 'counter-end': COUNTER_END,
   boards: BOARDS, 'port-water': PORT_WATER, 'pier-post': PIER_POST, 'port-ladder': PORT_LADDER,
   warehouse: WAREHOUSE, crates: CRATES, nets: NETS, cart: CART, bitt: BITT, ream: REAM, splash: SPLASH,

@@ -27,6 +27,7 @@ import { draftFor, type Draft } from './play2/draft/drafts.js';
 import { clearPractised, readPractised } from './play2/draft/practised.js';
 import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
+import './ui/fonts.css';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
 import './play2/play.css';

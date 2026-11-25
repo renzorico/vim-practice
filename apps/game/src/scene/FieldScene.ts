@@ -1,4 +1,4 @@
-import { movementFacing, playerFrame, isPerson, npcFacing, personIdleFrame, interactionLabel, slipPosition, type Facing } from './characters.js';
+import { movementFacing, playerFrame, isPerson, npcFacing, personIdleFrame, type Facing } from './characters.js';
 import { treeArt, treeMask, treeVariant } from './terrain/forest.js';
 import { stairsAt } from './terrain/stairs.js';
 import { surroundingFor } from './terrain/atmosphere.js';
@@ -38,6 +38,9 @@ import { bufferSize, cameraTarget, stageZoom } from './camera.js';
 
 /** Letters are drawn this many times finer than tiles, so the buffer reads as text at any zoom. */
 const GLYPH_DETAIL = 4;
+/** The game's two faces (ui/fonts.css): pixel letters for what the game says, Vim's own letters for the buffer. */
+const LABEL_FONT = "'Jersey 15', monospace";
+const GLYPH_FONT = "'JetBrains Mono', monospace";
 /** Phaser.Textures.FilterMode.LINEAR. */
 const LINEAR_FILTER = 0;
 export interface FieldFrame {
@@ -55,11 +58,10 @@ export interface FieldFrame {
   readonly objectiveEntity?: string;
   readonly hideCursor?: boolean;
   readonly hideObjective?: boolean;
+  /** Something else on the screen marks the target. */
+  readonly hideArrow?: boolean;
   readonly standAt?: readonly Position[];
-  readonly signs?: readonly FieldSign[];
 }
-/** A paper label on the field; `col` may be fractional, so a label can sit over the middle of a pile. */
-export interface FieldSign { readonly at: Position; readonly text: string; readonly done?: boolean }
 
 const presentationEngine = createEngine();
 const NO_CELLS: readonly Position[] = [];
@@ -134,11 +136,6 @@ export class FieldScene extends Phaser.Scene {
   private gateMarks: Phaser.GameObjects.Container | undefined;
   private threads: Phaser.GameObjects.Container | undefined;
   private shownThreads = '';
-  private signs: Phaser.GameObjects.Container | undefined;
-  private shownSigns = '';
-  private shownMarkers: readonly { key: string; line: number; col: number; alpha: number }[] = [];
-  private landingLabels: Phaser.GameObjects.Container | undefined;
-  private prompts: Phaser.GameObjects.Container | undefined;
   private objectiveTexture?: string;
   private playerFacing: Facing = 'down';
   private layoutRows?: readonly string[];
@@ -167,7 +164,8 @@ export class FieldScene extends Phaser.Scene {
   private previousState: WorldState | undefined;
   private previousEvents: readonly WorldEvent[] | undefined;
 
-  constructor(frame: FieldFrame, reducedMotion: boolean) {
+  /** `onCamera` follows every camera move, in world pixels: the labels over the canvas move with it. */
+  constructor(frame: FieldFrame, reducedMotion: boolean, private readonly onCamera?: (x: number, y: number) => void) {
     super({ key: 'field' });
     this.frame = frame;
     this.reducedMotion = reducedMotion;
@@ -190,14 +188,11 @@ export class FieldScene extends Phaser.Scene {
     this.source = this.add.container(0, 0).setDepth(1);
     this.gateMarks = this.add.container(0, 0).setDepth(1);
     this.threads = this.add.container(0, 0).setDepth(1);
-    this.signs = this.add.container(0, 0).setDepth(2);
-    this.landingLabels = this.add.container(0, 0).setDepth(3);
-    this.prompts = this.add.container(0, 0).setDepth(4);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.decorations = this.add.container(0, 0).setDepth(0.8);
     this.markFlags = this.add.container(0, 0).setDepth(2.5);
     this.label = this.add.text(8, 8, '', {
-      fontFamily: 'monospace', fontSize: '14px', color: '#ffe8b2', backgroundColor: BACKGROUND,
+      fontFamily: LABEL_FONT, fontSize: '15px', color: '#ffe8b2', backgroundColor: BACKGROUND,
     }).setScrollFactor(0).setDepth(3);
     this.cameras.main.setZoom(TILE_SCALE).setRoundPixels(true);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeView, this);
@@ -222,7 +217,6 @@ export class FieldScene extends Phaser.Scene {
       this.outlineKeys.clear();
       this.ambientImages = [];
       this.terrainRows = undefined;
-      this.shownSigns = '';
       this.shownThreads = '';
       this.previousState = undefined;
       this.previousEvents = undefined;
@@ -315,8 +309,6 @@ export class FieldScene extends Phaser.Scene {
       if (this.frame.showSource !== frame.showSource) { this.frame = frame; this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
       this.frame = frame;
-      this.syncSigns();
-      this.syncLandingMarkers();
       this.syncGuidance();
       this.syncTerrainLight();
       this.atmosphere?.sync(this.frame, this.cameraX, this.cameraY);
@@ -336,7 +328,6 @@ export class FieldScene extends Phaser.Scene {
       if (frame.events.some(event => event.type === 'rows-changed')) { this.syncCells(); this.syncTerrain(); }
       if (sourceChanged) { this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
-      this.syncLandingMarkers();
       this.syncGuidance();
       return;
     }
@@ -379,7 +370,6 @@ export class FieldScene extends Phaser.Scene {
     this.syncCells();
     this.syncTerrain();
     this.syncWarehouseDecorations();
-    this.syncSigns();
     this.syncHazards(frame);
     this.setSourceVisible(frame.showSource);
     this.positionLabel();
@@ -485,7 +475,7 @@ export class FieldScene extends Phaser.Scene {
     }
     const entity = state.entities.find(entity => entity.id === this.frame.objectiveEntity && isPerson(entity.def.kind));
     const target = this.frame.objectiveTarget ?? entity?.at;
-    const visible = target && stage.type !== 'text' && !this.frame.hideObjective
+    const visible = target && stage.type !== 'text' && !this.frame.hideObjective && !this.frame.hideArrow
       && !this.frame.darkness && !DARK_STAGES[stage.id];
     if (!visible) { this.objectiveArrow?.setVisible(false); return; }
     this.objectiveArrow ??= this.add.image(0, 0, this.guidanceTexture('arrow')).setDepth(4);
@@ -546,8 +536,9 @@ export class FieldScene extends Phaser.Scene {
       this.decorations?.add(this.add.image(center(1), center(0), this.texture('index')));
       this.decorations?.add(this.add.image(center(2), center(0), this.texture('filed-stamp')));
       this.decorations?.add(this.add.text(center(2), center(0) - 6, 'FILED', {
-        fontFamily: 'monospace', fontSize: '5px', color: '#752f39', backgroundColor: '#e1d1a6', resolution: GLYPH_DETAIL,
-      }).setOrigin(0.5, 1));
+        fontFamily: LABEL_FONT, fontSize: '15px', color: '#752f39', backgroundColor: '#e1d1a6',
+        // The face's own grid is fifteen pixels: half size on the map.
+      }).setOrigin(0.5, 1).setScale(0.5));
       return;
     }
     if (this.frame.stage.id === 'customs') {
@@ -557,20 +548,6 @@ export class FieldScene extends Phaser.Scene {
     if (this.frame.stage.id !== 'warehouse') return;
     // The remote counter is visible before the shelf extends the field to Ream.
     this.decorations?.add(this.add.image(center(13), center(4), this.texture('counter-end')));
-  }
-
-  /** Labels drawn at screen size, so their letters stay sharp at any zoom. */
-  private syncSigns(): void {
-    const signs = this.frame.signs ?? [];
-    const zoom = Math.max(1, Math.round(stageZoom(this.frame.stage, this.scale)));
-    const shown = JSON.stringify([zoom, signs]);
-    if (shown === this.shownSigns) return;
-    this.shownSigns = shown;
-    this.signs?.removeAll(true);
-    for (const sign of signs) this.signs?.add(this.add.text(center(sign.at.col), center(sign.at.line), `${sign.done ? '\u2713 ' : ''}${sign.text}`, {
-      fontFamily: 'monospace', fontSize: '5.5px', color: sign.done ? '#3e5a34' : '#20252b',
-      backgroundColor: sign.done ? '#dfe3c3' : '#f6efd4', padding: { x: 3, y: 1 }, resolution: zoom,
-    }).setOrigin(0.5, 0.5));
   }
 
   private clearArchiveRows(): void {
@@ -720,7 +697,6 @@ export class FieldScene extends Phaser.Scene {
     this.positionLabel();
     this.positionCamera();
     this.positionDanger();
-    this.syncPrompts();
   }
 
   /**
@@ -738,6 +714,7 @@ export class FieldScene extends Phaser.Scene {
     this.cameraY = target.y;
     this.cameraX = target.x;
     this.cameras.main.centerOn(target.x, target.y);
+    this.onCamera?.(target.x, target.y);
     this.atmosphere?.sync(this.frame, target.x, target.y);
     this.updateAmbient(0);
     this.syncGuidance();
@@ -759,7 +736,7 @@ export class FieldScene extends Phaser.Scene {
       const texture = this.textures.createCanvas(key, size, size);
       if (!texture) throw new Error('Could not create source glyph texture');
       const context = texture.context;
-      context.font = door ? `bold ${14 * GLYPH_DETAIL}px monospace` : `${12 * GLYPH_DETAIL}px monospace`;
+      context.font = door ? `bold ${14 * GLYPH_DETAIL}px ${GLYPH_FONT}` : `${12 * GLYPH_DETAIL}px ${GLYPH_FONT}`;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.strokeStyle = '#182523';
@@ -1160,30 +1137,8 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
-  private syncLandingMarkers(): void {
-    const markers = this.frame.state.pending ? [] : (this.frame.markers ?? []).map(marker => ({
-      key: marker.key, line: marker.at.line, col: marker.at.col,
-      alpha: darknessAlpha(marker.at, this.frame.state.engine.cursor, this.frame.darkness),
-    })).filter(marker => marker.alpha > 0);
-    if (markers.length === this.shownMarkers.length && markers.every((marker, index) => {
-      const previous = this.shownMarkers[index];
-      return previous && marker.key === previous.key && marker.line === previous.line
-        && marker.col === previous.col && marker.alpha === previous.alpha;
-    })) return;
-    this.shownMarkers = markers;
-    this.landingLabels?.removeAll(true);
-    for (const marker of markers) {
-      const alpha = marker.alpha;
-      this.landingLabels?.add(this.add.text(center(marker.col), center(marker.line) - 5, marker.key, {
-        fontFamily: 'monospace', fontSize: '7px', color: '#ffe8b2', backgroundColor: BACKGROUND,
-        padding: { x: 2, y: 1 },
-      }).setOrigin(0.5, 1).setAlpha(0.7 * alpha));
-    }
-  }
-
   private syncActors(at: Position = this.frame.state.engine.cursor): void {
     this.syncGateMarks();
-    this.syncLandingMarkers();
     this.markFlags?.removeAll(true);
     for (const at of Object.values(this.frame.state.engine.marks)) {
       this.markFlags?.add(this.add.image(center(at.col), center(at.line) - 6, this.texture('mark-flag'))
@@ -1231,7 +1186,6 @@ export class FieldScene extends Phaser.Scene {
       }
     }
     this.positionCamera(at);
-    this.syncPrompts();
     this.people = new Set(this.frame.state.entities.filter(entity => isPerson(entity.def.kind)).map(entity => entity.id));
     this.actorImages = [{ id: 'player', sprite: 'player', image: this.player }];
     for (const [id, image] of this.entities) {
@@ -1247,39 +1201,6 @@ export class FieldScene extends Phaser.Scene {
     this.syncTerrainLight();
     this.updateAmbient(0);
     this.syncActorShadows();
-  }
-
-  /** The "Enter: ..." slips, placed against the camera as it is now. */
-  private syncPrompts(): void {
-    this.prompts?.setVisible(!this.animating);
-    this.prompts?.removeAll(true);
-    const at = this.frame.state.engine.cursor;
-    // Enter fires the first trigger in reach: between two things, only that one is labelled.
-    const reached = this.frame.stage.triggers.flatMap(trigger => {
-      if (trigger.on !== 'interact' || trigger.target.type !== 'entity'
-        || trigger.once && this.frame.state.firedTriggers.includes(trigger.id)
-        || trigger.onlyIf !== undefined && this.frame.state.flags[trigger.onlyIf] !== true
-        || trigger.unless !== undefined && this.frame.state.flags[trigger.unless] === true) return [];
-      const id = trigger.target.entity;
-      const entity = this.frame.state.entities.find(item => item.id === id);
-      return entity && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1 ? [entity.id] : [];
-    })[0];
-    for (const entity of this.frame.state.entities) {
-      if (entity.id === reached) {
-        const text = interactionLabel(entity, this.frame.stage, this.frame.state);
-        const zoom = stageZoom(this.frame.stage, this.scale);
-        const halfWidth = this.scale.width / zoom / 2; const halfHeight = this.scale.height / zoom / 2;
-        const point = slipPosition(entity.at, this.frame.state.engine.cursor, text.length * 4.3 + 6, 10, {
-          left: this.cameraX - halfWidth, right: this.cameraX + halfWidth,
-          top: this.cameraY - halfHeight, bottom: this.cameraY + halfHeight,
-        });
-        this.prompts?.add(this.add.text(point.x, point.y, text, {
-          fontFamily: 'monospace', fontSize: '7px', color: '#20252b', backgroundColor: '#f6efd4', padding: { x: 3, y: 1 },
-          // Drawn at screen size, or the zoom would blur seven-pixel letters.
-          resolution: Math.max(1, Math.round(zoom)),
-        }).setOrigin(0, 0));
-      }
-    }
   }
 
   private syncDarkness(): void {
@@ -1538,7 +1459,6 @@ export class FieldScene extends Phaser.Scene {
     }
     this.syncTerrainVisibility();
     this.animating = true;
-    this.prompts?.setVisible(false);
     // Draw the first frame now, so nothing shows at its destination before the tween's first update.
     clock.value = 0;
     render();
@@ -1555,7 +1475,6 @@ export class FieldScene extends Phaser.Scene {
         this.animating = false;
         this.actorFrames.set('player', playerFrame(this.playerFacing));
         this.player?.setTexture(this.texture('player', playerFrame(this.playerFacing)));
-        this.syncPrompts();
         this.hiddenTerrainRows.clear();
         this.syncTerrainVisibility();
       },

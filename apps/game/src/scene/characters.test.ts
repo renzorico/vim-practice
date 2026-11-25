@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { stages } from '../play2/content.js';
-import { movementFacing, playerFrame, npcFacing, personIdleFrame, interactionLabel, isPerson, slipPosition } from './characters.js';
+import { movementFacing, playerFrame, npcFacing, personIdleFrame, interactionLabel, isPerson } from './characters.js';
 import { blockedReason } from '../play2/feedback.js';
 
 it('faces the dominant movement axis and preserves facing for directionless bumps', () => {
@@ -55,13 +55,4 @@ it('uses feedback classification for every interactable entity in every stage', 
     checked++;
   }
   expect(checked).toBeGreaterThan(20);
-});
-it('keeps paper slips inside the view and outside the player box at every edge', () => {
-  const view = { left: 0, right: 160, top: 0, bottom: 100 };
-  for (const player of [{ line: 0, col: 0 }, { line: 5, col: 9 }, { line: 2, col: 4 }]) {
-    const { x, y } = slipPosition(player, player, 60, 10, view);
-    expect(x).toBeGreaterThanOrEqual(0); expect(x + 60).toBeLessThanOrEqual(160);
-    expect(y).toBeGreaterThanOrEqual(0); expect(y + 10).toBeLessThanOrEqual(100);
-    expect(x + 60 <= player.col * 16 - 2 || x >= player.col * 16 + 18 || y + 10 <= player.line * 16 - 2 || y >= player.line * 16 + 18).toBe(true);
-  }
 });

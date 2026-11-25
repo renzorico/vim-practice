@@ -16,17 +16,27 @@ export const SHELF_END = art((x, y) => y >= 11 ? (y === 11 ? 'c' : 'W')
 // The other upright of the same rack: `[` and `]` read as one shelf with goods between.
 export const SHELF_LIP = art((x, y) => y >= 11 ? (y === 11 ? 'c' : 'W')
   : x >= 10 && x <= 13 ? (x === 13 ? 'K' : 'C') : floor(x, y));
-export const OIL = art((x, y) => {
-  if (y <= 3 && x >= 6 && x <= 9) return y === 0 ? 'B' : 'N';
-  if (y >= 4 && y <= 13 && x >= (y < 6 ? 5 : 3) && x <= (y < 6 ? 10 : 12)) {
-    return y === 8 || y === 9 ? 'c' : x === 3 || x === 12 || y === 13 ? 'B' : x < 7 ? 'C' : 'W';
-  }
-  return floor(x, y);
+// A stoppered copper jar with a label band; its dark outline keeps it off the planks.
+const JAR = [
+  '................', '......KKKK......', '......KNNK......', '.....KKKKKK.....',
+  '.....KcCCBK.....', '....KcCCCCBK....', '...KcNCCCCCBK...', '...KcNCCCCCBK...',
+  '...KNNNNNNNNK...', '...KNNBBBBNNK...', '...KNNNNNNNNK...', '...KcCCCCCCBK...',
+  '....KcCCCCBK....', '....KCCCCBBK....', '.....KKKKKK.....', '................',
+];
+const jar = (x: number, y: number): string => JAR[y]?.[x] ?? '.';
+const coil = (x: number, y: number): string => {
+  const radius = Math.sqrt((x - 7.5) ** 2 + (y - 7.5) ** 2);
+  if (radius >= 7.4) return '.';
+  return radius >= 6.4 || radius < 1.5 ? 'K' : radius >= 4.1 && radius < 5 || radius >= 2 && radius < 2.9 ? 'B' : 'N';
+};
+const onFloor = (pixel: (x: number, y: number) => string): PixelSprite => art((x, y) => {
+  const own = pixel(x, y);
+  return own === '.' ? floor(x, y) : own;
 });
-export const CARGO_ROPE = art((x, y) => {
-  const radius = ((x - 7.5) / 1.1) ** 2 + (y - 8) ** 2;
-  return radius < 40 ? (Math.floor(Math.sqrt(radius)) % 3 === 0 ? 'B' : 'N') : floor(x, y);
-});
+export const OIL = onFloor(jar);
+export const CARGO_ROPE = onFloor(coil);
+export const OIL_ICON = art(jar);
+export const ROPE_ICON = art(coil);
 const stencil = (rope: boolean): PixelSprite => art((x, y) => {
   if (y < 4 || y > 9 || x < 7 || x > 12) return '.';
   const radius = (x - 9.5) ** 2 + (y - 6.5) ** 2;

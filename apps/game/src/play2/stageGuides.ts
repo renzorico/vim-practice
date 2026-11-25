@@ -1,9 +1,8 @@
 import type { Position } from '@escape/engine';
 import type { WorldState } from '@escape/world';
 import type { Guide } from './guides.js';
+import type { FieldSign } from '../scene/labelLayout.js';
 
-/** A label drawn on the field: what a pile is, what a shelf still needs. `at.col` may be fractional. */
-export interface Sign { readonly at: Position; readonly text: string; readonly done?: boolean }
 
 const cell = (line: number, col: number): Position => ({ line, col });
 const guide = (keys: readonly string[], ...standAt: readonly Position[]): Guide => ({ kind: 'do', keys, standAt });
@@ -113,32 +112,30 @@ export function stageGuide(questId: string, step: string, world: WorldState): Gu
   return questId === 'wordwood.gates' ? gates(step, world) : undefined;
 }
 
-const pileSign = (world: WorldState, line: number, char: string, text: string): readonly Sign[] => {
-  const start = row(world, line).indexOf(char);
-  if (start < 0) return [];
-  const length = new RegExp(`^${char}+`).exec(row(world, line).slice(start))?.[0].length ?? 1;
-  return [{ at: cell(line - 1, start + (length - 1) / 2), text }];
+const pileSign = (world: WorldState, line: number, char: string, text: string): readonly FieldSign[] => {
+  const from = row(world, line).indexOf(char);
+  if (from < 0) return [];
+  const length = new RegExp(`^${char}+`).exec(row(world, line).slice(from))?.[0].length ?? 1;
+  return [{ line, from, to: from + length - 1, text }];
+};
+const rackSign = (world: WorldState, line: number, text: string, done: boolean): readonly FieldSign[] => {
+  const found = rack(world, line);
+  return found ? [{ line, from: found.at.col, to: found.at.col + found.holds.length + 1, text, done }] : [];
 };
 
 /** Labels for what the tiles cannot say. The text they stand for is in the buffer, so they follow it. */
-export function signsFor(world: WorldState): readonly Sign[] {
+export function signsFor(world: WorldState): readonly FieldSign[] {
   switch (world.stage) {
     case 'jetty': return [...pileSign(world, 3, 'c', 'crates'), ...pileSign(world, 3, 'n', 'nets')];
     case 'warehouse': return [
       ...pileSign(world, 1, 'o', 'oil'), ...pileSign(world, 5, 'r', 'rope'),
-      ...SHELVES.flatMap((shelf, index) => {
-        const found = rack(world, shelf.line);
-        // Above rows 3 and 5 the corridor is open floor: the sign hangs on the wall to its right.
-        return found ? [{ at: cell(shelf.line - 1, found.at.col + (index === 0 ? 0.5 : 1.75)), text: `shelf ${index + 1}: ${shelf.goods}`, done: stocked(world, shelf) }] : [];
-      })];
-    case 'customs': {
-      const first = rack(world, 1); const second = rack(world, 3);
-      return [...pileSign(world, 1, 'o', 'oil'), ...pileSign(world, 1, 'n', 'nets'), ...pileSign(world, 5, 'r', 'rope'),
-        ...(first ? [{ at: cell(0, first.at.col + 0.5), text: 'crate 1: oil', done: first.holds === OIL }] : []),
-        ...(second ? [{ at: cell(2, second.at.col + 1.75), text: 'crate 2: oil, rope', done: second.holds === OIL + ROPE }] : [])];
-    }
-    case 'counter': return [{ at: cell(3, 3), text: 'oil' }, { at: cell(5, 3), text: 'rope' },
-      ...counterCrates(world).map(crate => ({ at: cell(6, crate.at.col + Math.max(1, crate.holds.length) / 2), text: crate.text, done: crate.holds === crate.wants }))];
+      ...SHELVES.flatMap((shelf, index) => rackSign(world, shelf.line, `shelf ${index + 1}: ${shelf.goods}`, stocked(world, shelf)))];
+    case 'customs': return [
+      ...pileSign(world, 1, 'o', 'oil'), ...pileSign(world, 1, 'n', 'nets'), ...pileSign(world, 5, 'r', 'rope'),
+      ...rackSign(world, 1, 'crate 1: oil', rack(world, 1)?.holds === OIL),
+      ...rackSign(world, 3, 'crate 2: oil, rope', rack(world, 3)?.holds === OIL + ROPE)];
+    case 'counter': return [{ line: 3, from: 1, to: 1, text: 'oil' }, { line: 5, from: 1, to: 1, text: 'rope' },
+      ...counterCrates(world).map(crate => ({ line: 7, from: crate.at.col, to: crate.at.col + crate.holds.length + 1, text: crate.text, done: crate.holds === crate.wants }))];
     default: return [];
   }
 }

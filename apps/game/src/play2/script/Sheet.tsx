@@ -108,7 +108,7 @@ export function Sheet({ id, title, className = '', goal, tasks, engine, target, 
       </div>
       {target && <aside className="script-target" aria-label="Target text">
         <h3>The {target.name} should read:</h3>
-        <p className="script-count">{rightRows} of {targetLines.length} rows right</p>
+        <p className="script-count">{rightRows} of {targetLines.length} rows right{engine.lines.length > targetLines.length && `, ${engine.lines.length - targetLines.length} too many`}</p>
         <ol>{targetLines.map((line, index) => {
           const mine = partner.get(index);
           const matches = mine === line;

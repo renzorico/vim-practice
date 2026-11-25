@@ -107,13 +107,13 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   return <main className="play-screen">
     <header className="play-header">
       <ObjectiveHud title={stage.title} gauges={<>
+        {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
         {stage.id === 'counter' && <CounterGauge world={world} />}
         {stage.id === 'notary' && <NotaryGauge world={world} />}
         {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
       </>} guide={visibleGuide} positioned={positioned} objectives={shownObjectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
     <div className="play-field" ref={field}>
-      {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
       objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} signs={signsFor(world)} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
