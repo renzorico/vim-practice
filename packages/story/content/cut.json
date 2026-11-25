@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "ledge",
-          "objective": "Clear the Blots: `dd` on the ledge, then `u`.",
+          "objective": "Cross the ledge: `dd` wipes the Blots, `u` brings it back.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "cut.far"

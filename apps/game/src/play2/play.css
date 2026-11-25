@@ -39,7 +39,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-columns { display: grid; grid-template-columns: minmax(0, 3fr) minmax(22ch, 2fr); gap: 32px; }
 .script-editor { min-width: 0; }
 .script-buffer-viewport { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-color: var(--line-strong) var(--text-soft); }
-.script-panel .buffer { min-width: 100%; width: max-content; box-sizing: border-box; padding: 16px; overflow: visible; background: var(--text-soft); color: var(--bg); font: 16px/1.6 var(--font-mono); }
+.script-panel .buffer { min-width: 100%; width: max-content; box-sizing: border-box; padding: 16px; overflow: visible; background: var(--text-soft); color: var(--bg); font: var(--sheet-size)/1.6 var(--font-mono); }
 .script-panel .buffer__line { display: flex; min-height: 1.6em; white-space: pre; }
 .script-panel .buffer__text, .script-panel .buffer__gutter { flex-shrink: 0; }
 /* Like Vim's number column: a fixed width (content-box, so the padding does not eat the digits)
@@ -53,7 +53,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-mode { display: block; min-height: 1.6em; padding: 8px 16px; font-family: var(--font-mono); }
 .script-target { min-width: 0; color: var(--line-strong); }
 .script-target h3 { margin: 0 0 16px; font-size: 16px; font-weight: 500; }
-.script-target ol { margin: 0; padding: 0; list-style: none; overflow-x: auto; font: 16px/1.6 var(--font-mono); }
+.script-target ol { margin: 0; padding: 0; list-style: none; overflow-x: auto; font: var(--sheet-size)/1.6 var(--font-mono); }
 .script-target li { display: flex; gap: 8px; white-space: pre; }
 .script-target li[data-matched="true"] { color: var(--bg); }
 .script-tick { display: inline-block; flex: 0 0 16px; width: 16px; }
@@ -325,7 +325,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .stage-clear__empty { opacity: 0.45; }
 
 /* A walnut desk with two ruled sheets; the sticky Vim gutter remains independent. */
-.script-panel { --text: var(--paper); --text-soft: var(--paper-secondary); --bg: var(--ink); --line-strong: var(--ink-muted); --text-muted: var(--paper-edge); background: repeating-linear-gradient(0deg, var(--desk) 0 7px, var(--desk-grain) 8px 9px, var(--desk) 10px 48px); color: var(--ink); }
+.script-panel { --sheet-size: clamp(16px, 1.45vw, 24px); --text: var(--paper); --text-soft: var(--paper-secondary); --bg: var(--ink); --line-strong: var(--ink-muted); --text-muted: var(--paper-edge); background: repeating-linear-gradient(0deg, var(--desk) 0 7px, var(--desk-grain) 8px 9px, var(--desk) 10px 48px); color: var(--ink); }
 .script-heading { z-index: 2; padding: 20px 24px 1px; background: var(--paper); border-bottom: 1px solid var(--paper-edge); }
 .script-goal { margin-bottom: 16px; }
 .script-columns { gap: 24px; align-items: start; }

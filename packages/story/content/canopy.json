@@ -25,7 +25,7 @@
       "steps": [
         {
           "id": "canopy",
-          "objective": "Cross the cut bridges: `fH` reaches the ladder.",
+          "objective": "Cross the cut bridges: `fH` jumps to the next ladder.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "canopy.tier-c"
