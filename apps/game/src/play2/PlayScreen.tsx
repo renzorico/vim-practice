@@ -147,7 +147,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
           <p className="play-title__file">folio.txt written</p>
           <h1 aria-label="Saved"><s aria-hidden="true">UN</s><span aria-hidden="true">SAVED</span></h1>
           <p>The lamp is lit. Every row is there.</p>
-          <p>{result.keys} keys typed. {result.hearts} of {stage.hearts} hearts left.</p>
+          <p>{result.keys} keys typed on the last page. {result.hearts} of {stage.hearts} hearts left.</p>
           <button onClick={onAdvance}>Enter to return to title</button>
         </div>
       </section>}

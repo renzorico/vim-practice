@@ -1,3 +1,4 @@
+import { currentQuest } from './currentQuest.js';
 import type { Position } from '@escape/engine';
 import type { StoryContent, StoryState } from '@escape/story';
 
@@ -72,11 +73,8 @@ export function guideApplies(guide: Guide, at: Position, rows: readonly string[]
   return !within || at.line >= within.from.line && at.line <= within.to.line && at.col >= within.from.col && at.col <= within.to.col;
 }
 
-/** Match the HUD's first active main quest. Derived; never stored on a session. */
+/** Match the HUD's main quest. Derived; never stored on a session. */
 export function activeGuide(content: StoryContent, story: StoryState): Guide | null {
-  const quest = content.quests.find(item => item.kind === 'main'
-    && story.quests[item.id] && !story.quests[item.id]?.done);
-  const progress = quest && story.quests[quest.id];
-  const step = quest && progress && quest.steps[progress.step];
-  return quest && step ? guideFor(quest.id, step.id) : null;
+  const current = currentQuest(content, story);
+  return current ? guideFor(current.quest.id, current.step.id) : null;
 }

@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "oil",
-          "objective": "Oil in the first crate: `db` the nets, `yw`, `\"0p`.",
+          "objective": "Oil in the crate past the nets: `db`, `yw`, `\"0p`.",
           "completeWhen": {
             "type": "flag",
             "flag": "customs.oil",
@@ -21,7 +21,7 @@
         },
         {
           "id": "mixed",
-          "objective": "Oil, then rope, in crate two: `\"byw`, `\"bp`.",
+          "objective": "Oil, then rope, in the O+R crate: `\"byw`, `\"bp`.",
           "completeWhen": {
             "type": "flag",
             "flag": "customs.mixed",
@@ -51,7 +51,7 @@
         },
         {
           "speaker": "system",
-          "text": "Nets first: stand just past them, press `db`.\nOil next: `yw` on the oil, `\"0p` in the crate."
+          "text": "Nets first: stand just past them, press `db`.\nThen `yw` on oil, `\"0p` on the crate's post."
         }
       ],
       "then": []
@@ -70,7 +70,7 @@
         },
         {
           "speaker": "system",
-          "text": "Press `yw` on the oil. Then `\"0p` in the crate:\nplain `p` would put the nets back."
+          "text": "Press `yw` on the oil. Then `\"0p` on the crate's\npost: plain `p` would put the nets back."
         }
       ],
       "then": []

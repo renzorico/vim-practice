@@ -57,7 +57,7 @@ vi.mock('phaser', () => ({ default: {
     },
       text: () => ({ setOrigin() { return this; }, generateTexture: (key: string) => fake.textures.add(key), destroy: vi.fn() }) };
     textures = { exists: vi.fn((key: string) => fake.textures.has(key)),
-      createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn() }; } };
+      createCanvas: (key: string) => { fake.textures.add(key); return { context: { font: '', textAlign: '', textBaseline: '', strokeStyle: '', lineWidth: 0, fillStyle: '', strokeText: fake.strokeText, fillText: fake.fillText }, refresh: vi.fn(), setFilter: vi.fn() }; } };
     cameras = { main: { setBackgroundColor: fake.background.mockReturnThis(), setZoom() { return this; }, setRoundPixels() { return this; }, centerOn: fake.centerOn, getWorldPoint: (x: number, y: number) => ({ x, y }) } };
     tweens = { killAll: fake.killAll, add: fake.tween };
     scale = Object.assign(fake.scale, { on: fake.on, off: fake.off });
@@ -231,8 +231,8 @@ it('draws each tab as a single source arrow', () => {
   const scene = new FieldScene({ ...frame, state: { ...frame.state,
     engine: { ...frame.state.engine, lines: ['\t'] } } }, false);
   scene.create();
-  expect(fake.fillText).toHaveBeenCalledWith('→', 8, 8);
-  expect(fake.strokeText).toHaveBeenCalledWith('→', 8, 8);
+  expect(fake.fillText).toHaveBeenCalledWith('→', 32, 32);
+  expect(fake.strokeText).toHaveBeenCalledWith('→', 32, 32);
   expect(fake.fillText).not.toHaveBeenCalledWith('\t', 8, 8);
 });
 

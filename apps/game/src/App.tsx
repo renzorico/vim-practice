@@ -21,6 +21,7 @@ import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
 import { endingProgress, readProgress, saveProgress, updateProgress, type Progress } from './play2/progress.js';
 import { isScoredStage } from './play2/feedback.js';
+import { currentObjectives } from './play2/currentQuest.js';
 import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import './ui/tokens.css';
@@ -249,5 +250,5 @@ export function App() {
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
     {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></CurrentWorld.Provider>);
 }

@@ -1,3 +1,4 @@
+import { keyLabel } from './keyLabel.js';
 import { KeyText } from './KeyText.js';
 import type { Stage } from '@escape/world';
 import type { Session } from './session.js';
@@ -22,7 +23,7 @@ export function StageClearCard({ session, stage, onContinue, onReplay }: {
     <p>Turns: {turns} · par {stage.parTurns}</p></>}
     <p>{session.world.hearts} of {stage.hearts} hearts left.</p>
     {isScoredStage(stage) && (turns <= stage.parTurns ? <p>Par route found.</p> : <div className="stage-clear__route">
-      <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{key}</kbd>)}</div>
+      <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{keyLabel(key)}</kbd>)}</div>
     </div>)}
     <div className="stage-clear__actions">
       <button autoFocus onClick={onContinue}><kbd>Enter</kbd> continue</button>

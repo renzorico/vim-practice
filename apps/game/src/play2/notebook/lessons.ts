@@ -31,6 +31,8 @@ interface AuthoredLesson {
   readonly ground: string;
   readonly blots?: readonly Position[];
   readonly blotsUntil?: number;
+  /** A lesson on the desk: words on a page, not tiles of a place. */
+  readonly letters?: true;
 }
 const at = (line: number, col: number): Position => ({ line, col });
 /** These are little pieces of the actual places, not a second implementation of Vim. */
@@ -71,6 +73,24 @@ export const AUTHORED_LESSONS: readonly AuthoredLesson[] = [
   { key: 'y', keycaps: ['y', 'p'], description: 'y copies with a motion; p puts the copy after you.', instruction: 'Copy the oil. Move to the shelf. Put it down.',
     rows: ['ooo', '[]___'], cursor: at(0, 0), keys: 'ywjp',
     result: { rows: ['ooo', '[ooo]___'], cursor: at(1, 3) }, ground: '_' },
+  { key: 'o', keycaps: ['o', '<Esc>'], description: 'o opens a row below and lets you type. Esc stops typing.', instruction: 'Add a row under wall: a door.',
+    rows: ['wall'], cursor: at(0, 0), keys: 'odoor<Esc>', result: { rows: ['wall', 'door'], cursor: at(1, 3) }, ground: ' ', letters: true },
+  { key: 'D', keycaps: ['D'], instruction: 'Cut everything from here to the end of the row.',
+    rows: ['paid (no)'], cursor: at(0, 4), keys: 'D', result: { rows: ['paid'], cursor: at(0, 3) }, ground: ' ', letters: true },
+  { key: 'c', keycaps: ['c'], description: 'c deletes what the next move covers, then lets you type.', instruction: 'Change one word, then Esc.',
+    rows: ['my boat'], cursor: at(0, 0), keys: 'cwour<Esc>', result: { rows: ['our boat'], cursor: at(0, 2) }, ground: ' ', letters: true },
+  { key: 'C', keycaps: ['C'], description: 'C changes everything from here to the end of the row.', instruction: 'Sign it yourself, then Esc.',
+    rows: ['by no one'], cursor: at(0, 3), keys: 'CTilde<Esc>', result: { rows: ['by Tilde'], cursor: at(0, 7) }, ground: ' ', letters: true },
+  { key: 'P', keycaps: ['P'], description: 'P puts what you cut or copied before you; a row goes above.', instruction: 'Cut the last row, put it on top.',
+    rows: ['two', 'one'], cursor: at(1, 0), keys: 'ddP', result: { rows: ['one', 'two'], cursor: at(0, 0) }, ground: ' ', letters: true },
+  { key: 'yy', keycaps: ['yy'], description: 'yy copies the whole row; p puts the copy below.', instruction: 'One ferry, then another.',
+    rows: ['ferry'], cursor: at(0, 0), keys: 'yyp', result: { rows: ['ferry', 'ferry'], cursor: at(1, 0) }, ground: ' ', letters: true },
+  { key: 'i"', keycaps: ['i"'], description: 'With d, c or y: what is inside the quotes.', instruction: 'Change the name inside the quotes, then Esc.',
+    rows: ['"no one"'], cursor: at(0, 3), keys: 'ci"me<Esc>', result: { rows: ['"me"'], cursor: at(0, 2) }, ground: ' ', letters: true },
+  { key: 'V', keycaps: ['V'], description: 'V selects whole rows; moves add more, d deletes them.', instruction: 'Delete both drafts.',
+    rows: ['draft', 'draft', 'final'], cursor: at(0, 0), keys: 'Vjd', result: { rows: ['final'], cursor: at(0, 0) }, ground: ' ', letters: true },
+  { key: '<C-v>', keycaps: ['<C-v>'], description: 'Ctrl-v starts a block: moves stretch it, d deletes it.', instruction: 'Delete the first column of three rows.',
+    rows: ['*ink', '*map', '*key'], cursor: at(0, 0), keys: '<C-v>jjd', result: { rows: ['ink', 'map', 'key'], cursor: at(0, 0) }, ground: ' ', letters: true },
 ];
 
 /** Canonical page key for lessons which must be taught together. */
@@ -92,7 +112,7 @@ export function lessonFor(entry: HelpKey): Lesson {
   const authored = AUTHORED_LESSONS.find(item => item.key === key);
   if (authored) return {
     ...help, description: authored.description ?? help.description, stageId, world: stage?.stage.world ?? help.world, keycaps: authored.keycaps, instruction: authored.instruction,
-    terrain: true, ground: authored.ground, blots: authored.blots ?? [], result: authored.result,
+    terrain: !authored.letters, ground: authored.ground, blots: authored.blots ?? [], result: authored.result,
     ...(authored.blotsUntil === undefined ? {} : { blotsUntil: authored.blotsUntil }),
     example: { before: marked(authored.rows, authored.cursor), after: marked(authored.result.rows, authored.result.cursor),
       keys: keySequence(authored.keys), setup: [] },

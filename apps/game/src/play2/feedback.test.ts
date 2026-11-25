@@ -34,7 +34,7 @@ it('previews Lowlands w and e with real world steps and leaves the session untou
   expect(landingMarkers({ ...session, queue: [{ type: 'dialogue', dialogue: 'lowlands.intro', index: 0 }] }, lowlands, lowlandsLegend, stages)).toEqual([]);
 });
 it('pins every bump reason and preserves Vim search text', () => {
-  expect(BUMP_LINES).toEqual({ wall: 'Blocked: a wall.', 'solid-entity': 'Blocked: someone is here.', fixed: 'That stone is fixed.', edge: 'The edge of the world.' });
+  expect(BUMP_LINES).toEqual({ wall: 'Blocked: a wall.', 'solid-entity': 'Blocked: someone is here.', fixed: 'It is fixed in place.', edge: 'The edge of the world.' });
   for (const [reason, line] of Object.entries(BUMP_LINES)) expect(typeof line === 'string' && reason.length > 0).toBe(true);
   const engine = createEngine();
   let state = engine.init(['stone']);

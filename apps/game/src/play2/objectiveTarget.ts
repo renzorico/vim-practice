@@ -1,3 +1,4 @@
+import { currentQuest } from './currentQuest.js';
 import type { Position } from '@escape/engine';
 import type { StoryContent, StoryEffect, StoryState } from '@escape/story';
 import type { Stage, Trigger, WorldState } from '@escape/world';
@@ -12,12 +13,9 @@ function triggerCell(trigger: Trigger, world: WorldState): Position | null {
     : world.entities.find(entity => entity.id === target.entity)?.at ?? null;
 }
 
-/** Resolve the first active main objective against the live stage, never its spawn positions. */
+/** Resolve the current main objective against the live stage, never its spawn positions. */
 export function objectiveTarget(content: StoryContent, story: StoryState, stage: Stage, world: WorldState): Position | null {
-  const quest = content.quests.find(quest => quest.kind === 'main'
-    && story.quests[quest.id] && !story.quests[quest.id]?.done);
-  const progress = quest && story.quests[quest.id];
-  const condition = quest && progress && quest.steps[progress.step]?.completeWhen;
+  const condition = currentQuest(content, story)?.step.completeWhen;
   if (!condition) return null;
   if (condition.type === 'trigger') {
     const trigger = stage.triggers.find(trigger => trigger.id === condition.trigger);

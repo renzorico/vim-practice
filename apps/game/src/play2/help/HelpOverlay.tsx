@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { StoryContent } from '@escape/story';
+import { keyLabel } from '../keyLabel.js';
 import type { HelpKey } from './keys.js';
 
 const SCROLL_STEP = 120;
@@ -62,8 +63,8 @@ export function HelpOverlay({ entries, newKeys, worlds, onClose }: HelpOverlayPr
       const group = visible.filter(entry => entry.world === world.id);
       return group.length > 0 && <section key={world.id} aria-label={world.name}><h2>{world.name}</h2><dl>
         {group.map(entry => <div className="help-reference__entry" key={entry.key}>
-          <dt><kbd>{entry.key}</kbd>{newKeys.has(entry.key) && <span className="help-reference__new">new</span>}</dt>
-          <dd><p>{entry.description}</p><p className="help-reference__typed">Try <kbd>{entry.example.keys.join('')}</kbd>{entry.example.setup.length > 0 && <> after <kbd>{entry.example.setup.join('')}</kbd></>}</p>
+          <dt><kbd>{keyLabel(entry.key)}</kbd>{newKeys.has(entry.key) && <span className="help-reference__new">new</span>}</dt>
+          <dd><p>{entry.description}</p><p className="help-reference__typed">Try <kbd>{entry.example.keys.map(keyLabel).join(' ')}</kbd>{entry.example.setup.length > 0 && <> after <kbd>{entry.example.setup.join('')}</kbd></>}</p>
             {entry.example.initial && <p className="help-reference__typed">Prepare from <code>{entry.example.initial}</code>, then type <kbd>{entry.example.setup.join('')}</kbd>.</p>}
             <div className="help-reference__example"><pre aria-label="Before">{entry.example.before}</pre><span>→</span><pre aria-label="After">{entry.example.after}</pre></div></dd>
         </div>)}

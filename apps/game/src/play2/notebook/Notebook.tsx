@@ -9,6 +9,7 @@ import type { KeyEventLike } from '../../input/keys.js';
 import { PAGE_GUARD_MS, routeKey, type Routed } from './routing.js';
 import { markKeysSeen } from './seen.js';
 import { holdRepeats } from './keyHold.js';
+import { keyLabel } from '../keyLabel.js';
 import { TileStrip } from './TileStrip.js';
 import { lessonFor, notebookLessons, type Lesson } from './lessons.js';
 import './notebook.css';
@@ -83,7 +84,7 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
         const key = action.type === 'demo' ? action.key : typed.key === 'Enter' ? '<CR>' : typed.key === 'Escape' ? '<Esc>' : typed.key;
         const help = routeHelpCommand(pendingHelp.current, key);
         pendingHelp.current = help.pending;
-        if (help.open) current.onOpenHelp?.();
+        if (help.open === 'help') current.onOpenHelp?.();
         return routed;
       }
       if (action.type === 'demo') setPage(previous => pressKey(previous, action.key));
@@ -106,10 +107,10 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
       <header className="notebook__header"><h2 id="notebook-title">From the Scribe's notebook</h2><Portrait sprite="scribe" /></header>
       <div className="notebook__lesson"><LessonKeycaps lesson={entry} typed={typed} /><div><p className="notebook__instruction">{entry.instruction}</p><p className="notebook__description">{entry.description}</p></div></div>
       <TileStrip state={shown} lesson={entry} typed={typed} />
-      <div className="notebook__typed" aria-label="Example keys">{entry.example.keys.map((key, at) => <kbd key={at} data-typed={at < typed}>{key}</kbd>)}</div>
+      <div className="notebook__typed" aria-label="Example keys">{entry.example.keys.map((key, at) => <kbd key={at} data-typed={at < typed}>{keyLabel(key)}</kbd>)}</div>
       <p className="notebook__prompt" aria-live="polite"><span key={page.misses} className={page.expected ? 'notebook__prompt--miss' : undefined}>
         {page.phase === 'watch' ? 'Watch Tilde try it.' : page.phase === 'done' ? <><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m2 8 4 4 8-9" /></svg> That's it.</>
-          : <>{page.expected ? 'Try again: press ' : 'Your turn: press '}<kbd>{expectedKey(page)}</kbd>.</>}
+          : <>{page.expected ? 'Try again: press ' : 'Your turn: press '}<kbd>{keyLabel(expectedKey(page) ?? '')}</kbd>.</>}
       </span></p>
       <footer className="notebook__footer">
         {total > 1 && <span className="notebook__dots" aria-label={`Page ${index + 1} of ${total}`}>{Array.from({ length: total }, (_, dot) => <i key={dot} data-current={dot === index} />)}</span>}
@@ -123,7 +124,7 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
 function LessonKeycaps({ lesson, typed }: { readonly lesson: Lesson; readonly typed: number }) {
   const used = lesson.example.keys.slice(0, typed).join('');
   return <div className="notebook__keycaps" data-grouped={lesson.keycaps.length > 1}>
-    {lesson.keycaps.map(key => <kbd className="notebook__key" key={key} data-long={key.length > 2}
-      data-used={used.includes(key)}>{key}</kbd>)}
+    {lesson.keycaps.map(key => <kbd className="notebook__key" key={key} data-long={keyLabel(key).length > 2}
+      data-used={used.includes(key)}>{keyLabel(key)}</kbd>)}
   </div>;
 }
