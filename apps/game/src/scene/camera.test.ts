@@ -46,8 +46,8 @@ describe('cameraTarget', () => {
 });
 
 it.each([384, 600, 900])('fits exactly twelve rows at field height %i', async height => {
-  const { fieldZoom } = await import('./camera.js');
-  const zoom = fieldZoom(height, 12);
+  const { stageZoom } = await import('./camera.js');
+  const zoom = stageZoom({ map: [''], windowHeight: 12 }, { width: 900, height });
   expect(height / zoom / 16).toBe(12);
   const map = { width: 9, height: 37 };
   const view = { width: 900, height };
@@ -75,4 +75,14 @@ it('keeps a castle keeper on screen when the player and the keeper fit in one vi
   expect(kept.x + 160).toBeGreaterThanOrEqual((player.col + 1) * 16 + 16);
   // Too far apart to share a view: the camera follows the player as before.
   expect(cameraTarget(map, view, { line: 7, col: 35 }, 1, 0, keeper).x).toBe(cameraTarget(map, view, { line: 7, col: 35 }, 1).x);
+});
+
+it('draws a map that fits larger, in whole steps, and a big one at the usual scale', async () => {
+  const { stageZoom } = await import('./camera.js');
+  const map = (width: number, height: number): readonly string[] => Array.from({ length: height }, () => '.'.repeat(width));
+  const view = { width: 1440, height: 780 };
+  expect(stageZoom({ map: map(14, 7) }, view)).toBe(5);
+  expect(stageZoom({ map: map(19, 10) }, view)).toBe(4);
+  expect(stageZoom({ map: map(40, 13) }, view)).toBe(3);
+  expect(stageZoom({ map: map(14, 7) }, { width: 390, height: 620 })).toBe(3);
 });

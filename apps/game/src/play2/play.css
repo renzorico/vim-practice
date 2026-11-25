@@ -347,9 +347,10 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .status-buffer, .status-tab, .status-restart { display: none; }
   .play-controls { gap: 6px; padding-right: 4px; }
   .status-mode { padding: 0 6px; }
+  .status-right .pending-prompt { flex-shrink: 1; }
   .status-right { gap: 4px; }
 }
 @media (max-width: 540px) { .play-controls span:first-child { flex-basis: auto; } .status-identity { flex-basis: auto; } .status-right .pending-prompt { max-width: 18ch; } .help-link { display: none; } }
 @media (prefers-reduced-motion: reduce) { .hint-slip, .play-panel.play-card { animation: none; } }
 
-.script-panel--contract { --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }
+.script-panel--contract { --sheet-size: clamp(16px, 1.2vw, 18px); --paper: var(--contract-paper); --paper-secondary: var(--contract-sheet); }

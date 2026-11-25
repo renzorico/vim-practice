@@ -82,7 +82,7 @@ it('places dialogue opposite the player using the rendered camera', () => {
   expect(dialogueSide(tall, { line: 79, col: 0 }, view)).toBe('top');
   expect(dialogueSide(['abc'], { line: 0, col: 0 }, view)).toBe('bottom');
   expect(dialogueSide(['abc', 'abc', 'abc'], { line: 2, col: 0 }, view)).toBe('top');
-  expect(dialogueSide(tall, { line: 79, col: 0 }, view, 28)).toBe('top');
+  expect(dialogueSide(tall, { line: 79, col: 0 }, view, { map: tall, windowHeight: 28 })).toBe('top');
 });
 
 it('keeps dialogue and desk variants at 7:1 and readable tabs', () => {

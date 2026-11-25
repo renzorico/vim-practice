@@ -1023,7 +1023,7 @@ Tags: `#design` `#gates`
 ## 2026-11-25 · P-30: Played as a newcomer, the Cut to the Glades
 **Who:** Opus (play, fixes).
 
-**What:** Two objectives stayed on screen after they were done ("Clear the Blots", "fH reaches the ladder"); both now say something true until the step ends. Text stages use a larger sheet on wide screens.
+**What:** Two objectives stayed on screen after they were done ("Clear the Blots", "fH reaches the ladder"); both now say something true until the step ends. Text stages use a larger sheet on wide screens. A map that fits the view is drawn larger (up to 5 times, whole steps, decided by the authored map so edits never change it): the Port, Library and Caves no longer sit tiny in the middle.
 
 ---
 

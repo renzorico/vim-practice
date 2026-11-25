@@ -125,7 +125,8 @@ describe('FieldScene without canvas', () => {
     const resize = fake.on.mock.calls[0]?.[1];
     fake.scale.width = 1200;
     if (typeof resize === 'function') resize.call(scene);
-    expect(fake.texts[0]?.x).toBeCloseTo(1200 / 3 + 8 / 3);
+    // The fixture map fits at scale 4, so the label keeps its 8 screen pixels from the corner at that scale.
+    expect(fake.texts[0]?.x).toBeCloseTo((1200 - 1200 / 4) / 2 + 8 / 4);
     const shutdown = fake.once.mock.calls[0]?.[1];
     if (typeof shutdown === 'function') shutdown();
     expect(fake.off).toHaveBeenCalledWith('resize', resize, scene);
