@@ -1040,6 +1040,12 @@ Tags: `#design` `#gates`
 - Instructions named things not on screen ("tally word", "a shelf's [", "crate two", "the atlases", "the stair"). They now name jars, signs, posts, colours, and the labyrinth's stair is drawn.
 - Keycaps showed Vim notation (`<Esc>`, `<C-v>`); they show the key's printed name.
 - The yank slot was barely visible; letters of the buffer (Tab view, the Last Page) were blurred by the zoom.
+- The hints of the text stages sat below the sheet, out of sight, and the first one named work already done. They are in the heading now, and follow the first unfinished part (`scriptHints.ts`).
+- Practice pages whose example ends in Enter said "Enter: skip practice", but Enter only answered "Try again". Enter and Esc now do what the buttons say until the practice begins, and the buttons drop their keycap while it runs.
+- The contract's sheet scrolled sideways by 8 pixels.
+- The next stage's objective was already on screen during the closing dialogue of the one just cleared.
+
+**Review:** 5 risks. Fixed: the ending's key count (it counts since the file was opened), the keys filter (it matches "Ctrl" and "Enter" too), "the brown one" (the bibles are dark), "the crate's post" in the customs shed (there is a post of that name). Kept: practice pages may open over any script with no key typed in it; only text stages open one that way.
 
 ---
 

@@ -236,7 +236,7 @@
       ],
       "hints": [
         "`ci\"` changes what is inside the quotes: from the line start it finds the first quoted words. `.` repeats it on the next seal.",
-        "`ci(` changes inside the outer brackets when you stand on the outer (; `ct)` would stop at the inner ).",
+        "Stand on the outer bracket: `ci(` changes all that is inside it. `ct)` would stop at the inner bracket.",
         "`dap` strikes a whole clause and its empty row. `cip` rewrites a clause's rows and keeps the empty row after them.",
         "The whole contract is inside <contract>. Stand on <name> before `cit`, or `cit` rewrites everything."
       ],
@@ -419,7 +419,7 @@
   ],
   "hints": [
     "`ci\"` changes what is inside the quotes: from the line start it finds the first quoted words. `.` repeats it on the next seal.",
-    "`ci(` changes inside the outer brackets when you stand on the outer (; `ct)` would stop at the inner ).",
+    "Stand on the outer bracket: `ci(` changes all that is inside it. `ct)` would stop at the inner bracket.",
     "`dap` strikes a whole clause and its empty row. `cip` rewrites a clause's rows and keeps the empty row after them.",
     "The whole contract is inside <contract>. Stand on <name> before `cit`, or `cit` rewrites everything."
   ]

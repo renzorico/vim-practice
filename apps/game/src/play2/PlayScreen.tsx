@@ -97,6 +97,8 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   const quiet = session.queue.length > 0 || Boolean(session.clearCard) || showKeyCard || scriptStamp || world.status !== 'playing';
   const hints = useHints({ session, hints: script?.hints ?? stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
     requests: hintRequests, quiet, scriptId: script?.id ?? '' });
+  // Clearing a stage begins the next quest at once; its objective waits for its own stage.
+  const shownObjectives = world.status === 'cleared' ? [] : objectives;
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
@@ -104,7 +106,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
         {stage.id === 'counter' && <CounterGauge world={world} />}
         {stage.id === 'notary' && <NotaryGauge world={world} />}
         {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      </>} guide={visibleGuide} positioned={positioned} objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
+      </>} guide={visibleGuide} positioned={positioned} objectives={shownObjectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
     <div className="play-field" ref={field}>
       {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
@@ -147,7 +149,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
           <p className="play-title__file">folio.txt written</p>
           <h1 aria-label="Saved"><s aria-hidden="true">UN</s><span aria-hidden="true">SAVED</span></h1>
           <p>The lamp is lit. Every row is there.</p>
-          <p>{result.keys} keys typed on the last page. {result.hearts} of {stage.hearts} hearts left.</p>
+          <p>{result.keys} keys typed since you opened the file. {result.hearts} of {stage.hearts} hearts left.</p>
           <button onClick={onAdvance}>Enter to return to title</button>
         </div>
       </section>}

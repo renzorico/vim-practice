@@ -79,5 +79,9 @@ export function pressKey(page: PageModel, key: Key): PageModel {
   };
 }
 
-/** True when the example itself types this key, so the key belongs to the demo until it is finished. */
-export const exampleUses = (entry: HelpKey, key: Key): boolean => entry.example.keys.includes(key);
+/**
+ * True when the key is practice rather than a way out: the example types it, is not finished, and has either
+ * begun or begins with it. Before the first key, Enter and Esc still do what the page's buttons say.
+ */
+export const belongsToDemo = (page: PageModel, key: Key): boolean => page.phase !== 'done'
+  && page.entry.example.keys.includes(key) && (page.typed > 0 || page.entry.example.keys[0] === key);

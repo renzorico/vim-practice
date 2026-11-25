@@ -51,7 +51,7 @@
         },
         {
           "speaker": "system",
-          "text": "Nets first: stand just past them, press `db`.\nThen `yw` on oil, `\"0p` on the crate's post."
+          "text": "Nets first: stand just past them, press `db`.\nThen `yw` on oil, `\"0p` on the crate's end."
         }
       ],
       "then": []
@@ -70,7 +70,7 @@
         },
         {
           "speaker": "system",
-          "text": "Press `yw` on the oil. Then `\"0p` on the crate's\npost: plain `p` would put the nets back."
+          "text": "Press `yw` on the oil. Then `\"0p` on the crate's\nend: plain `p` would put the nets back."
         }
       ],
       "then": []

@@ -9,7 +9,7 @@ import { createWorldSim, playKeys } from '@escape/world';
 import { content, ledger, ledgerLegend, shaft, shaftLegend, stages } from './content.js';
 import { createSession, LEDGER_COMMANDS, type Session } from './session.js';
 import { learnedKeycaps, PlayScreen } from './PlayScreen.js';
-import { ScriptPanel, visibleHints } from './ScriptPanel.js';
+import { ScriptPanel } from './ScriptPanel.js';
 import { readProgress, saveProgress } from './progress.js';
 import { plainText, visibleText } from '../test-utils/visibleText';
 
@@ -122,10 +122,7 @@ it('shows the goal, ghost, cursor, insert mode, and one tick per matching line',
     engine: createEngine().init(target.targetLines) }));
   expect(matched.match(/aria-label="Line matches"/g)).toHaveLength(6);
 });
-it('reveals a hint at 60 keys, then one every 30, capped at five', () => {
-  for (const [count, hints] of [[59, 0], [60, 1], [89, 1], [90, 2], [120, 3], [150, 4], [180, 5], [300, 5]]) {
-    expect(visibleHints(book, count!)).toHaveLength(hints!);
-  }
+it('reveals a hint at 60 keys', () => {
   let session = start();
   for (let count = 0; count < 59; count += 1) session = controller.reduce(session, '<Esc>');
   expect(visibleText(screen(session))).not.toContain(plainText(book.hints[0]!));

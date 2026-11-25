@@ -3,7 +3,7 @@ import type { HelpKey } from '../help/keys.js';
 import { routeHelpCommand } from '../help/command.js';
 import { Portrait } from '../../scene/sprites/Portrait.js';
 import { useDialogueSound } from '../../audio/hooks.js';
-import { exampleFrames, expectedKey, openPage, pressKey, skipWatching, watchStep } from './pageModel.js';
+import { exampleFrames, belongsToDemo, expectedKey, openPage, pressKey, skipWatching, watchStep } from './pageModel.js';
 import { newDeadKeyMemory, readKey, resolveDeadKey } from '../../input/keyReader.js';
 import type { KeyEventLike } from '../../input/keys.js';
 import { PAGE_GUARD_MS, routeKey, type Routed } from './routing.js';
@@ -114,8 +114,8 @@ export function NotebookPage({ entry: helpEntry, index, total, suspended = false
       </span></p>
       <footer className="notebook__footer">
         {total > 1 && <span className="notebook__dots" aria-label={`Page ${index + 1} of ${total}`}>{Array.from({ length: total }, (_, dot) => <i key={dot} data-current={dot === index} />)}</span>}
-        <button data-complete={page.phase === 'done'} type="button" onClick={() => guarded(onNext)}><kbd>Enter</kbd>: {page.phase === 'done' ? 'on you go' : 'skip practice'}</button>
-        {(index + 1 < total || page.phase !== 'done') && <button type="button" onClick={() => guarded(onSkip)}><kbd>Esc</kbd>: {index + 1 < total ? 'skip the rest' : 'skip'}</button>}
+        <button data-complete={page.phase === 'done'} type="button" onClick={() => guarded(onNext)}>{!belongsToDemo(page, '<CR>') && <><kbd>Enter</kbd>: </>}{page.phase === 'done' ? 'on you go' : 'skip practice'}</button>
+        {(index + 1 < total || page.phase !== 'done') && <button type="button" onClick={() => guarded(onSkip)}>{!belongsToDemo(page, '<Esc>') && <><kbd>Esc</kbd>: </>}{index + 1 < total ? 'skip the rest' : 'skip'}</button>}
       </footer>
     </section>
   </div>;

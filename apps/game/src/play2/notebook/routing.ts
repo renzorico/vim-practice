@@ -1,6 +1,6 @@
 import type { Key } from '@escape/engine';
 import { mapKeyEvent, type KeyEventLike } from '../../input/keys.js';
-import { exampleUses, type PageModel } from './pageModel.js';
+import { belongsToDemo, type PageModel } from './pageModel.js';
 
 /** A player tapping Enter through the last dialogue line must not dismiss the page unseen. */
 export const PAGE_GUARD_MS = 300;
@@ -25,8 +25,8 @@ const PASS: Routed = { stop: false, preventDefault: false, action: { type: 'none
 
 /**
  * What one key press does while a page is open. F1 and browser shortcuts (Cmd chords, F-keys) are left
- * alone; every other key is held back from the game. Enter and Esc belong to the demo while its example
- * types them and is not finished; otherwise Enter continues and Esc skips, once the guard has passed.
+ * alone; every other key is held back from the game. Enter and Esc belong to the demo once an example that
+ * types them has begun; otherwise Enter continues and Esc skips, once the guard has passed.
  */
 export function routeKey(event: RouteEvent, page: PageModel, ready: boolean): Routed {
   if (event.metaKey || /^F\d+$/.test(event.key)) return PASS;
@@ -38,8 +38,7 @@ export function routeKey(event: RouteEvent, page: PageModel, ready: boolean): Ro
   if (mapped.key === null || event.repeat) return held;
   const key = mapped.key;
   const finished = page.phase === 'done';
-  const belongsToDemo = (key === '<CR>' || key === '<Esc>') && !finished && exampleUses(page.entry, key);
-  if (belongsToDemo) return { ...held, action: page.phase === 'try' ? { type: 'demo', key } : { type: 'none' } };
+  if ((key === '<CR>' || key === '<Esc>') && belongsToDemo(page, key)) return { ...held, action: page.phase === 'try' ? { type: 'demo', key } : { type: 'none' } };
   if (key === '<CR>') return { ...held, action: ready ? { type: 'continue' } : { type: 'none' } };
   if (key === '<Esc>') return { ...held, action: ready ? { type: 'skip' } : { type: 'none' } };
   return { ...held, action: finished && key !== ':' ? { type: 'none' } : { type: 'demo', key } };
