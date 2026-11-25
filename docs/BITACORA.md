@@ -1113,6 +1113,27 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-36: The music follows the challenge
+**Who:** Opus (design, fixes), Codex (build), Sonnet (review).
+
+**Why:** Renzo: the music is "just ok, a bit tiring, and doesn't reflect the feeling of the challenge". The melody played all the time at one strength, the same 32 bars came back unchanged, every voice was dry and in mono, and the only thing it knew was the world.
+
+**What:**
+- **Five parts** per score: bed, pulse, melody, counter-melody, drum. The tune opens a stage, then comes and goes; no arrangement repeats within three minutes.
+- **The quest is heard.** Each finished step adds something at the next bar: a firmer pulse, a second voice, a drum (`audio/mood.ts`, energy 0 to 3).
+- **Danger is heard.** An enemy within five cells, then two, or the last heart: the tune withdraws, the sound darkens, a heartbeat starts. It comes in a quarter of a second and leaves slowly.
+- **Pace:** text and walking stages are slower, races and duels faster with a drum from the first bar. The same pace keeps the music going from stage to stage.
+- **Thinking is quiet:** after 20 seconds without a key the tune rests until the next phrase after a key.
+- **Sound:** one room reverb, parts placed left and right, small fixed variations of level and timing, softer attacks.
+
+**Measured (offline render of the real player):** about -31 dB at the start of a stage to -26.5 dB at its last step (it was a constant -24 to -27); the first build moved less than 1 dB between steps 1 and 3, so pulse, counter and drum were set again. The clear figure sits level with the music.
+
+**Review:** the node cap starved a new stage of its parts during a crossfade (48 to 112, parts made at the start); the Quarry's knock was lost; danger left too fast; the heartbeat ran late; un-resolving brought every part back at full. Fixed.
+
+**Not done:** nobody has listened to it yet. Pace and energy are guesses until then.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).
