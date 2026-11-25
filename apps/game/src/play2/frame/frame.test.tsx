@@ -14,14 +14,14 @@ function headerSkeleton(html: string): readonly string[] {
   return [...html.matchAll(/<(?:aside|div) class="(objective-hud(?:__\w+)?)"/g)].map(match => match[1] ?? '');
 }
 
-it.each([0, 1, 3])('keeps both header rows with %i objectives, with and without a guide', count => {
+it.each([0, 1, 3])('keeps every header box with %i objectives, with and without a guide', count => {
   for (const guide of [null, { kind: 'do' as const, keys: ['5', 'r', '='], standAt: [{ line: 0, col: 0 }] }]) {
     const html = renderToStaticMarkup(createElement(ObjectiveHud, {
       title: 'The Margin', objectives: ['Main quest', 'Side one', 'Side two'].slice(0, count),
       hearts: 3, maxHearts: 3, turn: 0, guide,
     }));
-    expect(headerSkeleton(html)).toEqual(['objective-hud', 'objective-hud__row', 'objective-hud__stats', 'objective-hud__strip',
-      'objective-hud__main', 'objective-hud__side', 'objective-hud__guide']);
+    expect(headerSkeleton(html)).toEqual(['objective-hud', 'objective-hud__place', 'objective-hud__strip',
+      'objective-hud__main', 'objective-hud__side', 'objective-hud__guide', 'objective-hud__stats']);
     if (count === 3) {
       expect(html).toContain('>+2</span>');
       expect(html).toContain('<li>Side one</li>');

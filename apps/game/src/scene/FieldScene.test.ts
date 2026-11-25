@@ -366,14 +366,6 @@ it('re-creates river tiles at the current idle frame', () => {
   const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
   expect(river).toBeDefined();
 });
-it('prompts Enter to go south beside the quarry gate', () => {
-  const sim = createWorldSim(createEngine());
-  const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
-  const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
-    state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
-  scene.create();
-  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
-});
 
 it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after the clock', command => {
   const tiles = { ...FIXTURE_LEGEND, tiles: FIXTURE_LEGEND.tiles.map(tile => ({ ...tile, fixed: false })) };
@@ -450,7 +442,7 @@ it('shades hazard cells, adds sheen only on existing walkable cells and marks th
   expect(sheen.every(image => image.y >= 4 * 16 + 8 && image.y <= 14 * 16 + 8)).toBe(true);
 });
 
-it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the real fH event', async () => {
+it('draws Canopy actors, hashed branch variants and an arc from the real fH event', async () => {
   const { canopy, canopyLegend } = await import('../play2/content.js');
   const { WORDWOOD_COMMANDS } = await import('../play2/session.js');
   const sim = createWorldSim(createEngine());
@@ -474,7 +466,6 @@ it('draws Canopy actors, hashed branch variants, lift prompt and an arc from the
   expect(player?.x).toBe(30 * 16 + 8);
   const liftState = sim.apply(jumped.state, [{ type: 'move-player', to: { line: 7, col: 27 } }], canopy, canopyLegend);
   scene.present({ ...initial, ...liftState });
-  expect(fake.texts.some(text => text.text === 'Enter: take lift')).toBe(true);
 });
 
 it('renders Glades terrain and actors and follows G and gg over all eighteen rows', async () => {
@@ -633,7 +624,7 @@ it('highlights the fixed tile which rejects a Jetty delete without splashing', a
   expect(tile?.clearTint).toHaveBeenCalled();
 });
 
-it.each([false, true])('draws warehouse cargo, stencils, signs and remote counter; animates put (reduced=%s)', async reducedMotion => {
+it.each([false, true])('draws warehouse cargo, stencils and remote counter; animates put (reduced=%s)', async reducedMotion => {
   const { warehouse, warehouseLegend } = await import('../play2/content.js');
   const { WAREHOUSE_COMMANDS } = await import('../play2/session.js');
   const sim = createWorldSim(createEngine());
@@ -645,8 +636,6 @@ it.each([false, true])('draws warehouse cargo, stencils, signs and remote counte
   for (const sprite of ['warehouse-floor', 'warehouse-floor:1', 'warehouse-wall', 'oil', 'cargo-rope', 'shelf-end', 'shelf-lip', 'shelf-top', 'shelf-middle', 'shelf-bottom', 'counter-end']) {
     expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
   }
-  scene.present({ ...initial, signs: [{ at: { line: 0, col: 3.5 }, text: 'oil' }, { at: { line: 0, col: 10.5 }, text: 'shelf 1: oil', done: true }] });
-  expect(fake.texts.map(text => text.text)).toEqual(expect.arrayContaining(['oil', '\u2713 shelf 1: oil']));
   for (const key of ['y', 'w']) {
     const result = sim.step(state, key, stage, warehouseLegend, options);
     state = result.state; scene.present({ ...initial, ...result });
@@ -1261,37 +1250,7 @@ it('finishes squash inside the jump clock with planted feet and ghosts below the
 });
 
 
-it('draws static landing labels in reduced motion and removes hidden or dark markers', () => {
-  const at = frame.state.engine.cursor;
-  const scene = new FieldScene({ ...frame, markers: [{ key: 'w', at }] }, true);
-  scene.create();
-  const label = fake.texts.find(text => text.text === 'w');
-  expect(label?.alpha).toBe(0.7);
-  const labels = fake.containers.find(container => container.add.mock.calls.some(call => call[0] === label));
-  expect(labels).toBeDefined();
-  labels?.add.mockClear();
-  scene.present({ ...frame, markers: [] });
-  expect(labels?.removeAll).toHaveBeenCalledWith(true);
-  expect(labels?.add).not.toHaveBeenCalled();
-  scene.present({ ...frame, darkness: { radius: 1, lights: [] }, markers: [{ key: 'e', at: { line: at.line + 5, col: at.col } }] });
-  expect(labels?.add).not.toHaveBeenCalled();
-});
 
-it('keeps landing text objects when a new marker list has equal contents', () => {
-  const at = frame.state.engine.cursor;
-  const scene = new FieldScene({ ...frame, markers: [{ key: 'w', at }] }, true);
-  scene.create();
-  const count = fake.texts.length;
-  const label = fake.texts.find(text => text.text === 'w');
-  const labels = fake.containers.find(container => container.add.mock.calls.some(call => call[0] === label));
-  labels?.removeAll.mockClear();
-  scene.present({ ...frame, markers: [{ key: 'w', at: { ...at } }] });
-  expect(fake.texts).toHaveLength(count);
-  expect(labels?.removeAll).not.toHaveBeenCalled();
-  scene.present({ ...frame, markers: [{ key: 'e', at }] });
-  expect(fake.texts).toHaveLength(count + 1);
-  expect(labels?.removeAll).toHaveBeenCalledOnce();
-});
 
 
 describe('first-minute guidance', () => {

@@ -24,7 +24,7 @@ export function StatusLine({ engine, learned, textStage, restartTaught, prompt, 
   useEffect(() => {
     if (!window.matchMedia) return;
     const tiny = window.matchMedia('(max-width: 540px)');
-    const narrow = window.matchMedia('(max-width: 899px)');
+    const narrow = window.matchMedia('(max-width: 1179px)');
     const update = () => setLimit(tiny.matches ? 0 : narrow.matches ? 2 : 6);
     update();
     tiny.addEventListener('change', update);

@@ -34,18 +34,18 @@ export function interactionLabel(entity: Entity, stage: Stage, state: WorldState
   if (reason === 'Press Enter to read.') return 'Enter: read';
   return reason === 'Press Enter to talk.' || isPerson(entity.def.kind) ? 'Enter: talk' : 'Enter: use';
 }
-export interface SlipPosition { readonly x: number; readonly y: number }
-/** Text uses top-left origin. Choose a visible side that never intersects the player's 16px box. */
-export function slipPosition(target: Position, player: Position, width: number, height: number,
-  view: { readonly left: number; readonly right: number; readonly top: number; readonly bottom: number }): SlipPosition {
-  const px = player.col * 16; const py = player.line * 16;
-  const tx = target.col * 16 + 8; const ty = target.line * 16;
-  const candidates = [[tx - width / 2, ty - height - 4], [tx - width / 2, ty + 20],
-    [px + 20, py], [px - width - 4, py], [tx - width / 2, py + 20]] as const;
-  for (const [left, top] of candidates) {
-    const x = Math.max(view.left + 2, Math.min(view.right - width - 2, left));
-    const y = Math.max(view.top + 2, Math.min(view.bottom - height - 2, top));
-    if (x + width <= px - 2 || x >= px + 18 || y + height <= py - 2 || y >= py + 18) return { x, y };
+
+/** Enter fires the first trigger in reach: between two things, only that one is labelled. */
+export function reachedEntity(stage: Stage, state: WorldState): Entity | null {
+  const { cursor } = state.engine;
+  for (const trigger of stage.triggers) {
+    if (trigger.on !== 'interact' || trigger.target.type !== 'entity'
+      || trigger.once && state.firedTriggers.includes(trigger.id)
+      || trigger.onlyIf !== undefined && state.flags[trigger.onlyIf] !== true
+      || trigger.unless !== undefined && state.flags[trigger.unless] === true) continue;
+    const id = trigger.target.entity;
+    const entity = state.entities.find(item => item.id === id);
+    if (entity && Math.abs(cursor.line - entity.at.line) + Math.abs(cursor.col - entity.at.col) === 1) return entity;
   }
-  return { x: view.left + 2, y: view.top + 2 };
+  return null;
 }
