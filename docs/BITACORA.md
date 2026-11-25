@@ -1050,6 +1050,21 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-25 · P-32: Renzo's play: the scripts, the Gates and the port
+**Who:** Opus (design, code), Sonnet (review).
+
+**What Renzo said:** the `%` stage is very confusing; in the scripts a space too many at the end of a row is invisible and nothing says so; every row was ticked and nothing happened; the instructions do not look like instructions; in the Warehouse it is not clear what to do, and TALLY was a smear of pixels.
+
+**Root causes and fixes:**
+- *Ticked but not finished:* the script ends at rest in Normal mode, and the ticks compared rows by position only. So Insert mode, or a row too many at the end, left every tick green with no next step. The heading now says "Every row is right. Press Esc to finish.", and a row too many is struck out and named.
+- *Invisible differences:* rows are paired by least difference (`script/diff.ts`), so one extra row no longer unticks all below it. The characters that differ are underlined in both sheets, trailing spaces show as dots, and a "Look" line names what an eye misses (a space at the end, spaces, capitals, an empty row).
+- *Instructions:* the goal paragraph and the late hints are replaced by a checklist of tasks and one "How" line for the current task: where to stand, which keys, what to type (`script/tasks.ts`). `script.test.tsx` follows every instruction literally and must reach the target text.
+- *The Gates:* two `)` side by side jump to different places, 36 rows apart, with nothing on screen to say which. The nook (the inner pair) is now four rows above, so the first `%` shows both ends; dotted threads join each pair and light up when the player stands on an end; every step has a marker to stand on. A new first step teaches the pair before the long jump.
+- *The port:* no step said where to stand. Markers now follow the state of the field (`stageGuides.ts`: what is yanked, what is stocked), and paper signs name piles, shelves and crates and tick when they are right. `stageGuides.test.ts` plays Jetty, Warehouse, Customs, Counter and Gates doing only what the screen says, and must clear them. The TALLY plates are gone; `[` and `]` are drawn as one rack.
+- Between two things only the one Enter will use is labelled.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

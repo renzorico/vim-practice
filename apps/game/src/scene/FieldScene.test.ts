@@ -633,7 +633,7 @@ it('highlights the fixed tile which rejects a Jetty delete without splashing', a
   expect(tile?.clearTint).toHaveBeenCalled();
 });
 
-it.each([false, true])('draws warehouse cargo, stencils, tally plates and remote counter; animates put (reduced=%s)', async reducedMotion => {
+it.each([false, true])('draws warehouse cargo, stencils, signs and remote counter; animates put (reduced=%s)', async reducedMotion => {
   const { warehouse, warehouseLegend } = await import('../play2/content.js');
   const { WAREHOUSE_COMMANDS } = await import('../play2/session.js');
   const sim = createWorldSim(createEngine());
@@ -645,7 +645,8 @@ it.each([false, true])('draws warehouse cargo, stencils, tally plates and remote
   for (const sprite of ['warehouse-floor', 'warehouse-floor:1', 'warehouse-wall', 'oil', 'cargo-rope', 'shelf-end', 'shelf-lip', 'shelf-top', 'shelf-middle', 'shelf-bottom', 'counter-end']) {
     expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
   }
-  expect(fake.texts.filter(text => text.text === 'TALLY')).toHaveLength(2);
+  scene.present({ ...initial, signs: [{ at: { line: 0, col: 3.5 }, text: 'oil' }, { at: { line: 0, col: 10.5 }, text: 'shelf 1: oil', done: true }] });
+  expect(fake.texts.map(text => text.text)).toEqual(expect.arrayContaining(['oil', '\u2713 shelf 1: oil']));
   for (const key of ['y', 'w']) {
     const result = sim.step(state, key, stage, warehouseLegend, options);
     state = result.state; scene.present({ ...initial, ...result });

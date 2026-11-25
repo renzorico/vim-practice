@@ -38,7 +38,7 @@ it('enters gates after glades.end and starts the quest', () => {
   expect(ending.story.quests['wordwood.gates']).toEqual({ step: 0, done: false });
   expect(dismiss(clear).world.stage).toBe('gates');
 });
-it.each([['h', 0, 3], ['2h', 15, 2]] as const)('matches the bracket reached by %s', (route, line, col) => {
+it.each([['h', 0, 3], ['2h', 32, 2]] as const)('matches the bracket reached by %s', (route, line, col) => {
   const before = keys(start(), route);
   const jumped = keys(before, '%');
   expect(jumped.world.engine.cursor).toEqual({ line, col });
