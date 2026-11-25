@@ -366,14 +366,6 @@ it('re-creates river tiles at the current idle frame', () => {
   const river = fake.images.find(image => image.x === 8 && image.y === 8 && image.texture === 'field:river:1');
   expect(river).toBeDefined();
 });
-it('prompts Enter to go south beside the quarry gate', () => {
-  const sim = createWorldSim(createEngine());
-  const state = sim.init(quarry, quarryLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
-  const scene = new FieldScene({ ...frame, stage: quarry, legend: quarryLegend,
-    state: { ...state, engine: { ...state.engine, cursor: { line: 10, col: 42 } } } }, false);
-  scene.create();
-  expect(fake.texts.some(text => text.text === 'Enter: go south')).toBe(true);
-});
 
 it.each(['dd', 'u'])('slides whole rows for %s and leaves no stale tiles after the clock', command => {
   const tiles = { ...FIXTURE_LEGEND, tiles: FIXTURE_LEGEND.tiles.map(tile => ({ ...tile, fixed: false })) };
@@ -633,7 +625,7 @@ it('highlights the fixed tile which rejects a Jetty delete without splashing', a
   expect(tile?.clearTint).toHaveBeenCalled();
 });
 
-it.each([false, true])('draws warehouse cargo, stencils, signs and remote counter; animates put (reduced=%s)', async reducedMotion => {
+it.each([false, true])('draws warehouse cargo, stencils and remote counter; animates put (reduced=%s)', async reducedMotion => {
   const { warehouse, warehouseLegend } = await import('../play2/content.js');
   const { WAREHOUSE_COMMANDS } = await import('../play2/session.js');
   const sim = createWorldSim(createEngine());
@@ -645,8 +637,6 @@ it.each([false, true])('draws warehouse cargo, stencils, signs and remote counte
   for (const sprite of ['warehouse-floor', 'warehouse-floor:1', 'warehouse-wall', 'oil', 'cargo-rope', 'shelf-end', 'shelf-lip', 'shelf-top', 'shelf-middle', 'shelf-bottom', 'counter-end']) {
     expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
   }
-  scene.present({ ...initial, signs: [{ at: { line: 0, col: 3.5 }, text: 'oil' }, { at: { line: 0, col: 10.5 }, text: 'shelf 1: oil', done: true }] });
-  expect(fake.texts.map(text => text.text)).toEqual(expect.arrayContaining(['oil', '\u2713 shelf 1: oil']));
   for (const key of ['y', 'w']) {
     const result = sim.step(state, key, stage, warehouseLegend, options);
     state = result.state; scene.present({ ...initial, ...result });

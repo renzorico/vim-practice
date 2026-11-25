@@ -2,10 +2,18 @@ import { useState } from 'react';
 import type { EngineState, RegisterValue } from '@escape/engine';
 import { Portrait } from '../scene/sprites/Portrait.js';
 
+const ICONS: Readonly<Record<string, string>> = { o: 'oil-icon', r: 'rope-icon', n: 'nets' };
+/** One icon per character, or one and how many once there are more than fit beside each other. */
+const SHOWN_APART = 4;
 function Cargo({ text }: { readonly text: string }) {
-  return text ? <>{[...text].map((char, index) => ['o', 'r', 'n'].includes(char)
-    ? <Portrait key={index} sprite={char === 'o' ? 'oil' : char === 'r' ? 'cargo-rope' : 'nets'} />
-    : <code key={index}>{char === '\n' ? '↵' : char}</code>)}</> : <span>empty</span>;
+  if (!text) return <span className="yanked-slot__empty">empty</span>;
+  return <>{(text.match(/(.)\1*|\n/gsu) ?? []).map((run, index) => {
+    const char = run[0] ?? '';
+    const icon = ICONS[char];
+    if (!icon) return <code key={index}>{run.replaceAll('\n', '↵')}</code>;
+    return run.length > SHOWN_APART ? <span className="yanked-slot__many" key={index}><Portrait sprite={icon} />×{run.length}</span>
+      : [...run].map((_, at) => <Portrait key={`${index}:${at}`} sprite={icon} />);
+  })}</>;
 }
 function RegisterRow({ name, value, expanded }: {
   readonly name: string; readonly value: RegisterValue | undefined; readonly expanded: boolean;

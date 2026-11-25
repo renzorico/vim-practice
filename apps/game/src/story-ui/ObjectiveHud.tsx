@@ -30,18 +30,14 @@ export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, 
   const named = !guide?.standAt && keyParts(objectives[0] ?? '').some(part => part.keycap);
   return (
     <aside className="objective-hud" aria-label="Objectives">
-      <div className="objective-hud__row">
-      {title && <h1>{title}</h1>}
-      <p className="objective-hud__journey">{goalLine(world)}</p>
-      <div className="objective-hud__stats">
+      <div className="objective-hud__place">
+        {title && <h1>{title}</h1>}
         <span className="objective-hud__hearts" aria-label={`${hearts} of ${maxHearts} hearts`}>
           {heartsText(hearts, maxHearts)}
         </span>
-        {gauges}
-        <span className="objective-hud__turn">{turnText(turn)}{par !== undefined && <span style={{ opacity: turn > par ? 0.45 : 1 }}> · par {par}</span>}</span>
+        <p className="objective-hud__journey">{goalLine(world)}</p>
       </div>
-      </div>
-      <div className="objective-hud__strip">
+      <div className="objective-hud__strip" data-empty={objectives.length === 0}>
         <div className="objective-hud__main" key={objectives[0] ?? ''}>
           {objectives.length > 0 && <><span className="objective-hud__label">Now</span> <KeyText text={objectives[0] ?? ''} /></>}
         </div>
@@ -56,6 +52,10 @@ export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, 
         {guide.keys.map((key, index) => <kbd key={index}>{keyLabel(key)}</kbd>)}
       </div>}
         </div>
+      </div>
+      <div className="objective-hud__stats">
+        {gauges}
+        <span className="objective-hud__turn">{turnText(turn)}{par !== undefined && <span style={{ opacity: turn > par ? 0.45 : 1 }}> · par {par}</span>}</span>
       </div>
     </aside>
   );
