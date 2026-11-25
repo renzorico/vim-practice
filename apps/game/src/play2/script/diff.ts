@@ -56,8 +56,7 @@ const rows = (numbers: readonly number[]): string => numbers.length === 1 ? `Row
  * What an eye misses: spaces, capitals, an empty row too many. Null when the difference can be seen,
  * or when the text is right.
  */
-export function nearMiss(lines: readonly string[], target: readonly string[]): string | null {
-  const pairs = alignRows(lines, target);
+export function nearMiss(lines: readonly string[], target: readonly string[], pairs = alignRows(lines, target)): string | null {
   for (const pair of pairs) {
     if (pair.buffer === null || pair.target === null) continue;
     const line = lines[pair.buffer] ?? ''; const wanted = target[pair.target] ?? '';

@@ -222,6 +222,8 @@ export class FieldScene extends Phaser.Scene {
       this.outlineKeys.clear();
       this.ambientImages = [];
       this.terrainRows = undefined;
+      this.shownSigns = '';
+      this.shownThreads = '';
       this.previousState = undefined;
       this.previousEvents = undefined;
       this.tweens.killAll();

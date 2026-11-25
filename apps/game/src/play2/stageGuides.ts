@@ -13,6 +13,8 @@ const lastOf = (text: string, char: string): number => text.lastIndexOf(char);
 
 const OIL = 'oooo';
 const ROPE = 'rrr';
+/** Something was put down, deleted or copied over that the plan cannot use: the way back is `u`. */
+const undo = (world: WorldState): Guide => guide(['u'], world.engine.cursor);
 
 /** Where the goods of a crate or shelf sit: from its `[` to its `]`. */
 function rack(world: WorldState, line: number): { readonly at: Position; readonly holds: string } | null {
@@ -29,6 +31,8 @@ function warehouse(world: WorldState): Guide | null {
   const open = SHELVES.filter(shelf => !stocked(world, shelf));
   const first = open[0];
   if (!first) return null;
+  if (!row(world, 1).startsWith(`#[${OIL}]`) || !row(world, 5).startsWith(`#[${ROPE}]`)
+    || open.some(shelf => rack(world, shelf.line)?.holds !== '')) return undo(world);
   const same = open.filter(shelf => shelf.wants === first.wants);
   if (register(world, '"') !== first.wants) return guide(['y', 'w'], first.wants === OIL ? cell(1, 2) : cell(5, 2));
   return guide(['p'], ...same.flatMap(shelf => rack(world, shelf.line)?.at ?? []));
@@ -41,34 +45,40 @@ function jetty(world: WorldState): Guide | null {
 }
 
 function customs(step: string, world: WorldState): Guide | null {
+  const first = rack(world, 1); const second = rack(world, 3);
+  if (!first || !second || !row(world, 1).startsWith(`#[${OIL}]`) || !row(world, 5).startsWith(`#[${ROPE}]`)) return undo(world);
   if (step === 'oil') {
+    if (first.holds === OIL) return null;
+    if (first.holds !== '') return undo(world);
     const nets = lastOf(row(world, 1), 'n');
     if (nets >= 0) return guide(['d', 'b'], cell(1, nets + 1));
-    const crate = rack(world, 1);
-    if (register(world, '0') !== OIL) return guide(['y', 'w'], cell(1, 2));
-    return crate && crate.holds === '' ? guide(['"', '0', 'p'], crate.at) : null;
+    return register(world, '0') === OIL ? guide(['"', '0', 'p'], first.at) : guide(['y', 'w'], cell(1, 2));
   }
-  const crate = rack(world, 3);
-  if (!crate) return null;
+  if (second.holds === OIL + ROPE) return null;
+  if (second.holds !== '' && second.holds !== OIL) return undo(world);
   if (register(world, 'b') !== ROPE) return guide(['"', 'b', 'y', 'w'], cell(5, 2));
-  if (crate.holds === OIL) return guide(['"', 'b', 'p'], cell(3, crate.at.col + OIL.length));
-  if (register(world, '0') !== OIL) return guide(['y', 'w'], cell(1, 2));
-  return crate.holds === '' ? guide(['"', '0', 'p'], crate.at) : null;
+  if (second.holds === OIL) return guide(['"', 'b', 'p'], cell(3, second.at.col + OIL.length));
+  return register(world, '0') === OIL ? guide(['"', '0', 'p'], second.at) : guide(['y', 'w'], cell(1, 2));
 }
 
-const COUNTER_CRATES = [{ wants: 'oooooooo', text: '8 oil' }, { wants: 'rrrrrrrr', text: '8 rope' }, { wants: 'oooorrrr', text: '4 oil, 4 rope' }] as const;
+const COUNTER_CRATES = [
+  { wants: 'oooooooo', text: '8 oil', steps: [{ holds: '', keys: ['"', 'a', '8', 'p'] }] },
+  { wants: 'rrrrrrrr', text: '8 rope', steps: [{ holds: '', keys: ['"', 'b', '8', 'p'] }] },
+  { wants: 'oooorrrr', text: '4 oil, 4 rope', steps: [{ holds: '', keys: ['"', 'a', '4', 'p'] }, { holds: OIL, keys: ['"', 'b', '4', 'p'] }] },
+] as const;
 const counterCrates = (world: WorldState) => [...row(world, 7).matchAll(/\[([^\]]*)\]/g)].slice(0, COUNTER_CRATES.length)
   .map((match, index) => ({ at: cell(7, match.index ?? 0), holds: match[1] ?? '', ...COUNTER_CRATES[index]! }));
 
 function counter(world: WorldState): Guide | null {
+  const crates = counterCrates(world);
+  const open = crates.filter(crate => crate.holds !== crate.wants);
+  const next = open[0];
+  if (crates.length < COUNTER_CRATES.length || open.some(crate => !crate.steps.some(step => step.holds === crate.holds))) return undo(world);
+  if (!next) return null;
   if (register(world, 'a') !== 'o') return guide(['"', 'a', 'y', 'l'], cell(3, 1));
   if (register(world, 'b') !== 'r') return guide(['"', 'b', 'y', 'l'], cell(5, 1));
-  const [oil, rope, mixed] = counterCrates(world);
-  if (oil && oil.holds === '') return guide(['"', 'a', '8', 'p'], oil.at);
-  if (rope && rope.holds === '') return guide(['"', 'b', '8', 'p'], rope.at);
-  if (mixed && mixed.holds === '') return guide(['"', 'a', '4', 'p'], mixed.at);
-  if (mixed && mixed.holds === OIL) return guide(['"', 'b', '4', 'p'], cell(7, mixed.at.col + OIL.length));
-  return null;
+  const step = next.steps.find(item => item.holds === next.holds);
+  return step ? guide(step.keys, cell(7, next.at.col + next.holds.length)) : null;
 }
 
 // The Twin Gates: two brackets under Shut. The left one pairs with the nook, the right one with the top.

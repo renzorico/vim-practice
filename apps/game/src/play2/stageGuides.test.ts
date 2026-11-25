@@ -64,3 +64,16 @@ it('labels every pile and shelf, and ticks a shelf once it is right', () => {
   const signs = signsFor({ ...before.world, engine: { ...before.world.engine, lines } });
   expect(signs.filter(sign => sign.done).map(sign => sign.text)).toEqual(['shelf 1: oil']);
 });
+
+it.each([
+  ['a shelf with too much on it', '#[oooo]___[oooooooo]#', '#[rrr]____[]#'],
+  ['a shelf with the wrong goods', '#[oooo]___[rrr]#', '#[rrr]____[]#'],
+  ['a pile with a jar missing', '#[ooo]___[]#', '#[rrr]____[]#'],
+] as const)('says `u` after a slip: %s', (_, top, bottom) => {
+  const entry = stages.find(item => item.stage.id === 'warehouse')!;
+  const session = createSession({ sim, storyEngine, content, stages, ...entry }).init();
+  const lines = session.world.engine.lines.map((line, index) => index === 1 ? top : index === 5 ? bottom : line);
+  const world = { ...session.world, engine: { ...session.world.engine, lines } };
+  const story = { ...session.story, quests: { 'port.warehouse': { step: 0, done: false } } };
+  expect(activeGuide(content, story, world)?.keys).toEqual(['u']);
+});

@@ -66,20 +66,22 @@ export function ScriptPanel({ script, engine, solved = false }: ScriptPanelProps
   const rightRows = targetLines.filter((line, index) => partner.get(index) === line).length;
   const textIsRight = target !== undefined && rightRows === targetLines.length && extraRows.size === 0;
   // While a word is being typed every row is briefly "nearly right": the note waits for Normal mode.
-  const note = target === undefined || engine.mode === 'insert' ? null : nearMiss(engine.lines, targetLines);
+  const note = target === undefined || engine.mode === 'insert' ? null : nearMiss(engine.lines, targetLines, pairs);
   return <section className={`script-panel${script.id === 'contract.book' ? ' script-panel--contract' : ''}`} aria-label={script.title}>
     <header className="script-heading">
       <h2>{script.title}</h2>
       {tasks.length > 0 ? <ol className="script-tasks" aria-label="What to do">
         {tasks.map(task => <li key={task.task} data-state={task.done ? 'done' : task === current ? 'now' : 'later'}
           {...(task === current ? { 'aria-current': 'step' as const } : {})}>
-          {task.done && <Tick />}{task.task}</li>)}
+          {task.done && <Tick />}{task.task}{task.done && <span className="frame-accessible"> (done)</span>}</li>)}
       </ol> : <p className="script-goal">{script.goalText}</p>}
       {/* In the sticky heading: below a long sheet it would be out of sight. */}
       <div className="script-how" aria-live="polite">
-        {textIsRight ? <p key="right"><b>Done</b><span>Every row is right. {engine.mode === 'insert' ? <>Press <kbd>Esc</kbd> to finish.</> : null}</span></p>
-          : note !== null ? <p key={note}><b>Look</b><span><HowText text={note} /></span></p>
-          : current ? <p key={current.how}><b>How</b><span><HowText text={current.how} /></span></p> : null}
+        {textIsRight ? <p key="right"><b>Done</b><span>Every row is right. {engine.mode === 'normal' ? null : <>Press <kbd>Esc</kbd> to finish.</>}</span></p>
+          : <>
+            {current && <p key={current.how}><b>How</b><span><HowText text={current.how} /></span></p>}
+            {note !== null && <p key={note}><b>Look</b><span><HowText text={note} /></span></p>}
+          </>}
       </div>
     </header>
     <div className="script-columns">
@@ -93,12 +95,13 @@ export function ScriptPanel({ script, engine, solved = false }: ScriptPanelProps
         </output>
       </div>
       {target && <aside className="script-target" aria-label="Target text">
-        <h3>The {TARGET_NAMES[script.id] ?? 'ledger'} should read: <span className="script-count">{rightRows} of {targetLines.length} rows right</span></h3>
+        <h3>The {TARGET_NAMES[script.id] ?? 'ledger'} should read:</h3>
+        <p className="script-count">{rightRows} of {targetLines.length} rows right</p>
         <ol>{targetLines.map((line, index) => {
           const mine = partner.get(index);
           const matches = mine === line;
           return <li key={index} data-matched={matches}>
-            <span className="script-tick" aria-label={matches ? 'Line matches' : 'Line needs editing'}>{matches && <Tick />}</span>
+            <span className="script-tick" role="img" aria-label={matches ? 'Line matches' : 'Line needs editing'}>{matches && <Tick />}</span>
             <span><TargetRow line={line} mine={mine} /></span>
           </li>;
         })}</ol>
