@@ -1,4 +1,5 @@
 import type { WorldId } from '@escape/world';
+import type { Mood, Pace } from './mood.js';
 
 export type ScoreId = 'title' | WorldId;
 export interface ScoreNote {
@@ -6,8 +7,13 @@ export interface ScoreNote {
   readonly midi: number;
   readonly length: number;
   readonly passing?: true;
+  /** Half-note answers reserved for phrases where the melody is resting. */
+  readonly melodyRestOnly?: true;
 }
+export type Part = 'bed' | 'pulse' | 'melody' | 'counter' | 'drum';
 export interface ScoreVoice {
+  readonly part: Part;
+  readonly tick?: 'knock';
   readonly wave: 'sine' | 'triangle';
   readonly level: number;
   readonly attackMs: number;
@@ -76,10 +82,10 @@ function figure(list: readonly string[], pattern: string, steps: number): readon
 const ending = (section: readonly string[], ...last: readonly string[]): readonly string[] =>
   [...section.slice(0, section.length - last.length), ...last];
 const pluck = (notes: readonly ScoreNote[], level = 0.22, releaseMs = 420): ScoreVoice =>
-  ({ wave: 'triangle', level, attackMs: 10, releaseMs, notes });
-const low = (notes: readonly ScoreNote[], level = 0.2): ScoreVoice => ({ wave: 'sine', level, attackMs: 40, releaseMs: 180, notes });
+  ({ part: 'melody', wave: 'triangle', level, attackMs: 16, releaseMs, notes });
+const low = (notes: readonly ScoreNote[], level = 0.2): ScoreVoice => ({ part: 'pulse', wave: 'sine', level, attackMs: 40, releaseMs: 180, notes });
 const pad = (notes: readonly ScoreNote[], level = 0.07): ScoreVoice =>
-  ({ wave: 'triangle', level, attackMs: 900, releaseMs: 500, sustain: true, notes });
+  ({ part: 'bed', wave: 'triangle', level, attackMs: 900, releaseMs: 500, sustain: true, notes });
 const cadence = (figure: readonly number[], chord: readonly number[]): Score['cadence'] => ({
   figure: figure.map((midi, beat) => [beat, midi, 1] as const), chord, chordBeats: 6,
 });
@@ -172,9 +178,9 @@ const BELL_B = ['d5 - - - . . . .', 'g5 - - - . . e5 -', SILENCE_8, 'c5 - - - . 
   'f5 - - - . . d5 -', '. . . . a4 - - -', 'bb4 - - - . . . .', SILENCE_8];
 const BELLS = tune([...BELL_A, ...ending(BELL_A, 'g4 - - - . . a4 -', '. . bb4 - - - . .', SILENCE_8), ...BELL_B, ...BELL_A], 8);
 const library: Score = { cadence: cadence([77, 76, 74, 72], [46, 58, 65, 74]), bpm: 60, steps: 8, stepsPerBeat: 2, bars: 32, voices: [
-  { wave: 'sine', level: 0.2, attackMs: 4, releaseMs: 1600, notes: BELLS },
+  { part: 'melody', wave: 'sine', level: 0.2, attackMs: 4, releaseMs: 1600, notes: BELLS },
   // A bell's upper partial: an octave above, quieter and shorter.
-  { wave: 'sine', level: 0.035, attackMs: 4, releaseMs: 500, notes: BELLS.map(note => ({ ...note, midi: note.midi + 12, length: 1 })) },
+  { part: 'melody', wave: 'sine', level: 0.035, attackMs: 4, releaseMs: 500, notes: BELLS.map(note => ({ ...note, midi: note.midi + 12, length: 1 })) },
   pad(chords(['bb2 f3', 'c3 g3', 'g2 d3', 'bb2 f3', 'g2 d3', 'c3 g3', 'bb2 f3', 'bb2 f3'], 4, 8), 0.045),
 ] };
 
@@ -185,16 +191,16 @@ const CAVE_B = ['c#5 - - - b4 - - -', 'a4 - - - - - . .', 'b4 - - - a4 - - -', '
   'a4 - - - f#4 - - -', 'g4 - - - e4 - - -', 'f#4 - - - - - . .', SILENCE_8];
 const CAVE_LINE = tune([...CAVE_A, ...ending(CAVE_A, 'e4 - - - f#4 - - -', SILENCE_8), ...CAVE_B, ...CAVE_A], 8);
 const echoCaves: Score = { cadence: cadence([73, 71, 69, 67], [54, 61, 66, 73]), bpm: 56, steps: 8, stepsPerBeat: 2, bars: 32, voices: [
-  { wave: 'triangle', level: 0.18, attackMs: 80, releaseMs: 650, notes: CAVE_LINE },
-  { wave: 'sine', level: 0.07, attackMs: 110, releaseMs: 850, notes: CAVE_LINE.map(note => ({ ...note, step: note.step + 3 })) },
+  { part: 'melody', wave: 'triangle', level: 0.18, attackMs: 80, releaseMs: 650, notes: CAVE_LINE },
+  { part: 'melody', wave: 'sine', level: 0.07, attackMs: 110, releaseMs: 850, notes: CAVE_LINE.map(note => ({ ...note, step: note.step + 3 })) },
   pad(chords(Array.from({ length: 8 }, () => 'f#2 c#3'), 4, 8), 0.06),
 ] };
 
-export const SCORES: Readonly<Record<ScoreId, Score>> = {
+const COMPOSITIONS: Readonly<Record<ScoreId, Score>> = {
   title, margin, lowlands, quarry, wordwood, 'copper-port': copperPort, library, 'echo-caves': echoCaves,
   // The Last Page: the title theme alone, at half speed, and this time the question is answered.
   'last-page': { cadence: cadence([69, 72, 74, 76], [50, 57, 62, 69]), bpm: 33, steps: 8, stepsPerBeat: 2, bars: 32, voices: [
-    { wave: 'sine', level: 0.24, attackMs: 30, releaseMs: 900,
+    { part: 'melody', wave: 'sine', level: 0.24, attackMs: 30, releaseMs: 900,
       notes: tune([...TITLE_A, ...TITLE_A2, ...TITLE_B, ...ending(TITLE_A, 'f4 - e4 - c4 - - -', 'd4 - - - - . . .')], 8) },
   ] },
 };
@@ -203,3 +209,97 @@ export const loopSeconds = (score: Score): number => score.bars * score.steps * 
 
 /** Keep the entire four-note gesture within three seconds, including the final decay beat. */
 export const cadenceBeatSeconds = (score: Score): number => Math.min(0.75, 60 / score.bpm * (score.bpm <= 60 ? 0.5 : 1));
+
+/** Preserve the authored tunes and harmony; add space-filling parts within the same mode. */
+function orchestrate(id: ScoreId, score: Score): Score {
+  const melodicEcho = id === 'wordwood' || id === 'echo-caves' || id === 'library';
+  const voices: ScoreVoice[] = score.voices.map((voice, index) => {
+    const part: Part = voice.sustain ? 'bed' : index === 0 || melodicEcho ? 'melody' : 'pulse';
+    const top = Math.max(...voice.notes.map(note => note.midi));
+    const down = part === 'melody' ? Math.max(0, Math.ceil((top - 76) / 12)) * 12 : 0;
+    return { ...voice, part, attackMs: Math.max(part === 'melody' ? 16 : 25, voice.attackMs),
+      notes: voice.notes.map(note => ({ ...note, midi: note.midi - down })),
+    };
+  });
+  const end = (score.bars - (id === 'title' ? 1 : 0)) * score.steps;
+  const harmony = score.voices[1]?.notes ?? score.voices[0]!.notes;
+  if (!voices.some(voice => voice.part === 'bed')) {
+    const notes: ScoreNote[] = [];
+    const releaseSteps = Math.max(2, Math.ceil(0.5 / stepSeconds(score)));
+    for (let step = 0; step < end; step += score.steps * 2) {
+      const source = harmony.filter(note => note.step <= step).at(-1) ?? harmony[0]!;
+      const root = 36 + source.midi % 12;
+      const fifth = root + 7;
+      for (const midi of [root, ...(MODE_PITCH_CLASSES[id].includes(fifth % 12) ? [fifth] : [])])
+        notes.push({ step, midi, length: Math.min(score.steps * 2 - releaseSteps, end - step - releaseSteps) });
+    }
+    voices.push(pad(notes, 0.085));
+  }
+  const melody = voices[0]!.notes;
+  const counter: ScoreNote[] = [];
+  for (let step = score.steps / 2; step < end - score.steps; step += score.steps) {
+    const length = score.steps / 2;
+    if (melody.some(note => note.step < step + length && note.step + note.length > step)) continue;
+    const near = melody.filter(note => note.step <= step).at(-1) ?? melody[0]!;
+    // A modal third or sixth below the neighbouring melody, always below its register.
+    const midi = [near.midi - 4, near.midi - 3, near.midi - 9, near.midi - 8, near.midi - 7]
+      .find(pitch => pitch >= 36 && MODE_PITCH_CLASSES[id].includes(pitch % 12)) ?? 36 + MODE_PITCH_CLASSES[id][0]!;
+    counter.push({ step, midi, length });
+  }
+  // Busy tunes have no half-note holes. Give their silent arranged phrases a slow answer too.
+  for (let step = 0; step < end - score.steps; step += score.steps * 2) {
+    const near = melody.filter(note => note.step <= step).at(-1) ?? melody[0]!;
+    const midi = [near.midi - 4, near.midi - 3, near.midi - 9, near.midi - 8, near.midi - 7]
+      .find(pitch => pitch >= 36 && MODE_PITCH_CLASSES[id].includes(pitch % 12)) ?? 36 + MODE_PITCH_CLASSES[id][0]!;
+    counter.push({ step, midi, length: score.steps / 2, melodyRestOnly: true });
+  }
+  voices.push({ ...pluck(counter.sort((left, right) => left.step - right.step), 0.17, 500), part: 'counter', wave: 'sine', attackMs: 60 });
+  if (!voices.some(voice => voice.part === 'pulse')) {
+    const notes: ScoreNote[] = [];
+    for (let step = 0; step < end - score.steps; step += score.stepsPerBeat * 2) {
+      // Keep the original four-pitch ceiling, even beneath the layered bells and echoes.
+      const sounding = voices.flatMap(voice => voice.notes).filter(note => !note.melodyRestOnly && note.step < step + 1 && note.step + note.length > step).length;
+      if (sounding >= 4) continue;
+      const root = harmony.filter(note => note.step <= step).at(-1) ?? harmony[0]!;
+      notes.push({ step, midi: 36 + root.midi % 12, length: 1 });
+    }
+    voices.push({ ...low(notes, 0.1), part: 'pulse' });
+  }
+  voices.push({ part: 'drum', wave: 'sine', tick: 'knock', level: 0.2, attackMs: 4, releaseMs: 60,
+    notes: Array.from({ length: Math.floor((end - 1) / score.stepsPerBeat * 2) }, (_, index) => ({
+      step: index * score.stepsPerBeat / 2, midi: score.cadence.chord[0]!, length: 0.12,
+    })) });
+  return { ...score, voices };
+}
+export const SCORES: Readonly<Record<ScoreId, Score>> = Object.fromEntries(
+  (Object.entries(COMPOSITIONS) as [ScoreId, Score][]).map(([id, score]) => [id, orchestrate(id, score)]),
+) as Record<ScoreId, Score>;
+
+/** A duel or a race is felt from the first bar; a puzzle earns its drum. */
+const DRUMS: Readonly<Record<Pace, readonly [number, number, number, number]>> = { still: [0, 0, 0, 0], steady: [0, 0, 0.5, 0.8], urgent: [0.4, 0.55, 0.7, 0.85] };
+/** Measured: with one pulse level for all, a finished step was not heard (under 1 dB apart). */
+const PULSE = [0.35, 0.5, 0.7, 0.85] as const;
+export type Arrangement = Readonly<Record<Part, number>> & { readonly filter: number; readonly heartbeat: 0 | 1 | 2; readonly softMelody: boolean };
+/** Absolute phrase index makes both melody visits and four full-loop variants replayable. */
+export function arrangement(score: Score, bar: number, loop: number, mood: Mood, pace: Pace = 'steady'): Arrangement {
+  const phrase = Math.floor((loop * score.bars + bar) / 8);
+  const variant = loop % 4;
+  // A stage opens with its tune, so it has a name; after that the tune comes and goes.
+  const melodyOn = mood.energy === 0 ? (phrase + Number(variant === 2)) % 2 === 0 : mood.energy === 3 ? phrase % 4 !== 3 : phrase % 3 !== 2;
+  const melody = melodyOn && !(variant === 3 && bar < 16) ? 0.8 : 0;
+  const counter = mood.energy >= 2 ? melody ? 0.7 : 0.9 : 0;
+  const pulse = Math.max(PULSE[mood.energy], pace === 'urgent' ? 0.6 : 0);
+  const { danger } = mood;
+  return { bed: 1, pulse: danger === 2 ? 0 : variant === 2 && bar < 8 ? 0 : danger ? pulse * 0.5 : pulse,
+    melody: danger === 2 ? 0 : danger === 1 ? melody * 0.3 : melody,
+    counter: danger === 2 ? 0 : danger === 1 ? counter * 0.3 : counter,
+    drum: danger ? 0 : DRUMS[pace][mood.energy], filter: danger === 2 ? 1000 : danger === 1 ? 1400 : 2200,
+    heartbeat: danger, softMelody: variant === 1 };
+}
+
+/** Stable per-event timing/level variation, independent of scheduler order or device. */
+export function humanise(score: Score, loop: number, step: number): { readonly level: number; readonly offset: number } {
+  let hash = 2166136261;
+  for (const char of `${score.voices[0]?.notes[0]?.midi}:${score.bpm}:${score.steps}:${loop}:${step}`) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+  return { level: 0.85 + (hash >>> 0) / 4294967295 * 0.3, offset: ((hash >>> 8) % 1801 - 900) / 100000 };
+}

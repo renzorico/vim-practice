@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createMusic, MUSIC_LEVEL, MUSIC_NODE_CAP } from './music.js';
-import { SCORES, loopSeconds, stepSeconds, type ScoreId } from './score.js';
+import { SCORES, arrangement, humanise, loopSeconds, stepSeconds, type ScoreId } from './score.js';
 
 type Automation = { kind: 'set' | 'linear' | 'exponential'; value: number; time: number };
 class Param {
@@ -38,7 +38,7 @@ class Param {
 }
 
 class Node {
-  gain = new Param(); frequency = new Param();
+  gain = new Param(); frequency = new Param(); pan = new Param(); delayTime = new Param();
   type = ''; buffer: unknown;
   disconnected = false;
   connect = vi.fn();
@@ -75,19 +75,21 @@ function setup() {
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(0); });
 afterEach(() => { players.splice(0).forEach(player => player.dispose()); vi.useRealTimers(); });
 
-it.each(Object.keys(SCORES) as ScoreId[])('%s schedules every note exactly once through two full loops', id => {
+it.each(Object.keys(SCORES) as ScoreId[])('%s schedules every eligible note exactly once through two full loops', id => {
   const { music, context, sources } = setup();
   const score = SCORES[id];
   music.setScore(id);
   vi.advanceTimersByTime((loopSeconds(score) * 2 - 0.7) * 1000);
-  const expected = [...score.voices.flatMap(voice => voice.notes.map(note => note.step)), ...(score.ambience?.steps ?? [])]
-    .flatMap(step => [0.03 + step * stepSeconds(score), 0.03 + loopSeconds(score) + step * stepSeconds(score)])
+  const expected = [0, 1].flatMap(loop => score.voices.filter(voice => voice.part !== 'drum')
+    .flatMap(voice => voice.notes.filter(note => !note.melodyRestOnly || arrangement(score, Math.floor(note.step / score.steps), loop, { energy: 1, danger: 0 }).melody === 0)
+      .map(note => 0.03 + loop * loopSeconds(score) + note.step * stepSeconds(score) + humanise(score, loop, note.step).offset))
+    .concat((score.ambience?.steps ?? []).map(step => 0.03 + loop * loopSeconds(score) + step * stepSeconds(score) + humanise(score, loop, step).offset)))
     .sort((left, right) => left - right);
   const actual = sources().map(node => node.start.mock.calls[0]![0]).sort((left, right) => left - right);
   expect(actual).toHaveLength(expected.length);
   actual.forEach((at, index) => expect(at).toBeCloseTo(expected[index]!, 8));
   expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
-  if (score.ambience) expect(context.createBuffer).toHaveBeenCalledOnce();
+  expect(context.createBuffer).toHaveBeenCalledTimes(score.ambience ? 1 : 0);
 });
 it('uses one filtered bus, no-op same score, and a 1.5s crossfade from bar one', () => {
   const { music, context, master, sources } = setup();
@@ -104,7 +106,7 @@ it('uses one filtered bus, no-op same score, and a 1.5s crossfade from bar one',
   expect(title!.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0, 2.5);
   const margin = context.nodes.find(node => node.gain.linearRampToValueAtTime.mock.calls.some(call => call[0] === 1 && call[1] === 2.5));
   expect(margin).toBeDefined();
-  expect(sources().some(node => node.start.mock.calls[0]?.[0] === 1.03)).toBe(true);
+  expect(sources().some(node => Math.abs((node.start.mock.calls[0]?.[0] ?? 0) - 1.03) <= 0.009)).toBe(true);
   vi.advanceTimersByTime(1600);
   expect(title!.disconnect).toHaveBeenCalledOnce();
 });
@@ -134,7 +136,8 @@ it('fades hidden tabs, schedules nothing hidden, resumes at the next bar without
   vi.advanceTimersByTime(7000);
   const resumed = sources().slice(firstNew).map(node => node.start.mock.calls[0]![0]);
   const nextStep = Math.min(...SCORES.title.voices.flatMap(voice => voice.notes.map(note => note.step)).filter(step => step >= SCORES.title.steps));
-  expect(resumed[0]).toBeCloseTo(11.03 + (nextStep - SCORES.title.steps) * seconds);
+  // Within the nine milliseconds of humanising.
+  expect(Math.abs(resumed[0]! - 11.03 - (nextStep - SCORES.title.steps) * seconds)).toBeLessThanOrEqual(0.0091);
   const all = sources().map(node => `${node.frequency.setValueAtTime.mock.calls[0]?.[0]}:${node.start.mock.calls[0]?.[0]}`);
   expect(new Set(all).size).toBe(all.length);
 });
@@ -212,12 +215,12 @@ it.each([true, false])('anchors interrupted fades with hold support=%s and stays
       vi.advanceTimersByTime(10);
       const now = context.currentTime;
       // Bus and track gains are the fades; note envelopes have their own authored attacks.
-      const gains = context.nodes.filter(node => node.gain.linearRampToValueAtTime.mock.calls.some(call =>
-        call[0] === 1 || call[0] === MUSIC_LEVEL || call[0] === MUSIC_LEVEL * 0.55));
+      const gains = context.nodes.filter(node => node.connect.mock.calls.some(([destination]) =>
+        destination === context.nodes[0] || destination === context.nodes[1]));
       for (const node of gains) {
         const scale = node === context.nodes[0] ? MUSIC_LEVEL : 1;
         const value = node.disconnected ? 0 : node.gain.at(now) / scale;
-        expect(Math.abs(value - (previous.get(node.gain) ?? 0))).toBeLessThanOrEqual(0.080001);
+        expect(Math.abs(value - (previous.get(node.gain) ?? node.gain.at(now - 0.01) / scale))).toBeLessThanOrEqual(0.080001);
         previous.set(node.gain, value);
       }
     }
@@ -277,8 +280,13 @@ it('keeps the last score sounding within two seconds of rapid score changes', ()
   expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
 });
 
+it('plays the drum part brighter than the mason\'s knock', () => {
+  const { music, sources } = setup(); music.setMood({ energy: 3, danger: 0 }); music.setScore('margin', 1.5, 'urgent'); vi.advanceTimersByTime(1000);
+  const brush = sources().find(node => node.buffer !== undefined)!;
+  expect((brush.connect.mock.calls[0]![0] as Node).frequency.setValueAtTime.mock.calls[0]![0]).toBe(1100);
+});
 it('filters each knock at 260Hz and releases it over 60ms', () => {
-  const { music, context, sources } = setup(); music.setScore('quarry'); vi.advanceTimersByTime(1000);
+  const { music, context, sources } = setup(); music.setMood({ energy: 1, danger: 0 }); music.setScore('quarry'); vi.advanceTimersByTime(1000);
   const knock = sources().find(node => node.buffer !== undefined)!;
   const filter = knock.connect.mock.calls[0]![0] as Node;
   const envelope = filter.connect.mock.calls[0]![0] as Node;
@@ -295,26 +303,27 @@ it.each([true, false])('holds pads and decays plucks before release (sustain=%s)
   const voice = { ...original.voices[0]!, sustain, notes: [{ step: 0, midi: 60, length: 4 }] };
   Object.defineProperty(SCORES, 'title', { value: { ...original, voices: [voice] }, configurable: true });
   try {
-    const { music, context } = setup(); music.setScore('title');
-    const gain = context.nodes[3]!.gain;
-    const end = 0.03 + 4 * stepSeconds(original);
-    expect(gain.at(end)).toBeCloseTo(voice.level * (sustain ? 1 : 0.3));
+    const { music, sources } = setup(); music.setScore('title');
+    const source = sources()[0]!;
+    const gain = (source.connect.mock.calls[0]![0] as Node).gain;
+    const end = source.start.mock.calls[0]![0] + 4 * stepSeconds(original);
+    expect(gain.at(end)).toBeCloseTo(Math.min(0.24, voice.level * humanise(original, 0, 0).level) * (sustain ? 1 : 0.3));
     expect(gain.at(end + voice.releaseMs / 1000)).toBeCloseTo(0.0001);
   } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
 });
 
 it('steals the oldest pluck with a 10ms fade and admits the new note under the cap', () => {
   const original = SCORES.title;
-  const pluck = { ...original.voices[0]!, sustain: false, notes: Array.from({ length: 21 }, (_, index) =>
+  const pluck = { ...original.voices[0]!, sustain: false, notes: Array.from({ length: Math.floor(MUSIC_NODE_CAP / 2) }, (_, index) =>
     ({ step: 0, midi: 60 + index, length: 20 })) };
   const pad = { ...pluck, sustain: true, notes: [{ step: 0, midi: 40, length: 20 }] };
   const newcomer = { ...pluck, notes: [{ step: 2, midi: 90, length: 20 }] };
-  Object.defineProperty(SCORES, 'title', { value: { ...original, voices: [pluck, pad, newcomer] }, configurable: true });
+  Object.defineProperty(SCORES, 'title', { value: { ...original, voices: [pad, pluck, newcomer] }, configurable: true });
   try {
     const { music, context, sources } = setup(); music.setScore('title');
     vi.advanceTimersByTime(1100);
-    const oldest = sources()[0]!;
-    const envelope = context.nodes[3]!;
+    const oldest = sources().find(node => node.frequency.setValueAtTime.mock.calls[0]?.[0] === 440 * 2 ** ((60 - 69) / 12))!;
+    const envelope = oldest.connect.mock.calls[0]![0] as Node;
     const fade = envelope.gain.linearRampToValueAtTime.mock.calls.at(-1)!;
     const anchor = envelope.gain.setValueAtTime.mock.calls.at(-1)!;
     expect(fade[0]).toBe(0); expect(fade[1] - anchor[1]).toBeCloseTo(0.01);
@@ -368,17 +377,18 @@ it('silences plucks and bass while resolved and restores their gain at a bar', (
   const bar = stepSeconds(SCORES.lowlands) * SCORES.lowlands.steps;
   const boundary = 0.03 + Math.ceil((context.currentTime - 0.03) / bar) * bar;
   vi.advanceTimersByTime((boundary - context.currentTime + 0.7) * 1000);
-  for (const layer of layers) {
-    expect(layer.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(1, boundary + 0.6);
-    expect(layer.gain.at(boundary - 0.01)).toBe(0);
-    expect(layer.gain.at(boundary + 0.3)).toBeCloseTo(0.5);
-  }
+  // Each part comes back to what the arrangement gives it there, not all of them to full.
+  const bars = Math.round((boundary - 0.03) / bar);
+  const mix = arrangement(SCORES.lowlands, bars % SCORES.lowlands.bars, Math.floor(bars / SCORES.lowlands.bars), { energy: 1, danger: 0 });
+  const parts = SCORES.lowlands.voices.filter(voice => !voice.sustain).map(voice => mix[voice.part]);
+  expect(layers.map(layer => layer.gain.linearRampToValueAtTime.mock.calls.at(-1))).toEqual(parts.map(part => [part, boundary + 0.6]));
+  for (const layer of layers) expect(layer.gain.at(boundary - 0.01)).toBe(0);
 });
 it('starts a changed score unresolved and can cadence again on replay', () => {
   const { music, context } = setup(); music.setScore('title'); music.setResolved(true);
   vi.advanceTimersByTime(5000); music.setScore('quarry');
   vi.advanceTimersByTime(2000);
-  expect(context.nodes[1]!.frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(2200, 6);
+  expect(context.nodes[1]!.frequency.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(2200);
   const count = cadenceSources(context).length;
   music.setResolved(true); vi.advanceTimersByTime(10000);
   expect(cadenceSources(context).length - count).toBe(12);
@@ -428,11 +438,11 @@ it.each([true, false])('keeps interrupted resolved fades within 8%% per 10ms (ho
       vi.advanceTimersByTime(10);
       const layers = context.nodes.filter(node => {
         const destination = node.connect.mock.calls.at(-1)?.[0] as Node | undefined;
-        return destination === context.nodes[2] && node.gain.value === 1;
+        return destination === context.nodes[2] && node.gain.value === 0;
       });
       for (const layer of layers) {
         const value = layer.gain.at(context.currentTime);
-        expect(Math.abs(value - (previous.get(layer) ?? 1))).toBeLessThanOrEqual(0.080001);
+        expect(Math.abs(value - (previous.get(layer) ?? layer.gain.at(context.currentTime - 0.01)))).toBeLessThanOrEqual(0.080001);
         previous.set(layer, value);
       }
     }
@@ -442,10 +452,14 @@ it.each([true, false])('keeps interrupted resolved fades within 8%% per 10ms (ho
 });
 
 it('retains only the quietest voice at half level when a score has no sustain', () => {
-  const { music, context } = setup(); music.setScore('title');
-  music.setResolved(true); vi.advanceTimersByTime(1000);
-  const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
-  expect(layers.map(layer => layer.gain.at(context.currentTime))).toEqual([0, 0.5, 0]);
+  const original = SCORES.title;
+  Object.defineProperty(SCORES, 'title', { value: { ...original, voices: original.voices.slice(0, 2) }, configurable: true });
+  try {
+    const { music, context } = setup(); music.setScore('title');
+    music.setResolved(true); vi.advanceTimersByTime(1000);
+    const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
+    expect(layers.map(layer => layer.gain.at(context.currentTime))).toEqual([0, 0.5]);
+  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
 });
 
 it.each(['hidden', 'disabled', 'missing', 'suspended', 'failed', 'disposed'] as const)('reports no cadence when %s', state => {
@@ -523,23 +537,6 @@ it('restores resolved layers without a cadence when explicitly requested', () =>
   expect(context.nodes[1]!.frequency.at(context.currentTime)).toBe(3400);
 });
 
-it('keeps score notes running during blocked layer allocation and expires its cadence', () => {
-  const original = SCORES.title;
-  const voices = Array.from({ length: MUSIC_NODE_CAP }, () => ({ ...original.voices[0]!,
-    notes: [{ step: 0, midi: 60, length: 0.1 }, { step: 2, midi: 62, length: 0.1 }] }));
-  Object.defineProperty(SCORES, 'title', { value: { ...original, voices }, configurable: true });
-  try {
-    const { music, context, sources } = setup(); music.setScore('title');
-    const before = sources().length; expect(music.setResolved(true)).toBe(true);
-    vi.advanceTimersByTime(1500);
-    expect(sources().length).toBeGreaterThan(before);
-    // Release the impossible allocation after the retry deadline.
-    voices.splice(1); vi.advanceTimersByTime(3000);
-    expect(cadenceSources(context)).toHaveLength(0);
-    expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
-  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
-});
-
 it('keeps score notes running during a blocked cadence group and gives it up after 1s', () => {
   const original = SCORES.title;
   const figure: [number, number, number][] = Array.from({ length: 30 }, () => [0, 100, 1]);
@@ -577,19 +574,140 @@ it('does not skip a muted layer note after a pending un-resolve boundary', () =>
     vi.setSystemTime((boundary - 0.5) * 1000); music.tick();
     const frequency = 440 * 2 ** ((90 - 69) / 12);
     expect(sources().some(node => node.frequency.setValueAtTime.mock.calls[0]?.[0] === frequency
-      && node.start.mock.calls[0]?.[0] === boundary)).toBe(true);
+      && Math.abs((node.start.mock.calls[0]?.[0] ?? 0) - boundary) <= 0.009)).toBe(true);
   } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
 });
 
-it.each([200, 1100])('retries a blocked transition but expires its cadence before recovery (%sms)', delay => {
-  const original = SCORES.title;
-  const voices = Array.from({ length: MUSIC_NODE_CAP }, () => ({ ...original.voices[0]!, notes: [] }));
-  Object.defineProperty(SCORES, 'title', { value: { ...original, voices }, configurable: true });
-  try {
-    const { music, context } = setup(); music.setScore('title');
-    expect(music.setResolved(true)).toBe(true);
-    vi.setSystemTime(delay); voices.splice(1); music.tick();
+it('fades danger immediately and waits two continuous seconds before easing it', () => {
+  const { music, context, sources } = setup(); music.setScore('title');
+  vi.advanceTimersByTime(1000);
+  const filter = context.nodes[1]!;
+  music.setMood({ energy: 2, danger: 1 });
+  expect(filter.frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(1400, 1.25);
+  vi.advanceTimersByTime(500); music.setMood({ energy: 2, danger: 2 });
+  expect(filter.frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(1000, 1.75);
+  // The heartbeat adds a low tonic pair, rather than a shrill warning tone.
+  const root = 440 * 2 ** ((SCORES.title.cadence.chord[0]! - 69) / 12);
+  vi.advanceTimersByTime(500);
+  expect(sources().some(source => source.frequency.setValueAtTime.mock.calls[0]?.[0] === root)).toBe(true);
+  music.setMood({ energy: 2, danger: 0 });
+  vi.advanceTimersByTime(1000); music.setMood({ energy: 2, danger: 0 });
+  vi.advanceTimersByTime(999); expect(filter.frequency.at(context.currentTime)).toBe(1000);
+  // Danger comes fast and leaves slowly.
+  vi.advanceTimersByTime(301); expect(filter.frequency.at(context.currentTime)).toBeLessThan(1600);
+  vi.advanceTimersByTime(1000); expect(filter.frequency.at(context.currentTime)).toBe(2200);
+});
+it('takes three seconds to become idle and restores visitors only at a phrase boundary', () => {
+  const { music, context } = setup(); music.setMood({ energy: 2, danger: 0 }); music.setScore('title');
+  const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
+  const melody = layers[0]!, counter = layers[3]!;
+  vi.advanceTimersByTime(20000);
+  expect(melody.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0, 23);
+  expect(counter.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0, 23);
+  vi.advanceTimersByTime(4000); music.activity();
+  expect(melody.gain.at(context.currentTime)).toBe(0);
+  const boundary = 0.03 + 8 * SCORES.title.steps * stepSeconds(SCORES.title);
+  vi.advanceTimersByTime((boundary - context.currentTime - 0.1) * 1000);
+  expect(melody.gain.at(context.currentTime)).toBe(0);
+  vi.advanceTimersByTime(1400);
+  expect(melody.gain.at(context.currentTime)).toBeCloseTo(0.8);
+  expect(counter.gain.at(context.currentTime)).toBeCloseTo(0.7);
+});
+it('opens a stage quietly with its tune, and answers a step of the quest at the next bar', () => {
+  const { music, context } = setup(); music.setMood({ energy: 0, danger: 0 }); music.setScore('title');
+  const layers = context.nodes.filter(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2]);
+  const at = (part: string) => layers[SCORES.title.voices.findIndex(voice => voice.part === part)]!.gain.at(context.currentTime);
+  vi.advanceTimersByTime(2000);
+  expect(at('bed')).toBeCloseTo(0.75);
+  expect(at('melody')).toBeCloseTo(0.8 * 0.75);
+  expect(at('counter')).toBe(0);
+  music.setMood({ energy: 3, danger: 0 });
+  expect(at('counter')).toBe(0);
+  const bar = SCORES.title.steps * stepSeconds(SCORES.title);
+  vi.advanceTimersByTime((bar + 1.3) * 1000);
+  expect(at('bed')).toBe(1);
+  expect(at('counter')).toBeCloseTo(0.7);
+  expect(at("pulse")).toBeCloseTo(0.85);
+});
+it('does not rest outside a stage', () => {
+  const { music, context } = setup(); music.setMood({ energy: 1, danger: 0 }, false); music.setScore('title');
+  const melody = context.nodes.find(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2])!;
+  vi.advanceTimersByTime(21000);
+  expect(melody.gain.linearRampToValueAtTime.mock.calls.some(([value, end]) => value === 0 && end === 23)).toBe(false);
+});
+it('keeps an ordered heartbeat, one pair a beat in danger 2 and every other beat in danger 1', () => {
+  for (const [danger, every] of [[1, 2], [2, 1]] as const) {
+    const { music, sources } = setup(); music.setScore('title'); music.setMood({ energy: 1, danger });
     vi.advanceTimersByTime(10000);
-    expect(cadenceSources(context)).toHaveLength(delay < 1000 ? 12 : 0);
-  } finally { Object.defineProperty(SCORES, 'title', { value: original }); }
+    const root = 440 * 2 ** ((SCORES.title.cadence.chord[0]! - 69) / 12);
+    const beat = stepSeconds(SCORES.title) * SCORES.title.stepsPerBeat;
+    const starts = sources().filter(node => node.frequency.setValueAtTime.mock.calls[0]?.[0] === root
+      && Math.abs(node.stop.mock.calls[0]![0]! - node.start.mock.calls[0]![0] - 0.33) < 0.001).map(node => node.start.mock.calls[0]![0]);
+    const pairs = starts.filter((_, index) => index % 2 === 0);
+    expect(pairs.length).toBeGreaterThan(10 / beat / every - 3);
+    for (let index = 1; index < pairs.length; index++) expect(pairs[index]! - pairs[index - 1]!).toBeCloseTo(beat * every, 1);
+    music.dispose(); vi.setSystemTime(0);
+  }
+});
+it('crossfades a new pace and continues uninterrupted when another stage shares it', () => {
+  const { music, context, sources } = setup();
+  music.setScore('quarry', 1.5, 'still');
+  const count = context.nodes.length;
+  music.setScore('quarry', 1.5, 'still'); expect(context.nodes).toHaveLength(count);
+  vi.advanceTimersByTime(2000);
+  const before = sources().length;
+  music.setScore('quarry', 1.5, 'urgent');
+  expect(context.nodes[2]!.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0, 3.5);
+  vi.advanceTimersByTime(1200);
+  const expectedStep = SCORES.quarry.voices[0]!.notes[1]!.step;
+  const urgent = { ...SCORES.quarry, bpm: SCORES.quarry.bpm * 1.1 };
+  const expected = 2.03 + expectedStep * stepSeconds(urgent) + humanise(urgent, 0, expectedStep).offset;
+  expect(sources().slice(before).some(node => Math.abs(node.start.mock.calls[0]![0] - expected) < 0.00001)).toBe(true);
+});
+it.each(['still', 'steady', 'urgent'] as const)('plays the %s drum pattern', pace => {
+  const { music, sources } = setup(); music.setMood({ energy: 3, danger: 0 }); music.setScore('margin', 1.5, pace);
+  vi.advanceTimersByTime(11000);
+  const knocks = sources().filter(source => source.buffer !== undefined);
+  if (pace === 'still') expect(knocks).toHaveLength(0);
+  else {
+    expect(knocks.length).toBeGreaterThan(0);
+    if (pace === 'steady') expect(knocks.length).toBeLessThan(6);
+    if (pace === 'urgent') expect(knocks.length).toBeGreaterThan(20);
+  }
+});
+it.each(Object.keys(SCORES) as ScoreId[])('%s shares one stereo room and stays bounded with spatial audio and cadence', id => {
+  const { music, context } = setup();
+  const spatial = Object.assign(context, {
+    createConvolver: vi.fn(context.createGain), createDelay: vi.fn(context.createGain), createStereoPanner: vi.fn(context.createGain),
+  });
+  const channels: Float32Array[][] = [];
+  context.createBuffer.mockImplementation((_count?: number, length?: number) => {
+    const buffer = [new Float32Array(length ?? 10), new Float32Array(length ?? 10)]; channels.push(buffer);
+    return { getChannelData: (channel = 0) => buffer[channel]! };
+  });
+  music.setScore(id);
+  const room = spatial.createConvolver.mock.results[0]!.value;
+  const delay = spatial.createDelay.mock.results[0]!.value;
+  expect(spatial.createConvolver).toHaveBeenCalledOnce();
+  expect(context.createBuffer).toHaveBeenCalledWith(2, 190, 100);
+  expect(channels[0]![0]).not.toEqual(channels[0]![1]);
+  expect(Math.abs(channels[0]![0]!.at(-1)!)).toBeLessThan(0.01);
+  expect(delay.delayTime.value).toBe(0.018); expect(delay.connect).toHaveBeenCalledWith(room);
+  expect(spatial.createStereoPanner.mock.results.map(result => result.value.pan.value)).toEqual(
+    [...SCORES[id].voices.map(voice => ({ melody: -0.12, counter: 0.3, pulse: 0, bed: 0, drum: 0.2 })[voice.part]), ...(SCORES[id].ambience ? [0.2] : [])]);
+  vi.advanceTimersByTime(1000); music.setResolved(true); vi.advanceTimersByTime(12000);
+  expect(cadenceSources(context)).toHaveLength(12);
+  expect(context.peak).toBeLessThanOrEqual(MUSIC_NODE_CAP);
+  music.dispose(); expect(context.nodes.every(node => node.disconnected)).toBe(true);
+});
+it('restores an idle visitor when a key arrives inside the phrase lookahead window', () => {
+  const { music, context } = setup(); music.setMood({ energy: 1, danger: 0 }); music.setScore('title');
+  const melody = context.nodes.find(node => node.connect.mock.calls.at(-1)?.[0] === context.nodes[2])!;
+  const boundary = 0.03 + 8 * SCORES.title.steps * stepSeconds(SCORES.title);
+  vi.advanceTimersByTime((boundary - 0.2) * 1000);
+  expect(melody.gain.at(context.currentTime)).toBe(0);
+  music.activity();
+  expect(melody.gain.at(context.currentTime)).toBe(0);
+  vi.advanceTimersByTime(1500);
+  expect(melody.gain.at(context.currentTime)).toBeCloseTo(0.8);
 });

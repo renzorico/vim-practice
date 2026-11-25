@@ -23,7 +23,7 @@ const harness = vi.hoisted(() => ({
 }));
 const fake = vi.hoisted(() => ({ create: vi.fn(() => ({
   setResolved: vi.fn(() => true), setScore: vi.fn(), setEnabled: vi.fn(), setLevel: vi.fn(), duck: vi.fn(),
-  setHidden: vi.fn(), dispose: vi.fn(),
+  activity: vi.fn(), setMood: vi.fn(), setHidden: vi.fn(), dispose: vi.fn(),
 })) }));
 vi.mock('./music.js', () => ({ createMusic: fake.create }));
 vi.mock('react', async original => ({ ...await original<typeof import('react')>(),
@@ -60,12 +60,12 @@ beforeEach(() => { fake.create.mockClear(); vi.mocked(synth.play).mockClear(); }
 afterEach(() => { unmount(); vi.unstubAllGlobals(); });
 it('passes score, text level, death cut and retry to the player', () => {
   render(); const music = fake.create.mock.results[0]!.value;
-  expect(music.setScore).toHaveBeenLastCalledWith('margin', 1.5);
+  expect(music.setScore).toHaveBeenLastCalledWith('margin', 1.5, 'steady');
   render({ ...view, world: 'lowlands', text: true });
-  expect(music.setScore).toHaveBeenLastCalledWith('lowlands', 1.5);
+  expect(music.setScore).toHaveBeenLastCalledWith('lowlands', 1.5, 'steady');
   expect(music.setLevel).toHaveBeenLastCalledWith(0.6);
-  render({ ...view, dead: true }); expect(music.setScore).toHaveBeenLastCalledWith(null, 0.2);
-  render(); expect(music.setScore).toHaveBeenLastCalledWith('margin', 1.5);
+  render({ ...view, dead: true }); expect(music.setScore).toHaveBeenLastCalledWith(null, 0.2, 'steady');
+  render(); expect(music.setScore).toHaveBeenLastCalledWith('margin', 1.5, 'steady');
 });
 it('ducks for presentation state and notebook state without querying the DOM', () => {
   render(); const music = fake.create.mock.results[0]!.value;
@@ -88,8 +88,8 @@ it('recreates the player and visibility listener on StrictMode mount, unmount, m
   page.hidden = true; page.dispatchEvent(new Event('visibilitychange'));
   expect(first.setHidden).toHaveBeenCalledTimes(1);
   expect(second.setHidden).toHaveBeenLastCalledWith(true);
-  expect(second.setScore).toHaveBeenLastCalledWith('margin', 1.5);
-  expect(add).toHaveBeenCalledTimes(2); expect(remove).toHaveBeenCalledTimes(1);
+  expect(second.setScore).toHaveBeenLastCalledWith('margin', 1.5, 'steady');
+  expect(add).toHaveBeenCalledTimes(4); expect(remove).toHaveBeenCalledTimes(2);
 });
 
 it('holds resolution through cleared-stage overlays and resets on replay and title', () => {
@@ -130,4 +130,12 @@ it('restores cleared state without a cadence on mount and stage entry', () => {
   render({ ...view, cleared: true });
   expect(music.setResolved).toHaveBeenLastCalledWith(true, { cadence: false });
   expect(synth.play).not.toHaveBeenCalled();
+});
+it('observes passive key activity and removes the listener on unmount', () => {
+  const page = Object.assign(new EventTarget(), { hidden: false }); vi.stubGlobal('document', page);
+  const add = vi.spyOn(page, 'addEventListener');
+  render(); const music = fake.create.mock.results[0]!.value;
+  expect(add).toHaveBeenCalledWith('keydown', expect.any(Function), { passive: true });
+  page.dispatchEvent(new Event('keydown')); expect(music.activity).toHaveBeenCalledOnce();
+  unmount(); page.dispatchEvent(new Event('keydown')); expect(music.activity).toHaveBeenCalledOnce();
 });
