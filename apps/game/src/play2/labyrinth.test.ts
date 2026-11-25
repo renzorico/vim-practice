@@ -213,7 +213,7 @@ it('keeps the supplied dialogue and ending wording, including line breaks', () =
   const lines = (id: string) => content.dialogues.find(dialogue => dialogue.id === `labyrinth.${id}`)?.lines;
   expect(lines('intro')).toEqual([
     { speaker: 'system', text: 'The labyrinth. You need three levers pulled,\nthen the stair. Hooves, getting closer.' },
-    { speaker: 'system', text: 'On the stair, press `ma`: it marks the way home.\nLater, `` `a `` brings you back.' },
+    { speaker: 'system', text: 'You stand on the stair. Press `ma` to mark it.\nLater, `` `a `` brings you back.' },
   ]);
   for (const [id, text] of [
     ['lever-x', 'The first lever drops. Far off, a grind.'],
