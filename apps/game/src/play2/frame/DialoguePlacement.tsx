@@ -15,7 +15,7 @@ export function DialoguePlacement({ field, world, stage, follow = false, childre
   const [side, setSide] = useState<'top' | 'bottom'>('bottom');
   useOpeningLayoutEffect(() => {
     const box = field.current?.getBoundingClientRect();
-    if (box && box.height > 0) setSide(dialogueSide(world.engine.lines, world.engine.cursor, box, stage.windowHeight));
+    if (box && box.height > 0) setSide(dialogueSide(world.engine.lines, world.engine.cursor, box, stage));
     // Deliberately latch the opening snapshot, not each line or resize.
   }, [follow ? world.engine.cursor.line : 0]);
   return <div className={`dialogue-placement dialogue-placement--${side}`}>{children}</div>;

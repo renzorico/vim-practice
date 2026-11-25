@@ -34,7 +34,7 @@ import {
 } from './animate.js';
 import { BACKGROUND, BUFFER_NAME, edgeColor, spriteColor, TILE_SCALE, TILE_SIZE } from './palette.js';
 import { blankEdges, tileGrid } from './tiles.js';
-import { bufferSize, cameraTarget, fieldZoom } from './camera.js';
+import { bufferSize, cameraTarget, stageZoom } from './camera.js';
 
 export interface FieldFrame {
   readonly state: WorldState;
@@ -472,7 +472,7 @@ export class FieldScene extends Phaser.Scene {
       && !this.frame.darkness && !DARK_STAGES[stage.id];
     if (!visible) { this.objectiveArrow?.setVisible(false); return; }
     this.objectiveArrow ??= this.add.image(0, 0, this.guidanceTexture('arrow')).setDepth(4);
-    const zoom = fieldZoom(this.scale.height, stage.windowHeight);
+    const zoom = stageZoom(stage, this.scale);
     const halfWidth = this.scale.width / zoom / 2;
     const halfHeight = this.scale.height / zoom / 2;
     const inset = TILE_SIZE / 2;
@@ -681,7 +681,7 @@ export class FieldScene extends Phaser.Scene {
   }
 
   private positionLabel(): void {
-    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    const zoom = stageZoom(this.frame.stage, this.scale);
     this.label?.setScale(1 / zoom).setPosition(
       (this.scale.width - this.scale.width / zoom) / 2 + 8 / zoom,
       (this.scale.height - this.scale.height / zoom) / 2 + 8 / zoom,
@@ -701,7 +701,7 @@ export class FieldScene extends Phaser.Scene {
    */
   private positionCamera(cell: { readonly line: number; readonly col: number } = this.frame.state.engine.cursor): void {
     if (!this.player) return;
-    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    const zoom = stageZoom(this.frame.stage, this.scale);
     this.cameras.main.setZoom(zoom);
     // A castle keeps its keeper in view when the player and the keeper fit on one screen.
     const keeper = this.frame.stage.type === 'castle'
@@ -1008,7 +1008,7 @@ export class FieldScene extends Phaser.Scene {
     if (count === 0 && this.ambientHidden) return;
     this.ambientHidden = count === 0;
     if (count > 0) this.ambientElapsed += delta;
-    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    const zoom = stageZoom(this.frame.stage, this.scale);
     this.ambientWidth = this.scale.width / zoom;
     this.ambientHeight = this.scale.height / zoom;
     for (let index = 0; index < PARTICLE_CAP; index++) {
@@ -1207,7 +1207,7 @@ export class FieldScene extends Phaser.Scene {
         && (trigger.unless === undefined || this.frame.state.flags[trigger.unless] !== true));
       if (canTalk && Math.abs(at.line - entity.at.line) + Math.abs(at.col - entity.at.col) === 1) {
         const text = interactionLabel(entity, this.frame.stage, this.frame.state);
-        const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+        const zoom = stageZoom(this.frame.stage, this.scale);
         const halfWidth = this.scale.width / zoom / 2; const halfHeight = this.scale.height / zoom / 2;
         const point = slipPosition(entity.at, this.frame.state.engine.cursor, text.length * 4.3 + 6, 10, {
           left: this.cameraX - halfWidth, right: this.cameraX + halfWidth,
@@ -1242,7 +1242,7 @@ export class FieldScene extends Phaser.Scene {
       && (!page || this.frame.events.some(event => event.type === 'rows-changed' && event.by === 'entity' && event.lineDelta < 0));
     if (!active && !this.danger) return;
     this.danger ??= this.add.image(0, 0, this.texture('unwrite-edge')).setScrollFactor(0).setDepth(3);
-    const zoom = fieldZoom(this.scale.height, this.frame.stage.windowHeight);
+    const zoom = stageZoom(this.frame.stage, this.scale);
     this.danger.setTexture(this.texture(page ? 'page-smear' : 'unwrite-edge'));
     this.danger.setVisible(active).setDisplaySize(this.scale.width / zoom, 32 / zoom)
       .setPosition(this.scale.width / 2, (this.scale.height + this.scale.height / zoom) / 2 - 16 / zoom);

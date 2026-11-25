@@ -3,7 +3,7 @@ import { findBuildings, intactBuildings, smokeArt, type Building } from './build
 import Phaser from 'phaser';
 import type { Position } from '@escape/engine';
 import type { FieldFrame } from '../FieldScene.js';
-import { fieldZoom } from '../camera.js';
+import { stageZoom } from '../camera.js';
 import { darknessAlpha, falloffPattern, FALLOFF_LEVELS } from '../darkness.js';
 import { tileAt } from './edges.js';
 import { overhangArt } from '../sprites/tall.js';
@@ -83,7 +83,7 @@ export class AtmosphereLayer {
 
   sync(frame: FieldFrame, x: number, y: number): void {
     const { scene } = this;
-    const zoom = fieldZoom(scene.scale.height, frame.stage.windowHeight);
+    const zoom = stageZoom(frame.stage, scene.scale);
     const width = scene.scale.width / zoom; const height = scene.scale.height / zoom;
     const left = Math.floor((x - width / 2) / 16); const right = Math.ceil((x + width / 2) / 16);
     const top = Math.floor((y - height / 2) / 16); const bottom = Math.ceil((y + height / 2) / 16);
