@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
+import { darknessAlpha } from './darkness.js';
 import { stageZoom } from './camera.js';
 import { interactionLabel, reachedEntity } from './characters.js';
 import type { FieldFrame } from './FieldScene.js';
@@ -59,7 +60,9 @@ export function FieldLabels({ frame, signs, named, view, camera }: {
 
   if (view.width === 0) return null;
   const texts = new Map(signs.map(sign => [signId(sign), sign]));
-  return <div className="field-labels" aria-hidden="true"><div ref={layer}>
+  const landings = state.pending ? [] : (frame.markers ?? []).map(({ key, at }) => ({ key, at, alpha: darknessAlpha(at, cursor, frame.darkness) }))
+    .filter(landing => landing.alpha > 0);
+  return <div className="field-labels" data-quiet={hideObjective === true} aria-hidden="true"><div ref={layer}>
     {hung.map(box => {
       const sign = texts.get(box.id);
       return sign && <div key={box.id} className="field-label" data-done={sign.done === true} data-target={sign === named && !hideObjective} data-under={overlap(box, player) > 0 || showSource}
@@ -67,6 +70,8 @@ export function FieldLabels({ frame, signs, named, view, camera }: {
         {sign.done && <svg viewBox="0 0 8 7" shapeRendering="crispEdges"><path d="M0 3h1v1h1v1h1v1h-1v-1h-1v-1h-1zM2 5h2v-1h1v-1h1v-1h1v-1h1v2h-1v1h-1v1h-1v1h-1v1h-1v-1h-1z" /></svg>}{sign.text}
       </div>;
     })}
+    {landings.map(({ key, at, alpha }) => <kbd key={`${key}:${at.line}:${at.col}`} className="field-key" style={{ opacity: alpha,
+      transform: `translate(${Math.round((at.col + 0.5) * tile)}px, ${Math.round((at.line + 1) * tile)}px) translate(-50%, -60%)` }}>{key}</kbd>)}
     {prompt && <div ref={promptNode} className="field-label field-label--prompt" style={{ width: prompt.width, height: prompt.height }}>
       <kbd>Enter</kbd>{promptText.replace(/^Enter:\s*/, '')}
     </div>}

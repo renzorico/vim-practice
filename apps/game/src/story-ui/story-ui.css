@@ -29,7 +29,7 @@ button.dialogue__hint:focus-visible { outline: 2px solid var(--you); outline-off
 .objective-hud__place h1 { color: var(--paper); }
 .objective-hud__hearts { font-size: 18px; line-height: 1; color: var(--danger); letter-spacing: 0.1em; }
 .objective-hud__journey { flex-basis: 100%; margin: 0; color: var(--text-muted); font: 15px/1.2 var(--font-ui); }
-.objective-hud__stats { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 16px; min-width: 0; }
+.objective-hud__stats { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 16px; min-width: 0; }
 .objective-hud__turn { color: var(--text-muted); white-space: nowrap; }
 .objective-hud__strip { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; min-height: 48px; max-width: 800px; padding: 0 4px; background: var(--paper); color: var(--ink); box-shadow: 0 -3px 0 var(--paper-edge), 0 3px 0 var(--paper-edge), -3px 0 0 var(--paper-edge), 3px 0 0 var(--paper-edge); }
 .objective-hud__strip[data-empty='true'] { visibility: hidden; }

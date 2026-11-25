@@ -136,8 +136,6 @@ export class FieldScene extends Phaser.Scene {
   private gateMarks: Phaser.GameObjects.Container | undefined;
   private threads: Phaser.GameObjects.Container | undefined;
   private shownThreads = '';
-  private shownMarkers: readonly { key: string; line: number; col: number; alpha: number }[] = [];
-  private landingLabels: Phaser.GameObjects.Container | undefined;
   private objectiveTexture?: string;
   private playerFacing: Facing = 'down';
   private layoutRows?: readonly string[];
@@ -190,7 +188,6 @@ export class FieldScene extends Phaser.Scene {
     this.source = this.add.container(0, 0).setDepth(1);
     this.gateMarks = this.add.container(0, 0).setDepth(1);
     this.threads = this.add.container(0, 0).setDepth(1);
-    this.landingLabels = this.add.container(0, 0).setDepth(3);
     this.hazards = this.add.container(0, 0).setDepth(0.5);
     this.decorations = this.add.container(0, 0).setDepth(0.8);
     this.markFlags = this.add.container(0, 0).setDepth(2.5);
@@ -312,7 +309,6 @@ export class FieldScene extends Phaser.Scene {
       if (this.frame.showSource !== frame.showSource) { this.frame = frame; this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
       this.frame = frame;
-      this.syncLandingMarkers();
       this.syncGuidance();
       this.syncTerrainLight();
       this.atmosphere?.sync(this.frame, this.cameraX, this.cameraY);
@@ -332,7 +328,6 @@ export class FieldScene extends Phaser.Scene {
       if (frame.events.some(event => event.type === 'rows-changed')) { this.syncCells(); this.syncTerrain(); }
       if (sourceChanged) { this.syncCells(); this.terrainRows = undefined; this.syncTerrain(); this.setSourceVisible(frame.showSource); }
       this.syncHazards(frame);
-      this.syncLandingMarkers();
       this.syncGuidance();
       return;
     }
@@ -542,7 +537,8 @@ export class FieldScene extends Phaser.Scene {
       this.decorations?.add(this.add.image(center(2), center(0), this.texture('filed-stamp')));
       this.decorations?.add(this.add.text(center(2), center(0) - 6, 'FILED', {
         fontFamily: LABEL_FONT, fontSize: '15px', color: '#752f39', backgroundColor: '#e1d1a6',
-      }).setOrigin(0.5, 1));
+        // The face's own grid is fifteen pixels: half size on the map.
+      }).setOrigin(0.5, 1).setScale(0.5));
       return;
     }
     if (this.frame.stage.id === 'customs') {
@@ -1141,31 +1137,8 @@ export class FieldScene extends Phaser.Scene {
     }
   }
 
-  private syncLandingMarkers(): void {
-    const markers = this.frame.state.pending ? [] : (this.frame.markers ?? []).map(marker => ({
-      key: marker.key, line: marker.at.line, col: marker.at.col,
-      alpha: darknessAlpha(marker.at, this.frame.state.engine.cursor, this.frame.darkness),
-    })).filter(marker => marker.alpha > 0);
-    if (markers.length === this.shownMarkers.length && markers.every((marker, index) => {
-      const previous = this.shownMarkers[index];
-      return previous && marker.key === previous.key && marker.line === previous.line
-        && marker.col === previous.col && marker.alpha === previous.alpha;
-    })) return;
-    this.shownMarkers = markers;
-    this.landingLabels?.removeAll(true);
-    for (const marker of markers) {
-      const alpha = marker.alpha;
-      this.landingLabels?.add(this.add.text(center(marker.col), center(marker.line) - 5, marker.key, {
-        fontFamily: LABEL_FONT, fontSize: '15px', color: '#ffe8b2', backgroundColor: BACKGROUND,
-        padding: { x: 4, y: 1 },
-        // Fifteen pixels is the face's own grid; half size on the map.
-      }).setOrigin(0.5, 1).setScale(0.5).setAlpha(0.8 * alpha));
-    }
-  }
-
   private syncActors(at: Position = this.frame.state.engine.cursor): void {
     this.syncGateMarks();
-    this.syncLandingMarkers();
     this.markFlags?.removeAll(true);
     for (const at of Object.values(this.frame.state.engine.marks)) {
       this.markFlags?.add(this.add.image(center(at.col), center(at.line) - 6, this.texture('mark-flag'))
