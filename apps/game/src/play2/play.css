@@ -268,7 +268,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .status-learned .learned-key { min-width: 0; margin: 0; padding: 2px 4px; }
 .status-right { margin-left: auto; flex-shrink: 1; }
 .status-right output { min-width: 0; }
-.status-right .pending-prompt { overflow: hidden; text-overflow: ellipsis; font-size: 12px; max-width: 34ch; }
+.status-right .pending-prompt { overflow: hidden; text-overflow: ellipsis; font-size: 13px; flex-shrink: 0; max-width: 40ch; }
 .play-controls button { padding: 0 4px; min-height: 32px; border: 0; font: inherit; }
 .play-controls [data-sound-toggle] { width: 32px; }
 .play-controls .status-more { color: var(--text); }

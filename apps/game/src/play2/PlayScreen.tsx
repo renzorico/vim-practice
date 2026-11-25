@@ -1,5 +1,5 @@
 import { KeyText } from './KeyText.js';
-import { activeGuide } from './guides.js';
+import { activeGuide, guideApplies } from './guides.js';
 import { useNotebookDucking } from './notebook/musicDucking.js';
 import { Notebook } from './notebook/Notebook.js';
 import { useNotebook } from './notebook/useNotebook.js';
@@ -81,12 +81,14 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   const canShowObjective = !darkness && stage.type !== 'text' && !script
     && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
-  const guide = activeGuide(content, session.story);
+  const active = activeGuide(content, session.story);
+  const guide = active && guideApplies(active, activeEngine.cursor, world.engine.lines) ? active : null;
+  const overtaken = active !== null && guide === null && Boolean(active.whileRow);
   const visibleGuide = session.queue.length === 0 && !session.clearCard && !showKeyCard && world.status === 'playing' ? guide : null;
   const mapGuide = canShowObjective ? visibleGuide : null;
   const positioned = Boolean(visibleGuide?.standAt?.some(at => at.line === activeEngine.cursor.line && at.col === activeEngine.cursor.col));
-  const target = useMemo(() => canShowObjective ? objectiveTarget(content, session.story, stage, world) : null,
-    [content, session.story, stage, world.entities, canShowObjective]);
+  const target = useMemo(() => canShowObjective && !overtaken ? objectiveTarget(content, session.story, stage, world) : null,
+    [content, session.story, stage, world.entities, canShowObjective, overtaken]);
   const nearestStand = mapGuide?.standAt?.reduce<Position | null>((nearest, at) => {
     const distance = (cell: Position) => Math.abs(cell.line - activeEngine.cursor.line) + Math.abs(cell.col - activeEngine.cursor.col);
     return !nearest || distance(at) < distance(nearest) ? at : nearest;

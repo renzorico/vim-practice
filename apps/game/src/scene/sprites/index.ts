@@ -17,7 +17,7 @@ import { BRANCH, KNOT, LEAVES, AIR, TRUNK, LADDER, THORNS, PLATFORM, FERN, KNOTH
 import { MASON, MORTAR, SCAFFOLD, WET_SHEEN, WET_EDGE } from './shaft.js';
 import { LEDGE, CHASM, DOT, DOT_CAGE } from './cut.js';
 import { DIRT, GRAVEL, BEDROCK, RUBBLE, RIVER, PLANK, TENT, ASH, KIT, CRACK, QUARRY_GATE, DUST } from './quarry.js';
-import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
+import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, STAIRS, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
 import { WREN, GULL, NOTE, STONE, JETTY, LIGHTHOUSE_DOOR, BLANK } from './lowlands.js';
 import { PLAYER } from './player.js';
 import { ELDER } from './elder.js';
@@ -100,7 +100,7 @@ const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
       ? 'mkmkmkmkmkmkmkmk' : 'kmkmkmkmkmkmkmkm')],
   },
   'unwrite-edge': UNWRITE_EDGE,
-  unwriter: UNWRITER, lamplighter: LAMPLIGHTER, 'stone-floor': STONE_FLOOR,
+  unwriter: UNWRITER, lamplighter: LAMPLIGHTER, 'stone-floor': STONE_FLOOR, stairs: STAIRS,
   'tower-wall': TOWER_WALL, pillar: PILLAR, lamp: LAMP, 'lamp-lit': LIT_LAMP,
   wren: WREN, gull: GULL, note: NOTE, stone: STONE, jetty: JETTY,
   'lighthouse-door': LIGHTHOUSE_DOOR, blank: BLANK,
