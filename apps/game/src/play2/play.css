@@ -36,7 +36,8 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .script-heading { position: sticky; top: -24px; z-index: 1; padding-top: 24px; background: var(--text); }
 .script-panel h2 { margin: 0 0 12px; font-size: 24px; }
 .script-goal { max-width: 75ch; margin: 0 0 32px; line-height: 1.5; }
-.script-columns { display: grid; grid-template-columns: minmax(0, 3fr) minmax(22ch, 2fr); gap: 32px; }
+/* The target sheet takes the width its longest row needs (up to half), so no full stop hides off its edge. */
+.script-columns { display: grid; grid-template-columns: minmax(0, 1fr) fit-content(50%); gap: 32px; }
 .script-editor { min-width: 0; }
 .script-buffer-viewport { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-color: var(--line-strong) var(--text-soft); }
 .script-panel .buffer { min-width: 100%; width: max-content; box-sizing: border-box; padding: 16px; overflow: visible; background: var(--text-soft); color: var(--bg); font: var(--sheet-size)/1.6 var(--font-mono); }
@@ -98,8 +99,8 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 @keyframes ledger-filed { 50% { color: #ffe8b2; opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .counter-gauge[data-full="true"] { animation: none; } }
 
-.script-panel--contract .script-columns { grid-template-columns: minmax(0, 1.03fr) minmax(0, 1fr); }
 @media (max-width: 1000px) {
+  .script-heading { position: static; }
   .script-panel--contract .script-columns { grid-template-columns: minmax(0, 1fr); }
 }
 

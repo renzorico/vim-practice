@@ -3,6 +3,7 @@ import { stages } from '../content.js';
 import { HELP_KEYS, keySequence, type HelpKey } from '../help/keys.js';
 import { parseMarked } from './pageModel.js';
 import { introducedAt } from '../introducedAt.js';
+import { keyLabel } from '../keyLabel.js';
 
 export interface LessonResult {
   readonly rows: readonly string[];
@@ -117,7 +118,7 @@ export function lessonFor(entry: HelpKey): Lesson {
     example: { before: marked(authored.rows, authored.cursor), after: marked(authored.result.rows, authored.result.cursor),
       keys: keySequence(authored.keys), setup: [] },
   };
-  return { ...help, stageId, world: stage?.stage.world ?? help.world, keycaps: [key], instruction: `Try ${key} on these letter tiles.`,
+  return { ...help, stageId, world: stage?.stage.world ?? help.world, keycaps: [key], instruction: `Try ${keyLabel(key)} on these letter tiles.`,
     terrain: false, ground: stage?.legend.tiles.find(tile => tile.kind === 'ground' && tile.walkable)?.char
       ?? stage?.legend.tiles.find(tile => tile.walkable)?.char ?? ' ', blots: [],
     // Reference results are checked against their marked help text in pageModel.test.ts.

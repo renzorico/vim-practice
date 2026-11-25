@@ -20,13 +20,13 @@ export const UNFINISHED: Readonly<Record<string, readonly Unfinished[]>> = {
     text => text.includes('Wordwoood'), lacks(', Shut, Ope)'), lacks('4 coils'), lacks('Last checked: today.'), lacks(', on three.'),
   ],
   'harbour.book': [
-    lacks('Keeper: Ream,'), text => !text.startsWith('Order'), text => text.indexOf('rope ..') < text.indexOf('oil ..'),
+    lacks('Keeper: Ream,'), text => !text.startsWith('Order'), text => !/^oil \.[^]*^rope \./m.test(text),
     text => count(text, 'real') < 3, lacks('the ferry, today', 'the rope boat, today', 'Tilde, for Ream'),
   ],
   'contract.book': [
     text => count(text, '"the Librarians"') < 4 || !text.includes('"the Readers"'),
     lacks('(unless they want to)', '[until the Scribe returns]'),
-    text => text.includes('Clause 3') || !text.includes('the Minotaur.'), lacks('<name>Tilde</name>'),
+    text => /Clause 3|a single page|Notes:|Nothing guards/.test(text) || !text.includes('the Minotaur.'), lacks('<name>Tilde</name>'),
   ],
   'study.book': [
     text => text.includes('shelf'), text => count(text, '| found') < 8, text => count(text, '* ') < 8 || text.includes('draft'),

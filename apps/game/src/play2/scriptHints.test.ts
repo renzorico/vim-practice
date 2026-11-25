@@ -18,6 +18,15 @@ it('every script with hints says when each of them is finished', () => {
   }
 });
 
+it('stays on a part that is only half done', () => {
+  const [, , clauses] = UNFINISHED['contract.book']!;
+  expect(clauses!('file, or copy a single page.\nGuardian of the caves: the Minotaur.')).toBe(true);
+  expect(clauses!('Guardian of the caves: the Minotaur.\nNothing guards them.')).toBe(true);
+  const [, , order] = UNFINISHED['harbour.book']!;
+  expect(order!('rope ..... 8 coils, copied\nmixed .... 4 and 4, copied')).toBe(true);
+  expect(order!('oil ...... 8 casks, copied\nrope ..... 8 coils, copied')).toBe(false);
+});
+
 it('waits, then names the first unfinished part, and moves on once it is done', () => {
   const harbour = scripts.find(script => script.id === 'harbour.book')!;
   expect(scriptHint(harbour, harbour.startLines, FIRST_HINT_KEYS - 1)).toBeUndefined();
