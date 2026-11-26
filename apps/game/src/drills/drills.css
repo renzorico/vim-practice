@@ -100,7 +100,7 @@ main.copybook-desk {
 .drill-summary p { max-width: 60ch; margin: 0 0 8px; font-size: 20px; line-height: var(--rule); }
 
 @media (max-width: 720px) {
-  .copybook-desk { --margin-line: 40px; padding: 8px; }
+  main.copybook-desk { --margin-line: 40px; padding: 8px; }
   .copybook-page { padding: 24px 16px 24px calc(var(--margin-line) + 12px); }
   .copybook-page::before, .copybook-next { display: none; }
   .copybook-world li button { grid-template-columns: minmax(0, 1fr) auto; }
