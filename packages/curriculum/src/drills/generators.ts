@@ -559,8 +559,9 @@ const INK_WORD = 9;
 const MAX_REWRITE = 18;
 
 /** A corpus line with an ink word of its own before word `index` (a word that follows a space). */
-function inkedWord(rng: Rng, text: string, ink: string): { line: string; col: number } {
-  const afterSpace = stops(text, 'w', 0).filter(col => text[col - 1] === ' ');
+function inkedWord(rng: Rng, text: string, ink: string, minPresses = 1): { line: string; col: number } {
+  // `minPresses` w presses from the line start reach the ink at the earliest: one press would beat finding it.
+  const afterSpace = stops(text, 'w', 0).filter((col, index) => text[col - 1] === ' ' && index + 1 >= minPresses);
   const col = pick(rng, afterSpace.slice(0, 6));
   return { line: `${text.slice(0, col)}${ink} ${text.slice(col)}`, col };
 }
@@ -581,7 +582,7 @@ const deleteMotion: Design = (rng, difficulty) => {
   }
   // Find the ink from the line start, then delete it: the ink's first character occurs nowhere else.
   const ink = blot(rng, INK_WORD + int(rng, 0, 3));
-  const inked = inkedWord(rng, text, ink);
+  const inked = inkedWord(rng, text, ink, 2);
   lines[1] = inked.line;
   return {
     goal: 'transform', goalText: 'Find the ink from the start of the line, then delete it.', lines, cursor: { line: 1, col: 0 },
@@ -593,9 +594,12 @@ const deleteMotion: Design = (rng, difficulty) => {
 function longWord(rng: Rng, text: string, min: number): { word: string; col: number } {
   const options = stops(text, 'w', 0).flatMap(col => {
     const word = /^[a-z]+/.exec(text.slice(col))?.[0] ?? '';
-    return word.length >= min && col > 0 ? [{ word, col }] : [];
+    // Never the line's last word: there C changes it in one key fewer than cw.
+    const last = col + word.length >= text.length;
+    return word.length >= min && col > 0 && !last ? [{ word, col }] : [];
   });
-  return pick(rng, options.length > 0 ? options : [{ word: text.split(' ')[0] ?? '', col: 0 }]);
+  if (options.length === 0) throw new Error(`No word of ${min}+ letters to change in "${text}"`);
+  return pick(rng, options);
 }
 
 /** Long words of a line after its first, with the column each starts at. */
@@ -606,12 +610,24 @@ function longWords(text: string, min: number): Array<{ word: string; col: number
   });
 }
 
-const yankPut: Design = (rng, difficulty) => {
-  // Two long words after the first, so the copied one is never the line's last (D then p would tie it).
-  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && longWords(plainEnd(line.text), 5).length >= 2).map(plainEnd);
-  const source = lines[0] ?? '';
+/** Words `ye` copies whole (each ends in a space; never the line's last), and for y2e, back-to-back pairs of them. */
+function copyTargets(source: string, two: boolean): Array<{ word: string; col: number }> {
   const options = longWords(source, 5);
-  const pickWord = pick(rng, options.slice(0, -1));
+  // `e` stops on punctuation, so a copied word, and for y2e the word after it, must end in a space.
+  const spaced = (entry: { word: string; col: number }): boolean => source[entry.col + entry.word.length] === ' ';
+  return options.filter((entry, index) => {
+    if (!spaced(entry)) return false;
+    if (!two) return index < options.length - 1;
+    const next = options[index + 1];
+    return next !== undefined && next.col === entry.col + entry.word.length + 1 && spaced(next);
+  });
+}
+
+const yankPut: Design = (rng, difficulty) => {
+  const two = difficulty === 3;
+  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && copyTargets(plainEnd(line.text), two).length > 0).map(plainEnd);
+  const source = lines[0] ?? '';
+  const pickWord = pick(rng, copyTargets(source, two));
   // Copies start on the space before a word, so the put text brings its own space and never glues to the line end.
   const cursor = { line: 0, col: pickWord.col - 1 };
   if (difficulty === 1) {
@@ -664,7 +680,7 @@ const register: Design = (rng, difficulty) => {
 };
 
 const change: Design = (rng, difficulty) => {
-  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && /\b[a-z]{5,}\b/.test(line.text)).map(plainEnd);
+  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && longWords(plainEnd(line.text), 5).some(entry => entry.col + entry.word.length < plainEnd(line.text).length)).map(plainEnd);
   const text = lines[1] ?? '';
   const right = longWord(rng, text, 5);
   const wrong = pick(rng, WORDS.filter(entry => entry !== right.word && entry.length >= 3));
@@ -705,7 +721,8 @@ const lineCopy: Design = (rng, difficulty) => {
     };
   }
   // A line out of place: cut it and put it back above the line before it.
-  const row = int(rng, 1, 3);
+  // Never the last line: dd there leaves the cursor a line up, and k P would land one line too high.
+  const row = int(rng, 1, 2);
   return {
     goal: 'transform', goalText: 'Swap the cursor line with the one above it: dd, k, P.', lines,
     cursor: { line: row, col: int(rng, 2, 12) }, keys: ['d', 'd', 'k', 'P'],
