@@ -146,6 +146,33 @@ describe('World 4 reps that a shorter or wrong route used to beat', () => {
   });
 });
 
+describe('World 5 reps that a shorter route used to beat', () => {
+  it('a counted dd never deletes the ink paragraphs in fewer keys than dap', () => {
+    for (const difficulty of DIFFICULTIES) {
+      for (let seed = 0; seed < SEEDS; seed += 1) {
+        const rep = generateRep('textobj.paragraph', seed, difficulty);
+        for (let count = 2; count <= 9; count += 1) {
+          const run = playRep(rep, [String(count), 'd', 'd']);
+          expect(run.status === 'won' && 3 < rep.level.par, `seed ${seed}: ${count}dd`).toBe(false);
+        }
+      }
+    }
+  });
+  it.each(['textobj.word', 'textobj.paren', 'textobj.quote'])('%s: the new text shares no first or last letter with the old, so cw and cb never win', (skill) => {
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const rep = generateRep(skill, seed, 2);
+      const typed = rep.level.solution.slice(3).join('');
+      const start = rep.level.startLines[1] ?? '';
+      const goal = rep.level.goals[0];
+      if (goal?.type !== 'transform') throw new Error('expected a transform goal');
+      const after = goal.targetLines[1] ?? '';
+      const at = after.indexOf(typed, Math.max(0, rep.level.startCursor.col - typed.length - 8));
+      const old = start.slice(at, at + start.length - after.length + typed.length);
+      expect([old[0] === typed[0], old.at(-1) === typed.at(-1)], `seed ${seed}: ${old} -> ${typed}`).toEqual([false, false]);
+    }
+  });
+});
+
 describe('buildDrillSet', () => {
   it('builds ten reps that rise in difficulty, deterministically', () => {
     const set = buildDrillSet('motion.hjkl', 3);

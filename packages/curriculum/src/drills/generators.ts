@@ -791,6 +791,14 @@ function spanRep(rng: Rng, spans: (text: string) => Span[]): { lines: string[]; 
   return { lines, span, col: pick(rng, innerCols(span, allSpans(text), text)) };
 }
 
+/**
+ * New text for a change from inside an object. It differs from the old in its first and last letters, or `cw`
+ * from the cursor (shared start) or `cb` (shared end) would beat changing the whole object.
+ */
+function unlike(options: readonly string[], old: string): string[] {
+  return options.filter(entry => entry[0] !== old[0] && entry[entry.length - 1] !== old[old.length - 1]);
+}
+
 const wordObject: Design = (rng, difficulty) => {
   const changeable = (text: string): boolean => longWords(text, 5).some(entry => entry.col + entry.word.length < text.length);
   const lines = corpusLines(rng, 3, line => line.kind === 'folio' && changeable(plainEnd(line.text))).map(plainEnd);
@@ -798,7 +806,7 @@ const wordObject: Design = (rng, difficulty) => {
   if (difficulty === 2) {
     // A wrong word: change it from anywhere inside it.
     const right = longWord(rng, text, 5);
-    const wrong = pick(rng, WORDS.filter(entry => entry.length >= 4 && entry !== right.word));
+    const wrong = pick(rng, unlike(WORDS.filter(entry => entry.length >= 4), right.word));
     lines[1] = `${text.slice(0, right.col)}${wrong}${text.slice(right.col + right.word.length)}`;
     return {
       goal: 'transform', goalText: `"${wrong}" should read "${right.word}". Change the whole word from where you stand: ciw.`, lines,
@@ -819,7 +827,7 @@ const parenObject: Design = (rng, difficulty) => {
   const { lines, span, col } = spanRep(rng, text => spansOf(text, '(', 3));
   const text = lines[1] ?? '';
   if (difficulty === 2) {
-    const value = pick(rng, ['rows', 'page', 'path', 'name'].filter(entry => entry !== text.slice(span.open + 1, span.close)));
+    const value = pick(rng, unlike(['rows', 'page', 'path', 'name', 'data', 'list'], text.slice(span.open + 1, span.close)));
     return {
       goal: 'transform', goalText: `Replace what is inside the brackets with "${value}": ci(.`, lines,
       cursor: { line: 1, col }, keys: ['c', 'i', '(', ...chars(value), '<Esc>'],
@@ -846,7 +854,8 @@ const paragraphObject: Design = (rng, difficulty) => {
   const first = starts[inkFirst] ?? 0;
   return {
     goal: 'transform', goalText: count === 2 ? 'Delete both ink paragraphs and their gaps: d2ap.' : 'Delete the ink paragraph and its gap: dap.',
-    lines, cursor: { line: first + int(rng, 0, (sizes[inkFirst] ?? 1) - 1), col: int(rng, 2, 8) },
+    // Never the first ink line: from there a counted dd (7dd) deletes the same lines in fewer keys.
+    lines, cursor: { line: first + int(rng, 1, (sizes[inkFirst] ?? 2) - 1), col: int(rng, 2, 8) },
     keys: count === 2 ? ['d', '2', 'a', 'p'] : ['d', 'a', 'p'],
   };
 };
@@ -864,7 +873,7 @@ const bracketObject: Design = (rng, difficulty) => {
 const quoteObject: Design = (rng, difficulty) => {
   const { lines, span, col } = spanRep(rng, text => quoteSpans(text, 3));
   if (difficulty === 2) {
-    const value = pick(rng, ['done', 'saved', 'rows'].filter(entry => entry !== (lines[1] ?? '').slice(span.open + 1, span.close)));
+    const value = pick(rng, unlike(['done', 'saved', 'rows', 'none', 'empty'], (lines[1] ?? '').slice(span.open + 1, span.close)));
     return {
       goal: 'transform', goalText: `Rewrite the string as "${value}": ci".`, lines,
       cursor: { line: 1, col }, keys: ['c', 'i', '"', ...chars(value), '<Esc>'],
