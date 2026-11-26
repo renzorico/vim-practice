@@ -43,7 +43,8 @@ const PATH_CHECKED: ReadonlySet<string> = new Set(['w', 'b', 'e', 'W', 'B', 'E',
 function solidAt(lines: readonly string[], at: Position, legend: Legend): boolean {
   const row = lines[at.line];
   if (row === undefined) return true;
-  if (row === '' && legend.emptyRow !== undefined) return !legend.emptyRow.walkable && legend.emptyRow.gap !== true;
+  // An empty row is one cell wide, (line, 0); past it the world is solid like any row end.
+  if (row === '' && legend.emptyRow !== undefined) return at.col !== 0 || (!legend.emptyRow.walkable && legend.emptyRow.gap !== true);
   if (at.col < 0 || at.col >= row.length) return true;
   const tile = tileAt(legend, lines, at);
   return tile === undefined || (!tile.walkable && tile.gap !== true);

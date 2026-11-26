@@ -29,6 +29,11 @@ describe('jumpBlocked', () => {
     const lines = ['a...', '#..#', '....'];
     expect(jumpBlocked(lines, { line: 0, col: 0 }, { line: 2, col: 2 }, legend)).toBeNull();
   });
+  it('an empty row is one cell wide: only column 0 is open', () => {
+    const open = { ...legend, emptyRow: tile(' ', true) };
+    expect(jumpBlocked(['aa', '', 'aa'], { line: 0, col: 1 }, { line: 2, col: 1 }, open)).toEqual({ line: 1, col: 1 });
+    expect(jumpBlocked(['aa', '', 'aa'], { line: 0, col: 0 }, { line: 2, col: 0 }, open)).toBeNull();
+  });
   it('treats the space past a row end as solid, so ragged rows are no way round', () => {
     const lines = ['a.', '#...', '....'];
     expect(jumpBlocked(lines, { line: 0, col: 0 }, { line: 2, col: 3 }, legend)).toEqual({ line: 1, col: 0 });
