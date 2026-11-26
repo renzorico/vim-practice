@@ -18,7 +18,7 @@ const SEEDS = 200;
 const SOLVER_SEEDS = 12;
 const OWN_KEY_SEEDS = 60;
 /** Insert-mode text cannot be searched by the solver, and setup reps start from a state it cannot load. */
-const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open']);
+const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open', 'register.named', 'operator.c']);
 const RUN_OF_FOUR_LETTERS = /([A-Za-z])\1{3}/;
 
 function playRep(rep: DrillRep, keys: readonly Key[]): LevelRun {
@@ -98,6 +98,45 @@ describe.each(DRILL_SKILLS.map(skill => skill.id).filter(skill => !SOLVER_SKIPS.
       const rep = generateRep(skill, seed, difficulty);
       const shorter = solve(rep.level, { maxKeys: rep.level.par - 1 });
       expect(shorter?.keys.join(' ') ?? null, `${rep.level.id}: par ${rep.level.solution.join(' ')}`).toBeNull();
+    }
+  });
+});
+
+describe('World 4 reps that a shorter or wrong route used to beat', () => {
+  const target = (rep: DrillRep): readonly string[] => {
+    const goal = rep.level.goals[0];
+    if (goal?.type !== 'transform') throw new Error('expected a transform goal');
+    return goal.targetLines;
+  };
+  it('a line swap really swaps the cursor line with the one above', () => {
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const rep = generateRep('edit.lines', seed, 3);
+      const row = rep.level.startCursor.line;
+      const start = rep.level.startLines;
+      expect(target(rep), `seed ${seed}`).toEqual([...start.slice(0, row - 1), start[row], start[row - 1], ...start.slice(row + 1)]);
+    }
+  });
+  it('cw never changes the last word of a line, where C is shorter', () => {
+    for (const difficulty of [1, 2] as const) {
+      for (let seed = 0; seed < SEEDS; seed += 1) {
+        const rep = generateRep('operator.c', seed, difficulty);
+        const text = target(rep)[1] ?? '';
+        const typed = rep.level.solution.slice(rep.level.solution.indexOf('w') + 1).join('');
+        expect(text.endsWith(typed), `seed ${seed}: ${text}`).toBe(false);
+      }
+    }
+  });
+  it('ink to find is never one w from the line start', () => {
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const rep = generateRep('operator.d', seed, 3);
+      expect(solve(rep.level, { maxKeys: rep.level.par - 1 }), `seed ${seed}`).toBeNull();
+    }
+  });
+  it('y2e copies two whole words', () => {
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const rep = generateRep('operator.y', seed, 3);
+      const copied = (target(rep)[1] ?? '').slice((rep.level.startLines[1] ?? '').length);
+      expect(copied, `seed ${seed}`).toMatch(/^ [a-z]{5,} [a-z]{5,}$/);
     }
   });
 });

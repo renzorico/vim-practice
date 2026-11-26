@@ -549,11 +549,192 @@ const match: Design = (rng, difficulty) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// World 4: d with a motion, y p, registers, c C, yy P
+// ---------------------------------------------------------------------------
+
+/** Ink this long is a word no count of `x` deletes in two keys (`10x` is three). */
+const INK_WORD = 9;
+/** C rewrites at most this many characters: long enough to mean the line end, short enough to type. */
+const MAX_REWRITE = 18;
+
+/** A corpus line with an ink word of its own before word `index` (a word that follows a space). */
+function inkedWord(rng: Rng, text: string, ink: string, minPresses = 1): { line: string; col: number } {
+  // `minPresses` w presses from the line start reach the ink at the earliest: one press would beat finding it.
+  const afterSpace = stops(text, 'w', 0).filter((col, index) => text[col - 1] === ' ' && index + 1 >= minPresses);
+  const col = pick(rng, afterSpace.slice(0, 6));
+  return { line: `${text.slice(0, col)}${ink} ${text.slice(col)}`, col };
+}
+
+const deleteMotion: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, folio);
+  const text = lines[1] ?? '';
+  if (difficulty === 1) {
+    const inked = inkedWord(rng, text, blot(rng, INK_WORD + int(rng, 0, 3)));
+    lines[1] = inked.line;
+    return { goal: 'transform', goalText: 'Delete the ink word with one d and a motion.', lines, cursor: { line: 1, col: inked.col }, keys: ['d', 'w'] };
+  }
+  if (difficulty === 2) {
+    const two = `${blot(rng, INK_WORD)} ${blot(rng, INK_WORD)}`;
+    const inked = inkedWord(rng, text, two);
+    lines[1] = inked.line;
+    return { goal: 'transform', goalText: 'Delete both ink words at once: a count goes inside, d2w.', lines, cursor: { line: 1, col: inked.col }, keys: ['d', '2', 'w'] };
+  }
+  // Find the ink from the line start, then delete it: the ink's first character occurs nowhere else.
+  const ink = blot(rng, INK_WORD + int(rng, 0, 3));
+  const inked = inkedWord(rng, text, ink, 2);
+  lines[1] = inked.line;
+  return {
+    goal: 'transform', goalText: 'Find the ink from the start of the line, then delete it.', lines, cursor: { line: 1, col: 0 },
+    keys: ['f', ink[0] ?? '#', 'd', 'w'],
+  };
+};
+
+/** A word of at least `min` letters in a folio line, with the column where it starts. */
+function longWord(rng: Rng, text: string, min: number): { word: string; col: number } {
+  const options = stops(text, 'w', 0).flatMap(col => {
+    const word = /^[a-z]+/.exec(text.slice(col))?.[0] ?? '';
+    // Never the line's last word: there C changes it in one key fewer than cw.
+    const last = col + word.length >= text.length;
+    return word.length >= min && col > 0 && !last ? [{ word, col }] : [];
+  });
+  if (options.length === 0) throw new Error(`No word of ${min}+ letters to change in "${text}"`);
+  return pick(rng, options);
+}
+
+/** Long words of a line after its first, with the column each starts at. */
+function longWords(text: string, min: number): Array<{ word: string; col: number }> {
+  return stops(text, 'w', 0).flatMap(col => {
+    const word = new RegExp(`^[a-z]{${min},}`).exec(text.slice(col))?.[0];
+    return word !== undefined && col > 0 && text[col - 1] === ' ' ? [{ word, col }] : [];
+  });
+}
+
+/** Words `ye` copies whole (each ends in a space; never the line's last), and for y2e, back-to-back pairs of them. */
+function copyTargets(source: string, two: boolean): Array<{ word: string; col: number }> {
+  const options = longWords(source, 5);
+  // `e` stops on punctuation, so a copied word, and for y2e the word after it, must end in a space.
+  const spaced = (entry: { word: string; col: number }): boolean => source[entry.col + entry.word.length] === ' ';
+  return options.filter((entry, index) => {
+    if (!spaced(entry)) return false;
+    if (!two) return index < options.length - 1;
+    const next = options[index + 1];
+    return next !== undefined && next.col === entry.col + entry.word.length + 1 && spaced(next);
+  });
+}
+
+const yankPut: Design = (rng, difficulty) => {
+  const two = difficulty === 3;
+  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && copyTargets(plainEnd(line.text), two).length > 0).map(plainEnd);
+  const source = lines[0] ?? '';
+  const pickWord = pick(rng, copyTargets(source, two));
+  // Copies start on the space before a word, so the put text brings its own space and never glues to the line end.
+  const cursor = { line: 0, col: pickWord.col - 1 };
+  if (difficulty === 1) {
+    return {
+      goal: 'transform', goalText: `Copy " ${pickWord.word}" (from the space, ye) and put it at the end of the line.`, lines,
+      cursor, keys: ['y', 'e', '$', 'p'],
+    };
+  }
+  if (difficulty === 2) {
+    return {
+      goal: 'transform', goalText: `Copy " ${pickWord.word}" and put it at the end of the next line.`, lines,
+      cursor, keys: ['y', 'e', 'j', '$', 'p'],
+    };
+  }
+  return {
+    goal: 'transform', goalText: 'Copy the next two words (from the space, y2e), and put them at the end of the next line.', lines,
+    cursor, keys: ['y', '2', 'e', 'j', '$', 'p'],
+  };
+};
+
+const register: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 4, line => line.kind === 'folio' && longWords(plainEnd(line.text), 5).length >= 2).map(plainEnd);
+  const blotRow = int(rng, 2, 3);
+  lines[blotRow] = blotLine(rng);
+  const source = lines[0] ?? '';
+  const [first, other] = longWords(source, 5);
+  if (first === undefined || other === undefined) throw new Error(`register: too few long words in "${source}"`);
+  // Deleting the ink line fills the unnamed register, so plain p would put the ink: only "a keeps the word.
+  const clearInk: Key[] = [...repeat('j', blotRow), 'd', 'd', 'g', 'g'];
+  if (difficulty === 1) {
+    return {
+      goal: 'transform', goalText: `" ${first.word}" is saved in register a. Put it at the end of line 1 with "ap.`,
+      lines, cursor: { line: 0, col: first.col - 1 }, setup: ['"', 'a', 'y', 'e', ...clearInk, '$'],
+      keys: ['"', 'a', 'p'],
+    };
+  }
+  if (difficulty === 2) {
+    return {
+      goal: 'transform', goalText: `" ${first.word}" is saved in register a. Put it at the end of line 2.`,
+      lines, cursor: { line: 0, col: first.col - 1 }, setup: ['"', 'a', 'y', 'e', ...clearInk, 'j', '$'],
+      keys: ['"', 'a', 'p'],
+    };
+  }
+  return {
+    goal: 'transform', goalText: `Register a holds " ${first.word}", register b holds " ${other.word}". Put a, then b, at the end of line 1.`,
+    lines, cursor: { line: 0, col: first.col - 1 },
+    setup: ['"', 'a', 'y', 'e', ...moveTo(source, first.col - 1, other.col), 'h', '"', 'b', 'y', 'e', ...clearInk, '$'],
+    keys: ['"', 'a', 'p', '"', 'b', 'p'],
+  };
+};
+
+const change: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && longWords(plainEnd(line.text), 5).some(entry => entry.col + entry.word.length < plainEnd(line.text).length)).map(plainEnd);
+  const text = lines[1] ?? '';
+  const right = longWord(rng, text, 5);
+  const wrong = pick(rng, WORDS.filter(entry => entry !== right.word && entry.length >= 3));
+  lines[1] = `${text.slice(0, right.col)}${wrong}${text.slice(right.col + right.word.length)}`;
+  if (difficulty === 3) {
+    // The line's end is wrong from the bad word on: C rewrites to the end of the line. Only near the end, so the
+    // rewrite stays short.
+    const near = stops(text, 'w', 0).filter(col => text.length - col <= MAX_REWRITE && /^[a-z]{3,}/.test(text.slice(col)));
+    const col = near.length > 0 ? pick(rng, near) : right.col;
+    const tail = text.slice(col);
+    const bad = /^[a-z]+/.exec(tail)?.[0] ?? '';
+    const typo = pick(rng, WORDS.filter(entry => entry !== bad));
+    lines[1] = `${text.slice(0, col)}${typo} ${blot(rng, 4)}`;
+    return {
+      goal: 'transform', goalText: `Everything from "${typo}" on is wrong. Rewrite it: "${tail}".`, lines,
+      cursor: { line: 1, col }, keys: ['C', ...chars(tail), '<Esc>'],
+    };
+  }
+  const move: Key[] = difficulty === 1 ? [] : moveTo(lines[1] ?? '', 0, right.col);
+  return {
+    goal: 'transform', goalText: `"${wrong}" should read "${right.word}". Change the word.`, lines,
+    cursor: { line: 1, col: difficulty === 1 ? right.col : 0 }, keys: [...move, 'c', 'w', ...chars(right.word), '<Esc>'],
+  };
+};
+
+const lineCopy: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, difficulty === 2 ? 6 : 4);
+  if (difficulty === 1) {
+    const row = int(rng, 0, 2);
+    return { goal: 'transform', goalText: 'Copy the cursor line and put the copy below it.', lines, cursor: { line: row, col: int(rng, 2, 12) }, keys: ['y', 'y', 'p'] };
+  }
+  if (difficulty === 2) {
+    // P puts above: one line up, then P, beats two lines up and p.
+    const row = int(rng, 2, 4);
+    return {
+      goal: 'transform', goalText: 'Copy the cursor line and put the copy above the line before it: P puts above.', lines,
+      cursor: { line: row, col: int(rng, 2, 12) }, keys: ['y', 'y', 'k', 'P'],
+    };
+  }
+  // A line out of place: cut it and put it back above the line before it.
+  // Never the last line: dd there leaves the cursor a line up, and k P would land one line too high.
+  const row = int(rng, 1, 2);
+  return {
+    goal: 'transform', goalText: 'Swap the cursor line with the one above it: dd, k, P.', lines,
+    cursor: { line: row, col: int(rng, 2, 12) }, keys: ['d', 'd', 'k', 'P'],
+  };
+};
+
 const DESIGNS: Readonly<Record<SkillId, Design>> = {
   'motion.hjkl': hjkl, 'motion.count': count, 'motion.word': word, 'motion.line': line,
   'edit.x': deleteChar, 'edit.r': replaceChar, 'edit.dd': deleteLine, 'edit.undo': undo, 'edit.dot': dot,
   'mode.insert': insert, 'mode.append': append, 'mode.edges': edges, 'mode.open': open, 'edit.D': deleteToEnd,
   'motion.find': find, 'motion.find-repeat': findRepeat, 'motion.paragraph': paragraph, 'motion.file': file, 'motion.match': match,
+  'operator.d': deleteMotion, 'operator.y': yankPut, 'register.named': register, 'operator.c': change, 'edit.lines': lineCopy,
 };
 
 export function hasGenerator(skill: SkillId): boolean {

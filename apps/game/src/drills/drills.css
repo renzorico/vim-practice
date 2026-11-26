@@ -86,7 +86,9 @@ main.copybook-desk {
 .drill-results li[data-result='missed'] { border-color: var(--red-ink); border-style: dashed; }
 .drill .script-goal { margin: 0 0 16px; font-size: 22px; line-height: 1.4; }
 .drill-recall { color: var(--red-ink); }
-.drill .script-columns { gap: 24px; }
+/* The page is too narrow for two 46-column sheets side by side: the target goes under the buffer. */
+.drill .script-columns { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.drill .script-target { margin-top: 0; }
 .drill .script-editor, .drill .script-target { box-shadow: none; }
 .drill .script-editor { padding: 12px 16px; }
 .drill .cell--target { outline: 2px dashed var(--red-ink); outline-offset: -1px; border-radius: 2px; }
