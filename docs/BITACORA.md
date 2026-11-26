@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · DR-wordwood: Copybook drills for World 3
+**Who:** Opus (design, build, browser check).
+
+**What:** Five skills for the Wordwood: Find a letter (`f t`), Find again (`; ,`), Paragraphs (`{ }`), File ends (`gg G`), Matching bracket (`%`). They appear in the Copybook under The Wordwood and on the clear cards of the Canopy, the Glades and the Gates. `<C-d>`/`<C-u>` wait for a windowed buffer (DRILLS.md section 11).
+
+**Tests:** every generator wins on par for 200 seeds x 3 difficulties; the solver finds nothing shorter; a new check that every skill's par uses its own keys (it caught `,` reps where `0` or `3b` won, 4 in 100, now 0 in 300).
+
+---
+
 ## 2026-11-26 · DR-polish: the Copybook as a page, and a title menu with a reason
 **Who:** Opus (diagnosis, design, build, browser check).
 

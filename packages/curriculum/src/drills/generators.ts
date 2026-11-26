@@ -390,10 +390,170 @@ const deleteToEnd: Design = (rng, difficulty) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// World 3: f t ; , { } gg G %
+// ---------------------------------------------------------------------------
+
+/** A character worth finding: a letter or punctuation, never a space. */
+const FINDABLE = /[A-Za-z(),.:;"=_[\]{}]/;
+/** Close finds are a step or two of `l`; a find earns its keys from here on. */
+const MIN_FIND_DISTANCE = 6;
+/** `9h` covers nine columns; the letter behind is further back, so only `,` gets there in three keys. */
+const BACK_FIND_DISTANCE = 10;
+
+/** Columns after `from` where `char` occurs on `text`, in order. */
+function occurrences(text: string, char: string, from: number): number[] {
+  return [...text].flatMap((entry, col) => (col > from && entry === char ? [col] : []));
+}
+
+interface Find { readonly char: string; readonly col: number }
+
+/** Characters whose first occurrence after `from` is at least `MIN_FIND_DISTANCE` away: one `f` lands there. */
+function firstFinds(text: string, from: number): Find[] {
+  const seen = new Set<string>();
+  const finds: Find[] = [];
+  for (let col = from + 1; col < text.length; col += 1) {
+    const char = text[col] ?? '';
+    if (seen.has(char)) continue;
+    seen.add(char);
+    if (FINDABLE.test(char) && col - from >= MIN_FIND_DISTANCE) finds.push({ char, col });
+  }
+  return finds;
+}
+
+const find: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3);
+  const row = difficulty === 3 ? 2 : 1;
+  const from = int(rng, 0, 6);
+  const text = lines[row] ?? '';
+  const key = difficulty === 1 ? 'f' : difficulty === 2 ? 't' : pick(rng, ['f', 't'] as const);
+  // `t` stops one short, so its target needs a character between the cursor and the one it names.
+  const target = pick(rng, firstFinds(text, from).filter(entry => key === 'f' || entry.col - from > MIN_FIND_DISTANCE));
+  return {
+    // The mark is where the cursor lands: on the letter for `f`, one short of the named letter for `t`.
+    goal: 'reach', goalText: key === 'f' ? 'Find the marked letter.' : `The mark is just before a "${target.char}". Land on it with t.`,
+    lines, cursor: { line: 1, col: from }, keys: [...(row === 2 ? ['j'] : []), key, target.char],
+  };
+};
+
+const findRepeat: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3);
+  const text = lines[1] ?? '';
+  if (difficulty === 3) {
+    // Between two of the same letter: find forward, then `,` back past the cursor to the one before it. The one
+    // behind sits inside a word (so `b` and `0` never land on it) and further back than `9h` reaches.
+    const options = [...text].flatMap((char, col) => {
+      if (!FINDABLE.test(char) || col === 0 || text[col - 1] === ' ') return [];
+      const after = occurrences(text, char, col)[0];
+      return after !== undefined && after - col > BACK_FIND_DISTANCE ? [{ char, before: col, after }] : [];
+    });
+    const choice = pick(rng, options);
+    const from = int(rng, choice.before + BACK_FIND_DISTANCE, choice.after - 1);
+    return {
+      goal: 'reach', goalText: `The marked "${choice.char}" is behind you. Find forward, then turn back with ,`,
+      lines, cursor: { line: 1, col: from }, keys: ['f', choice.char, ','],
+    };
+  }
+  // The second of a letter: one find lands on the first, `;` goes on to the next.
+  const key = difficulty === 1 ? 'f' : 't';
+  const options = [...new Set(text)].flatMap(char => {
+    if (!FINDABLE.test(char)) return [];
+    const [first, second] = occurrences(text, char, 0);
+    return first !== undefined && second !== undefined && second - first >= 3 && first >= 2 ? [{ char, first }] : [];
+  });
+  const choice = pick(rng, options);
+  return {
+    goal: 'reach', goalText: key === 'f' ? `Find the second "${choice.char}": find once, then ; to go on.` : `The mark is just before the second "${choice.char}". Land on it with t, then ;`,
+    lines, cursor: { line: 1, col: 0 }, keys: [key, choice.char, ';'],
+  };
+};
+
+/** Paragraphs of corpus lines with a blank line between them, and the row of each blank. */
+function paragraphs(rng: Rng, sizes: readonly number[]): { lines: string[]; blanks: number[] } {
+  const text = corpusLines(rng, sizes.reduce((sum, size) => sum + size, 0));
+  const lines: string[] = [];
+  const blanks: number[] = [];
+  let used = 0;
+  sizes.forEach((size, index) => {
+    if (index > 0) { blanks.push(lines.length); lines.push(''); }
+    lines.push(...text.slice(used, used + size));
+    used += size;
+  });
+  return { lines, blanks };
+}
+
+const paragraph: Design = (rng, difficulty) => {
+  const { lines, blanks } = paragraphs(rng, Array.from({ length: 4 }, () => int(rng, 2, 3)));
+  const forward = difficulty === 1 || (difficulty === 3 && rng() < 0.5);
+  const hops = difficulty === 3 ? 2 : 1;
+  // Start inside a paragraph `hops` blanks away from the target blank.
+  const target = forward ? (blanks[int(rng, hops - 1, blanks.length - 1)] ?? 0) : (blanks[int(rng, 0, blanks.length - hops)] ?? 0);
+  const targetIndex = blanks.indexOf(target);
+  const start = forward ? (blanks[targetIndex - hops] ?? -1) + 1 : (blanks[targetIndex + hops] ?? lines.length) - 1;
+  return {
+    goal: 'reach', goalText: forward ? 'Jump down to the marked gap between paragraphs.' : 'Jump up to the marked gap between paragraphs.',
+    lines, cursor: { line: start, col: int(rng, 2, 12) }, keys: repeat(forward ? '}' : '{', hops),
+  };
+};
+
+const FILE_ROWS = 16;
+
+const file: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, FILE_ROWS);
+  const col = int(rng, 4, 16);
+  if (difficulty === 1) {
+    return { goal: 'reach', goalText: 'Jump to the last line.', lines, cursor: { line: int(rng, 0, 4), col }, keys: ['G'] };
+  }
+  if (difficulty === 2) {
+    return { goal: 'reach', goalText: 'Jump to the first line.', lines, cursor: { line: int(rng, FILE_ROWS - 5, FILE_ROWS - 1), col }, keys: ['g', 'g'] };
+  }
+  // Too far for a count on j or k (the solver counts up to 9): only a line number gets there in two keys.
+  const target = int(rng, 2, 5);
+  return {
+    goal: 'reach', goalText: `Jump to line ${target}: type its number, then G.`, lines,
+    cursor: { line: int(rng, target + 10, FILE_ROWS - 1), col }, keys: [String(target), 'G'],
+  };
+};
+
+const OPENERS = '([{';
+const CLOSERS = ')]}';
+
+/** Bracket pairs on a line, as the engine's `%` matches them, at least `min` columns apart. */
+function bracketPairs(text: string, min: number): Array<{ open: number; close: number }> {
+  return [...text].flatMap((char, col) => {
+    if (!OPENERS.includes(char)) return [];
+    const result = engine.step(engine.init([text], { line: 0, col }), '%');
+    const close = result.state.cursor.col;
+    return result.error === null && CLOSERS.includes(text[close] ?? '') && close - col >= min ? [{ open: col, close }] : [];
+  });
+}
+
+/** The first bracket on a line, when it opens a pair `%` can reach from column 0. */
+function leadingPair(text: string): { open: number; close: number } | undefined {
+  const first = [...text].findIndex(char => OPENERS.includes(char) || CLOSERS.includes(char));
+  return bracketPairs(text, 4).find(pair => pair.open === first && first > 0);
+}
+
+const match: Design = (rng, difficulty) => {
+  if (difficulty === 2) {
+    // From the line start, % looks right for the first bracket, then jumps to its partner.
+    const lines = corpusLines(rng, 3, entry => entry.kind === 'code' && leadingPair(entry.text) !== undefined);
+    return { goal: 'reach', goalText: 'From the start of the line, jump to the bracket that closes the first one.', lines, cursor: { line: 1, col: 0 }, keys: ['%'] };
+  }
+  const lines = corpusLines(rng, 3, entry => entry.kind === 'code' && bracketPairs(entry.text, 4).length > 0);
+  const pair = pick(rng, bracketPairs(lines[1] ?? '', 4));
+  const back = difficulty === 3;
+  return {
+    goal: 'reach', goalText: back ? 'Jump back to the bracket that opens this one.' : 'Jump to the bracket that closes this one.',
+    lines, cursor: { line: 1, col: back ? pair.close : pair.open }, keys: ['%'],
+  };
+};
+
 const DESIGNS: Readonly<Record<SkillId, Design>> = {
   'motion.hjkl': hjkl, 'motion.count': count, 'motion.word': word, 'motion.line': line,
   'edit.x': deleteChar, 'edit.r': replaceChar, 'edit.dd': deleteLine, 'edit.undo': undo, 'edit.dot': dot,
   'mode.insert': insert, 'mode.append': append, 'mode.edges': edges, 'mode.open': open, 'edit.D': deleteToEnd,
+  'motion.find': find, 'motion.find-repeat': findRepeat, 'motion.paragraph': paragraph, 'motion.file': file, 'motion.match': match,
 };
 
 export function hasGenerator(skill: SkillId): boolean {
