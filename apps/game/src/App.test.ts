@@ -351,7 +351,7 @@ it('offers the written exercise after a clear card, goes on once it closes, and 
 it('Continue replays the Lowlands entry, including the note and both once-only jetty Blots', () => {
   enterLowlands();
   const entry = values.get(PROGRESS_KEY);
-  play([...'9l', ...'4w', 'l', ...'11l4j', '<CR>', 'l', 'l']); dismiss();
+  play([...lowlands.solution.slice(0, -1), 'l', 'l']); dismiss();
   expect(session().world.entities.filter(entity => entity.def.kind === 'blot')).toHaveLength(2);
   expect(values.get(PROGRESS_KEY)).toBe(entry);
   // Reload the actual App while preserving storage.
@@ -361,7 +361,7 @@ it('Continue replays the Lowlands entry, including the note and both once-only j
   expect(session().world.engine.cursor).toEqual(lowlands.start);
   expect(session().story.flags['lowlands.knows-dollar']).toBeUndefined();
   expect(session().world.entities.some(entity => entity.id === 'scribe-note')).toBe(true);
-  play([...'9l', ...'4w', 'l', ...'11l4j', '<CR>', 'l', 'l']); dismiss();
+  play([...lowlands.solution.slice(0, -1), 'l', 'l']); dismiss();
   expect(session().world.entities.some(entity => entity.id === 'scribe-note')).toBe(false);
   expect(session().world.entities.filter(entity => entity.def.kind === 'blot').map(entity => entity.id))
     .toEqual(['lowlands.blot-1', 'lowlands.blot-2']);

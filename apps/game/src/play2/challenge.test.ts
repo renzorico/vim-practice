@@ -1,0 +1,27 @@
+/**
+ * Challenge rules for redesigned stages (docs/audit/2026-11-26-challenge-audit.md). A stage joins REDESIGNED once its
+ * par route needs every key it teaches: a player can't clear it while skipping the lesson.
+ */
+import { describe, expect, it } from 'vitest';
+import { stages } from './content.js';
+import { introducedAt } from './introducedAt.js';
+import { stageCommands } from './session.js';
+import { commandsIn } from './audit/commandsIn.js';
+
+const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse'];
+
+describe.each(REDESIGNED)('%s', id => {
+  const entry = stages.find(item => item.stage.id === id);
+  if (entry === undefined) throw new Error(`No stage ${id}`);
+  const { stage } = entry;
+  const commands = stageCommands(stage);
+  const taught = Object.entries(introducedAt).filter(([key, at]) => at === id && commands.includes(key)).map(([key]) => key);
+
+  it('teaches at least one key', () => {
+    expect(taught.length).toBeGreaterThan(0);
+  });
+  it('needs every key it teaches on its par route', () => {
+    const used = commandsIn(stage.solution, new Set(commands));
+    expect(taught.filter(key => !used.includes(key))).toEqual([]);
+  });
+});

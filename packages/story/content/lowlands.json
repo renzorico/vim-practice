@@ -20,8 +20,18 @@
       "kind": "main",
       "steps": [
         {
+          "id": "wren",
+          "objective": "Find who is shouting at the edge of the blank field.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "lowlands.knows-w",
+            "value": true
+          },
+          "then": []
+        },
+        {
           "id": "cross",
-          "objective": "Cross the blank field, stone to stone: `w`.",
+          "objective": "Cross the blank field, row by row: `w` `e` `b`, ladders `j`.",
           "completeWhen": {
             "type": "flag",
             "flag": "lowlands.crossed",
@@ -72,7 +82,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Hop stone to stone with `w`.\nOn the jetty, `$` jumps to the door."
+          "text": "`w` hops to a stone's start, `e` to its end,\n`b` back. On the jetty, `$` jumps to the door."
         }
       ],
       "then": []
@@ -119,6 +129,41 @@
         {
           "speaker": "system",
           "text": "Overshot a stone? Press `b`:\nyou hop back to the one before."
+        }
+      ],
+      "then": []
+    },
+    {
+      "id": "lowlands.long-stone",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "Long stones now. The next ladder hangs from\nthe far end of the next stone."
+        },
+        {
+          "speaker": "system",
+          "text": "`w` lands on a stone's first cell, `e` on its\nlast. Press `e` twice, or `2e`."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lowlands.knows-e",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "lowlands.back",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Wren",
+          "text": "(shouting) Not east! That end is blank. The\nway down is back west, two stones back!"
+        },
+        {
+          "speaker": "system",
+          "text": "`b` hops back to the start of the stone before.\n`2b`: two stones back."
         }
       ],
       "then": []
@@ -201,7 +246,7 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 11,
+                  "line": 14,
                   "col": 50
                 },
                 "behaviour": {
@@ -219,7 +264,7 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 11,
+                  "line": 14,
                   "col": 53
                 },
                 "behaviour": {
@@ -290,6 +335,34 @@
         }
       ],
       "onlyIf": "lowlands.knows-w"
+    },
+    {
+      "id": "lowlands.long-stone",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.long-stone"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.long-stone"
+        }
+      ]
+    },
+    {
+      "id": "lowlands.back",
+      "when": {
+        "type": "trigger",
+        "trigger": "lowlands.back"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lowlands.back"
+        }
+      ]
     },
     {
       "id": "lowlands.gull",

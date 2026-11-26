@@ -39,7 +39,7 @@ export function isWalk(command: CommandRecord): boolean {
  */
 const PATH_CHECKED: ReadonlySet<string> = new Set(['w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$']);
 
-/** A tile no move passes through: not walkable and not a gap. Past the end of a row the world is solid too. */
+/** A tile no run passes through: not walkable and not a gap, or a ladder (climbed, not leapt). Past a row end is solid too. */
 function solidAt(lines: readonly string[], at: Position, legend: Legend): boolean {
   const row = lines[at.line];
   if (row === undefined) return true;
@@ -47,7 +47,7 @@ function solidAt(lines: readonly string[], at: Position, legend: Legend): boolea
   if (row === '' && legend.emptyRow !== undefined) return at.col !== 0 || (!legend.emptyRow.walkable && legend.emptyRow.gap !== true);
   if (at.col < 0 || at.col >= row.length) return true;
   const tile = tileAt(legend, lines, at);
-  return tile === undefined || (!tile.walkable && tile.gap !== true);
+  return tile === undefined || tile.climb === true || (!tile.walkable && tile.gap !== true);
 }
 
 /** The cells strictly between two positions on an L-shaped route, turning at `corner`. */

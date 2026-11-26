@@ -56,7 +56,8 @@ it('reveals keycaps only as story flags are learned', () => {
   expect(learnedKeycaps({})).toEqual(['h', 'j', 'k', 'l']);
   expect(learnedKeycaps({ 'margin.knows-counts': true, 'lowlands.knows-w': true }))
     .toEqual(['h', 'j', 'k', 'l', '3l', 'w', 'b']);
-  expect(learnedKeycaps({ 'lowlands.knows-dollar': true }).slice(-2)).toEqual(['$', '0']);
+  expect(learnedKeycaps({ 'lowlands.knows-e': true, 'lowlands.knows-dollar': true }).slice(-2)).toEqual(['e', '$']);
+  expect(learnedKeycaps({ 'lighthouse.knows-zero': true }).slice(-1)).toEqual(['0']);
 });
 
 it('shows the Lighthouse death hint and Lamplighter portrait', () => {

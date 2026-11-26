@@ -22,7 +22,8 @@ it('counts each event batch once, caps uses and resets on replay or stage change
   let session = initial;
   expect(useMotionUses(session)).toEqual({});
   for (let count = 1; count <= 4; count++) {
-    session = controller.reduce(session, 'w');
+    // Back to the road first: the field's first row has three stones, and a fourth w would find only the hedge.
+    session = controller.reduce(controller.reduce(session, 'b'), 'w');
     const uses = useMotionUses(session);
     expect(uses.w).toBe(Math.min(count, 3));
     expect(useMotionUses(session)).toBe(uses);

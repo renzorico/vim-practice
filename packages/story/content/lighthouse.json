@@ -173,6 +173,26 @@
       ]
     },
     {
+      "id": "lighthouse.landing",
+      "lines": [
+        {
+          "speaker": "system",
+          "text": "The next stair starts at the far left of this\nrow, and the Unwriter is gaining."
+        },
+        {
+          "speaker": "system",
+          "text": "Press `0`: you jump to the first cell of the\nrow, however far it is."
+        }
+      ],
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "lighthouse.knows-zero",
+          "value": true
+        }
+      ]
+    },
+    {
       "id": "lighthouse.lamplighter",
       "lines": [
         {
@@ -216,6 +236,20 @@
         {
           "type": "dialogue",
           "dialogue": "lighthouse.climb"
+        }
+      ]
+    },
+    {
+      "id": "lighthouse.landing",
+      "when": {
+        "type": "trigger",
+        "trigger": "lighthouse.landing"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "dialogue",
+          "dialogue": "lighthouse.landing"
         }
       ]
     },

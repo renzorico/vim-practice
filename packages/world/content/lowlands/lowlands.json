@@ -6,19 +6,20 @@
   "goalText": "Reach the Lighthouse at the end of the jetty.",
   "map": [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T   T        \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T        T   \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t    T       T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    ".............oo\t\t\to\t\t\too\t\to            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "TTTTTTTTTTTTT\t\t\t\t\t\t\t\t\t\t\t\t\t\t            .===============L",
-    "T         T  \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
-    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t            T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "T   T        \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "T        T   \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "T     T      \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "T            \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    ".............oo\too\too\t\t\t\t\t\t\t\t\t\t\t\t\tT    T",
+    "TTTTTTTTTTTTTTTTTTTHTTTTTTTTTTTTTTT    T",
+    "TTTTTTTTTTTTT\t\t\t\t\t\toooooo\t\tooooo\t\tT    T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTHTTT    T",
+    "TTTTTTTTTTTTT\t\t\t\t\t\t\t\t\t\to\t\t\too\t\to\t\tT    T",
+    "TTTTTTTTTTTTTTTTTTTTTTTHTTTTTTTTTTT    T",
+    "TTTTTTTTTTTTT\t\t\t\t\t\t\t\t\t\to\t\to\t\to\t\too     T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT    .===============L",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ],
   "legend": "lowlands",
@@ -48,7 +49,7 @@
       "kind": "npc",
       "sprite": "gull",
       "at": {
-        "line": 10,
+        "line": 9,
         "col": 37
       },
       "behaviour": {
@@ -63,7 +64,7 @@
       "kind": "prop",
       "sprite": "note",
       "at": {
-        "line": 11,
+        "line": 14,
         "col": 39
       },
       "behaviour": {
@@ -118,16 +119,46 @@
       }
     },
     {
+      "id": "lowlands.long-stone",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 9,
+          "col": 19
+        },
+        "to": {
+          "line": 9,
+          "col": 19
+        }
+      }
+    },
+    {
+      "id": "lowlands.back",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 11,
+          "col": 31
+        },
+        "to": {
+          "line": 11,
+          "col": 31
+        }
+      }
+    },
+    {
       "id": "lowlands.far-side",
       "once": true,
       "on": "enter",
       "area": {
         "from": {
           "line": 1,
-          "col": 26
+          "col": 34
         },
         "to": {
-          "line": 13,
+          "line": 14,
           "col": 38
         }
       }
@@ -138,11 +169,11 @@
       "on": "enter",
       "area": {
         "from": {
-          "line": 11,
+          "line": 14,
           "col": 40
         },
         "to": {
-          "line": 11,
+          "line": 14,
           "col": 40
         }
       }
@@ -154,14 +185,18 @@
       "type": "reach",
       "area": {
         "from": {
-          "line": 11,
+          "line": 14,
           "col": 55
         },
         "to": {
-          "line": 11,
+          "line": 14,
           "col": 55
         }
       }
+    },
+    {
+      "type": "flag",
+      "flag": "lowlands.knows-w"
     },
     {
       "type": "flag",
@@ -174,20 +209,41 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 4,
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "$"
+  ],
+  "parTurns": 11,
   "solution": [
-    "5",
+    "e",
+    "3",
+    "w",
+    "2",
+    "j",
+    "2",
+    "e",
+    "2",
+    "j",
+    "2",
+    "b",
+    "2",
+    "j",
+    "3",
     "e",
     "5",
-    "$",
-    "1",
-    "5",
-    "h",
+    "l",
+    "j",
     "<CR>",
     "$"
   ],
   "hints": [
-    "Stand on the path or a stone and press `w` to hop to the next stone.",
+    "`w` hops to the start of the next stone, `e` to the end, `b` back. Ladders: `j`.",
     "On the jetty, press `$` to jump to the door."
   ]
 }

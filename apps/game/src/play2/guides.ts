@@ -31,8 +31,8 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
     cross: guide(['3', '0', 'l'], [cell(7, 18)]),
   },
   'lowlands.lighthouse': {
-    cross: guide(['w'], [cell(7, 13), cell(7, 14), cell(7, 18), cell(7, 22), cell(7, 23)]),
-    lighthouse: guide(['$'], [cell(11, 40)]),
+    cross: guide(['w'], [cell(7, 12), cell(7, 13), cell(7, 14), cell(7, 16), cell(7, 17)]),
+    lighthouse: guide(['$'], [cell(14, 40)]),
     lamp: { ...guide(['8', 'k'], [cell(25, 1), cell(17, 1)]), within: { from: cell(12, 0), to: cell(25, 20) } },
   },
   'quarry.road': {

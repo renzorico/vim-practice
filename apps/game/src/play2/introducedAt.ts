@@ -6,7 +6,7 @@ import { keyParts } from './KeyText.js';
 /** Teaching order, independent of the world's command unlocks. Alias forms join their lesson. */
 export const introducedAt: Readonly<Record<string, string>> = {
   h: 'margin', j: 'margin', k: 'margin', l: 'margin', '3l': 'margin',
-  w: 'lowlands', b: 'lowlands', e: 'lowlands', '0': 'lowlands', $: 'lowlands',
+  w: 'lowlands', b: 'lowlands', e: 'lowlands', $: 'lowlands', '0': 'lighthouse',
   x: 'quarry-road', r: 'quarry-road', ':e!': 'quarry-road',
   dd: 'cut', u: 'cut', '<C-r>': 'cut', '.': 'shaft',
   o: 'ledger', D: 'ledger', i: 'ledger', a: 'ledger', A: 'ledger', I: 'ledger',

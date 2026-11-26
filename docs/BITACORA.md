@@ -3,6 +3,23 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 1 redesign: Margin, Lowlands, Lighthouse
+**Who:** Opus (design, build, solver proofs, browser check). Renzo: "Start World 1", after the challenge audit.
+
+**Rule:** a redesigned stage's par route needs every key the stage teaches. `apps/game/src/play2/challenge.test.ts` checks it for each stage in its `REDESIGNED` list (now Margin, Lowlands, Lighthouse); it fails on the Glades today (`{ } gg` skipped). `commandsIn` moved out of the audit test into `audit/commandsIn.ts`.
+
+**Lowlands** (par 4 to 11, proven by the solver over every Lowlands key, `allowedCommands` now `h j k l w b e $`): four rows of stones joined by ladders. Row 1 has two-cell stones and the ladder hangs from a stone's start (`3w`); row 2 has long stones and the ladder hangs from the next stone's end (`2e`); row 3 is a dead end east, the way down is back west (`2b`); row 4 runs out to the far side (`3e`, walk), then the Scribe's note and `$` along the jetty. The door also needs `lowlands.knows-w`: Wren is a required first step of the quest, not a skippable aside. New story beats teach `e` (the long stones) and `b` (Wren shouting across the field).
+
+**Ladders are climbed, not leapt:** new `climb` flag on TileDef (frozen contract, changed by the design lead). A word or line-end motion leaving its line may not pass a climb tile, so a counted `8e` can't fall down a ladder and skip a row. Without it, the path rule let gaps carry runs straight down the ladder columns.
+
+**`0` moves to the Lighthouse**, where the route already needs it (the stair starts at the far left of row 5); a new landing line teaches it and sets `lighthouse.knows-zero` for its keycap.
+
+**Margin:** start moved to (7,12), so the Elder is west and the route needs `h` (`5h 4k`, Elder, `7j 4l`, Mira, `3k 28l`). Par stays 6: it is the first stage.
+
+**Lesson:** a path rule alone is not a level design. Blank ground that a run may cross also lets a count cross whole rows; the fix was a tile that says how it is crossed (on foot), not another global rule.
+
+---
+
 ## 2026-11-26 · Challenge audit
 **Who:** Opus (tool, run, report). Renzo: "Start the audit".
 

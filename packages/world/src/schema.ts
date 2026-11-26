@@ -38,9 +38,11 @@ const tileDef = z
     damage: NON_NEGATIVE_INT.optional(),
     label: z.string(),
     gap: z.boolean().optional(),
+    climb: z.boolean().optional(),
   })
   .strict()
-  .transform(({ damage, gap, ...tile }) => ({ ...tile, ...(damage === undefined ? {} : { damage }), ...(gap === undefined ? {} : { gap }) }));
+  .transform(({ damage, gap, climb, ...tile }) => ({ ...tile, ...(damage === undefined ? {} : { damage }), ...(gap === undefined ? {} : { gap }),
+    ...(climb === undefined ? {} : { climb }) }));
 
 export const LegendSchema = z
   .object({
