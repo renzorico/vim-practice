@@ -1,5 +1,5 @@
-import type { WorldId, TileDef } from '@escape/world';
-import { terrainGroup } from './edges.js';
+import type { WorldId, TileDef, Legend } from '@escape/world';
+import { terrainGroup, tileAt } from './edges.js';
 
 export const PARTICLE_CAP = 24;
 export function positionHash(line: number, col: number): number {
@@ -23,7 +23,22 @@ export function particleY(index: number, elapsed: number, height: number): numbe
 }
 export function shadowScale(height: number): number { return Math.max(0.35, 1 - Math.max(0, height) / 40); }
 
-export const TITLE_ROW_CLOCK_MS = 8000;
-export function titleRowGone(tick: number, reducedMotion: boolean): boolean {
-  return !reducedMotion && tick % 2 === 1;
+
+const particleCell = { line: 0, col: 0 };
+
+/** Full particle footprint stays within the ragged buffer, including the rows above and below. */
+export function particleInside(rows: readonly string[], x: number, y: number, legend?: Legend): boolean {
+  const left = Math.floor((x - 8) / 16);
+  const right = Math.floor((x + 7.999) / 16);
+  const top = Math.floor((y - 8) / 16);
+  const bottom = Math.floor((y + 7.999) / 16);
+  if (left < 0 || top < 0 || bottom >= rows.length) return false;
+  for (let line = top; line <= bottom; line++) {
+    if (right >= (rows[line]?.length ?? 0)) return false;
+    if (legend) for (let col = left; col <= right; col++) {
+      particleCell.line = line; particleCell.col = col;
+      if (terrainGroup(tileAt(rows, particleCell, legend)) === 'open') return false;
+    }
+  }
+  return true;
 }

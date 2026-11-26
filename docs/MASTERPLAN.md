@@ -166,6 +166,12 @@ Writing rules for every box (dialogue, objective, hint, death hint):
 4. Keys a later puzzle asks the player to find are not given away. What a key does in general is the Key card's job, not the dialogue's.
 5. At most 3 boxes per conversation, 2 in an intro. Each named character wants one concrete thing that has nothing to do with Tilde. A verbal habit appears once per dialogue at most. Humour comes from losing work nobody saved.
 
+### 3.8 The opening and the journey
+
+New game opens with eight skippable tableaux: a written world becomes Folio, the writer disappears, the grey Unwriter approaches Tilde's last row, and Tilde sets out to find the Scribe. Original canvas staging uses the field's pixel tiles. Captions reveal at 45 characters/second; Enter reveals then advances, Esc skips, and the first seven completed captions wait 3.5 seconds. The final beat waits for “Enter: wake up”. Hidden tabs pause the opening. Reduced motion uses still pictures, whole captions and manual advance. Intro in the title menu returns to the title; Continue and stage replay bypass it. Save data is unchanged.
+
+The shared route strip places the Margin (World 0) before six numbered worlds and the Last Page (the seventh destination). World banners last 2.6 seconds and explain the next destination; the HUD keeps “Find the Scribe” visible. Later places remain unnamed silhouettes of their own tile vignettes on the map. Each banner appears once per world per page session; New game resets that history. The HUD numbers Lowlands through Echo Caves as worlds 1–6, with no number in the Margin or Last Page.
+
 ## 4. Tech
 
 ```

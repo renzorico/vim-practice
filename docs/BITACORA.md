@@ -895,6 +895,258 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-24 · P-17: The opening, and where am I
+**Who:** Codex (build, fix round), Sonnet (review), Opus (brief, script, map and art polish, browser check).
+
+**Why:** Renzo: "we need a short intro explaining what is this about... what's gonna be the goal of the game so people get actually hooked. It seems too abrupt and confusing on where to start or where are we."
+
+**What:** New game plays eight short beats, skippable with Esc: someone types a world, the letters turn into the village, the writer disappears, something grey deletes rows, you are Tilde, "YOUR GOAL: find the Scribe, make them save the world", and how you move. It never states the twist (MASTERPLAN 3.8). The title menu has "Intro" to watch it again. World banners show the road through Folio with where you are and one line of why; the HUD keeps "Find the Scribe" under the stage title; the stage list has the same map.
+
+**Review fixes:** a second run started on the old beat or closed at once; a hidden tab could skip beats; the whole app re-rendered 45 times a second; art was redrawn pixel by pixel every frame; banners repeated after every return to the title; the last beat started the game by itself.
+
+## 2026-11-24 · P-18: Visuals 2 (surroundings, light, tall things)
+**Who:** Codex (build, fix round), Sonnet (review), Opus (brief, Save Stone, glow, browser check).
+
+**Why:** Renzo likes the new visuals and wants more; and the design lead's tour of every world found that P-15 had broken the Lighthouse (its floor became open sea), the Lowlands (land that read as water), the Cut and the Last Page.
+
+**What:** Built floors keep their own sprites; the Lowlands are a chalk meadow; the Cut is a real drop; the Last Page is plain paper. Outside each map there is now a place (sea, rock, forest, bookcases, cave), dimmed and never walkable, instead of a void. Soft vignettes, light pools on lamps, windows, crystals and Save Stones, and a smooth falloff in dark stages (the same cells stay hidden). Trees, pillars, shelves, lamps and Save Stones are 24 px tall and overlap actors correctly; source view hides the overhang.
+
+**Review fixes:** trees wore a square block; one texture per cell and cursor in dark stages; the hidden map's outline showed in the dark; deleted text got a border or sea; mixed paper colours.
+
+---
+
+## 2026-11-24 · P-16: The Scribe's notebook (new keys, when you need them, and you try them)
+**Who:** Sonnet (start, stopped by its usage limit), Codex (build, fix round), Sonnet (review), Opus (brief, fixes, browser check).
+
+**Why:** Renzo: "the 'your new keys' page is poorly designed, it needs to be scrolled up/down... appears out of nowhere, needs some redesign, I like the idea tho."
+
+**What:** The black "Your new keys" page is gone. A page of the Scribe's notebook slides up over the dimmed game right after the dialogue that first names a key. One lesson per page, no scrolling, at most two in a row, each shown once per save. Tilde tries it first, then the player does, on a strip of that stage's own tiles driven by the real engine: `h j k l` around a square of path, `4x` on three stones, `5r=` across four water tiles, `w` over stepping stones. Keys without an authored lesson use their help example.
+
+**Review fixes:** on layouts that need Option or AltGr the practice ignored `{ }` (the game and the notebook now share one key reader, `input/keyReader.ts`); focus no longer sits on a button that Space could press; the page limit counts pages, not keys; Tab behind an open page does nothing.
+
+---
+
+## 2026-11-24 · P-19: The frame (HUD, dialogue, status line, desk)
+**Who:** Codex (build), Sonnet (review), Opus (brief, fixes, browser check).
+
+**Why:** the header grew from 84 to 124 px as the objective and guide rows appeared, so the map was resized under it and its top rows were cut off; and everything around the map was dark rounded web-app boxes.
+
+**What:** A header of constant height: one row of facts, and a paper strip that says what to do now. The footer is Vim's status line (mode block, buffer name, pending keys, the last six keys learned). Blocked messages are a paper slip over the field that fades, instead of staying in the footer. Dialogue is paper and ink with a framed portrait and a name tab; instruction boxes have a gold edge, a "Try this" stamp and raised keycaps; the box moves to the top when the player stands low on the map. Text stages are sheets on a desk. The clear and death panels match.
+
+**Review fixes:** the toast hid a message when the turn also ended, and its live region was remounted; the old keycap rule won over the new one; the quest strip repeated keycaps; the focus ring vanished on paper; the footer could spill to a second row; the desk heading no longer stayed in view; a copied dialogue sequence; dead code. Matched target rows are ticked in green, not struck through (in a Vim game that reads as "delete").
+
+**Known:** in the Gates, after `Ctrl-d` scrolls the window, the side the dialogue takes is computed without the scroll.
+
+---
+
+## 2026-11-24 · P-20: Life in the field (characters, forest, houses, the erased row)
+**Who:** Codex (build, second round), Sonnet (review), Opus (brief, forest and path art, fixes, browser check).
+
+**Why:** Renzo likes the visuals and wants more. The design lead's play found a player that slid without turning, tree columns like totem poles, houses made of repeated doors, and a first line ("a whole row of the village is gone") that nothing on screen showed.
+
+**What:** Tilde faces where she walks and has a walk cycle; people breathe and turn to look at you; the person to talk to has a "!" bubble (the arrow used to point at the empty cell beside them). Trees are round crowns that join into a forest; the forest outside the map is a canopy in three distances; the Library's outside is shelves of varied width with gaps and ladders. Houses have a roof, one door, lit windows and chimney smoke. In the Margin the erased row is visible: torn paper, a `~`, and the pencil outline of Tilde's house. Worn paths lead from the doors. The label says talk, read or use. The clear card is a paper card over the map.
+
+**Review fixes:** labels not moved on resize; a search through all entities for every actor on every frame; buildings searched on every key; the facing kept after a restart; the erased strip would have covered a line moved into its place; keepers said "use"; a seam at the map's left and right edges.
+
+**Textures:** entering the Margin creates 612 (test limit 620), walking creates none.
+
+---
+
+## 2026-11-24 · P-21: The title and the opening, redrawn
+**Who:** Opus (art and code), Sonnet (review).
+
+**Why:** the title and the opening still used the old trees and houses, and the title looked like a web form over a flat field.
+
+**What:** The title is the Margin at dawn under a dithered sky, the dark Lighthouse on the hill, Tilde on the road; the right edge of the world turns into its letters and then into blank page with `~`, and breathes. The menu is a sheet of paper headed `folio.txt [+]` (Vim's mark for an unsaved file), with line numbers and a cursor after the title. The opening's village uses the same art as the field (`scene/terrain/tableau.ts`, shared), and its letters are the Margin's real ones.
+
+---
+
+## 2026-11-24 · P-23: Ground you can read (materials)
+**Who:** Opus (art and code), Sonnet (review).
+
+**Why:** a render of every stage showed floors and walls drawn from the same texture (Customs, the Caves), striped rock that pulled the eye (Quarry), a walkway that was mostly sky (Canopy) and a noisy moss that hid the fern marks (Glades).
+
+**What:** One rule everywhere: the floor is lighter and calmer than the wall. New masonry, bark, planks, moss, bramble, flagstones, cave floor and rock, gravel, tents and boulders, all procedural and deterministic (`sprites/material.ts`), same sprite names, frame counts and 16 by 16 grids.
+
+---
+
+## 2026-11-24 · P-24: The book's other pages (stages, keys, banners)
+**Who:** Opus (design and code), Sonnet (review).
+
+**What:** The stage list is a spread: contents on the left, and on the right the chosen stage's opening view, its goal, your best and the par. World banners show the first view of that world behind a paper card with the road through Folio. The keys reference is paper. One painter draws any stage without Phaser (`scene/terrain/stagePicture.ts`).
+
+---
+
+## 2026-11-25 · P-25: Cutscenes you can follow
+**Who:** Opus (design and code), Sonnet (review).
+
+**Why:** the 24 cutscenes were a blank page with one centred line and no name, so "Copy. ...copy." came from nobody.
+
+**What:** Every beat plays over the place it happens in, between two film bars: speech uses the dialogue box with portrait and name, narration is a caption, "The Scribe is in another buffer." is carved in stone, the swap file is a terminal, the end of a world is a page. The death panel is a torn card over the map. Small maps are centred in their picture, with the world's own surroundings around them. Labels say "go south" and "take lift" again (P-20 had turned them into "use"). The unused second cutscene component is gone.
+
+---
+
+## 2026-11-25 · P-26: The ending you can see
+**Who:** Opus (design and code), Sonnet (review).
+
+**What:** After the saving ending, the last screen is the title's own picture with the edge whole and the lamp lit, and the title loses two letters: UNSAVED becomes SAVED. From then on the title screen keeps the whole world, and its file is `folio.txt` without the `[+]`.
+
+---
+
+## 2026-11-25 · P-22: Music
+**Who:** Codex (player, two rounds), Opus (brief, the nine scores, level), Sonnet (review).
+
+**Why:** between two keys the game was silent, so every place felt the same.
+
+**What:** One original, synthesized score per world, plus title and ending (the title's theme alone, at half speed, finally answered). No audio files. It ducks under dialogue, the notebook, cards and help, cross-fades between worlds, stops on death, pauses in a hidden tab. The sound button now has three states: on, effects only, off (old settings still load).
+
+**Review fixes:** fades jumped instead of fading; one error silenced music for good; pads decayed like plucks; notes lost at the node cap; a DOM observer for ducking. The first scores were one template transposed, so they were rewritten by hand in a small text notation (`tune([...])`) with tests for mode, range, rests and repetition.
+
+**Checked:** the title score's output in the browser (level, no sample jumps over 0.001). Nobody has listened to all nine: Renzo's ears decide.
+
+---
+
+## 2026-11-25 · P-27: `:hint` (nobody stays stuck)
+**Who:** Opus (design and code), Sonnet (review).
+
+**Why:** Renzo got stuck on the planks. Every stage had hints written, but field stages never showed them; only the text stages did.
+
+**What:** `:hint` (or its button in the status line) shows the stage's hints one at a time as a note in the margin: only those for the current objective when one names its keys, so later ones are not given away. After the last it puts them away. No turn, no star lost, nothing in the world changes. After 14 turns on one objective, or 4 blocked moves in a row, the button lights up and asks "stuck?". A new objective puts the note away. Nothing new on the Session.
+
+---
+
+## 2026-11-25 · P-28: Seen while playing
+**Who:** Opus (play, fixes).
+
+**What:** Crowns thin out over whoever stands behind them; the black edge of the map no longer cuts trees in two; pictures of the blank field show it whole; the "Enter: talk" label is drawn at screen size instead of being blurred by the zoom; Phaser and React are separate files, so a returning visitor downloads 166 kB instead of 550.
+
+---
+
+## 2026-11-25 · P-29: Played as a newcomer, Margin to Lighthouse
+**Who:** Opus (play, fixes), Sonnet (review).
+
+**What playing showed, and the fix:**
+- After the last stepping stone, `w` answered "Blocked: tree" and the marker pointed back. The last stone now counts as across, so the next objective and its marker show at once.
+- "At the foot of the stairs" in the Lighthouse, but no stairs were drawn and nothing marked the spot. The three openings are stairs now, the two places to press `8k` are marked, and the guide ends where the blank floor begins (guides can have an area).
+- In the Quarry, with the rubble gone, the game still asked for `4x`. The marker now goes with the rubble, and the first step east is already the river. Landing on the last plank already counts as across, so the planks are not asked for twice. While Vim waits for a key (`5r` ...), the whole status line says what it waits for.
+- Stand markers and the cursor were thin yellow lines, invisible on pale stone. Both have a dark second tone; the marker also tints its cell.
+
+---
+
+## 2026-11-25 · P-30: Played as a newcomer, the Cut to the Glades
+**Who:** Opus (play, fixes).
+
+**What:** Two objectives stayed on screen after they were done ("Clear the Blots", "fH reaches the ladder"); both now say something true until the step ends. Text stages use a larger sheet on wide screens. A map that fits the view is drawn larger (up to 5 times, whole steps, decided by the authored map so edits never change it): the Port, Library and Caves no longer sit tiny in the middle.
+
+---
+
+## 2026-11-25 · P-31: Played as a newcomer, Copper Port to the ending
+**Who:** Opus (play, fixes), Sonnet (review).
+
+**How:** a save built by replaying every stage's solution, then each field stage from World 4 to the ending played in the browser, reading every box against what is on screen.
+
+**What playing showed, and the fix:**
+- A player who takes `5$` in the Lowlands (the par route the game itself shows) kept "Cross the blank field" as the objective, with its markers, for the rest of the game. The screen now follows the latest quest begun (`currentQuest.ts`).
+- Text stages never opened practice pages, so `o`, `D`, `c`, `C`, `P`, `yy`, `V` and `Ctrl-v` were taught in one line. They have pages now, as words on a sheet, before the first key.
+- The "should read" sheet dropped blank rows, which looked like an instruction to delete them.
+- The player was hidden behind crate props; a crate pallet covered its own post.
+- Instructions named things not on screen ("tally word", "a shelf's [", "crate two", "the atlases", "the stair"). They now name jars, signs, posts, colours, and the labyrinth's stair is drawn.
+- Keycaps showed Vim notation (`<Esc>`, `<C-v>`); they show the key's printed name.
+- The yank slot was barely visible; letters of the buffer (Tab view, the Last Page) were blurred by the zoom.
+- The hints of the text stages sat below the sheet, out of sight, and the first one named work already done. They are in the heading now, and follow the first unfinished part (`scriptHints.ts`).
+- Practice pages whose example ends in Enter said "Enter: skip practice", but Enter only answered "Try again". Enter and Esc now do what the buttons say until the practice begins, and the buttons drop their keycap while it runs.
+- The sheets of the contract and the manifest scrolled sideways, and the manifest's target hid the last full stop. The target now takes the width of its longest row. The manifest's intro said five fixes; there are six.
+- In the Gates, a player who took the jump before talking to Shut kept "Talk to Shut" as the objective after Ope had sent them for the lamps.
+- The next stage's objective was already on screen during the closing dialogue of the one just cleared.
+
+**Review:** 5 risks. Fixed: the ending's key count (it counts since the file was opened), the keys filter (it matches "Ctrl" and "Enter" too), "the brown one" (the bibles are dark), "the crate's post" in the customs shed (there is a post of that name). Kept: practice pages may open over any script with no key typed in it; only text stages open one that way.
+
+---
+
+## 2026-11-25 · P-32: Renzo's play: the scripts, the Gates and the port
+**Who:** Opus (design, code), Sonnet (review).
+
+**What Renzo said:** the `%` stage is very confusing; in the scripts a space too many at the end of a row is invisible and nothing says so; every row was ticked and nothing happened; the instructions do not look like instructions; in the Warehouse it is not clear what to do, and TALLY was a smear of pixels.
+
+**Root causes and fixes:**
+- *Ticked but not finished:* the script ends at rest in Normal mode, and the ticks compared rows by position only. So Insert mode, or a row too many at the end, left every tick green with no next step. The heading now says "Every row is right. Press Esc to finish.", and a row too many is struck out and named.
+- *Invisible differences:* rows are paired by least difference (`script/diff.ts`), so one extra row no longer unticks all below it. The characters that differ are underlined in both sheets, trailing spaces show as dots, and a "Look" line names what an eye misses (a space at the end, spaces, capitals, an empty row).
+- *Instructions:* the goal paragraph and the late hints are replaced by a checklist of tasks and one "How" line for the current task: where to stand, which keys, what to type (`script/tasks.ts`). `script.test.tsx` follows every instruction literally and must reach the target text.
+- *The Gates:* two `)` side by side jump to different places, 36 rows apart, with nothing on screen to say which. The nook (the inner pair) is now four rows above, so the first `%` shows both ends; dotted threads join each pair and light up when the player stands on an end; every step has a marker to stand on. A new first step teaches the pair before the long jump.
+- *The port:* no step said where to stand. Markers now follow the state of the field (`stageGuides.ts`: what is yanked, what is stocked), and paper signs name piles, shelves and crates and tick when they are right. `stageGuides.test.ts` plays Jetty, Warehouse, Customs, Counter and Gates doing only what the screen says, and must clear them. The TALLY plates are gone; `[` and `]` are drawn as one rack.
+- Between two things only the one Enter will use is labelled.
+
+---
+
+## 2026-11-25 · P-33: The music says the stage is done
+**Who:** Opus (design, cadences, levels), Codex (build), Sonnet (review).
+
+**Root cause:** a cleared stage only ducked the music, and the clear effect was a C major arpeggio that fits no score.
+
+**What changed:** each score has a cadence in its own key. When a stage is cleared the plucked voices fade at the next beat, the cadence plays over the held pad, and the score then goes on "resolved" (pad only, brighter filter) until the next stage. With effects only, the old clear effect stays.
+
+**Measured in the browser (Margin):** the first build's figure was a click (its notes were 10 ms long) and came two seconds late (it waited for free audio nodes under a cap of 24). Notes now last a beat, the cap is 48, and the cadence sits 2 dB over the music (about -32 dB against -35 dB RMS). Nobody has listened to it yet.
+
+**Other options considered:** voices that join as objectives are done, so a place "wakes up" while you play (best next step, needs a listen first); a tempo change at the end (rejected: it fights the walking rhythm).
+
+---
+
+## 2026-11-25 · P-34: A written exercise after each stage
+**Who:** Opus (design, texts, code), Sonnet (review).
+
+**Why:** Renzo: people need to practise the keys on real text. The field makes a key memorable; the text shows what it is for.
+
+**What:** after the clear card of 18 field stages the same keys are used once on a short text (a letter, a list, a bill): three to five tasks, under a minute. Moving tasks count only when the cell is reached with the key they teach; editing tasks end at a target text, on the same sheet as the text stages (`script/Sheet.tsx`, now shared). Esc twice skips; a finished one is not offered again. The exercise has its own buffer and never touches the session, so turns, stars, story and replays are unchanged (`play2/draft/`).
+
+**Tests:** every exercise is played with the keys its instructions name, using only keys the player has learned by then.
+
+**Not done:** Lighthouse, Counterfeiter and Labyrinth teach no key of their own and have no exercise. Closing the browser during an exercise repeats the stage, as closing it on the clear card already did.
+
+**Review:** two traps fixed: the clear card's button kept the focus, so Enter could not finish the exercise after a mouse click; Tab walked out of the sheet. Also fixed: copies are checked by what is in the pocket they name, every editing task outlines where to stand, a text damaged beyond its tasks says so and offers `u` or Start again, and keys typed faster than renders are kept.
+
+**Also:** the `5$` route left "Cross the blank field" on screen in the Lighthouse; clearing the Lowlands now completes that step.
+
+---
+
+## 2026-11-25 · P-35: One typeface, and labels that cover nothing
+**Who:** Opus (design, code), Sonnet (review).
+
+**Why:** Renzo, in the Warehouse: "everything is on top of everything", and the instructions "look like thrown there, not matching the vibe". Causes: the labels on the field were drawn with the browser's default `monospace` in map units, so they grew with the zoom and were placed by hand; the HUD was three full-width bars in three styles; a corporate sans sat on pixel art.
+
+**What:**
+- **Two faces.** Jersey 15, a pixel face (OFL, new dependency `@fontsource/jersey-15` 5.3.0, bundled), for everything the game says; JetBrains Mono only for Vim's own text and keys. IBM Plex Sans is gone. Paper surfaces share one pixel frame (`--paper-frame`).
+- **One HUD band:** where you are, the instruction on a slip of paper in the middle, registers, gauges and turns at the right. The registers left the field.
+- **Field labels are placed, not positioned.** A sign now says which cells it names (`FieldSign`), and `scene/labelLayout.ts` finds the cheapest place above, below or beside them: never over goods, people or another label, on walls when it can. One size on the screen at any zoom, in a layer over the canvas that follows the camera (`scene/FieldLabels.tsx`). The label that names the target turns gold and replaces the arrow; a finished one turns green; all hide while somebody speaks. The Enter prompt and the landing keys use the same layer.
+- **Art:** the oil jar and the rope coil have an outline and a clear shape; the registers show them cut out.
+- Large screens (1600 px and wider) draw the interface a third larger. The sheets say how many rows are too many.
+
+**Tests:** in four stages, three window sizes, before and after the work, no label overlaps goods, people or another label (`scene/labels.test.tsx`).
+
+**Review:** canvas letters wait for their fonts before the first frame; the prompt waits for the last step of a walk; obstacles are computed once per map, not per key; the prompt is announced to screen readers; no sideways scroll at 910, 1024 and 390 px.
+
+---
+
+## 2026-11-25 · P-36: The music follows the challenge
+**Who:** Opus (design, fixes), Codex (build), Sonnet (review).
+
+**Why:** Renzo: the music is "just ok, a bit tiring, and doesn't reflect the feeling of the challenge". The melody played all the time at one strength, the same 32 bars came back unchanged, every voice was dry and in mono, and the only thing it knew was the world.
+
+**What:**
+- **Five parts** per score: bed, pulse, melody, counter-melody, drum. The tune opens a stage, then comes and goes; no arrangement repeats within three minutes.
+- **The quest is heard.** Each finished step adds something at the next bar: a firmer pulse, a second voice, a drum (`audio/mood.ts`, energy 0 to 3).
+- **Danger is heard.** An enemy within five cells, then two, or the last heart: the tune withdraws, the sound darkens, a heartbeat starts. It comes in a quarter of a second and leaves slowly.
+- **Pace:** text and walking stages are slower, races and duels faster with a drum from the first bar. The same pace keeps the music going from stage to stage.
+- **Thinking is quiet:** after 20 seconds without a key the tune rests until the next phrase after a key.
+- **Sound:** one room reverb, parts placed left and right, small fixed variations of level and timing, softer attacks.
+
+**Measured (offline render of the real player):** about -31 dB at the start of a stage to -26.5 dB at its last step (it was a constant -24 to -27); the first build moved less than 1 dB between steps 1 and 3, so pulse, counter and drum were set again. The clear figure sits level with the music.
+
+**Review:** the node cap starved a new stage of its parts during a crossfade (48 to 112, parts made at the start); the Quarry's knock was lost; danger left too fast; the heartbeat ran late; un-resolving brought every part back at full. Fixed.
+
+**Not done:** nobody has listened to it yet. Pace and energy are guesses until then.
+
+---
+
 ## Parking lot
 - Engine: redo after moving (`dbul<C-r>`) matches Neovim now; `gU`/`gu`/`g~`/`>`/`<` are not implemented (never taught); add them with goldens if a later lesson needs them.
 - Session (S-1 leftovers): a checkpoint stored mid-settle snapshots the story after all rounds (firedReactions can run ahead; flags are re-synced); the flag re-sync after a restore can re-evaluate a `flag` clear without emitting `stage-cleared` (unreproduced).

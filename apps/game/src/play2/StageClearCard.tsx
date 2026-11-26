@@ -1,3 +1,4 @@
+import { keyLabel } from './keyLabel.js';
 import { KeyText } from './KeyText.js';
 import type { Stage } from '@escape/world';
 import type { Session } from './session.js';
@@ -12,7 +13,7 @@ export function StageClearCard({ session, stage, onContinue, onReplay, practise 
 }) {
   const turns = session.world.turn;
   const stars = starsFor(turns, stage.parTurns);
-  return <section className="play-panel stage-clear" role="dialog" aria-modal="true" aria-labelledby="clear-title">
+  return <section className="play-panel play-card stage-clear" role="dialog" aria-modal="true" aria-labelledby="clear-title">
     <h2 id="clear-title"><KeyText text={stage.title} /> cleared</h2>
     {isScoredStage(stage) && <><p className="stage-clear__stars" aria-label={`${stars} of 3 stars`}>
       <span aria-hidden="true">{[1, 2, 3].map(star => <svg key={star} viewBox="0 0 24 24"
@@ -24,7 +25,7 @@ export function StageClearCard({ session, stage, onContinue, onReplay, practise 
     <p>Turns: {turns} · par {stage.parTurns}</p></>}
     <p>{session.world.hearts} of {stage.hearts} hearts left.</p>
     {isScoredStage(stage) && (turns <= stage.parTurns ? <p>Par route found.</p> : <div className="stage-clear__route">
-      <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{key}</kbd>)}</div>
+      <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{keyLabel(key)}</kbd>)}</div>
     </div>)}
     <div className="stage-clear__actions">
       <button autoFocus onClick={onContinue}><kbd>Enter</kbd> continue</button>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { PORTRAITS } from './index.js';
-import { portraitFor, portraitId, SPEAKER_ACCENTS } from './speakers.js';
+import { portraitFor, portraitId } from './speakers.js';
 import { SPRITES } from '../index.js';
 
 const MAIN = ['elder', 'mira', 'dot', 'scribe', 'ash', 'wren', 'echo', 'lamplighter', 'mason',
@@ -222,7 +222,6 @@ describe('portraits', () => {
   for (const [id, art] of Object.entries(PORTRAITS)) it(`${id} has complete 32px art and distinct expressions`, () => {
     expect(art.frames).toHaveLength(MAIN.includes(id) ? 3 : 1);
     expect(new Set(art.frames.map(frame => frame.join(''))).size).toBe(art.frames.length);
-    expect(SPEAKER_ACCENTS[id]).toBeDefined();
     for (const frame of art.frames) {
       expect(frame).toHaveLength(32);
       for (const row of frame) {
@@ -248,8 +247,10 @@ describe('portraits', () => {
   });
 });
 
-it('preserves every field id, size and animation count', () => {
-  expect(Object.fromEntries(Object.entries(SPRITES).map(([id, art]) => [id, art.frames.length]))).toEqual(ORIGINAL_COUNTS);
+it('preserves every field id and size, with directional player and breathing people', () => {
+  const counts: Record<string, number> = { ...ORIGINAL_COUNTS, player: 10, stairs: 1, "oil-icon": 1, "rope-icon": 1 };
+  for (const id of [...MAIN, ...REST]) if (counts[id] === 1) counts[id] = 2;
+  expect(Object.fromEntries(Object.entries(SPRITES).map(([id, art]) => [id, art.frames.length]))).toEqual(counts);
   for (const art of Object.values(SPRITES)) for (const frame of art.frames) {
     expect(frame).toHaveLength(16);
     frame.forEach(row => expect(row).toHaveLength(16));

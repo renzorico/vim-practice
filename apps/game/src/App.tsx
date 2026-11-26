@@ -1,11 +1,13 @@
-import { SPRITES } from './scene/sprites/index.js';
-import { WORLD_PALETTES } from './scene/palette.js';
-import { groundArt } from './scene/terrain/art.js';
-import { groundVariant, titleRowGone, TITLE_ROW_CLOCK_MS } from './scene/terrain/life.js';
+import { Prologue } from './prologue/Prologue.js';
+import { CurrentWorld } from './prologue/WorldMap.js';
+import { clearSeenKeys } from './play2/notebook/seen.js';
+import { TitleScene } from './title/TitleScene.js';
 import { bannerBrowserKey, WorldBanner, useWorldBanner } from './scene/WorldBanner.js';
 import { HelpOverlay } from './play2/help/HelpOverlay.js';
 import { learnedReference } from './play2/help/learned.js';
 import { routeHelpCommand } from './play2/help/command.js';
+import { useMusic } from './audio/useMusic.js';
+import { SoundModeContext } from './audio/settings.js';
 import { useSound } from './audio/hooks.js';
 import { SoundButton } from './audio/SoundButton.js';
 import { useScriptStamp } from './play2/useScriptStamp.js';
@@ -13,18 +15,23 @@ import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } 
 import { createEngine, type Key } from '@escape/engine';
 import { createWorldSim } from '@escape/world';
 import { createStoryEngine } from '@escape/story';
-import { shouldLeaveToBrowser } from './input/capture.js';
+import { modalOpen, shouldLeaveToBrowser } from './input/capture.js';
 import { useKeyCapture } from './input/useKeyCapture.js';
 import { content, legend, stage, stages } from './play2/content.js';
 import { createSession, type Session } from './play2/session.js';
 import { endingProgress, readProgress, saveProgress, updateProgress, type Progress } from './play2/progress.js';
 import { isScoredStage } from './play2/feedback.js';
+import { currentObjectives } from './play2/currentQuest.js';
+import { DraftSheet } from './play2/draft/DraftSheet.js';
+import { draftFor, type Draft } from './play2/draft/drafts.js';
+import { clearPractised, readPractised } from './play2/draft/practised.js';
 import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import { drillSkillsForStage, type SkillId } from '@escape/curriculum';
 import { DrillScreen } from './drills/DrillScreen.js';
 import { Copybook, copybookSkills } from './drills/Copybook.js';
 import { readDrills, saveDrills, type DrillProgress } from './drills/store.js';
+import './ui/fonts.css';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
 import './play2/play.css';
@@ -35,7 +42,7 @@ const controller = createSession({ sim: createWorldSim(createEngine()), storyEng
 const storage = () => window.localStorage;
 const nowIso = (): string => new Date().toISOString();
 /** Title menu: Continue (when there is a save), then these, in order, offset by one when Continue shows. */
-const MENU = { stages: 0, keys: 1, copybook: 2, newGame: 3, sound: 4 } as const;
+const MENU = { stages: 0, keys: 1, intro: 2, copybook: 3, newGame: 4, sound: 5 } as const;
 interface Practice { readonly skills: readonly SkillId[]; readonly from: 'clear' | 'copybook' }
 const scoredStages = stages.filter(({ stage }) => isScoredStage(stage));
 const stageIds = stages.map(item => item.stage.id);
@@ -52,6 +59,8 @@ function reduce(session: Session, action: Action): Session {
 }
 export function App() {
   const [helpOpen, setHelpOpen] = useState(false);
+  /** The written exercise between a clear card and what comes after it. */
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [helpCommand, setHelpCommand] = useState<string | null>(null);
   // A held q or Esc keeps repeating after the overlay closes; swallow those repeats until the next real press.
   const swallowRepeats = useRef(false);
@@ -59,8 +68,11 @@ export function App() {
   const closeHelp = useCallback(() => { swallowRepeats.current = true; setHelpOpen(false); }, []);
   const [clearedSince, setClearedSince] = useState<readonly string[]>([]);
   const [started, setStarted] = useState(false);
+  const [intro, setIntro] = useState<'new' | 'title' | null>(null);
+  const [introRun, setIntroRun] = useState(0);
   const [showSource, setShowSource] = useState(false);
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
+  const [hintRequests, setHintRequests] = useState(0);
   const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : MENU.newGame);
   const [selecting, setSelecting] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
@@ -77,20 +89,30 @@ export function App() {
   const sound = useSound(session, started);
   const scriptStamp = useScriptStamp(session);
   const ending = !session.clearCard && session.queue[0]?.type === 'ending' ? session.queue[0].ending : null;
+  useMusic({ screen: intro ? 'opening' : selecting ? 'stages' : !started ? 'title' : ending ? 'ending' : 'stage',
+    challenge: { world: session.world, stage: stages.find(item => item.stage.id === session.world.stage)?.stage ?? stage, story: session.story, content },
+    world: currentWorld, text: stages.find(item => item.stage.id === session.world.stage)?.stage.type === 'text',
+    dead: session.world.status === 'dead', cleared: session.world.status === 'cleared', overlay: !!banner.visible || helpOpen || !!session.clearCard || !!session.queue.length || scriptStamp }, sound.mode);
   const canContinue = saved !== null && saved.story.ending !== 'recover';
   const menu = Object.fromEntries(Object.entries(MENU).map(([item, index]) => [item, index + (canContinue ? 1 : 0)])) as Record<keyof typeof MENU, number>;
   const terminal = session.world.status === 'cleared' && !session.clearCard && session.queue.length === 0;
+  const watchIntro = useCallback(() => { setIntroRun(value => value + 1); setIntro('title'); }, []);
   const choose = useCallback((continueGame: boolean) => {
-    if (continueGame && saved && canContinue) dispatch({ type: 'continue', progress: saved });
-    else {
-      dispatch({ type: 'new', best: saved?.best });
-      setSaved(null);
-      setClearedSince([]);
-    }
+    if (!continueGame) { setIntroRun(value => value + 1); setIntro('new'); return; }
+    if (!saved || !canContinue) return;
+    dispatch({ type: 'continue', progress: saved });
     setReplayStage(null);
     setShowSource(false);
     setStarted(true);
   }, [saved, canContinue]);
+  const finishIntro = useCallback(() => {
+    swallowRepeats.current = true;
+    setIntro(null);
+    if (intro !== 'new') return;
+    banner.reset();
+    clearSeenKeys(); clearPractised(); setDraft(null); dispatch({ type: 'new', best: saved?.best });
+    setSaved(null); setClearedSince([]); setReplayStage(null); setShowSource(false); setStarted(true);
+  }, [intro, saved, banner.reset]);
   const openStages = useCallback(() => {
     setSelectedStage(content.openingStage);
     setSelecting(true);
@@ -109,34 +131,47 @@ export function App() {
     setReplayStage(saved && !continues ? id : null);
     setSelecting(false); setShowSource(false); setStarted(true);
   }, [saved]);
+  const askHint = useCallback(() => setHintRequests(count => count + 1), []);
+  const leaveReplay = useCallback((stage: string) => {
+    setStarted(false); setSelecting(true); setSelectedStage(stage); setReplayStage(null);
+  }, []);
+  const closeDraft = useCallback(() => {
+    setDraft(null);
+    if (replayStage) leaveReplay(replayStage); else dispatch('<CR>');
+  }, [replayStage, leaveReplay]);
   const onKey = useCallback((key: Key) => {
-    if (!started || helpOpen || banner.visible) return;
+    if (!started || intro || helpOpen || banner.visible || draft) return;
     if (scriptStamp) return;
     const active = session.world.script?.engine ?? session.world.engine;
     if (helpCommand !== null || (key === ':' && active.mode === 'normal' && active.pendingKeys.length === 0)) {
       const routed = routeHelpCommand(helpCommand, key);
       setHelpCommand(routed.pending);
-      if (routed.open) openHelp();
+      if (routed.open === 'help') openHelp();
+      else if (routed.open === 'hint') askHint();
       else for (const forwarded of routed.forward) dispatch(forwarded);
       return;
     }
     if (session.clearCard && key === 'p' && stageDrills.length > 0) {
       setPractice({ skills: stageDrills.map(skill => skill.id), from: 'clear' }); return;
     }
+    if (session.clearCard && key === '<CR>') {
+      const exercise = draftFor(session.world.stage);
+      if (exercise && !readPractised().has(exercise.stage)) { setDraft(exercise); return; }
+    }
     if (replayStage && session.clearCard && key === '<CR>') {
-      setStarted(false); setSelecting(true); setSelectedStage(replayStage); setReplayStage(null); return;
+      leaveReplay(replayStage); return;
     }
     if (key === '<Tab>') { setShowSource(true); return; }
     if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? MENU.newGame : 0); return; }
     dispatch(key);
-  }, [started, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible, stageDrills]);
+  }, [started, intro, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible, draft, leaveReplay, stageDrills]);
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
-    enabled: started && !drilling && !helpOpen && !banner.visible && (session.world.status !== 'dead' || helpCommand !== null) });
+    enabled: started && !intro && !drilling && !helpOpen && !banner.visible && !draft && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
-      if (drilling) return; // The drill and Copybook screens own the keyboard.
+      if (intro || drilling) return; // The prologue, drill and Copybook screens own the keyboard.
       if (started && banner.visible && bannerBrowserKey(event)) return;
       if (started && banner.dismiss(event)) {
         swallowRepeats.current = true;
@@ -179,18 +214,19 @@ export function App() {
             if (choice === menu.stages) openStages();
             else if (choice === menu.keys) openHelp();
             else if (choice === menu.copybook) setCopybookOpen(true);
+            else if (choice === menu.intro) watchIntro();
             else if (choice === menu.sound) sound.toggle();
             else choose(canContinue && choice === 0);
           }
         } else if (event.key === ':' || helpCommand !== null) onKey(event.key === 'Enter' ? '<CR>' : event.key);
         else dispatch(event.key === 'Enter' ? '<CR>' : event.key);
-      } else if (started && event.key === 'Tab' && !browserKey) {
+      } else if (started && event.key === 'Tab' && !browserKey && !modalOpen()) {
         event.preventDefault(); event.stopImmediatePropagation(); setShowSource(true);
       }
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [started, session.world.status, terminal, saved, canContinue, choice, choose, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible, drilling]);
+  }, [intro, started, session.world.status, terminal, saved, canContinue, choice, choose, watchIntro, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible, drilling, menu]);
   useEffect(() => {
     if (!started) return;
     const entry = replayStage ? session.stageEntry : endingProgress(session.stageEntry, session.story);
@@ -218,10 +254,11 @@ export function App() {
   }, []);
   const helpStory = started ? session.story : saved?.story ?? session.story;
   const reference = helpOpen ? learnedReference(helpStory, started ? session.world.stage : saved?.stage ?? content.openingStage) : null;
-  const withHelp = (view: ReactNode): ReactNode => <>
+  const withHelp = (view: ReactNode): ReactNode => <SoundModeContext.Provider value={sound.mode}>
     <div hidden={helpOpen}>{view}</div>
     {reference && <HelpOverlay {...reference} worlds={content.worlds} onClose={closeHelp} />}
-  </>;
+  </SoundModeContext.Provider>;
+  if (intro) return <Prologue key={introRun} onComplete={finishIntro} soundEnabled={sound.enabled} />;
   const cleared = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
   const drillScreen = practice && <DrillScreen skills={practice.skills} progress={drillProgress} onProgress={updateDrills} now={nowIso}
     exitLabel={practice.from === 'clear' ? 'Back to the stage' : 'Back to the Copybook'}
@@ -231,20 +268,23 @@ export function App() {
   if (practice?.from === 'copybook') return drillScreen;
   if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">
-    <TitleScene />
+    <TitleScene saved={saved?.story.ending === 'recover'} />
     <div className="play-title__menu">
+    <p className="play-title__file" aria-hidden="true">{saved?.story.ending === 'recover' ? 'folio.txt' : 'folio.txt [+]'}</p>
     <h1>UNSAVED</h1><p>A game that teaches Vim.</p>
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
       {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
       <button aria-current={choice === menu.stages ? 'true' : undefined} onClick={openStages}>Stages</button>
       <button aria-current={choice === menu.keys ? 'true' : undefined} onClick={openHelp}>Keys</button>
+      <button aria-current={choice === menu.intro ? 'true' : undefined} onClick={watchIntro}>Intro</button>
       <button aria-current={choice === menu.copybook ? 'true' : undefined} onClick={() => setCopybookOpen(true)}>Copybook</button>
       <button aria-current={choice === menu.newGame ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
-      <div className="play-menu__sound" data-selected={choice === menu.sound}>
-        <SoundButton enabled={sound.enabled} onToggle={sound.toggle} />
+      <div className="play-menu__sound">
+        <SoundButton selected={choice === menu.sound} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
+    <p className="play-menu-touch">You play this with a keyboard: every key is a Vim key. Open it on a computer.</p>
     <p className="play-menu-hint"><kbd>j</kbd> / <kbd>k</kbd> to choose · <kbd>Enter</kbd> to start</p>
     </div>
   </main>);
@@ -252,82 +292,13 @@ export function App() {
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
   // Replays run on the story from before the clear, so remember what this game has cleared since.
   const clearedStages = cleared;
-  return withHelp(<>
+  return withHelp(<CurrentWorld.Provider value={currentWorld}>
     {drillScreen}
-    {/* While a drill is open the game under it is inert: no focus, no clicks, no native Enter on its buttons. */}
-    <div className="play-root" {...(practice ? { inert: '' } : {})}>
-    {banner.visible && <WorldBanner world={banner.visible} onDismiss={() => { banner.dismiss(); }} />}
+    {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
+    {/* While a drill or the written exercise is open, the game under it is inert: no focus, no clicks, no native Enter on its buttons. */}
+    <div className="play-behind" {...(draft || practice ? { inert: '' } : {})}>
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay}
-    practiseKeys={stageDrills.flatMap(skill => skill.keys)} onPractise={() => onKey('p')} /></div></>);
-}
-
-const TITLE_WIDTH = 384;
-const TITLE_HEIGHT = 240;
-/** A small original Margin tableau drawn from the same tile atlas as the field. */
-const TITLE_TILE_SIZE = 16;
-const TITLE_FIRST_ROW = 4;
-const TITLE_ROWS = 15;
-const TITLE_COLS = 24;
-const TITLE_PAPER_COL = 16;
-const TITLE_ROAD_ROW = 10;
-const TITLE_SKY_HEIGHT = 38;
-const TITLE_TREES = [1, 4, 8, 12];
-const TITLE_HOUSE_COLS = [3, 4, 5];
-const TITLE_TILDE_COL = 17;
-const TITLE_GLYPH_BASELINE = 12;
-const TITLE_TREE_ROWS = [5, 13];
-const TITLE_ROOF_ROW = 7;
-const TITLE_HOUSE_ROW = 8;
-const TITLE_WELL = { col: 10, line: 8 };
-const TITLE_STONE = { col: 7, line: 11 };
-const TITLE_PLAYER = { col: 14, line: 9 };
-function TitleScene() {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const context = canvas.current?.getContext('2d');
-    if (!context) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let tick = 0;
-    const palette = WORLD_PALETTES.margin;
-    const hex = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
-    const tile = (sprite: string, col: number, line: number): void => {
-      const art = SPRITES[sprite];
-      if (!art) return;
-      art.frames[0]?.forEach((row, y) => [...row].forEach((pixel, x) => {
-        const color = art.palette[pixel];
-        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(col * TITLE_TILE_SIZE + x, line * TITLE_TILE_SIZE + y, 1, 1); }
-      }));
-    };
-    const draw = (): void => {
-      context.clearRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
-      context.fillStyle = '#d9ad82'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_HEIGHT);
-      context.fillStyle = '#edcca2'; context.fillRect(0, 0, TITLE_WIDTH, TITLE_SKY_HEIGHT);
-      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) for (let col = 0; col < TITLE_COLS; col++) {
-        const paper = col >= TITLE_PAPER_COL || (titleRowGone(tick, reduced.matches) && line === TITLE_ROAD_ROW);
-        if (paper) { context.fillStyle = hex(palette.paper); context.fillRect(col * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE, TITLE_TILE_SIZE, TITLE_TILE_SIZE); continue; }
-        const road = line === TITLE_ROAD_ROW;
-        tile(road ? 'road' : 'grass', col, line);
-        if (!road) for (const pixel of groundArt('margin', groundVariant(line, col))) {
-          context.globalAlpha = pixel.alpha; context.fillStyle = hex(pixel.color);
-          context.fillRect(col * TITLE_TILE_SIZE + pixel.x, line * TITLE_TILE_SIZE + pixel.y, pixel.width, pixel.height);
-        }
-        context.globalAlpha = 1;
-      }
-      for (let line = TITLE_FIRST_ROW; line < TITLE_ROWS; line++) {
-        context.fillStyle = '#687b74'; context.font = '12px monospace';
-        context.fillText('~', TITLE_TILDE_COL * TITLE_TILE_SIZE, line * TITLE_TILE_SIZE + TITLE_GLYPH_BASELINE);
-      }
-      for (const col of TITLE_TREES) for (const line of TITLE_TREE_ROWS) tile('tree', col, line);
-      for (const col of TITLE_HOUSE_COLS) { tile('house-roof', col, TITLE_ROOF_ROW); tile('house-wall', col, TITLE_HOUSE_ROW); }
-      tile('well', TITLE_WELL.col, TITLE_WELL.line); tile('save-stone', TITLE_STONE.col, TITLE_STONE.line);
-      tile('player', TITLE_PLAYER.col, TITLE_PLAYER.line);
-    };
-    draw();
-    const timer = setInterval(() => { if (!reduced.matches) { tick++; draw(); } }, TITLE_ROW_CLOCK_MS);
-    const change = (): void => { tick = 0; draw(); };
-    reduced.addEventListener('change', change);
-    return () => { clearInterval(timer); reduced.removeEventListener('change', change); };
-  }, []);
-  return <canvas className="title-scene" ref={canvas} width={TITLE_WIDTH} height={TITLE_HEIGHT} aria-hidden="true" />;
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay}
+    practiseKeys={stageDrills.flatMap(skill => skill.keys)} onPractise={() => onKey('p')} /></div>
+    {draft && <DraftSheet key={draft.stage} draft={draft} suspended={helpOpen} onClose={closeDraft} onOpenHelp={openHelp} />}</CurrentWorld.Provider>);
 }

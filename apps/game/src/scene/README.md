@@ -41,3 +41,17 @@ Integration decisions:
   lockfile update. Phaser is installed in this worktree. Browser/canvas validation remains manual.
 
 Pure tests: `npx vitest run apps/game/src/scene` (no canvas).
+
+P-20 field art is presentation only. `FieldFrame.objectiveEntity` optionally names
+an on-screen person for the paper `!` bubble; `objectiveTarget` remains the stand
+cell used by the chevron when that person is absent, hidden or off screen.
+The app owner wires the entity id in PlayScreen.
+
+The Margin texture budget is **600 generated textures** on a cold scene at the
+900x600 test viewport (591 currently), including glyphs, terrain masks, actor
+frames/outlines, surroundings and light. Player and NPC animation frames are
+warmed once; walking and idle updates generate none. Trees cache neighbour-mask
+× variant art; houses cache dimensions × roof colour × relative cell art.
+Source view restores the existing cell textures and hides erased paper,
+building art, tree overhangs, smoke, wear and decoration. Reduced motion keeps
+facing but disables walking/breathing frames and chimney smoke.

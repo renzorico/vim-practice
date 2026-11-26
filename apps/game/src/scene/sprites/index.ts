@@ -8,7 +8,7 @@ import { READING_FLOOR, READING_WALL, READING_POST, READING_DOOR, SHACKLE_LEFT, 
 import { CLEAT } from './harbour.js';
 import { COUNTER_FLOOR, COUNTER_WALL, CLERK_DESK, CRATE_ROW, FAKE, COUNTERFEITER } from './counter.js';
 import { CUSTOMS_FLOOR, CUSTOMS_WALL, CUSTOMS_POST, CRATE_END, CRATE_LIP, CRATE_MARK, TARE } from './customs.js';
-import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
+import { WAREHOUSE_FLOOR, WAREHOUSE_WALL, SHELF_END, SHELF_LIP, OIL, CARGO_ROPE, OIL_ICON, ROPE_ICON, OIL_STENCIL, ROPE_STENCIL, COUNTER_END } from './warehouse.js';
 import { BOARDS, PORT_WATER, PIER_POST, PORT_LADDER, WAREHOUSE, CRATES, NETS, CART, BITT, REAM, SPLASH } from './port.js';
 import { SEMI } from './manifest.js';
 import { HEARTWOOD, HOLLOW, GATE_OPEN, GATE_CLOSE, GATE_GLINT, OPE, SHUT } from './gates.js';
@@ -17,7 +17,7 @@ import { BRANCH, KNOT, LEAVES, AIR, TRUNK, LADDER, THORNS, PLATFORM, FERN, KNOTH
 import { MASON, MORTAR, SCAFFOLD, WET_SHEEN, WET_EDGE } from './shaft.js';
 import { LEDGE, CHASM, DOT, DOT_CAGE } from './cut.js';
 import { DIRT, GRAVEL, BEDROCK, RUBBLE, RIVER, PLANK, TENT, ASH, KIT, CRACK, QUARRY_GATE, DUST } from './quarry.js';
-import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
+import { UNWRITER, LAMPLIGHTER, STONE_FLOOR, STAIRS, TOWER_WALL, PILLAR, LAMP, LIT_LAMP, UNWRITE_EDGE } from './lighthouse.js';
 import { WREN, GULL, NOTE, STONE, JETTY, LIGHTHOUSE_DOOR, BLANK } from './lowlands.js';
 import { PLAYER } from './player.js';
 import { ELDER } from './elder.js';
@@ -34,8 +34,10 @@ import { WELL } from './well.js';
 import { GATE } from './gate.js';
 import { SAVE_STONE } from './save-stone.js';
 import { TREE } from './tree.js';
+import { CHARACTER_FIELDS } from './characters.js';
+import { tallBody } from './tall.js';
 import type { PixelSprite } from './sprite.js';
-export const SPRITES: Readonly<Record<string, PixelSprite>> = {
+const BASE_SPRITES: Readonly<Record<string, PixelSprite>> = {
   'page-ink': PAGE_PAPER, 'page-paper': PAGE_PAPER, 'page-blank': PAGE_PAPER, 'page-void': PAGE_PAPER, 'page-corner': PAGE_MARGIN, 'page-margin': PAGE_MARGIN, 'page-door': PAGE_DOOR, 'page-smear': PAGE_SMEAR,
 
   ...RUNE_LEVERS, 'rune-lever': RUNE_LEVER, 'minotaur-lair': MINOTAUR_LAIR, hoofprint: HOOFPRINT, minotaur: MINOTAUR,
@@ -77,7 +79,7 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
   'customs-floor': CUSTOMS_FLOOR, 'customs-wall': CUSTOMS_WALL, 'customs-post': CUSTOMS_POST,
   'crate-end': CRATE_END, 'crate-lip': CRATE_LIP, crate: CRATE_MARK, post: CUSTOMS_POST, tare: TARE,
   'warehouse-floor': WAREHOUSE_FLOOR, 'warehouse-wall': WAREHOUSE_WALL,
-  'shelf-end': SHELF_END, 'shelf-lip': SHELF_LIP, oil: OIL, 'cargo-rope': CARGO_ROPE,
+  'shelf-end': SHELF_END, 'shelf-lip': SHELF_LIP, oil: OIL, 'cargo-rope': CARGO_ROPE, 'oil-icon': OIL_ICON, 'rope-icon': ROPE_ICON,
   'shelf-top': OIL_STENCIL, 'shelf-middle': OIL_STENCIL, 'shelf-bottom': ROPE_STENCIL, 'counter-end': COUNTER_END,
   boards: BOARDS, 'port-water': PORT_WATER, 'pier-post': PIER_POST, 'port-ladder': PORT_LADDER,
   warehouse: WAREHOUSE, crates: CRATES, nets: NETS, cart: CART, bitt: BITT, ream: REAM, splash: SPLASH,
@@ -98,7 +100,7 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
       ? 'mkmkmkmkmkmkmkmk' : 'kmkmkmkmkmkmkmkm')],
   },
   'unwrite-edge': UNWRITE_EDGE,
-  unwriter: UNWRITER, lamplighter: LAMPLIGHTER, 'stone-floor': STONE_FLOOR,
+  unwriter: UNWRITER, lamplighter: LAMPLIGHTER, 'stone-floor': STONE_FLOOR, stairs: STAIRS,
   'tower-wall': TOWER_WALL, pillar: PILLAR, lamp: LAMP, 'lamp-lit': LIT_LAMP,
   wren: WREN, gull: GULL, note: NOTE, stone: STONE, jetty: JETTY,
   'lighthouse-door': LIGHTHOUSE_DOOR, blank: BLANK,
@@ -118,3 +120,13 @@ export const SPRITES: Readonly<Record<string, PixelSprite>> = {
   'save-stone': SAVE_STONE,
   'tree': TREE,
 };
+
+export const SPRITES: Readonly<Record<string, PixelSprite>> = Object.fromEntries(
+  Object.entries(BASE_SPRITES).map(([name, sprite]) => {
+    // NPC art gains a one-pixel breath without moving feet or adding display objects.
+    const person = name !== 'player' && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, name);
+    const idle = person && sprite.frames.length === 1 ? { ...sprite, frames: [sprite.frames[0] ?? [],
+      (sprite.frames[0] ?? []).map((row, y, frame) => y >= 3 && y < 14 ? frame[y + 1] ?? row : row)] } : sprite;
+    return [name, tallBody(name, idle)];
+  }),
+);

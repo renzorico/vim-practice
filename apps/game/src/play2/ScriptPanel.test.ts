@@ -55,9 +55,9 @@ it.each([ledger, manifest, harbour, contract, study])('follows the cursor withou
   const render = () => {
     const cells = buildLineCells(state, state.cursor.line);
     cursorColumn = viewport.clientLeft + padding + (gutterWidth(state.lines.length) + cells.findIndex(cell => cell.cursor !== null)) * cellWidth + padding;
-    const html = renderToStaticMarkup(createElement(ScriptPanel, { script, engine: state, keys: 0 }));
+    const html = renderToStaticMarkup(createElement(ScriptPanel, { script, engine: state }));
     // Every Vim buffer line remains exactly one rendered row, including blank lines.
-    expect(html.match(/class="buffer__line"/g)).toHaveLength(state.lines.length);
+    expect(html.match(/class="buffer__line"[ >]/g)).toHaveLength(state.lines.length);
     return lifecycle.effects.pop()?.();
   };
   const visible = () => {

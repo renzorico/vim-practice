@@ -2,7 +2,7 @@ import { KeyText, keyParts, keyTextLength } from '../play2/KeyText.js';
 import { useDialogueSound } from '../audio/hooks.js';
 import { useEffect, useState } from 'react';
 import { Portrait } from '../scene/sprites/Portrait.js';
-import { speakerAccent } from '../scene/sprites/portraits/speakers.js';
+import { portraitId } from '../scene/sprites/portraits/speakers.js';
 import type { Line } from '@escape/story';
 import { speakerName } from './advance';
 import { moodFor } from './mood.js';
@@ -67,10 +67,10 @@ function moodForLine(line: Line | undefined, dialogueId: string | undefined, ind
 }
 
 function SequenceDialogueBox({ lines, onFinish, dialogueId }: DialogueBoxProps) {
-  const { item } = useSequence(lines, onFinish);
+  const { item, advance } = useSequence(lines, onFinish);
   const line = item === null ? undefined : lines?.[item];
   return <DialogueLine key={`${dialogueId ?? ''}:${item}:${line?.text ?? ''}`} line={line}
-    mood={moodForLine(line, dialogueId, item ?? 0)} />;
+    mood={moodForLine(line, dialogueId, item ?? 0)} onAdvance={advance} />;
 }
 
 function DialogueLine({ line, mood, onAdvance }: {
@@ -82,14 +82,14 @@ function DialogueLine({ line, mood, onAdvance }: {
   const name = speakerName(line);
   const speaker = line.speaker === 'npc' ? line.name ?? '' : line.speaker;
   return (
-    <div className={`dialogue dialogue--${line.speaker}${keyParts(line.text).some(part => part.keycap) ? ' dialogue--instruction' : ''}`} role="dialog" aria-label={name || 'Message'}>
-      <Portrait sprite={speaker} mood={mood} />
-      {name !== '' && <div className="dialogue__name" style={{ color: speakerAccent(speaker) }}>{name}</div>}
+    <div className={`dialogue dialogue--${line.speaker}${keyParts(line.text).some(part => part.keycap) ? ' dialogue--instruction' : ''}`} data-narration={!name} role="dialog" aria-label={name || 'Message'}>
+      {name && <Portrait sprite={speaker} mood={mood} />}
+      {name !== '' && <div className="dialogue__name" data-speaker={portraitId(speaker)}>{name}</div>}
       {keyParts(line.text).some(part => part.keycap) && <div className="dialogue__try">Try this</div>}
       <p className="dialogue__text"><RevealedText text={line.text} speaker={speaker} /></p>
-      {onAdvance ? <button type="button" className="dialogue__hint" onClick={onAdvance}>
-        <kbd className="keycap">Enter</kbd> to go on
-      </button> : <div className="dialogue__hint"><kbd className="keycap">Enter</kbd> to go on</div>}
+      <button type="button" className="dialogue__hint" aria-label="Enter to go on" onClick={onAdvance}>
+        <span className="dialogue__triangle" aria-hidden="true">▾</span> <kbd className="keycap">Enter</kbd>
+      </button>
     </div>
   );
 }

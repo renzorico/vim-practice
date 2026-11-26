@@ -10,8 +10,18 @@
       "kind": "main",
       "steps": [
         {
-          "id": "stock",
-          "objective": "Stock the shelves: `yw`, then `p` on each.",
+          "id": "oil",
+          "objective": "Copy the oil: `yw` on the first jar. Put it on shelves 1 and 2: `p`.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "warehouse.oil",
+            "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "rope",
+          "objective": "Copy the rope: `yw` on the first coil. Put it on shelf 3: `p`.",
           "completeWhen": {
             "type": "flag",
             "flag": "warehouse.stocked",
@@ -37,11 +47,11 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The warehouse. You need three bare shelves\nstocked: oil on top and middle, rope below."
+          "text": "Three shelves on the right, all bare. You need\noil on shelves 1 and 2, and rope on shelf 3."
         },
         {
           "speaker": "system",
-          "text": "Stand on the tally word. Press `yw`.\nThen on a shelf's [ press `p`: the oil lands."
+          "text": "Stand on the first jar, press `yw`: all four are\ncopied. On a shelf's marker, `p` puts them down."
         }
       ],
       "then": []
@@ -56,7 +66,7 @@
         },
         {
           "speaker": "system",
-          "text": "On the next shelf's [, press `p` again:\nthe same oil goes down again."
+          "text": "On shelf 2's marker, press `p` again: a copy\ncan be put down as often as you like."
         }
       ],
       "then": [

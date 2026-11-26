@@ -16,12 +16,12 @@ function tilesFor(legend: Legend): ReadonlyMap<string, TileDef> {
   return tiles;
 }
 /** Text changes affect adjacent joins; inserted/removed rows shift every row below. */
-export function changedTerrainRows(before: readonly string[] | undefined, after: readonly string[]): Set<number> {
+export function changedTerrainRows(before: readonly string[] | undefined, after: readonly string[], radius = 1): Set<number> {
   const changed = new Set<number>();
   for (let line = 0; line < Math.max(before?.length ?? 0, after.length); line++) {
     if (before?.[line] === after[line]) continue;
-    const end = before && before.length !== after.length ? after.length - 1 : line + 1;
-    for (let row = Math.max(0, line - 1); row <= Math.min(after.length - 1, end); row++) changed.add(row);
+    const end = before && before.length !== after.length ? after.length - 1 : line + radius;
+    for (let row = Math.max(0, line - radius); row <= Math.min(after.length - 1, end); row++) changed.add(row);
     if (before && before.length !== after.length) break;
   }
   return changed;
@@ -36,11 +36,15 @@ export function terrainGroup(tile: TileDef | undefined): TerrainGroup {
   return tile.kind === 'ground' ? 'ground' : 'object';
 }
 export function tileAt(rows: readonly string[], cell: Position, legend: Legend): TileDef | undefined {
-  const row = rows[cell.line];
-  if (row === '' && cell.col === 0) return legend.emptyRow;
-  const char = row?.[cell.col];
+  return tileAtCoordinates(rows, cell.line, cell.col, legend);
+}
+export function tileAtCoordinates(rows: readonly string[], line: number, col: number, legend: Legend): TileDef | undefined {
+  const row = rows[line];
+  if (row === '' && col === 0) return legend.emptyRow;
+  const char = row?.[col];
   return char === undefined ? undefined : tilesFor(legend).get(char) ?? legend.fallback;
 }
+
 const NEIGHBOURS = [[-1, 0], [0, 1], [1, 0], [0, -1], [-1, -1], [-1, 1], [1, 1], [1, -1]] as const;
 export interface TerrainEdges {
   readonly group: TerrainGroup;
@@ -57,11 +61,11 @@ export function edgesFor(rows: readonly string[], cell: Position, legend: Legend
   let mask = 0;
   let shore = 0;
   for (const [index, [line, col]] of NEIGHBOURS.entries()) {
-    const neighbour = terrainGroup(tileAt(rows, { line: cell.line + line, col: cell.col + col }, legend));
+    const neighbour = terrainGroup(tileAtCoordinates(rows, cell.line + line, cell.col + col, legend));
     if (neighbour !== group) mask |= 1 << index;
     if (index < 4 && neighbour === 'water' && group !== 'water' && group !== 'paper' && group !== 'open') shore |= 1 << index;
   }
-  const above = terrainGroup(tileAt(rows, { line: cell.line - 1, col: cell.col }, legend));
+  const above = terrainGroup(tileAtCoordinates(rows, cell.line - 1, cell.col, legend));
   return { group, mask, shore, cast: (group === 'ground' || group === 'road' || group === 'water' || group === 'object') && (above === 'wall' || above === 'roof'),
     posts: tile?.sprite === 'plank' && (shore !== 0 || (mask & 10) !== 0) };
 }

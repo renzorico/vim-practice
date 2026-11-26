@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Session } from '../play2/session.js';
+import type { Cue } from './cues.js';
+import type { SoundMode } from './settings.js';
 import { cuesFor } from './cues.js';
-import { readSound, saveSound } from './settings.js';
+import { readSoundMode, saveSoundMode, nextSoundMode } from './settings.js';
 import { speakerPitch, synth } from './synth.js';
 
+/** Select at playback, leaving the engine-driven cue list unchanged. */
+export const audibleCues = (cues: readonly Cue[], mode: SoundMode): readonly Cue[] =>
+  mode === 'off' ? [] : mode === 'on' ? cues.filter(cue => cue.kind !== 'clear') : cues;
+
 export function useSound(session: Session, started: boolean) {
-  const [enabled, setEnabled] = useState(readSound);
+  const [mode, setMode] = useState(readSoundMode);
+  const enabled = mode !== 'off';
   const previous = useRef(session);
   useEffect(() => {
     synth.setEnabled(enabled);
@@ -24,17 +31,17 @@ export function useSound(session: Session, started: boolean) {
     if (!started || before === session || before.world.stage !== session.world.stage
       || before.lastEvents === session.lastEvents) return;
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    synth.play(cuesFor(session.lastEvents, before.world, session.world, reducedMotion));
-  }, [session, started]);
+    synth.play(audibleCues(cuesFor(session.lastEvents, before.world, session.world, reducedMotion), mode));
+  }, [session, started, mode]);
   useEffect(() => { if (!started) synth.stop(); }, [started]);
   const toggle = (): void => {
-    const next = !enabled;
-    synth.setEnabled(next);
-    saveSound(next);
-    setEnabled(next);
-    if (next) synth.unlock();
+    const next = nextSoundMode(mode);
+    synth.setEnabled(next !== 'off');
+    saveSoundMode(next);
+    setMode(next);
+    if (next !== 'off') synth.unlock();
   };
-  return { enabled, toggle };
+  return { enabled, mode, toggle };
 }
 
 export function useStarChimes(visible: boolean, stars: number): void {

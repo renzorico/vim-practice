@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
-
-/* Ember tokens: docs/VISUAL-DESIGN.md. No other colours or fonts. */
+/* Ember tokens: docs/archive/VISUAL-DESIGN.md. No other colours or fonts. */
 :root {
   --bg: #1d2021;
   --surface: #282828;
@@ -16,6 +14,47 @@
   --door: #fe8019;
   --friend: #83a598;
   --danger: #d3869b;
-  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --font-ui: 'Folio', system-ui, sans-serif; /* what the game says */
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace; /* Vim's own text and keys, nothing else */
+}
+
+/* Book frame: paper/ink is 12.9:1; green ink/paper is 7.4:1. */
+:root {
+  --paper: #f6efd4;
+  --paper-secondary: #eddfbd;
+  --ink: #29271f;
+  --ink-muted: #563929;
+  --paper-edge: #b9aa89;
+  --paper-rule: #51432f14;
+  --green-ink: #315336;
+  --desk: #30251f;
+  --desk-grain: #392c23;
+  --frame-shadow: #00000040;
+  --panel-dim: #11151ea6;
+  --stone: #4a4f52;
+  --stone-seam: #34383b;
+  --stone-light: #6b7276;
+  --carving: #f0d9a2;
+  --instruction-tint: #d7ae5233;
+  --tab-blue: #74a9b0;
+  --tab-gold: #fabd2f;
+  --red-ink: #a63d2f;
+  --tab-tan: #dfad80;
+  --tab-green: #a9b56d;
+  --tab-slate: #66788d;
+  --tab-light-ink: #ffffff;
+  --mode-normal: #b8bb26;
+  --mode-insert: #83a598;
+  --mode-visual: #d3869b;
+  --mode-line: #dfad80;
+  --mode-block: #a9b56d;
+  --mode-pending: #fabd2f;
+  --mode-command: #f6efd4;
+}
+:root {
+  --contract-paper: #e1d1a6;
+  --contract-sheet: #eddfbd;
+  /* Paper: an outline three pixels wide with its corners cut, and a hard shadow under it. */
+  --paper-frame: 0 -3px 0 var(--ink), 0 3px 0 var(--ink), -3px 0 0 var(--ink), 3px 0 0 var(--ink);
+  --paper-drop: 0 7px 0 var(--frame-shadow), 3px 4px 0 var(--frame-shadow);
 }

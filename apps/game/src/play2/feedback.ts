@@ -10,7 +10,7 @@ export { UNSCORED_STAGES, isScoredStage } from './stageScoring.js';
 export const BUMP_LINES: Readonly<Record<BumpReason, string>> = {
   wall: 'Blocked: a wall.',
   'solid-entity': 'Blocked: someone is here.',
-  fixed: 'That stone is fixed.',
+  fixed: 'It is fixed in place.',
   edge: 'The edge of the world.',
 };
 /** Enter with nobody in reach: the engine has no such motion on an empty spot. */

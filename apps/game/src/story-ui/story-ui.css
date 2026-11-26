@@ -1,24 +1,9 @@
 /* Story UI. Colours and fonts come from ../ui/tokens.css only. */
 .dialogue { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(640px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px 20px; color: var(--text); font-family: var(--font-ui); z-index: 20; }
-.dialogue__name { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--you); margin-bottom: 6px; }
-.dialogue--dot .dialogue__name { color: var(--friend); }
-.dialogue--unwriter .dialogue__name { color: var(--danger); }
-.dialogue--sign .dialogue__name, .dialogue--system .dialogue__name { color: var(--text-muted); }
-.dialogue__text { margin: 0; font-size: 16px; line-height: 1.5; white-space: pre-wrap; max-width: 48ch; }
-.dialogue__hint { margin-top: 10px; font-size: 12px; color: var(--text-muted); text-align: right; }
+.dialogue__name { font-size: 18px; line-height: 1; margin-bottom: 6px; }
+.dialogue__text { margin: 0; font-size: 18px; line-height: 1.5; white-space: pre-wrap; max-width: 48ch; }
+.dialogue__hint { margin-top: 10px; font-size: 15px; color: var(--text-muted); text-align: right; }
 
-.objective-hud { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 16px; color: var(--text); font-family: var(--font-ui); font-size: 14px; }
-.objective-hud__stats { display: flex; justify-content: space-between; gap: 24px; font-family: var(--font-mono); margin-bottom: 8px; }
-.objective-hud__hearts { color: var(--danger); letter-spacing: 0.1em; }
-.objective-hud__turn { color: var(--text-muted); }
-.objective-hud__list { margin: 0; padding-left: 18px; color: var(--text-soft); }
-.objective-hud__main { color: var(--goal); }
-
-.cutscene { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; background: var(--bg); color: var(--text); font-family: var(--font-ui); z-index: 30; padding: 24px; }
-.cutscene__title { font-family: var(--font-mono); font-weight: 600; font-size: 32px; color: var(--you); text-align: center; margin: 0; }
-.cutscene__line { max-width: 560px; }
-.cutscene__image { width: min(480px, 80vw); aspect-ratio: 16 / 9; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
-.cutscene__terminal { font-family: var(--font-mono); font-size: 15px; line-height: 1.5; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px; color: var(--text); margin: 0; max-width: 90vw; overflow-x: auto; }
 .dialogue > svg { float: left; margin: 0 16px 8px 0; }
 .dialogue::after { content: ''; display: block; clear: both; }
 
@@ -27,7 +12,7 @@
 .dialogue__text { min-height: 3em; }
 .dialogue__unrevealed { visibility: hidden; }
 .dialogue__accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-button.dialogue__hint { display: block; margin-left: auto; background: transparent; border: 0; padding: 8px 0 0 8px; min-height: 44px; font: inherit; font-size: 12px; cursor: pointer; }
+button.dialogue__hint { display: block; margin-left: auto; background: transparent; border: 0; padding: 8px 0 0 8px; min-height: 44px; font: inherit; font-size: 15px; cursor: pointer; }
 button.dialogue__hint:hover { color: var(--text); }
 button.dialogue__hint:focus-visible { outline: 2px solid var(--you); outline-offset: 4px; }
 @keyframes dialogue-greeting { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
@@ -37,3 +22,62 @@ button.dialogue__hint:focus-visible { outline: 2px solid var(--you); outline-off
   .dialogue > svg { margin-right: 12px; }
   .dialogue__text { font-size: 15px; }
 }
+
+/* One band: where you are, what to do now, how it stands. The slip of paper is the only bright thing in it. */
+.objective-hud { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(0, auto) minmax(200px, 1fr); align-items: center; gap: 24px; padding: 0 20px; background: var(--bg); color: var(--text); font: 15px/1.2 var(--font-ui); }
+.objective-hud__place { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; min-width: 0; }
+.objective-hud__place h1 { color: var(--paper); }
+.objective-hud__hearts { font-size: 18px; line-height: 1; color: var(--danger); letter-spacing: 0.1em; }
+.objective-hud__journey { flex-basis: 100%; margin: 0; color: var(--text-muted); font: 15px/1.2 var(--font-ui); }
+.objective-hud__stats { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 16px; min-width: 0; }
+.objective-hud__turn { color: var(--text-muted); white-space: nowrap; }
+.objective-hud__strip { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; min-height: 48px; max-width: 800px; padding: 0 4px; background: var(--paper); color: var(--ink); box-shadow: 0 -3px 0 var(--paper-edge), 0 3px 0 var(--paper-edge), -3px 0 0 var(--paper-edge), 3px 0 0 var(--paper-edge); }
+.objective-hud__strip[data-empty='true'] { visibility: hidden; }
+.objective-hud__main { padding: 4px 12px 4px 8px; color: var(--ink); font-size: 18px; line-height: 22px; text-wrap: balance; animation: ink-in 200ms ease-out; }
+.objective-hud__label { margin-right: 8px; padding: 0 6px; background: var(--tab-gold); color: var(--ink); }
+.objective-hud .keycap, .objective-hud .objective-guide kbd { padding: 0 5px; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 3px; border-radius: 0; font-size: 14px; line-height: 18px; }
+.objective-hud__guide:not(:empty) { align-self: stretch; display: grid; align-items: center; padding: 0 12px; border-left: 2px dashed var(--paper-edge); }
+.objective-hud .objective-guide { margin: 0; gap: 6px; flex-wrap: nowrap; color: var(--ink-muted); font-size: 18px; white-space: nowrap; }
+.objective-hud .objective-guide--ready kbd { color: var(--ink); background: var(--tab-gold); border-color: var(--ink); opacity: 1; }
+.objective-hud__side { padding-right: 8px; color: var(--ink-muted); }
+.dialogue { color: var(--ink); background: var(--paper); border: 0; border-radius: 0; padding: 24px 20px 12px; width: min(800px, calc(100% - 38px)); box-shadow: var(--paper-frame), var(--paper-drop); }
+.dialogue > .dialogue__portrait { width: 128px; height: 128px; border: 3px solid var(--ink); box-sizing: content-box; background: var(--paper-secondary); margin: 0 20px 0 0; }
+.dialogue__name { position: absolute; top: -15px; left: 20px; padding: 3px 10px; margin: 0; color: var(--ink); background: var(--paper-secondary); box-shadow: var(--paper-frame); }
+.dialogue__name:is([data-speaker='mira'], [data-speaker='dot'], [data-speaker='echo'], [data-speaker='shut'], [data-speaker='ope']) { background: var(--tab-blue); }
+.dialogue__name:is([data-speaker='ash'], [data-speaker='lamplighter'], [data-speaker='tare'], [data-speaker='kit'], [data-speaker='pell']) { background: var(--tab-gold); }
+.dialogue__name:is([data-speaker='wren'], [data-speaker='bitt'], [data-speaker='quire'], [data-speaker='notary'], [data-speaker='clerk'], [data-speaker='semi'], [data-speaker='bram']) { background: var(--tab-tan); }
+.dialogue__name:is([data-speaker='pilcrow'], [data-speaker='fern']) { background: var(--tab-green); }
+.dialogue__name[data-speaker='cleat'] { background: var(--tab-slate); color: var(--tab-light-ink); }
+.dialogue__text { color: var(--ink); max-width: none; line-height: 1.5; }
+.dialogue[data-narration='true'] { text-align: center; }
+.dialogue[data-narration='true'].dialogue--instruction { text-align: left; }
+.dialogue--instruction { padding-left: 36px; background: linear-gradient(90deg, var(--tab-gold) 0 8px, var(--instruction-tint) 8px 20px, transparent 20px), var(--paper); }
+.dialogue__try { display: table; margin: 0 0 8px; padding: 3px 8px; color: var(--paper); background: var(--ink); font: 15px/1.2 var(--font-ui); }
+.dialogue .keycap { font-size: 1.15em; padding: 0 0.3em; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 3px; border-radius: 0; }
+.dialogue button.dialogue__hint { color: var(--ink-muted); font-size: 15px; }
+.dialogue button.dialogue__hint:focus-visible { outline-color: var(--ink); }
+.dialogue button.dialogue__hint:hover { color: var(--ink); }
+.dialogue__triangle { font-size: 18px; line-height: 1; animation: dialogue-next 1.2s step-end infinite; }
+@keyframes dialogue-next { 50% { opacity: 0; } }
+@keyframes ink-in { from { opacity: 0; } to { opacity: 1; } }
+/* No room beside it: the slip takes a row of its own. */
+@media (max-width: 1179px) {
+  .objective-hud { grid-template-columns: minmax(0, auto) minmax(0, 1fr); grid-template-rows: 36px minmax(0, 1fr); gap: 0 16px; padding: 0 12px 6px; }
+  .objective-hud__strip { grid-row: 2; grid-column: 1 / -1; justify-self: center; width: fit-content; max-width: 100%; margin: 0 3px; }
+  .objective-hud__stats { grid-row: 1; grid-column: 2; flex-wrap: nowrap; }
+  .objective-hud__place { flex-wrap: nowrap; white-space: nowrap; }
+  .objective-hud__journey { display: none; }
+}
+@media (max-width: 899px) {
+  .objective-hud__main, .objective-hud .objective-guide { font-size: 15px; line-height: 18px; }
+}
+@media (max-width: 640px) {
+  .objective-hud__turn { display: none; }
+  .objective-hud__strip { grid-template-columns: minmax(0, 1fr) auto; }
+  .objective-hud__guide:not(:empty) { grid-column: 1 / -1; border-left: 0; padding: 0 8px 4px; }
+}
+@media (max-width: 899px) {
+  .dialogue > .dialogue__portrait { width: 96px; height: 96px; margin-right: 12px; }
+}
+@media (max-width: 540px) { .dialogue { padding: 16px 12px 8px; } .dialogue > .dialogue__portrait { width: 64px; height: 64px; } .dialogue__text { font-size: 14px; } }
+@media (prefers-reduced-motion: reduce) { .dialogue__triangle, .objective-hud__main { animation: none; } }

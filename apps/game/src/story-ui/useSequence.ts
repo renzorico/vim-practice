@@ -5,6 +5,7 @@ import { useAdvanceKeys } from './useAdvanceKeys';
 interface SequenceView {
   /** Index of the item to show, or null while closed or finished. */
   readonly item: number | null;
+  readonly advance: () => void;
 }
 
 /**
@@ -33,5 +34,5 @@ export function useSequence<T>(items: readonly T[] | null, onFinish: () => void)
 
   const current = shown.source === items ? shown : startSequence(items);
   useAdvanceKeys(open && !current.finished, advance);
-  return { item: open && !current.finished ? current.index : null };
+  return { item: open && !current.finished ? current.index : null, advance };
 }

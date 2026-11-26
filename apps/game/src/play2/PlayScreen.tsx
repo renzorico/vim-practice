@@ -1,17 +1,25 @@
 import { KeyText } from './KeyText.js';
-import { activeGuide } from './guides.js';
-import { KeyCard } from './KeyCard.js';
-import { keyCardEntries } from './introducedAt.js';
+import { activeGuide, guideApplies } from './guides.js';
+import { useNotebookDucking } from './notebook/musicDucking.js';
+import { Notebook } from './notebook/Notebook.js';
+import { useNotebook } from './notebook/useNotebook.js';
 import { pendingPrompt } from './showcmd.js';
 import { stageCommands } from './session.js';
 import { SoundButton } from '../audio/SoundButton.js';
 import { useStarChimes } from '../audio/hooks.js';
 import { starsFor } from './progress.js';
 import { objectiveTarget } from './objectiveTarget.js';
+import { signsFor } from './stageGuides.js';
 import { useMotionUses } from './useMotionUses.js';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
+import { StatusLine } from './frame/StatusLine.js';
+import { ActionToast } from './frame/ActionToast.js';
+import { DialoguePlacement } from './frame/DialoguePlacement.js';
+import { TitleScene } from '../title/TitleScene.js';
+import { HintSlip } from './hints/HintSlip.js';
+import { useHints } from './hints/useHints.js';
+import { CutsceneView } from './CutsceneView.js';
 import { StageClearCard } from './StageClearCard.js';
-import { useBlockedReason } from './useBlockedReason.js';
 import { isScoredStage, landingMarkers } from './feedback.js';
 import { stages } from './content.js';
 import { HoofprintGauge } from './HoofprintGauge.js';
@@ -22,7 +30,6 @@ import { YankedSlot } from './YankedSlot.js';
 import type { Position } from '@escape/engine';
 import { createEngine } from '@escape/engine';
 import { ScriptPanel } from './ScriptPanel.js';
-import type { Beat } from '@escape/story';
 import type { Legend, Stage } from '@escape/world';
 import { throwbackAreas } from '../scene/hazards.js';
 import { FieldView } from '../scene/FieldView.js';
@@ -31,9 +38,15 @@ import { ObjectiveHud } from '../story-ui/ObjectiveHud.js';
 import { resultData, type Session } from './session.js';
 import type { StoryContent } from '@escape/story';
 
+/** A script shows its own instructions. */
+const NO_HINTS: readonly string[] = [];
+
 interface PlayScreenProps {
   readonly onOpenHelp?: () => void;
   readonly helpCommand?: string | null;
+  /** How many times `:hint` was asked for in this sitting. */
+  readonly hintRequests?: number;
+  readonly onAskHint?: () => void;
   readonly helpOpen?: boolean;
   /** Stages cleared in this game, including after the replayed stage's entry. */
   readonly clearedStages?: readonly string[];
@@ -52,24 +65,13 @@ interface PlayScreenProps {
   readonly practiseKeys?: readonly string[];
   readonly onPractise?: () => void;
 }
-function BeatView({ beat }: { readonly beat: Beat | undefined }) {
-  if (!beat) return null;
-  switch (beat.type) {
-    case 'line': return <p className="dialogue__text"><KeyText text={beat.line.text} /></p>;
-    case 'title': return <h1><KeyText text={beat.text} /></h1>;
-    case 'terminal': return <pre className="play-terminal">{beat.lines.join('\n')}</pre>;
-    case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
-  }
-}
-export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, practiseKeys = [], onPractise, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, practiseKeys = [], onPractise, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
-  const [dismissedEntry, setDismissedEntry] = useState<Session['stageEntry'] | null>(null);
-  const cardEntries = keyCardEntries(stage.id, session.story, clearedStages);
-  const showKeyCard = session.queue.length === 0 && world.status === 'playing' && world.turn === 0
-    && dismissedEntry !== session.stageEntry && cardEntries.length > 0;
-  const dismissKeyCard = () => setDismissedEntry(session.stageEntry);
+  const notebook = useNotebook(session, stage, content, clearedStages);
+  const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
+  useNotebookDucking(showKeyCard);
   useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
-  const reason = useBlockedReason(session.lastEvents, stage, world, legend);
+  const field = useRef<HTMLDivElement>(null);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
     [world, stage, legend, uses, session.queue.length]);
@@ -86,59 +88,77 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
   const scriptEngine = world.script?.engine ?? (script ? createEngine().init(world.solvedScripts[script.id] ?? script.startLines) : null);
   const canShowObjective = !darkness && stage.type !== 'text' && !script
     && session.queue.length === 0 && !session.clearCard && world.status === 'playing';
-  const guide = activeGuide(content, session.story);
+  const active = activeGuide(content, session.story, world);
+  const guide = active && guideApplies(active, activeEngine.cursor, world.engine.lines) ? active : null;
+  const overtaken = active !== null && guide === null && Boolean(active.whileRow);
   const visibleGuide = session.queue.length === 0 && !session.clearCard && !showKeyCard && world.status === 'playing' ? guide : null;
   const mapGuide = canShowObjective ? visibleGuide : null;
   const positioned = Boolean(visibleGuide?.standAt?.some(at => at.line === activeEngine.cursor.line && at.col === activeEngine.cursor.col));
-  const target = useMemo(() => canShowObjective ? objectiveTarget(content, session.story, stage, world) : null,
-    [content, session.story, stage, world.entities, canShowObjective]);
+  const target = useMemo(() => canShowObjective && !overtaken ? objectiveTarget(content, session.story, stage, world) : null,
+    [content, session.story, stage, world.entities, canShowObjective, overtaken]);
   const nearestStand = mapGuide?.standAt?.reduce<Position | null>((nearest, at) => {
     const distance = (cell: Position) => Math.abs(cell.line - activeEngine.cursor.line) + Math.abs(cell.col - activeEngine.cursor.col);
     return !nearest || distance(at) < distance(nearest) ? at : nearest;
   }, null);
+  const targetEntity = target ? world.entities.find(entity => entity.at.line === target.line && entity.at.col === target.col)?.id : undefined;
+  const quiet = session.queue.length > 0 || Boolean(session.clearCard) || showKeyCard || scriptStamp || world.status !== 'playing';
+  const hints = useHints({ session, hints: script ? NO_HINTS : stage.hints, objective: objectives[0] ?? '', guideKeys: guide?.keys ?? [],
+    requests: hintRequests, quiet, scriptId: script?.id ?? '' });
+  // Clearing a stage begins the next quest at once; its objective waits for its own stage.
+  const shownObjectives = world.status === 'cleared' ? [] : objectives;
   const prompt = session.queue.length || session.clearCard || showKeyCard || scriptStamp ? null : pendingPrompt(activeEngine, stageCommands(stage));
   return <main className="play-screen">
     <header className="play-header">
-      <h1>{stage.title}</h1>
-      {stage.id === 'counter' && <CounterGauge world={world} />}
-      {stage.id === 'notary' && <NotaryGauge world={world} />}
-      {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      <ObjectiveHud guide={visibleGuide} positioned={positioned} objectives={objectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
+      <ObjectiveHud title={stage.title} gauges={<>
+        {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
+        {stage.id === 'counter' && <CounterGauge world={world} />}
+        {stage.id === 'notary' && <NotaryGauge world={world} />}
+        {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
+      </>} guide={visibleGuide} positioned={positioned} objectives={shownObjectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
     </header>
-    <div className="play-field">
-      {['warehouse', 'customs', 'counter'].includes(stage.id) && <YankedSlot registers={world.engine.registers} expanded={stage.id !== 'warehouse'} />}
-      {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine}
-      keys={world.script?.keys ?? 0} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
-      objectiveTarget={showKeyCard ? null : nearestStand ?? target} standAt={mapGuide?.standAt ?? []} hideCursor={presentation?.type === 'cutscene'}
+    <div className="play-field" ref={field}>
+      {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}
+      objectiveTarget={showKeyCard ? null : nearestStand ?? target} {...(targetEntity && !showKeyCard ? { objectiveEntity: targetEntity } : {})} standAt={mapGuide?.standAt ?? []} signs={signsFor(world)} hideCursor={presentation?.type === 'cutscene'}
       hideObjective={showKeyCard || session.queue.length > 0 || session.clearCard || world.status !== 'playing'}
-      markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}</div>
-    <footer className="play-controls">
-      {onOpenHelp && <button className="help-link" onClick={onOpenHelp}><kbd>:h</kbd> keys</button>}
-      <span aria-label="Learned commands">{learnedKeycaps(session.story.flags, stage.type === 'text', stage.id).map(key => <kbd className="learned-key" key={key}>{key}</kbd>)}</span>
-      {content.worlds.some(world => world.id === stage.world && world.order >= 2) && <span><kbd>:e!</kbd> start over</span>}
-      <output aria-label="Pending keys" aria-live={reason ? 'polite' : 'off'}>{helpCommand ?? (activeEngine.mode === 'command-line' ? activeEngine.commandLine : activeEngine.pendingKeys.join('') || reason || '')}</output>
-      {prompt && <span className="pending-prompt">{prompt}</span>}
-      {!world.script && stage.type !== 'text' && <span>Hold <kbd>Tab</kbd> to see the file</span>}
-      {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
-    </footer>
-    {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} suspended={helpOpen} onDismiss={dismissKeyCard} />}
+      markers={markers} legend={legend} showSource={showSource} hazards={throwbackAreas(stage, content, world.flags)} />}
+      <HintSlip hint={quiet ? null : hints.hint}
+        place={(note, key) => <DialoguePlacement key={key} field={field} world={world} stage={stage} follow>{note}</DialoguePlacement>} />
+      <ActionToast events={session.lastEvents} stage={stage} world={world} legend={legend}
+        hidden={Boolean(presentation || session.clearCard || showKeyCard || scriptStamp || world.status !== 'playing')} />
+      {dialogue && presentation && !scriptStamp && world.status !== 'dead' && <DialoguePlacement key={dialogue.id} field={field} world={world} stage={stage}>
+        <DialogueBox dialogueId={dialogue.id} lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />
+      </DialoguePlacement>}
+    </div>
+    <StatusLine engine={activeEngine} learned={learnedKeycaps(session.story.flags, stage.type === 'text', stage.id)}
+      textStage={Boolean(world.script) || stage.type === 'text'} restartTaught={Boolean(session.story.flags['quarry.knows-x']) || !['margin', 'lowlands', 'quarry'].includes(stage.world)}
+      prompt={prompt} helpCommand={helpCommand} onOpenHelp={onOpenHelp}
+      {...(hints.available && onAskHint ? { onAskHint } : {})} stuck={hints.stuck && !quiet}
+      sound={onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />} />
+    {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
     {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})}
       {...(onPractise && practiseKeys.length > 0 ? { practise: { keys: practiseKeys, onPractise } } : {})} />}
-    {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
+    {world.status === 'dead' ? <section className="play-panel play-card play-card--death" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
     </section> : scriptStamp ? null : <>
-      {dialogue && presentation && <DialogueBox lines={dialogue.lines} activeIndex={presentation.index} onFinish={onAdvance} />}
-      {cutscene && presentation && <section className="play-panel" role="dialog" aria-label="Story">
-        <BeatView beat={cutscene.beats[presentation.index]} /><button onClick={onAdvance}>Enter to go on</button>
-      </section>}
+      {cutscene && presentation && <CutsceneView id={cutscene.id} index={presentation.index} beat={cutscene.beats[presentation.index]} stage={stage} legend={legend} onAdvance={onAdvance} />}
       {presentation?.type === 'teach' && <section className="play-panel" role="dialog" aria-label="Lesson">
         <h2>{presentation.skill}</h2><p>Lesson practice is coming in a later stage.</p><button onClick={onAdvance}>Continue</button>
       </section>}
-      {!session.clearCard && presentation?.type === 'ending' && <section className="play-panel" role="dialog" aria-label="Ending">
-        <h1>UNSAVED</h1><p>folio.txt written</p>
+      {!session.clearCard && presentation?.type === 'ending' && presentation.ending !== 'recover' && <section className="play-panel" role="dialog" aria-label="Ending">
+        <h1>UNSAVED</h1>
         <p>{result.keys} keys typed.</p><p>{result.hearts} of {stage.hearts} hearts left.</p>
-        <button onClick={onAdvance}>Enter to return to title</button>
+        <button onClick={onAdvance}>Enter to go on</button>
+      </section>}
+      {!session.clearCard && presentation?.type === 'ending' && presentation.ending === 'recover' && <section className="play-title play-ending" role="dialog" aria-label="Ending">
+        <TitleScene saved />
+        <div className="play-title__menu">
+          <p className="play-title__file">folio.txt written</p>
+          <h1 aria-label="Saved"><s aria-hidden="true">UN</s><span aria-hidden="true">SAVED</span></h1>
+          <p>The lamp is lit. Every row is there.</p>
+          <p>{result.keys} keys typed since you opened the file. {result.hearts} of {stage.hearts} hearts left.</p>
+          <button onClick={onAdvance}>Enter to return to title</button>
+        </div>
       </section>}
       {world.status === 'cleared' && !session.clearCard && !presentation && <section className="play-panel" role="dialog" aria-label="Stage cleared">
         <h2>To be continued.</h2>

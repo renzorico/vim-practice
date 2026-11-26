@@ -10,7 +10,8 @@ export const COUNTER_WALL = art((x, y) => x % 8 === 0 || y === 14 ? 'C'
   : x >= 5 && x <= 10 && y >= 4 && y <= 8 ? (y === 4 || y === 8 ? 'C' : 'c') : 'B');
 export const CLERK_DESK = art((x, y) => y < 3 || y > 12 ? 'B' : y === 3 || y === 12 ? 'c'
   : x >= 3 && x <= 12 && y < 10 ? (x === 8 || y % 3 === 0 ? 'K' : 'W') : 'C');
-export const CRATE_ROW = art((_x, y) => y < 3 ? 'c' : y < 6 ? 'C' : 'B');
+/** A pallet on the floor: the post behind it stays visible. */
+export const CRATE_ROW = art((x, y) => y < 10 ? '.' : y === 10 ? 'c' : y === 15 || x % 5 === 0 ? 'K' : y < 13 ? 'C' : 'B');
 export const FAKE: PixelSprite = { palette, frames: [0, 1].map(variant => surface((x, y) => {
   if (x < 2 || x > 13 || y < 2 || y > 13) return variant && (x + y) % 11 === 0 ? 'S' : '.';
   if (x === 2 || x === 13 || y === 2 || y === 13) return 'B';

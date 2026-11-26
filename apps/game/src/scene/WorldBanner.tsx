@@ -1,8 +1,12 @@
+import { WorldMap } from '../prologue/WorldMap.js';
+import { WORLD_WHY } from '../prologue/data.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { WorldId } from '@escape/world';
-import { SPRITES } from './sprites/index.js';
+import type { Legend, Stage, WorldId } from '@escape/world';
+import { StagePicture } from './StagePicture.js';
 
-export const BANNER_DURATION_MS = 1600;
+export const BANNER_DURATION_MS = 2600;
+const BANNER_ROWS = 12;
+const BANNER_COLS = 20;
 export const WORLD_NAMES: Readonly<Record<WorldId, readonly [string, string]>> = {
   margin: ['0', 'The Margin'], lowlands: ['1', 'Lowlands'], quarry: ['2', 'The Quarry'],
   wordwood: ['3', 'Wordwood'], 'copper-port': ['4', 'Copper Port'], library: ['5', 'The Library'],
@@ -18,7 +22,8 @@ export function useWorldBanner(world: WorldId, active: boolean) {
   const [visible, setVisible] = useState<WorldId | null>(null);
   const blocking = useRef(false);
   useEffect(() => {
-    if (!active || seen.current.has(world)) return;
+    if (!active) return;
+    if (seen.current.has(world)) return;
     seen.current.add(world);
     blocking.current = true;
     setVisible(world);
@@ -31,39 +36,20 @@ export function useWorldBanner(world: WorldId, active: boolean) {
     if (event?.repeat || event?.key === 'Shift') return true;
     blocking.current = false; setVisible(null); return true;
   }, []);
-  return { visible, dismiss };
+  const reset = useCallback(() => { seen.current.clear(); }, []);
+  return { visible, dismiss, reset };
 }
-const WORLD_TILES: Readonly<Record<WorldId, readonly string[]>> = {
-  margin: ['grass', 'road', 'house-wall', 'water', 'grass'],
-  lowlands: ['grass', 'stone', 'tower-wall', 'water', 'jetty'],
-  quarry: ['dirt', 'gravel', 'bedrock', 'river', 'plank'],
-  wordwood: ['moss', 'branch', 'trunk', 'leaves', 'clearing'],
-  'copper-port': ['boards', 'pier-post', 'warehouse-wall', 'port-water', 'boards'],
-  library: ['reading-floor', 'archive-aisle', 'library-wall', 'atlas-shelf', 'vault-floor'],
-  'echo-caves': ['cave-floor', 'cave-rock', 'crystal-ledge', 'crystal-lit', 'cave-floor'],
-  'last-page': ['page-paper', 'page-margin', 'page-paper', 'page-corner', 'page-paper'],
-};
-function TileRibbon({ world }: { readonly world: WorldId }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const context = canvas.current?.getContext('2d');
-    if (!context) return;
-    context.clearRect(0, 0, 80, 16);
-    WORLD_TILES[world].forEach((name, index) => {
-      const sprite = SPRITES[name];
-      sprite?.frames[0]?.forEach((row, y) => [...row].forEach((pixel, x) => {
-        const color = sprite.palette[pixel];
-        if (color && color !== 'transparent') { context.fillStyle = color; context.fillRect(index * 16 + x, y, 1, 1); }
-      }));
-    });
-  }, [world]);
-  return <canvas className="world-banner__tiles" ref={canvas} width={80} height={16} aria-hidden="true" />;
-}
-export function WorldBanner({ world, onDismiss }: { readonly world: WorldId; readonly onDismiss: () => void }) {
+export function WorldBanner({ world, stage, legend, onDismiss }: {
+  readonly world: WorldId; readonly stage?: Stage; readonly legend?: Legend; readonly onDismiss: () => void;
+}) {
   const [number, name] = WORLD_NAMES[world];
   return <div className="world-banner" role="status" aria-label={`World ${number}: ${name}`}>
-    <p>World {number}</p><h2>{name}</h2>
-    <TileRibbon world={world} />
-    <button onClick={onDismiss}>Press any key to begin</button>
+    {stage && legend && stage.type !== 'text' && <StagePicture stage={stage} legend={legend} rows={BANNER_ROWS} cols={BANNER_COLS} className="world-banner__picture" />}
+    <div className="world-banner__card">
+      <p>World {number}</p><h2>{name}</h2>
+      <p>{WORLD_WHY[world]}</p>
+      <WorldMap world={world} />
+      <button onClick={onDismiss}>Press any key to begin</button>
+    </div>
   </div>;
 }

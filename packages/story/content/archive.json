@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "file",
-          "objective": "File the shelf: `dap`, `p`. Copy atlases: `yap`, `P`.",
+          "objective": "File the shelf: `dap`, `p`. Copy the blue: `yap`, `P`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "archive"
@@ -28,11 +28,20 @@
         {
           "speaker": "npc",
           "name": "Index",
-          "text": "Oh good, hands. I'm Index. This shelf you're on\nis filed wrong. It goes after the bibles."
+          "text": "Oh good, hands. I'm Index. This shelf is filed\nwrong. It goes below the bibles, the dark one."
         },
         {
           "speaker": "system",
           "text": "In the shelf, press `dap`: it lifts, empty row\nand all. Then `}` to the next empty row, `p`."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "And the blue one, the atlases: I want a copy by\nthe door, just above the bottom rail."
+        },
+        {
+          "speaker": "system",
+          "text": "In the blue shelf, press `yap`. Then `G` to the\nbottom rail, and `P`: it lands above."
         }
       ],
       "then": []

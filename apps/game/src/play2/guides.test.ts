@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createEngine, type Position } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
-import { activeGuide, GUIDES, guideFor, keysOf } from './guides.js';
+import { activeGuide, guideApplies, GUIDES, guideFor, keysOf } from './guides.js';
 import { content, stages } from './content.js';
 import { createSession, stageCommands, type Session } from './session.js';
 
@@ -84,8 +84,9 @@ describe('authored objective guides', () => {
   });
   it('derives only the current unfinished main objective', () => {
     const story = storyEngine.init(content);
-    expect(activeGuide(content, story)).toBe(guideFor('margin.warning', 'meet-elder'));
-    expect(activeGuide(content, { ...story, quests: { 'margin.warning': { step: 3, done: true } } })).toBeNull();
+    const { world } = gameFor('margin').init();
+    expect(activeGuide(content, story, world)).toBe(guideFor('margin.warning', 'meet-elder'));
+    expect(activeGuide(content, { ...story, quests: { 'margin.warning': { step: 3, done: true } } }, world)).toBeNull();
   });
   it('offers walkable cells at each tutorial step, including after the quarry deletion', () => {
     const tutorialRoutes: Readonly<Record<string, readonly string[]>> = {
@@ -103,7 +104,8 @@ describe('authored objective guides', () => {
         const progress = session.story.quests[questId];
         const quest = content.quests.find(item => item.id === questId);
         const step = progress && quest?.steps[progress.step];
-        if (step && !checked.has(step.id)) {
+        // The last Lowlands step is done inside the Lighthouse, which has its own test below.
+        if (step && step.id !== 'lamp' && !checked.has(step.id)) {
           const { legend } = entryFor(id);
           const guide = guideFor(questId, step.id);
           for (const at of guide?.standAt ?? []) {
@@ -131,6 +133,31 @@ describe('authored objective guides', () => {
     }
     session = play(game, move(session, { line: 7, col: 18 }), guideFor('margin.warning', 'cross')?.keys ?? []);
     expect(session.world.status).toBe('cleared');
+  });
+  it('8k from both marks of the Lighthouse climbs the stairs, and the guide ends at their top', () => {
+    const { game, session: initial } = start('lighthouse', 'lowlands.lighthouse');
+    const guide = guideFor('lowlands.lighthouse', 'lamp');
+    if (!guide?.standAt) throw new Error('Missing Lighthouse guide');
+    let session = initial;
+    for (const [index, at] of guide.standAt.entries()) {
+      session = dismiss(game, play(game, index === 0 ? move(session, at) : session, guide.keys));
+      expect(session.world.engine.cursor, `mark ${index}`).toEqual({ line: at.line - 8, col: 1 });
+    }
+    expect(guideApplies(guide, { line: 25, col: 10 }, [])).toBe(true);
+    expect(guideApplies(guide, session.world.engine.cursor, [])).toBe(false);
+    expect(guideApplies({ kind: 'use', keys: ['w'] }, { line: 0, col: 0 }, [])).toBe(true);
+  });
+  it('stops asking for 4x once the rubble is gone, and one step east is already the river', () => {
+    const { game, session: initial } = start('quarry-road', 'quarry.road');
+    const guide = guideFor('quarry.road', 'cut');
+    if (!guide?.standAt?.[0]) throw new Error('Missing Quarry guide');
+    const at = guide.standAt[0];
+    const before = dismiss(game, move(initial, at));
+    expect(guideApplies(guide, at, before.world.engine.lines)).toBe(true);
+    const cleared = dismiss(game, play(game, before, guide.keys));
+    expect(guideApplies(guide, at, cleared.world.engine.lines)).toBe(false);
+    expect(cleared.story.quests['quarry.road']?.step).toBe(0);
+    expect(dismiss(game, play(game, cleared, ['l'])).story.quests['quarry.road']?.step).toBe(1);
   });
   it('Enter at every cell of the Quarry gate guide clears the stage', () => {
     const { game, session: initial } = start('quarry-road', 'quarry.road');

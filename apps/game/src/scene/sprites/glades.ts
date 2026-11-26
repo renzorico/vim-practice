@@ -1,21 +1,28 @@
 import { CHARACTER_FIELDS } from './characters.js';
+import { grain } from './material.js';
 import { PALETTE, type PixelSprite } from './sprite.js';
 
-const palette = { ...PALETTE, M: '#526749', L: '#a9c478', B: '#233c32', o: '#9aa19b', O: '#656f71', Y: '#ffe6a2' };
+const palette = { ...PALETTE, M: '#526749', m: '#7d8e5b', n: '#5b7157', L: '#a9c478', B: '#233c32', o: '#9aa19b', O: '#656f71', Y: '#ffe6a2' };
 const surface = (pixel: (x: number, y: number) => string): string[] =>
   Array.from({ length: 16 }, (_, y) => Array.from({ length: 16 }, (_, x) => pixel(x, y)).join(''));
 const art = (...frames: string[][]): PixelSprite => ({ palette, frames });
 function moss(x: number, y: number, seed = 0): string {
-  return (x * 7 + y * 11 + seed * 13) % 23 < 4 ? 'a' : (x + y + seed) % 7 === 0 ? 'g' : 'M';
+  // Short tufts on a quiet floor, so the fern marks stay the loudest thing on the path.
+  const tuft = grain(x >> 1, y >> 2, seed + 11) < 12;
+  if (tuft && y % 4 < 2) return y % 4 === 0 ? 'm' : 'n';
+  return grain(x, y, seed) < 4 ? 'n' : 'M';
 }
 export const MOSS = art(...[0, 1].map(seed => surface((x, y) => moss(x, y, seed))));
 export const FERNS = art(surface((x, y) => {
   if (y > 5 && y < 13 && (x === 7 || Math.abs(x - 7) === (y % 4) + 1)) return y % 2 ? 'G' : 'a';
   return moss(x, y);
 }));
+/** A thicket: dark leaf masses with a few hooked canes. */
 export const BRAMBLE = art(surface((x, y) => {
-  if ((x + 2 * y) % 7 === 0 || (2 * x - y + 32) % 9 === 0) return 'T';
-  return (x * 3 + y) % 7 < 2 ? 'G' : 'B';
+  const cane = Math.abs(y - 8 - Math.round(Math.sin((x + 3) / 2.6) * 5)) < 1;
+  if (cane) return (x * 3 + y) % 4 === 0 ? 'R' : 'T';
+  const clump = ((x % 8) - 3.5) ** 2 + ((y % 8) - 3.5) ** 2 + grain(x, y, 8) % 4;
+  return clump < 9 ? (y % 8 < 3 ? 'n' : 'G') : 'B';
 }));
 export const CLEARING = art(surface((x, y) => {
   const radius = (x - 8) ** 2 + (y - 9) ** 2 * 2;
