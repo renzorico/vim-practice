@@ -161,3 +161,13 @@ Five skills: Find a letter (`f t`), Find again (`; ,`), Paragraphs (`{ }`), File
 - `; ,` reps never put the target three finds away: `3fc` would beat `fc;;`, and the solver is right to prefer it. Two finds tie (`fc;` vs `2fc`), and `,` reps need a letter behind the cursor that `b`, `0` and `9h` cannot reach.
 - `NG` reps start at least 10 lines below line N, beyond the solver's longest count (`9k`).
 - New test: every skill's par uses at least one of its own keys (60 seeds x 3 difficulties), so a solver fallback can never quietly drill a different key.
+
+## 12. Pass B: World 4, Copper Port
+
+Five skills: Delete with a motion (`dw d2w df`), Copy and put (`ye y2e p`), Named registers (`"a "ap`), Change (`cw C`), Copy and move lines (`yy P`).
+
+- Copies start on the space before a word (`ye`, `y2e`), so the put text brings its own space; `yw` then `$p` glued the word to the line end.
+- No `y$` rep: `D p .` (cut the tail, put it back, put it again) ties or beats it, and that is good Vim.
+- No `yy gg P` rep: `yy <C-u> P` is shorter in any buffer under 15 lines. `yy k P` teaches P instead.
+- Named registers and Change are not solver-checked (setup state; typed text), like insert.
+- The drill page stacks the target under the buffer: two 46-column sheets do not fit side by side.

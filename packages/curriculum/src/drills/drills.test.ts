@@ -18,7 +18,7 @@ const SEEDS = 200;
 const SOLVER_SEEDS = 12;
 const OWN_KEY_SEEDS = 60;
 /** Insert-mode text cannot be searched by the solver, and setup reps start from a state it cannot load. */
-const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open']);
+const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open', 'register.named', 'operator.c']);
 const RUN_OF_FOUR_LETTERS = /([A-Za-z])\1{3}/;
 
 function playRep(rep: DrillRep, keys: readonly Key[]): LevelRun {

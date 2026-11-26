@@ -14,9 +14,13 @@ const LEDGER = [...SHAFT, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
 const CANOPY = [...LEDGER, 'f', 't', ';', ','] as const;
 const GLADES = [...CANOPY, '{', '}', 'gg', 'G'] as const;
 const GATES = [...GLADES, '%', '<C-d>', '<C-u>'] as const;
+const JETTY = [...GATES, 'd'] as const;
+const WAREHOUSE = [...JETTY, 'y', 'p'] as const;
+const CUSTOMS = [...WAREHOUSE, '"'] as const;
+const HARBOUR = [...CUSTOMS, 'c', 'C', 'P', 'yy'] as const;
 
 /**
- * Worlds 0-3, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
+ * Worlds 0-4, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
  * half a screen is 14 lines, and the drill page shows the whole buffer, not a window onto it.
  */
 export const DRILL_SKILLS: readonly DrillSkill[] = [
@@ -39,6 +43,11 @@ export const DRILL_SKILLS: readonly DrillSkill[] = [
   { id: 'motion.paragraph', name: 'Paragraphs', keys: ['{', '}'], stage: 'glades', allowed: GLADES },
   { id: 'motion.file', name: 'File ends', keys: ['gg', 'G'], stage: 'glades', allowed: GLADES },
   { id: 'motion.match', name: 'Matching bracket', keys: ['%'], stage: 'gates', allowed: GATES },
+  { id: 'operator.d', name: 'Delete with a motion', keys: ['dw', 'd2w', 'df'], stage: 'jetty', allowed: JETTY },
+  { id: 'operator.y', name: 'Copy and put', keys: ['ye', 'y2e', 'p'], stage: 'warehouse', allowed: WAREHOUSE },
+  { id: 'register.named', name: 'Named registers', keys: ['"a', '"ap'], stage: 'customs', allowed: CUSTOMS },
+  { id: 'operator.c', name: 'Change', keys: ['cw', 'C'], stage: 'harbour', allowed: HARBOUR },
+  { id: 'edit.lines', name: 'Copy and move lines', keys: ['yy', 'P'], stage: 'harbour', allowed: HARBOUR },
 ];
 
 export function drillSkill(id: SkillId): DrillSkill | undefined {

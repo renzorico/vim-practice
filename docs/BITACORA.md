@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · DR-copper: Copybook drills for World 4
+**Who:** Opus (design, build, browser check).
+
+**What:** Five skills for Copper Port: Delete with a motion (`dw d2w df`), Copy and put (`ye y2e p`), Named registers (`"a "ap`), Change (`cw C`), Copy and move lines (`yy P`). The drill page now stacks the target under the buffer (it was cut off side by side). Design notes in DRILLS.md section 12.
+
+**Tests:** 165 drill tests. The solver caught `D p .` beating `y$ j $ p` and `yy <C-u> P` beating `yy gg P`; both reps were redesigned.
+
+---
+
 ## 2026-11-26 · DR-wordwood: Copybook drills for World 3
 **Who:** Opus (design, build, browser check).
 
