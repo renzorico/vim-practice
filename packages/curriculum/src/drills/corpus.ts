@@ -62,6 +62,9 @@ const CODE: readonly string[] = [
   'ls -la docs/ | grep md | sort -r | head -5',
   'useEffect(() => { save(page); }, [page]);',
   'raise ValueError("page has no rows yet")',
+  '<p class="note">Saved every row by hand.</p>',
+  '<title>The Margin, a game of rows</title>',
+  '<button type="submit">Save the page</button>',
 ];
 
 export const CORPUS: readonly CorpusLine[] = [

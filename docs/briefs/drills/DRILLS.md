@@ -171,3 +171,13 @@ Five skills: Delete with a motion (`dw d2w df`), Copy and put (`ye y2e p`), Name
 - No `yy gg P` rep: `yy <C-u> P` is shorter in any buffer under 15 lines. `yy k P` teaches P instead.
 - Named registers and Change are not solver-checked (setup state; typed text), like insert.
 - The drill page stacks the target under the buffer: two 46-column sheets do not fit side by side.
+
+## 13. Pass C: World 5, the Library
+
+Five skills: Word objects (`daw ciw d2aw`), Paren objects (`di( ci( da(`), Paragraph objects (`dap d2ap`), Bracket and tag objects (`di[ di{ dit`), Quote objects (`di" ci" da"`). Three HTML lines join the corpus for `it`.
+
+- The cursor always stands inside the object, past its first character and off any bracket or quote, and never inside a nested pair: from the start, `dt)` or `dw` would tie or win.
+- `generateRep` now solver-checks every rep of up to 5 keys without setup, not only motions; it caught an old `x` rep (`b j x` beat `10w x`) once the corpus grew.
+- The test's "starts solved" check never ran (it read the initial `[false]`); it now checks the goals against the start state, and caught `ci(` reps whose new text equalled the old.
+- Typed-text reps (6+ keys) skip the solver: six keys deep over the World 5 allow-list took more than 4 GB.
+- `corpusLines` throws when its filter leaves fewer lines than a rep needs; it used to loop forever.
