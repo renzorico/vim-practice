@@ -9,6 +9,7 @@ import { StageClearCard } from '../play2/StageClearCard.js';
 import { createSession } from '../play2/session.js';
 import { content, legend, stage } from '../play2/content.js';
 import { copybookSkills } from './Copybook.js';
+import { focusedButton } from './focusedButton.js';
 import { keyLabel } from './DrillScreen.js';
 import { DRILLS_KEY, EMPTY_DRILLS, nextSeed, readDrills, saveDrills, type DrillProgress } from './store.js';
 
@@ -45,6 +46,17 @@ describe('copybookSkills', () => {
     const strong = applySetResult(applySetResult(undefined, 'motion.hjkl', true, NOW), 'motion.hjkl', true, NOW);
     const ids = copybookSkills(['margin', 'lowlands'], { mastery: { 'motion.hjkl': strong }, seeds: {} }, NOW).map(skill => skill.id);
     expect(ids).toEqual(['motion.count', 'motion.word', 'motion.line', 'motion.hjkl']);
+  });
+});
+
+describe('Enter on a focused button', () => {
+  it('is left to the button, not the screen shortcut', () => {
+    class FakeButton {}
+    Object.assign(globalThis, { HTMLButtonElement: FakeButton });
+    try {
+      expect(focusedButton({ target: new FakeButton() } as unknown as KeyboardEvent)).toBe(true);
+      expect(focusedButton({ target: {} } as unknown as KeyboardEvent)).toBe(false);
+    } finally { Reflect.deleteProperty(globalThis, 'HTMLButtonElement'); }
   });
 });
 

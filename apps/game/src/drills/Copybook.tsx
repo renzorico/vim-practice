@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DRILL_SKILLS, effectiveBox, type DrillSkill, type SkillId } from '@escape/curriculum';
 import { BoxDots } from './DrillScreen.js';
+import { focusedButton } from './focusedButton.js';
 import type { DrillProgress } from './store.js';
 import './drills.css';
 
@@ -32,7 +33,8 @@ export function Copybook({ skills, progress, now, onPlay, onBack }: CopybookProp
       if (event.key === 'Escape' || event.key === 'q') { event.preventDefault(); onBack(); }
       else if (event.key === 'j') { event.preventDefault(); setSelected(value => Math.min(skills.length - 1, value + 1)); }
       else if (event.key === 'k') { event.preventDefault(); setSelected(value => Math.max(0, value - 1)); }
-      else if (event.key === 'Enter' && !event.repeat) {
+      // A focused button answers Enter itself; the shortcut is only for the j/k choice.
+      else if (event.key === 'Enter' && !event.repeat && !focusedButton(event)) {
         const skill = skills[selected];
         if (skill) { event.preventDefault(); onPlay(skill.id); }
       }

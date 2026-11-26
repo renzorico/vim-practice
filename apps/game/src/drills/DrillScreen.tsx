@@ -8,6 +8,7 @@ import { Buffer } from '../ui/Buffer.js';
 import { useReplay } from '../ui/useReplay.js';
 import { useKeyCapture } from '../input/useKeyCapture.js';
 import { nextSeed, type DrillProgress } from './store.js';
+import { focusedButton } from './focusedButton.js';
 import './drills.css';
 
 const engine = createEngine();
@@ -155,7 +156,7 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
     const listen = (event: KeyboardEvent): void => {
       if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key === 'Escape' || event.key === 'q') { event.preventDefault(); onExit(); }
-      else if (event.key === 'Enter') { event.preventDefault(); if (drill?.phase === 'replay') retry(); else advance(); }
+      else if (event.key === 'Enter') { if (focusedButton(event)) return; event.preventDefault(); if (drill?.phase === 'replay') retry(); else advance(); }
       else if (event.key === 'r' && drill?.phase === 'finished') { event.preventDefault(); again(); }
     };
     window.addEventListener('keydown', listen);
