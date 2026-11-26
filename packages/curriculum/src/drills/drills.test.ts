@@ -168,6 +168,27 @@ describe('World 5 reps that a shorter route used to beat', () => {
   });
 });
 
+describe('World 6 search reps', () => {
+  it('no line jump (G, gg, NG) and a find gets there in fewer keys than the search', () => {
+    for (const difficulty of DIFFICULTIES) {
+      for (let seed = 0; seed < SEEDS; seed += 1) {
+        const rep = generateRep('search.pattern', seed, difficulty);
+        const goal = rep.level.goals[0];
+        if (goal?.type !== 'reach') throw new Error('expected a reach goal');
+        const text = rep.level.startLines[goal.target.line] ?? '';
+        const jumps: Key[][] = [['G'], ['g', 'g'], ...rep.level.startLines.map((_, row) => [...String(row + 1), 'G'])];
+        for (const jump of jumps) {
+          for (const char of new Set(text)) {
+            const keys: Key[] = [...jump, 'f', char];
+            if (keys.length >= rep.level.par) continue;
+            expect(playRep(rep, keys).status, `seed ${seed} difficulty ${difficulty}: ${keys.join('')}`).not.toBe('won');
+          }
+        }
+      }
+    }
+  });
+});
+
 describe('buildDrillSet', () => {
   it('builds ten reps that rise in difficulty, deterministically', () => {
     const set = buildDrillSet('motion.hjkl', 3);

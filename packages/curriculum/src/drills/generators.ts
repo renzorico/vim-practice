@@ -22,7 +22,9 @@ const SOLVE_BUDGET = 10_000_000;
 /** True when checking a rep's par with the solver is cheap enough to do: no setup, and within SOLVE_BUDGET. */
 export function solverAffordable(rep: DrillRep): boolean {
   const commands = rep.level.allowedCommands?.length ?? 0;
-  return rep.setup.length === 0 && commands ** (rep.level.par - 1) <= SOLVE_BUDGET;
+  // A typed search pattern is text the solver cannot type, and those buffers are the costliest to search.
+  const typesCommandLine = rep.level.solution.includes('<CR>');
+  return rep.setup.length === 0 && !typesCommandLine && commands ** (rep.level.par - 1) <= SOLVE_BUDGET;
 }
 /** Plain moves stay within this many steps per axis: `2l` only ties `ll`; from 3 steps a count is shorter. */
 const MAX_PLAIN_STEPS = 2;
@@ -899,7 +901,15 @@ const quoteObject: Design = (rng, difficulty) => {
 // World 6: / ? n, * #, marks, v and <C-v>
 // ---------------------------------------------------------------------------
 
-const SEARCH_ROWS = 14;
+/**
+ * Tall enough that every search target is 3+ keys away by line number (NG with N >= 10): lines 1-9 cost two (3G),
+ * and a find after that would beat a five-key search.
+ */
+const SEARCH_ROWS = 22;
+/** Lines 10 and up: the first with a three-key NG. */
+const FIRST_FAR_ROW = 9;
+/** The last lines are a G (and a k) away. */
+const SEARCH_BOTTOM_MARGIN = 2;
 /** Search targets sit this far from the cursor: closer, a count on j or k and a find would tie or win. */
 const SEARCH_DISTANCE = 10;
 
@@ -908,41 +918,136 @@ function occurrencesIn(lines: readonly string[], needle: string): number {
   return lines.reduce((sum, text) => sum + text.split(needle).length - 1, 0);
 }
 
-/** Lowercase three-letter patterns on `row` and where they start, occurring `times` times in the whole buffer. */
-function patterns(lines: readonly string[], row: number, times: number): Array<{ pattern: string; col: number }> {
+/** Lowercase patterns of `length` letters on `row` and where they start, occurring `times` times in the whole buffer. */
+function patterns(lines: readonly string[], row: number, times: number, length = 3): Array<{ pattern: string; col: number }> {
   const text = lines[row] ?? '';
+  const letters = new RegExp(`^[a-z]{${length}}$`);
   return [...text].flatMap((_, col) => {
-    const pattern = text.slice(col, col + 3);
-    return /^[a-z]{3}$/.test(pattern) && occurrencesIn(lines, pattern) === times ? [{ pattern, col }] : [];
+    const pattern = text.slice(col, col + length);
+    return letters.test(pattern) && occurrencesIn(lines, pattern) === times ? [{ pattern, col }] : [];
   });
 }
 
-const searchPattern: Design = (rng, difficulty) => {
-  const lines = corpusLines(rng, SEARCH_ROWS);
-  if (difficulty === 3) {
-    // A pattern found twice below the cursor: search lands on the first, n goes on to the second.
-    const rows = Array.from({ length: SEARCH_ROWS - 4 }, (_, index) => index + 4);
-    const twice = rows.flatMap(row => patterns(lines, row, 2).map(entry => ({ ...entry, row })));
-    const choice = twice.length > 0 ? pick(rng, twice) : undefined;
-    if (choice !== undefined && lines.slice(0, 4).every(text => !text.includes(choice.pattern))) {
-      return {
-        goal: 'reach', goalText: `Search for "${choice.pattern}", then n jumps to the next one: land on the second.`, lines,
-        cursor: { line: 0, col: int(rng, 0, 8) }, keys: ['/', ...chars(choice.pattern), '<CR>', 'n'],
-      };
+/** Where `keys` leave the cursor, from `cursor` on `lines`; null when a key fails. */
+function landing(lines: readonly string[], cursor: { line: number; col: number }, keys: readonly Key[]): string | null {
+  let state = engine.init(lines, cursor);
+  for (const key of keys) {
+    const result = engine.step(state, key);
+    if (result.error !== null) return null;
+    state = result.state;
+  }
+  return `${state.cursor.line}:${state.cursor.col}`;
+}
+
+/** Every place a literal pattern starts, in buffer order. */
+function matchesOf(lines: readonly string[], pattern: string): Array<{ line: number; col: number }> {
+  return lines.flatMap((text, line) => {
+    const found: Array<{ line: number; col: number }> = [];
+    for (let col = text.indexOf(pattern); col >= 0; col = text.indexOf(pattern, col + 1)) found.push({ line, col });
+    return found;
+  });
+}
+
+const before = (a: { line: number; col: number }, b: { line: number; col: number }): boolean =>
+  a.line < b.line || (a.line === b.line && a.col < b.col);
+
+/**
+ * The shortest search that reaches the same square in fewer keys than `keys`, or null: either direction: either direction, any pattern of letters and
+ * spaces in the buffer, then n or N as often as the keys allow. Matches wrap round the buffer, as Vim's search does.
+ * Uniqueness of one pattern proves nothing: a shorter one, or ? wrapping round, can get there first.
+ */
+function shorterSearch(lines: readonly string[], cursor: { line: number; col: number }, keys: readonly Key[]): Key[] | null {
+  const target = landing(lines, cursor, keys);
+  let best: Key[] | null = null;
+  const tried = new Set<string>();
+  for (let length = 1; length + 2 < keys.length; length += 1) {
+    for (const text of lines) {
+      for (let col = 0; col + length <= text.length; col += 1) {
+        const pattern = text.slice(col, col + length);
+        if (!/^[A-Za-z ]+$/.test(pattern) || tried.has(pattern)) continue;
+        tried.add(pattern);
+        const matches = matchesOf(lines, pattern);
+        const total = matches.length;
+        // Index of the first match after the cursor (forward) and the last one before it (backward), wrapping.
+        const after = matches.findIndex(match => before(cursor, match));
+        const forward = after < 0 ? 0 : after;
+        const notBefore = matches.findIndex(match => !before(match, cursor));
+        const backward = ((notBefore < 0 ? total : notBefore) - 1 + total) % total;
+        const budget = keys.length - (length + 2);
+        for (const [direction, start, step] of [['/', forward, 1], ['?', backward, -1]] as const) {
+          for (let repeats = 0; repeats < budget; repeats += 1) {
+            for (const sign of [step, -step]) {
+              const index = (((start + sign * repeats) % total) + total) % total;
+              const match = matches[index];
+              const route: Key[] = [direction, ...chars(pattern), '<CR>', ...Array<Key>(repeats).fill(sign === step ? 'n' : 'N')];
+              if (match !== undefined && `${match.line}:${match.col}` === target && route.length < (best ?? keys).length) best = route;
+              if (repeats === 0) break;
+            }
+          }
+        }
+      }
     }
+  }
+  return best;
+}
+
+const MAX_SEARCH_DRAWS = 40;
+
+/** Says what a search route does, so the prompt always matches the par. */
+function searchText(route: readonly Key[]): string {
+  const close = route.indexOf('<CR>');
+  const pattern = route.slice(1, close).join('');
+  const again = route.slice(close + 1);
+  const repeat = again.length === 0 ? '' : `, then ${again.join(' ')}`;
+  return `Search ${route[0] === '?' ? 'back up ' : ''}for "${pattern}" with ${route[0]}${repeat}.`;
+}
+
+const searchPattern: Design = (rng, difficulty) => {
+  // The n rep is redrawn until n is the shortest way; plain searches take the shortest search there is.
+  let design: RepDesign | null = null;
+  for (let draw = 0; draw < MAX_SEARCH_DRAWS; draw += 1) {
+    const next = searchDraw(rng, difficulty);
+    if (next === null) continue;
+    design = next;
+    if (difficulty !== 3 || shorterSearch(next.lines, next.cursor, next.keys) === null) break;
+  }
+  if (design === null) throw new Error(`search: no rep in ${MAX_SEARCH_DRAWS} draws`);
+  const shortest = shorterSearch(design.lines, design.cursor, design.keys);
+  return shortest === null ? design : { ...design, keys: shortest, goalText: searchText(shortest) };
+};
+
+function searchDraw(rng: Rng, difficulty: Difficulty): RepDesign | null {
+  const lines = corpusLines(rng, SEARCH_ROWS);
+  const cursor = { line: difficulty === 2 ? SEARCH_ROWS - 1 : 0, col: int(rng, 0, 8) };
+  if (difficulty === 3) {
+    // Found three times below the cursor, aiming at the middle one: / lands on the first and n goes on. (With two,
+    // ? would wrap straight to the second in fewer keys.)
+    const rows = Array.from({ length: SEARCH_ROWS - 4 }, (_, index) => index + 4);
+    // Two letters, so /xy<CR>n is five keys: a line jump and a find (19Gfp) only ties it.
+    const thrice = rows.flatMap(row => patterns(lines, row, 3, 2).map(entry => ({ ...entry, row })));
+    const choice = thrice.length > 0 ? pick(rng, thrice) : undefined;
+    if (choice === undefined || lines.slice(0, 4).some(text => text.includes(choice.pattern))) return null;
+    // The second match is out of reach of a count on j (9j) and a find.
+    const second = matchesOf(lines, choice.pattern)[1]?.line ?? 0;
+    if (second < Math.max(SEARCH_DISTANCE, FIRST_FAR_ROW) || second >= SEARCH_ROWS - SEARCH_BOTTOM_MARGIN) return null;
+    return {
+      goal: 'reach', goalText: `Search for "${choice.pattern}", then n to the next one: land on the second.`, lines,
+      cursor, keys: ['/', ...chars(choice.pattern), '<CR>', 'n'],
+    };
   }
   const back = difficulty === 2;
   // Rows far enough away that hold a pattern found nowhere else in the buffer.
-  const far = back ? Array.from({ length: SEARCH_ROWS - SEARCH_DISTANCE }, (_, index) => index)
-    : Array.from({ length: SEARCH_ROWS - SEARCH_DISTANCE }, (_, index) => index + SEARCH_DISTANCE);
+  const rows = Array.from({ length: SEARCH_ROWS }, (_, index) => index)
+    .filter(row => row >= FIRST_FAR_ROW && row < SEARCH_ROWS - SEARCH_BOTTOM_MARGIN);
+  const far = rows.filter(row => Math.abs(row - (back ? SEARCH_ROWS - 1 : 0)) >= SEARCH_DISTANCE);
   const found = far.flatMap(row => patterns(lines, row, 1).filter(entry => entry.col > 2).map(entry => ({ ...entry, row })));
-  if (found.length === 0) throw new Error('search: no unique pattern in reach');
+  if (found.length === 0) return null;
   const choice = pick(rng, found);
   return {
     goal: 'reach', goalText: back ? `Search back up for "${choice.pattern}" with ?` : `Search for "${choice.pattern}" with /`, lines,
-    cursor: { line: back ? SEARCH_ROWS - 1 : 0, col: int(rng, 0, 8) }, keys: [back ? '?' : '/', ...chars(choice.pattern), '<CR>'],
+    cursor, keys: [back ? '?' : '/', ...chars(choice.pattern), '<CR>'],
   };
-};
+}
 
 /** Words that repeat across the corpus, for * and #. */
 const REPEATED_WORDS: readonly string[] = ['page', 'rows', 'path', 'save', 'road', 'open', 'name'];
@@ -1010,7 +1115,7 @@ const visualSelect: Design = (rng, difficulty) => {
     const lines = corpusLines(rng, 5, entry => entry.kind === 'code');
     return {
       goal: 'transform', goalText: 'Comment out the first three lines at once: <C-v>, jj, I, then // and a space.', lines,
-      cursor: { line: 0, col: 0 }, keys: ['<C-v>', 'j', 'j', 'I', '/', '/', ' ', '<Esc>'],
+      cursor: { line: 0, col: 0 }, keys: ['<C-v>', 'j', 'j', 'I', '/', '/', ' ', '<Esc>'], keepEsc: true,
     };
   }
   const lines = corpusLines(rng, 5, folio).map((text, row) => (row < 4 ? `${BLOCK_PREFIX}${text}` : text));
