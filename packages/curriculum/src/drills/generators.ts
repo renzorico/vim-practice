@@ -13,8 +13,17 @@ const engine = createEngine();
 const DIFFICULTY_STREAM = 7919;
 const MAX_COUNT = 9;
 const MAX_REDRAWS = 20;
-/** Deeper searches over a late-world allow-list take seconds and gigabytes; see generateRep. */
-const MAX_LIVE_SOLVE_PAR = 5;
+/**
+ * The solver's work grows as (allowed commands)^(par - 1). Above this budget a search takes seconds and gigabytes
+ * (a 5-key search rep over the World 6 allow-list is about 65 million nodes), so it is skipped.
+ */
+const SOLVE_BUDGET = 10_000_000;
+
+/** True when checking a rep's par with the solver is cheap enough to do: no setup, and within SOLVE_BUDGET. */
+export function solverAffordable(rep: DrillRep): boolean {
+  const commands = rep.level.allowedCommands?.length ?? 0;
+  return rep.setup.length === 0 && commands ** (rep.level.par - 1) <= SOLVE_BUDGET;
+}
 /** Plain moves stay within this many steps per axis: `2l` only ties `ll`; from 3 steps a count is shorter. */
 const MAX_PLAIN_STEPS = 2;
 
@@ -886,6 +895,131 @@ const quoteObject: Design = (rng, difficulty) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// World 6: / ? n, * #, marks, v and <C-v>
+// ---------------------------------------------------------------------------
+
+const SEARCH_ROWS = 14;
+/** Search targets sit this far from the cursor: closer, a count on j or k and a find would tie or win. */
+const SEARCH_DISTANCE = 10;
+
+/** How often `needle` occurs in the buffer. */
+function occurrencesIn(lines: readonly string[], needle: string): number {
+  return lines.reduce((sum, text) => sum + text.split(needle).length - 1, 0);
+}
+
+/** Lowercase three-letter patterns on `row` and where they start, occurring `times` times in the whole buffer. */
+function patterns(lines: readonly string[], row: number, times: number): Array<{ pattern: string; col: number }> {
+  const text = lines[row] ?? '';
+  return [...text].flatMap((_, col) => {
+    const pattern = text.slice(col, col + 3);
+    return /^[a-z]{3}$/.test(pattern) && occurrencesIn(lines, pattern) === times ? [{ pattern, col }] : [];
+  });
+}
+
+const searchPattern: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, SEARCH_ROWS);
+  if (difficulty === 3) {
+    // A pattern found twice below the cursor: search lands on the first, n goes on to the second.
+    const rows = Array.from({ length: SEARCH_ROWS - 4 }, (_, index) => index + 4);
+    const twice = rows.flatMap(row => patterns(lines, row, 2).map(entry => ({ ...entry, row })));
+    const choice = twice.length > 0 ? pick(rng, twice) : undefined;
+    if (choice !== undefined && lines.slice(0, 4).every(text => !text.includes(choice.pattern))) {
+      return {
+        goal: 'reach', goalText: `Search for "${choice.pattern}", then n jumps to the next one: land on the second.`, lines,
+        cursor: { line: 0, col: int(rng, 0, 8) }, keys: ['/', ...chars(choice.pattern), '<CR>', 'n'],
+      };
+    }
+  }
+  const back = difficulty === 2;
+  // Rows far enough away that hold a pattern found nowhere else in the buffer.
+  const far = back ? Array.from({ length: SEARCH_ROWS - SEARCH_DISTANCE }, (_, index) => index)
+    : Array.from({ length: SEARCH_ROWS - SEARCH_DISTANCE }, (_, index) => index + SEARCH_DISTANCE);
+  const found = far.flatMap(row => patterns(lines, row, 1).filter(entry => entry.col > 2).map(entry => ({ ...entry, row })));
+  if (found.length === 0) throw new Error('search: no unique pattern in reach');
+  const choice = pick(rng, found);
+  return {
+    goal: 'reach', goalText: back ? `Search back up for "${choice.pattern}" with ?` : `Search for "${choice.pattern}" with /`, lines,
+    cursor: { line: back ? SEARCH_ROWS - 1 : 0, col: int(rng, 0, 8) }, keys: [back ? '?' : '/', ...chars(choice.pattern), '<CR>'],
+  };
+};
+
+/** Words that repeat across the corpus, for * and #. */
+const REPEATED_WORDS: readonly string[] = ['page', 'rows', 'path', 'save', 'road', 'open', 'name'];
+
+/** Columns where `word` stands as a whole word on a line. */
+function wholeWordCols(text: string, word: string): number[] {
+  return [...text.matchAll(new RegExp(`(?<![\\w])${word}(?![\\w])`, 'g'))].map(found => found.index ?? 0);
+}
+
+const searchWord: Design = (rng, difficulty) => {
+  const word = pick(rng, REPEATED_WORDS);
+  const needed = difficulty === 3 ? 3 : 2;
+  const holders = corpusLines(rng, needed, entry => wholeWordCols(entry.text, word).length > 0);
+  const others = corpusLines(rng, 4, entry => wholeWordCols(entry.text, word).length === 0 && !entry.text.includes(word));
+  // Lines with the word, spaced out between lines without it.
+  const lines = [others[0] ?? '', holders[0] ?? '', others[1] ?? '', others[2] ?? '', holders[1] ?? '', others[3] ?? '', ...holders.slice(2)];
+  const firstRow = 1;
+  const lastRow = lines.length - 1 === 5 ? 4 : lines.length - 1;
+  if (difficulty === 2) {
+    return {
+      goal: 'reach', goalText: `Jump back to the "${word}" before this one: # searches for the word under the cursor, upward.`, lines,
+      cursor: { line: lastRow, col: wholeWordCols(lines[lastRow] ?? '', word)[0] ?? 0 }, keys: ['#'],
+    };
+  }
+  return {
+    goal: 'reach', goalText: difficulty === 3 ? `Jump two "${word}"s on: * once, then n.` : `Jump to the next "${word}": * searches for the word under the cursor.`, lines,
+    cursor: { line: firstRow, col: wholeWordCols(lines[firstRow] ?? '', word)[0] ?? 0 }, keys: difficulty === 3 ? ['*', 'n'] : ['*'],
+  };
+};
+
+const MARK_ROWS = 16;
+
+const markJump: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, MARK_ROWS);
+  if (difficulty === 3) {
+    // Lines from the mark down to here: further than a count on k reaches in three keys.
+    const top = int(rng, 1, 3);
+    return {
+      goal: 'transform', goalText: "Delete every line from mark a down to this one: d'a.", lines,
+      cursor: { line: top, col: int(rng, 2, 12) }, setup: ['m', 'a', '1', '1', 'j'], keys: ['d', "'", 'a'],
+    };
+  }
+  const row = int(rng, 9, 12);
+  const words = stops(lines[row] ?? '', 'w', 0);
+  const col = words[int(rng, 2, Math.max(2, words.length - 2))] ?? 6;
+  const exact = difficulty === 1;
+  return {
+    goal: 'reach', goalText: exact ? 'Jump back to exactly where mark a was set: `a.' : "Jump back to the line of mark a: 'a.", lines,
+    cursor: { line: row, col }, setup: ['m', 'a', 'g', 'g'], keys: exact ? ['`', 'a'] : ["'", 'a'],
+  };
+};
+
+const BLOCK_PREFIX = '- ';
+
+const visualSelect: Design = (rng, difficulty) => {
+  if (difficulty === 1) {
+    // Part of one line and part of the next: no single operator and motion deletes that span.
+    const lines = corpusLines(rng, 3, folio);
+    return {
+      goal: 'transform', goalText: 'Select from here to the same place on the next line, then delete it: v, j, d.', lines,
+      cursor: { line: 0, col: int(rng, 6, 20) }, keys: ['v', 'j', 'd'],
+    };
+  }
+  if (difficulty === 2) {
+    const lines = corpusLines(rng, 5, entry => entry.kind === 'code');
+    return {
+      goal: 'transform', goalText: 'Comment out the first three lines at once: <C-v>, jj, I, then // and a space.', lines,
+      cursor: { line: 0, col: 0 }, keys: ['<C-v>', 'j', 'j', 'I', '/', '/', ' ', '<Esc>'],
+    };
+  }
+  const lines = corpusLines(rng, 5, folio).map((text, row) => (row < 4 ? `${BLOCK_PREFIX}${text}` : text));
+  return {
+    goal: 'transform', goalText: `Remove the "${BLOCK_PREFIX.trim()} " from the first four lines as one block: <C-v>, 3j, l, d.`, lines,
+    cursor: { line: 0, col: 0 }, keys: ['<C-v>', '3', 'j', 'l', 'd'],
+  };
+};
+
 const DESIGNS: Readonly<Record<SkillId, Design>> = {
   'motion.hjkl': hjkl, 'motion.count': count, 'motion.word': word, 'motion.line': line,
   'edit.x': deleteChar, 'edit.r': replaceChar, 'edit.dd': deleteLine, 'edit.undo': undo, 'edit.dot': dot,
@@ -894,6 +1028,7 @@ const DESIGNS: Readonly<Record<SkillId, Design>> = {
   'operator.d': deleteMotion, 'operator.y': yankPut, 'register.named': register, 'operator.c': change, 'edit.lines': lineCopy,
   'textobj.word': wordObject, 'textobj.paren': parenObject, 'textobj.paragraph': paragraphObject,
   'textobj.bracket': bracketObject, 'textobj.quote': quoteObject,
+  'search.pattern': searchPattern, 'search.word': searchWord, 'mark.jump': markJump, 'visual.select': visualSelect,
 };
 
 export function hasGenerator(skill: SkillId): boolean {
@@ -901,8 +1036,8 @@ export function hasGenerator(skill: SkillId): boolean {
 }
 
 /**
- * Deterministic: the same skill, seed and difficulty always give the same rep. Every rep of up to
- * `MAX_LIVE_SOLVE_PAR` keys without setup is checked with the solver (a few ms) and redrawn from the same stream
+ * Deterministic: the same skill, seed and difficulty always give the same rep. Every rep the solver can
+ * afford (`solverAffordable`) is checked with the solver (a few ms) and redrawn from the same stream
  * while a shorter route exists, so its par is the best. Typed-text reps are longer (the solver cannot type), and
  * setup reps start from a state the solver cannot load; drills.test.ts covers those.
  */
@@ -911,7 +1046,7 @@ export function generateRep(skill: SkillId, seed: number, difficulty: Difficulty
   if (design === undefined) throw new Error(`No drill generator for ${skill}`);
   const rng = createRng((seed + difficulty * DIFFICULTY_STREAM) >>> 0);
   let rep = buildRep(skill, difficulty, seed, design(rng, difficulty));
-  if (rep.setup.length > 0 || rep.level.par > MAX_LIVE_SOLVE_PAR) return rep;
+  if (!solverAffordable(rep)) return rep;
   for (let attempt = 0; attempt < MAX_REDRAWS; attempt += 1) {
     const shorter = solve(rep.level, { maxKeys: rep.level.par - 1 });
     if (shorter === null) return rep;

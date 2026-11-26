@@ -181,3 +181,12 @@ Five skills: Word objects (`daw ciw d2aw`), Paren objects (`di( ci( da(`), Parag
 - The test's "starts solved" check never ran (it read the initial `[false]`); it now checks the goals against the start state, and caught `ci(` reps whose new text equalled the old.
 - Typed-text reps (6+ keys) skip the solver: six keys deep over the World 5 allow-list took more than 4 GB.
 - `corpusLines` throws when its filter leaves fewer lines than a rep needs; it used to loop forever.
+
+## 14. Pass D: World 6, the Echo Caves
+
+Four skills: Search (`/ ? n`), Search for this word (`* #`), Marks (`m`, `` `a ``, `'a`), Visual selections (`v`, `<C-v>`).
+
+- `` ` ` `` (back to where you jumped from) has no rep: in the engine, `` ` ` `` after `G` lands on the wrong square. Engine bug to fix first.
+- `V` has no rep: a count on `dd` or `yy` beats `Vjd` and `Vjy` almost always, so a par built on `V` would be a lie.
+- Search reps put the target 10+ lines away with a 3-letter pattern found nowhere else; `/pat<CR>n` reps use a pattern found exactly twice below the cursor. A unique longer pattern can tie or beat the `n` route; typed-text reps are not solver-checked.
+- The solver now runs only when (allowed commands)^(par - 1) is at most 10 million (`solverAffordable`), in `generateRep` and in the tests. A 5-key search rep over the World 6 allow-list is about 65 million nodes and gigabytes of memory.
