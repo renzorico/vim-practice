@@ -14,13 +14,14 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 
 - **Shortcut probe.** From each stage's start, in the real session (story, triggers, clear rules): every motion the
   stage allows with every count 1-40, every one-character `/` and `?` where search is allowed; then any one plain
-  motion; then a talk. A clear in fewer turns than par is a shortcut. This is how `5$` (Lowlands) and `/.`, `23e`,
+  motion; then a talk. A clear in fewer turns than par is a shortcut. Probes that end in the same state (cursor,
+  remembered column, last search and find, text, flags, fired triggers) are explored once. This is how `5$` (Lowlands) and `/.`, `23e`,
   `8Ge` (Gallery) were found. Checked: on the old Gallery map it finds `?y<CR>`, 1 turn against par 6.
 - **Not proof.** Routes of three or more moves are not searched. A full solver search over a late stage's whole
   vocabulary needs more than 4.5 GB (tried; it dies). Where a stage's `allowedCommands` is small (the Gallery now),
   the full search fits and is the real proof.
-- **Par route.** Reads each stage's stored solution: which of the keys the stage teaches it uses, and how many
-  times it talks.
+- **Par route.** Reads each stage's stored solution for the keys the stage teaches, and replays it to count the
+  conversations it starts (interact triggers that fire; a `<CR>` that submits a search is not one).
 - **Text stages** (Ledger, Manifest, Harbour, Contract, Study) are script edits; their par is in keystrokes inside
   the script and is not audited here (rows show par 0).
 
@@ -45,11 +46,11 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 | Reading | 6 | none | i( a( ib ab | i( a( | 1 / 1 |
 | Archive | 8 | none | ip ap | ap | 0 / 0 |
 | Notary | 11 | none | i[ a[ i{ a{ iB aB it at | a[ a{ it | 0 / 0 |
-| Mouth | 4 | none | / ? n N | ? n | 2 / 1 |
+| Mouth | 4 | none | / ? n N | ? n | 1 / 1 |
 | Gallery | 5 | none | * # | # | 1 / 1 |
-| Marked | 4 | none | m ` ' | m ` | 3 / 1 |
-| Labyrinth | 5 | none | - | - | 3 / 0 |
-| Last Page | 15 | none | - | - | 2 / 0 |
+| Marked | 4 | none | m ` ' | m ` | 1 / 1 |
+| Labyrinth | 5 | none | - | - | 0 / 0 |
+| Last Page | 15 | none | - | - | 0 / 0 |
 | Ledger, Manifest, Harbour, Contract, Study | script | not audited | | | |
 
 ## Findings, worst first

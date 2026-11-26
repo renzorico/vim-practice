@@ -76,7 +76,10 @@ it.skipIf(STAGE === undefined)('audits one stage', () => {
   for (const first of firsts) {
     const afterFirst = press(start, first);
     if (afterFirst.world.turn === start.world.turn) continue;
-    const place = `${afterFirst.world.engine.cursor.line}:${afterFirst.world.engine.cursor.col}`;
+    // Two probes at the same square can still differ in what a next n, N or j does: key on all of it.
+    const { cursor, desiredCol, lastSearch, lastFind, scroll, lines } = afterFirst.world.engine as typeof afterFirst.world.engine & Record<string, unknown>;
+    const place = JSON.stringify([cursor, desiredCol, lastSearch, lastFind, scroll, lines.join('\n'),
+      afterFirst.world.flags, afterFirst.world.firedTriggers, afterFirst.story.flags]);
     if (seen.has(place)) continue;
     seen.add(place);
     for (const second of seconds) {
@@ -91,11 +94,19 @@ it.skipIf(STAGE === undefined)('audits one stage', () => {
 
   const taught = Object.entries(introducedAt).filter(([, at]) => at === stage.id).map(([key]) => key).filter(key => stageCommands(stage).includes(key));
   const used = commandsIn(stage.solution, new Set(stageCommands(stage)));
+  // Conversations on the par route: interact triggers that fire, not every <CR> (a search is submitted with one too).
+  const interactIds = new Set(stage.triggers.filter(trigger => trigger.on === 'interact').map(trigger => trigger.id));
+  let talks = 0;
+  stage.solution.reduce((session, key) => {
+    const next = controller.reduce(session, key);
+    talks += next.lastEvents.filter(event => event.type === 'trigger-fired' && interactIds.has(event.trigger)).length;
+    return settle(next);
+  }, start);
   const report = {
     id: stage.id, world: stage.world, type: stage.type, parTurns: stage.parTurns, solution: stage.solution.join(' '),
     allowedCommands: stage.allowedCommands === undefined ? 'all learned' : stage.allowedCommands.length,
     taught, parRouteUsesTaught: taught.filter(key => used.includes(key)),
-    parRouteTalks: stage.solution.filter(key => key === '<CR>').length,
+    parRouteTalks: talks,
     interactTriggers: stage.triggers.filter(trigger => trigger.on === 'interact').length,
     probes, shortcut: best,
   };
