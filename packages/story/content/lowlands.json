@@ -30,6 +30,16 @@
           "then": []
         },
         {
+          "id": "note",
+          "objective": "Read the Scribe's note at the end of the jetty: `Enter`.",
+          "completeWhen": {
+            "type": "flag",
+            "flag": "lowlands.read-note",
+            "value": true
+          },
+          "then": []
+        },
+        {
           "id": "lighthouse",
           "objective": "Reach the Lighthouse door along the jetty: `$`.",
           "completeWhen": {
@@ -155,6 +165,11 @@
               "entity": "scribe-note"
             }
           ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "lowlands.read-note",
+          "value": true
         }
       ]
     },

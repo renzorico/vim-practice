@@ -39,7 +39,8 @@
       "sprite": "water",
       "walkable": false,
       "fixed": false,
-      "label": "water"
+      "label": "water",
+      "gap": true
     },
     {
       "char": "\t",
@@ -47,7 +48,8 @@
       "sprite": "blank",
       "walkable": false,
       "fixed": false,
-      "label": "unwritten ground"
+      "label": "unwritten ground",
+      "gap": true
     },
     {
       "char": ".",

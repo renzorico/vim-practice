@@ -39,9 +39,8 @@ it('follows whole words past the decoys, including the keyword after punctuation
   expect(session.world.engine.cursor).toEqual({ line: 5, col: 2 });
   session = keys(session, 'w*');
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 2 });
-  expect(keys(start(), '/ink<CR>').world.engine.cursor).toEqual({ line: 1, col: 13 });
 });
-it('replays the six-turn route with three hearts, then dialogue, flag and ending in order', () => {
+it('replays the par route with three hearts, then dialogue, flag and ending in order', () => {
   const atEcho = route(start(), gallery.solution);
   expect(atEcho.queue[0]).toMatchObject({ dialogue: 'gallery.talk' });
   expect(atEcho.world.flags['gallery.through']).not.toBe(true);
@@ -52,7 +51,7 @@ it('replays the six-turn route with three hearts, then dialogue, flag and ending
   expect(session.world.flags['gallery.through']).toBe(true);
   session = dismiss(session);
   expect(session.world.status).toBe('cleared');
-  expect(session.world.turn).toBe(6);
+  expect(session.world.turn).toBe(gallery.parTurns);
   expect(session.world.hearts).toBe(3);
 });
 it('keeps the Mouth ending ahead of gallery entry and carries story and quest progress', () => {
@@ -74,7 +73,9 @@ it('keeps the Mouth ending ahead of gallery entry and carries story and quest pr
 });
 it('offers gallery search keys immediately while the Mouth rejects star', () => {
   expect(stageCommands(gallery)).toEqual(GALLERY_COMMANDS);
-  expect(learnedKeycaps({}, false, 'gallery')).toEqual(expect.arrayContaining(['*', '#', '/', '?', 'n', 'N']));
+  expect(learnedKeycaps({}, false, 'gallery')).toEqual(expect.arrayContaining(['*', '#', 'n', 'N']));
+  // The status bar shows only keys that work here.
+  expect(learnedKeycaps({}, false, 'gallery').filter(key => !gallery.allowedCommands?.includes(key))).toEqual([]);
   const before = dismiss(controller.resume({ stage: 'mouth', story: storyEngine.init(content) }));
   const after = keys(before, '*');
   expect(after.world.turn).toBe(0);
@@ -120,6 +121,26 @@ it('bounds the Mouth vocabulary by expansions and simulation steps', () => {
   expect(steps).toBeLessThanOrEqual(2_000_000);
   console.info(`Gallery old vocabulary: ${steps} simulation steps (3 turns / 50 expansions)`);
 });
+it('refuses / and ?: a typed search found the lone . of the exit in one turn', () => {
+  // Every character on the map, searched either way, leaves the cursor where it was.
+  const chars = new Set(gallery.map.join('').replace(/\s/g, ''));
+  for (const input of [...[...chars].flatMap(char => [`/${char}<CR>`, `?${char}<CR>`]), '/key<CR>']) {
+    expect(keys(start(), input).world.engine.cursor, input).toEqual(gallery.start);
+  }
+  // Learned in the Mouth, so the toast says it is off here, not that it is still to come.
+  expect(keys(start(), '/.<CR>').lastEvents).toEqual([{ type: 'engine-error', error: { code: 'not-allowed', message: '/ does nothing here.' } }]);
+});
+it('none of the counted shortcuts Codex found clears it early', () => {
+  for (const input of ['23e', '8Ge', '22we', '80%e', '6<C-d>e']) {
+    const tried = dismiss(keys(start(), `${input}<CR>`));
+    expect(tried.world.status, input).toBe('playing');
+  }
+});
+it('par is the true optimum: no route under it with every key the Gallery allows', () => {
+  const shortcut = solveStage(sessionSolver(dependencies), gallery, galleryLegend,
+    { learnedCommands: [...stageCommands(gallery)], flags: {} }, { maxTurns: gallery.parTurns - 1, maxExpanded: 30_000 });
+  expect(shortcut?.keys.join(' ') ?? null).toBeNull();
+}, 120_000);
 // The full GALLERY_COMMANDS search cannot reach depth 6; par is proven on the focused
 // vocabulary below (a guarded test with no assertion proves nothing: removed in review).
 
@@ -130,4 +151,12 @@ it('finds a route with a focused gallery search vocabulary', () => {
   if (!result) throw new Error('No focused gallery route');
   expect(dismiss(route(start(), result.keys)).world.status).toBe('cleared');
   console.info('Gallery focused solver:', result);
+});
+
+it('the intended word chain still clears, one turn over par', () => {
+  let session = route(start(), ['*', 'w', '*', 'w', '*', 'e', '<CR>']);
+  expect(session.queue[0]).toMatchObject({ dialogue: 'gallery.talk' });
+  session = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
+  expect(session.world.flags['gallery.through']).toBe(true);
+  expect(session.world.turn).toBe(gallery.parTurns + 1);
 });

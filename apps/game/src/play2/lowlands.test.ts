@@ -76,7 +76,9 @@ it('l bumps into blank; w leaps each gap, b returns, and the far-side trigger ad
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 27 });
 });
 function jetty(): Session {
-  const read = dismiss(controller.reduce(move(startLowlands(), 11, 38), '<CR>'));
+  // Step onto the far side first: the door needs the crossing as well as the note.
+  const crossed = keys(move(startLowlands(), 7, 30), ['l']);
+  const read = dismiss(controller.reduce(move(crossed, 11, 38), '<CR>'));
   return dismiss(keys(read, ['l', 'l']));
 }
 it('the note blocks the jetty until read, then is removed', () => {
@@ -95,11 +97,17 @@ it('the note blocks the jetty until read, then is removed', () => {
   expect(entered.world.engine.cursor).toEqual({ line: 11, col: 39 });
   expect(entered.world.firedTriggers).not.toContain('lowlands.jetty');
 });
-it('allows the expert shortcut 5$ from the start to the Lighthouse door', () => {
-  const shortcut = keys(startLowlands(), ['5', '$']);
-  expect(shortcut.world.engine.cursor).toEqual({ line: 11, col: 55 });
-  expect(shortcut.world.status).toBe('cleared');
-  expect(shortcut.world.hearts).toBe(3);
+it('the old 5$ shortcut runs into the trees: the field has to be crossed (path rule)', () => {
+  const start = startLowlands();
+  const shortcut = keys(start, ['5', '$']);
+  expect(shortcut.world.engine.cursor).toEqual(start.world.engine.cursor);
+  expect(shortcut.world.turn).toBe(0);
+  expect(shortcut.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
+});
+it('the door does not open before the far side and the Scribe\'s note', () => {
+  const atDoor = move(startLowlands(), 11, 55);
+  const stepped = keys(atDoor, ['h', 'l']);
+  expect(stepped.world.status).toBe('playing');
 });
 it('$ crosses the jetty untouched; single steps lose exactly two hearts', () => {
   const start = jetty();
@@ -118,7 +126,7 @@ it('advances the Lighthouse quest and enters the castle after its ending', () =>
   let session = dismiss(keys(startLowlands(), ['9','l']));
   session = keys(session, ['w','w','w','w','l']);
   session = keys(session, ['1','1','l','4','j','<CR>','l','l','$']);
-  expect(session.story.quests['lowlands.lighthouse']).toEqual({ step: 2, done: false });
+  expect(session.story.quests['lowlands.lighthouse']).toEqual({ step: 3, done: false });
   expect(session.queue).toHaveLength(1);
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.end' });
   const ended = dismiss(session);
@@ -160,9 +168,12 @@ it('Margin clear starts the next quest even when its lesson quest was skipped', 
   const result = storyEngine.onEvents(storyEngine.init(content), [{ type: 'stage-cleared', stage: 'margin', turns: stage.parTurns }], content);
   expect(result.state.quests['lowlands.lighthouse']).toEqual({ step: 0, done: false });
 });
-it('Lowlands solver solution enters the castle without Wren or far-side lessons', () => {
+it('the solver route crosses the field and reads the Scribe\'s note before the door', () => {
   const cleared = keys(startLowlands(), lowlands.solution);
   expect(cleared.world.status).toBe('cleared');
+  expect(cleared.story.flags['lowlands.crossed']).toBe(true);
+  expect(cleared.story.flags['lowlands.read-note']).toBe(true);
+  // A counted e still hops past Wren's lesson at the edge: the Lowlands redesign is the place to fix that.
   expect(cleared.story.flags['lowlands.knows-w']).toBeUndefined();
   expect(cleared.queue).toEqual([{ type: 'dialogue', dialogue: 'lowlands.end', index: 0 }]);
   expect(dismiss(cleared).world.stage).toBe('lighthouse');

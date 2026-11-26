@@ -6,7 +6,8 @@
     "sprite": "water",
     "walkable": false,
     "fixed": true,
-    "label": "water"
+    "label": "water",
+    "gap": true
   },
   "tiles": [
     {
@@ -39,7 +40,8 @@
       "sprite": "water",
       "walkable": false,
       "fixed": true,
-      "label": "water"
+      "label": "water",
+      "gap": true
     },
     {
       "char": "#",

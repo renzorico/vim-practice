@@ -13,7 +13,7 @@ export const FIXTURE_LEGEND: Legend = {
     { char: 'T', kind: 'object', sprite: 'tree', walkable: false, fixed: false, label: 'tree' },
     { char: 'S', kind: 'object', sprite: 'save-stone', walkable: true, fixed: true, label: 'Save Stone' },
     { char: 'D', kind: 'object', sprite: 'door', walkable: true, fixed: true, label: 'door' },
-    { char: '~', kind: 'barrier', sprite: 'water', walkable: false, fixed: false, label: 'water' },
+    { char: '~', kind: 'barrier', sprite: 'water', walkable: false, fixed: false, label: 'water', gap: true },
     { char: '^', kind: 'barrier', sprite: 'thorns', walkable: true, fixed: false, damage: 1, label: 'thorns' },
   ],
   fallback: { char: '?', kind: 'barrier', sprite: 'unknown', walkable: false, fixed: false, label: 'unknown' },

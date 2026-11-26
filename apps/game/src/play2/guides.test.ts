@@ -175,7 +175,8 @@ describe('authored objective guides', () => {
     expect(hopped.world.engine.cursor).toEqual({ line: 7, col: 18 });
     const crossed = play(game, hopped, [...'wwl']);
     expect(crossed.story.quests['lowlands.lighthouse']?.step).toBe(1);
-    const cleared = play(game, move(crossed, { line: 11, col: 40 }), ['$']);
+    // The door also needs the Scribe's note, read from the jetty beside it.
+    const cleared = play(game, move(crossed, { line: 11, col: 40 }), ['<CR>', '$']);
     expect(cleared.world.status).toBe('cleared');
   });
   it('the Quarry guide opens rubble, and each marked bank replaces the four water cells', () => {

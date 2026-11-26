@@ -109,7 +109,7 @@ it('persists only improving bests, loads old saves, and rejects invalid best res
 
 
 it('pins caps for authored Gallery, Mouth, and Margin solutions', () => {
-  expect(solutionCaps(gallery)).toEqual(['*', 'w', '*', 'w', '*', 'e', '<CR>']);
+  expect(solutionCaps(gallery)).toEqual(['3w', '3#', 'b', '#', 'e', '<CR>']);
   expect(solutionCaps(mouth)).toEqual(['?x<CR>', 'n', 'n', 'l', '<CR>']);
   expect(solutionCaps(stage)).toEqual(['3k', '4l', '<CR>', '6j', '5l', '<CR>', '3k', '28l']);
 });

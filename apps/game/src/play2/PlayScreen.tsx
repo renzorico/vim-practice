@@ -179,8 +179,9 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
   if (stageId === 'last-page') return ['h', 'j', 'k', 'l', 'f', 'x', 'p', 'daw', 'dd', 'u', '<C-r>', '/', ':w'];
   if (stageId === 'study') return ['h', 'j', 'k', 'l', '0', 'f', 'w', 'b', '}', '<C-v>', 'V', 'v', 'I', '$c', 'd', 'u', '<Esc>'];
   if (stageId === 'labyrinth') return learnedKeycaps(flags, false, 'marked');
-  if (stageId === 'marked') return [...learnedKeycaps(flags, false, 'gallery'), 'ma', '`a', "'a"];
-  if (stageId === 'gallery') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', '*', '#', 'w', 'b', 'e', 'u'];
+  if (stageId === 'marked') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', '*', '#', 'w', 'b', 'e', 'u', 'ma', '`a', "'a"];
+  // Only what the Gallery allows (its allowedCommands): searches and long leaps are switched off there.
+  if (stageId === 'gallery') return ['h', 'j', 'k', 'l', '*', '#', 'n', 'N', 'w', 'b', 'e', '0', '$'];
   if (stageId === 'mouth') return ['h', 'j', 'k', 'l', '/', '?', 'n', 'N', 'w', 'b', 'u'];
   if (stageId === 'contract') return ['h', 'j', 'k', 'l', '0', 'gg', 'G', 'f', '}', 'ci"', 'ci(', 'ci[', 'cit', 'cip', 'dap', '.', 'u', '<Esc>'];
   if (stageId === 'notary') return ['h', 'j', 'k', 'l', '0', '2j', 'w', 'da[', 'da{', 'dit', 'u', '<C-r>'];

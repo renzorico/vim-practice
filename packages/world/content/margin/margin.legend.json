@@ -63,7 +63,8 @@
       "sprite": "water",
       "walkable": false,
       "fixed": false,
-      "label": "water"
+      "label": "water",
+      "gap": true
     }
   ],
   "fallback": {
