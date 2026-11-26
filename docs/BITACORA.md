@@ -878,6 +878,12 @@ Tags: `#design` `#gates`
 
 **Tests:** 14 generators x 3 difficulties x 200 seeds replay their par to a win on the last key; the solver finds nothing shorter for motion and edit reps; corpus rules; session, scoring, store and clear-card tests. Two App tests updated for the new menu order. Full suite: 4749 passed.
 
+**Review fixes (Codex, two rounds):** Enter under the drill could press the clear card's Continue (the game is now inert under a drill); an `x` rep could ink next to punctuation and the par deleted real text; Show me on the last rep did not save mastery; StrictMode reserved two seeds; Enter on a focused button (Back, another set) ran the screen shortcut instead. `<Esc><Esc>` give-up dropped from the spec: Vim users press it by habit.
+
+**Merged with main (P-34 to P-36):** title menu is Continue, Stages, Keys, Intro, Copybook, New game, Sound. On the clear card `p` practises and Enter opens the written exercise. Six App tests updated for the menu.
+
+**Stage book fits one screen (Renzo: "I need to scroll down to see the whole content"):** only the chosen world lists its stages; the others fold to one line with their stars, and a click chooses their first open stage. On a short screen the list scrolls inside its page. Checked at 1280x720, 1440x900 and 1700x1000 with Copper Port (5 stages) open.
+
 **Not done:** Worlds 3-6 skills, castle gate, Unwrite storms, JSON corpus via Ollama. Spec deviations are listed in `docs/briefs/drills/DRILLS.md` section 10.
 
 ---
