@@ -27,6 +27,10 @@ import { draftFor, type Draft } from './play2/draft/drafts.js';
 import { clearPractised, readPractised } from './play2/draft/practised.js';
 import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
+import { drillSkillsForStage, type SkillId } from '@escape/curriculum';
+import { DrillScreen } from './drills/DrillScreen.js';
+import { Copybook, copybookSkills } from './drills/Copybook.js';
+import { readDrills, saveDrills, type DrillProgress } from './drills/store.js';
 import './ui/fonts.css';
 import './ui/tokens.css';
 import './story-ui/story-ui.css';
@@ -36,6 +40,10 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim: createWorldSim(createEngine()), storyEngine, stage, legend, content, stages });
 
 const storage = () => window.localStorage;
+const nowIso = (): string => new Date().toISOString();
+/** Title menu: Continue (when there is a save), then these, in order, offset by one when Continue shows. */
+const MENU = { stages: 0, keys: 1, intro: 2, copybook: 3, newGame: 4, sound: 5 } as const;
+interface Practice { readonly skills: readonly SkillId[]; readonly from: 'clear' | 'copybook' }
 const scoredStages = stages.filter(({ stage }) => isScoredStage(stage));
 const stageIds = stages.map(item => item.stage.id);
 type Action = Key | { readonly type: 'new'; readonly best: Progress['best'] } | { readonly type: 'continue'; readonly progress: Progress } | { readonly type: 'stage'; readonly progress: Progress };
@@ -65,11 +73,17 @@ export function App() {
   const [showSource, setShowSource] = useState(false);
   const [saved, setSaved] = useState(() => readProgress(storage, stageIds));
   const [hintRequests, setHintRequests] = useState(0);
-  const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : 3);
+  const [choice, setChoice] = useState(saved && saved.story.ending !== 'recover' ? 0 : MENU.newGame);
   const [selecting, setSelecting] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [replayStage, setReplayStage] = useState<string | null>(null);
   const [session, dispatch] = useReducer(reduce, undefined, () => controller.init());
+  const [drillProgress, setDrillProgress] = useState(() => readDrills(storage));
+  const updateDrills = useCallback((progress: DrillProgress) => { setDrillProgress(progress); saveDrills(storage, progress); }, []);
+  const [practice, setPractice] = useState<Practice | null>(null);
+  const [copybookOpen, setCopybookOpen] = useState(false);
+  const drilling = practice !== null || copybookOpen;
+  const stageDrills = drillSkillsForStage(session.world.stage);
   const currentWorld = stages.find(item => item.stage.id === session.world.stage)?.stage.world ?? 'margin';
   const banner = useWorldBanner(currentWorld, started);
   const sound = useSound(session, started);
@@ -80,6 +94,7 @@ export function App() {
     world: currentWorld, text: stages.find(item => item.stage.id === session.world.stage)?.stage.type === 'text',
     dead: session.world.status === 'dead', cleared: session.world.status === 'cleared', overlay: !!banner.visible || helpOpen || !!session.clearCard || !!session.queue.length || scriptStamp }, sound.mode);
   const canContinue = saved !== null && saved.story.ending !== 'recover';
+  const menu = Object.fromEntries(Object.entries(MENU).map(([item, index]) => [item, index + (canContinue ? 1 : 0)])) as Record<keyof typeof MENU, number>;
   const terminal = session.world.status === 'cleared' && !session.clearCard && session.queue.length === 0;
   const watchIntro = useCallback(() => { setIntroRun(value => value + 1); setIntro('title'); }, []);
   const choose = useCallback((continueGame: boolean) => {
@@ -136,6 +151,9 @@ export function App() {
       else for (const forwarded of routed.forward) dispatch(forwarded);
       return;
     }
+    if (session.clearCard && key === 'p' && stageDrills.length > 0) {
+      setPractice({ skills: stageDrills.map(skill => skill.id), from: 'clear' }); return;
+    }
     if (session.clearCard && key === '<CR>') {
       const exercise = draftFor(session.world.stage);
       if (exercise && !readPractised().has(exercise.stage)) { setDraft(exercise); return; }
@@ -144,16 +162,16 @@ export function App() {
       leaveReplay(replayStage); return;
     }
     if (key === '<Tab>') { setShowSource(true); return; }
-    if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? 3 : 0); return; }
+    if ((terminal || ending === 'recover') && key === '<CR>') { setStarted(false); setChoice(ending === 'recover' ? MENU.newGame : 0); return; }
     dispatch(key);
-  }, [started, intro, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible, draft, leaveReplay]);
+  }, [started, intro, terminal, ending, scriptStamp, replayStage, session.clearCard, session.world, helpCommand, helpOpen, openHelp, banner.visible, draft, leaveReplay, stageDrills]);
   const replay = useCallback(() => onKey('r'), [onKey]);
   const advance = useCallback(() => onKey('<CR>'), [onKey]);
   useKeyCapture({ onKey, onHint: openHelp, captureTab: true,
-    enabled: started && !intro && !helpOpen && !banner.visible && !draft && (session.world.status !== 'dead' || helpCommand !== null) });
+    enabled: started && !intro && !drilling && !helpOpen && !banner.visible && !draft && (session.world.status !== 'dead' || helpCommand !== null) });
   useEffect(() => {
     const wake = (event: KeyboardEvent): void => {
-      if (intro) return;
+      if (intro || drilling) return; // The prologue, drill and Copybook screens own the keyboard.
       if (started && banner.visible && bannerBrowserKey(event)) return;
       if (started && banner.dismiss(event)) {
         swallowRepeats.current = true;
@@ -190,13 +208,14 @@ export function App() {
       if ((!started || session.world.status === 'dead') && wakeKey) {
         event.preventDefault(); event.stopImmediatePropagation();
         if (!started) {
-          if (event.key === 'j') setChoice(value => Math.min(canContinue ? 5 : 4, value + 1));
+          if (event.key === 'j') setChoice(value => Math.min(menu.sound, value + 1));
           else if (event.key === 'k') setChoice(value => Math.max(0, value - 1));
           else if (event.key === 'Enter') {
-            if (choice === (canContinue ? 1 : 0)) openStages();
-            else if (choice === (canContinue ? 2 : 1)) openHelp();
-            else if (choice === (canContinue ? 3 : 2)) watchIntro();
-            else if (choice === (canContinue ? 5 : 4)) sound.toggle();
+            if (choice === menu.stages) openStages();
+            else if (choice === menu.keys) openHelp();
+            else if (choice === menu.copybook) setCopybookOpen(true);
+            else if (choice === menu.intro) watchIntro();
+            else if (choice === menu.sound) sound.toggle();
             else choose(canContinue && choice === 0);
           }
         } else if (event.key === ':' || helpCommand !== null) onKey(event.key === 'Enter' ? '<CR>' : event.key);
@@ -207,7 +226,7 @@ export function App() {
     };
     window.addEventListener('keydown', wake, true);
     return () => window.removeEventListener('keydown', wake, true);
-  }, [intro, started, session.world.status, terminal, saved, canContinue, choice, choose, watchIntro, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible]);
+  }, [intro, started, session.world.status, terminal, saved, canContinue, choice, choose, watchIntro, selecting, selectedStage, playStage, backToTitle, openStages, sound.toggle, helpOpen, openHelp, helpCommand, onKey, banner.dismiss, banner.visible, drilling, menu]);
   useEffect(() => {
     if (!started) return;
     const entry = replayStage ? session.stageEntry : endingProgress(session.stageEntry, session.story);
@@ -240,7 +259,14 @@ export function App() {
     {reference && <HelpOverlay {...reference} worlds={content.worlds} onClose={closeHelp} />}
   </SoundModeContext.Provider>;
   if (intro) return <Prologue key={introRun} onComplete={finishIntro} soundEnabled={sound.enabled} />;
-  if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
+  const cleared = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
+  const drillScreen = practice && <DrillScreen skills={practice.skills} progress={drillProgress} onProgress={updateDrills} now={nowIso}
+    exitLabel={practice.from === 'clear' ? 'Back to the stage' : 'Back to the Copybook'}
+    onExit={() => { if (practice.from === 'copybook') setCopybookOpen(true); setPractice(null); }} />;
+  if (copybookOpen) return <Copybook skills={copybookSkills(cleared, drillProgress, nowIso())} progress={drillProgress} now={nowIso()}
+    onPlay={skill => { setCopybookOpen(false); setPractice({ skills: [skill], from: 'copybook' }); }} onBack={() => setCopybookOpen(false)} />;
+  if (practice?.from === 'copybook') return drillScreen;
+  if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onChoose={setSelectedStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">
     <TitleScene saved={saved?.story.ending === 'recover'} />
     <div className="play-title__menu">
@@ -249,12 +275,13 @@ export function App() {
     <nav aria-label="Start game" className="play-menu">
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
       {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
-      <button aria-current={choice === (canContinue ? 1 : 0) ? 'true' : undefined} onClick={openStages}>Stages</button>
-      <button aria-current={choice === (canContinue ? 2 : 1) ? 'true' : undefined} onClick={openHelp}>Keys</button>
-      <button aria-current={choice === (canContinue ? 3 : 2) ? 'true' : undefined} onClick={watchIntro}>Intro</button>
-      <button aria-current={choice === (canContinue ? 4 : 3) ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
+      <button aria-current={choice === menu.stages ? 'true' : undefined} onClick={openStages}>Stages</button>
+      <button aria-current={choice === menu.keys ? 'true' : undefined} onClick={openHelp}>Keys</button>
+      <button aria-current={choice === menu.intro ? 'true' : undefined} onClick={watchIntro}>Intro</button>
+      <button aria-current={choice === menu.copybook ? 'true' : undefined} onClick={() => setCopybookOpen(true)}>Copybook</button>
+      <button aria-current={choice === menu.newGame ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
       <div className="play-menu__sound">
-        <SoundButton selected={choice === (canContinue ? 5 : 4)} enabled={sound.enabled} onToggle={sound.toggle} />
+        <SoundButton selected={choice === menu.sound} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>
     </nav>
     <p className="play-menu-touch">You play this with a keyboard: every key is a Vim key. Open it on a computer.</p>
@@ -264,11 +291,14 @@ export function App() {
   const current = stages.find(item => item.stage.id === session.world.stage);
   if (!current) throw new Error(`Missing stage ${session.world.stage}`);
   // Replays run on the story from before the clear, so remember what this game has cleared since.
-  const clearedStages = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
+  const clearedStages = cleared;
   return withHelp(<CurrentWorld.Provider value={currentWorld}>
+    {drillScreen}
     {banner.visible && <WorldBanner world={banner.visible} stage={current.stage} legend={current.legend} onDismiss={() => { banner.dismiss(); }} />}
-    <div className="play-behind" {...(draft ? { inert: '' } : {})}>
+    {/* While a drill or the written exercise is open, the game under it is inert: no focus, no clicks, no native Enter on its buttons. */}
+    <div className="play-behind" {...(draft || practice ? { inert: '' } : {})}>
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
-    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay} /></div>
+    onOpenHelp={openHelp} hintRequests={hintRequests} onAskHint={askHint} helpCommand={helpCommand} objectives={currentObjectives(content, session.story)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay}
+    practiseKeys={stageDrills.flatMap(skill => skill.keys)} onPractise={() => onKey('p')} /></div>
     {draft && <DraftSheet key={draft.stage} draft={draft} suspended={helpOpen} onClose={closeDraft} onOpenHelp={openHelp} />}</CurrentWorld.Provider>);
 }

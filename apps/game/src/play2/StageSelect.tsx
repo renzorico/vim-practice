@@ -12,13 +12,15 @@ interface StageSelectProps {
   readonly progress: Progress | null;
   readonly selected: string | null;
   readonly onSelect: (stageId: string) => void;
+  /** Moves the choice without playing: a folded world's heading chooses its first open stage. */
+  readonly onChoose?: (stageId: string) => void;
   readonly onBack: () => void;
 }
 
 const PREVIEW_ROWS = 9;
 const PREVIEW_COLS = 18;
 
-export function StageSelect({ stages, content, progress, selected, onSelect, onBack }: StageSelectProps) {
+export function StageSelect({ stages, content, progress, selected, onSelect, onChoose, onBack }: StageSelectProps) {
   const active = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     active.current?.scrollIntoView({ block: 'nearest' });
@@ -27,6 +29,7 @@ export function StageSelect({ stages, content, progress, selected, onSelect, onB
   const reached = (id: string): boolean => id === content.openingStage || id === progress?.stage || Boolean(progress?.entries?.[id]);
   const shown = stages.find(item => item.stage.id === selected && reached(item.stage.id));
   const shownBest = shown ? progress?.best?.[shown.stage.id] : undefined;
+  const chosenStage = selected ?? content.openingStage;
   return <main className="stage-select">
     <header className="stage-select__header"><h1>Stages</h1><button onClick={onBack}>Back to title</button></header>
     <WorldMap world={stages.find(item => item.stage.id === (selected ?? progress?.stage))?.stage.world ?? 'margin'}
@@ -40,7 +43,21 @@ export function StageSelect({ stages, content, progress, selected, onSelect, onB
         {isScoredStage(shown.stage) && <p className="stage-select__score">{shownBest ? `Best: ${shownBest.turns} turns` : 'Not cleared yet'} · par {shown.stage.parTurns}</p>}
     </aside>}
     <div className="stage-select__list">
-    {content.worlds.slice().sort((left, right) => left.order - right.order).map(world => <section key={world.id} aria-labelledby={`world-${world.id}`}>
+    {content.worlds.slice().sort((left, right) => left.order - right.order).map(world => {
+      // Only the chosen world lists its stages, so the whole book fits one screen; the others fold to a line.
+      if (!world.stages.includes(chosenStage)) {
+        const open = world.stages.filter(reached);
+        const scored = world.stages.flatMap(id => stages.filter(item => item.stage.id === id && isScoredStage(item.stage)).map(item => item.stage));
+        const stars = scored.reduce((sum, stage) => sum + (progress?.best?.[stage.id]?.stars ?? 0), 0);
+        const first = open[0];
+        return <section key={world.id} className="stage-select__folded" aria-labelledby={`world-${world.id}`}>
+          <h2 id={`world-${world.id}`}><button type="button" disabled={first === undefined} onClick={() => { if (first !== undefined) onChoose?.(first); }}>
+            <span>{world.name}</span>
+            <span className="stage-select__score">{first === undefined ? 'Locked' : scored.length > 0 ? `${stars} / ${scored.length * 3} ★` : `${open.length} / ${world.stages.length}`}</span>
+          </button></h2>
+        </section>;
+      }
+      return <section key={world.id} aria-labelledby={`world-${world.id}`}>
       <h2 id={`world-${world.id}`}>{world.name}</h2>
       <ul>{world.stages.map(id => {
         const stage = stages.find(item => item.stage.id === id)?.stage;
@@ -54,7 +71,8 @@ export function StageSelect({ stages, content, progress, selected, onSelect, onB
           {!reached(id) && <span className="stage-select__locked">Locked</span>}
         </button></li>;
       })}</ul>
-    </section>)}
+    </section>;
+    })}
     </div></div>
   </main>;
 }

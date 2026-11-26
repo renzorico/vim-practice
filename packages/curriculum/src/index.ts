@@ -13,3 +13,4 @@ export {
   OVER_PAR_FACTOR, SKIP_AFTER, SOLUTION_AFTER, canShowSolution, canSkip, isOverParLimit, startSession, transition,
 } from './session/index.js';
 export { solve } from './solver/index.js';
+export * from './drills/index.js';

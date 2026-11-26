@@ -12,17 +12,17 @@ it('groups stages in story order, disables missing entries and renders scored an
       best: { lowlands: { turns: 3, stars: 2 }, ledger: { turns: 1, stars: 3 } } },
     selected: 'lowlands', onSelect: () => {}, onBack: () => {} }));
   const rows = html.match(/<li>.*?<\/li>/g) ?? [];
-  expect(rows).toHaveLength(stages.length);
+  const lowlandsWorld = content.worlds.find(world => world.stages.includes('lowlands'));
+  // Only the chosen world lists its stages; the others fold to one heading each.
+  expect(rows).toHaveLength(lowlandsWorld?.stages.length ?? 0);
   expect(rows[0]).not.toContain('disabled');
-  expect(rows[0]).toContain('>-</span>');
-  expect(rows[1]).not.toContain('disabled');
-  expect(rows[1]).toContain('2 / 3 stars');
-  expect(rows[1]).toContain('aria-current="true"');
-  expect(rows.slice(2).every(row => row.includes('disabled'))).toBe(true);
-  expect(rows[2]).toContain('>-</span>');
+  expect(rows[0]).toContain('2 / 3 stars');
+  expect(rows[0]).toContain('aria-current="true"');
+  expect(rows.slice(1).every(row => row.includes('disabled'))).toBe(true);
   expect(html).not.toContain('0 / 3 stars');
-  const ledger = rows[stages.findIndex(item => item.stage.id === 'ledger')];
-  expect(ledger).toContain('>-</span>');
+  expect(html.match(/stage-select__folded/g)).toHaveLength(content.worlds.length - 1);
+  expect(html).toMatch(/id="world-margin"><button type="button">/);
+  expect(html).toMatch(/id="world-quarry"><button type="button" disabled="">/);
   const headings = content.worlds.slice().sort((a, b) => a.order - b.order).map(world => html.indexOf(`id="world-${world.id}"`));
   expect(headings).toEqual(headings.slice().sort((a, b) => a - b));
 });

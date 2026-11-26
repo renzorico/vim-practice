@@ -1,0 +1,422 @@
+import { createEngine } from '../../../engine/src/engine.js';
+import type { Key } from '@escape/engine';
+import { createRng, int, pick, type Rng } from '../generators/rng.js';
+import type { Difficulty } from '../phase3.js';
+import type { SkillId } from '../types.js';
+import { BLOT_CHARS, CORPUS, type CorpusLine, WORDS } from './corpus.js';
+import { solve } from '../solver/index.js';
+import { buildRep, type RepDesign } from './rep.js';
+import type { DrillRep } from './types.js';
+
+const engine = createEngine();
+/** Each difficulty draws its own stream, so difficulty 2 of seed 5 is not difficulty 1 of seed 5 again. */
+const DIFFICULTY_STREAM = 7919;
+const MAX_COUNT = 9;
+const MAX_REDRAWS = 20;
+/** Plain moves stay within this many steps per axis: `2l` only ties `ll`; from 3 steps a count is shorter. */
+const MAX_PLAIN_STEPS = 2;
+
+type Design = (rng: Rng, difficulty: Difficulty) => RepDesign;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function chars(text: string): Key[] {
+  return [...text];
+}
+
+/** `n` distinct corpus lines matching `keep`, in random order. */
+function corpusLines(rng: Rng, n: number, keep: (line: CorpusLine) => boolean = () => true): string[] {
+  const pool = CORPUS.filter(keep).map(line => line.text);
+  const chosen: string[] = [];
+  while (chosen.length < n) {
+    const text = pick(rng, pool);
+    if (!chosen.includes(text)) chosen.push(text);
+  }
+  return chosen;
+}
+
+const folio = (line: CorpusLine): boolean => line.kind === 'folio';
+
+/** Columns a motion key reaches, pressed again and again from `from`, without leaving the line. */
+function stops(line: string, key: 'w' | 'b' | 'e', from: number): number[] {
+  let state = engine.init([line], { line: 0, col: from });
+  const found: number[] = [];
+  for (;;) {
+    const result = engine.step(state, key);
+    if (result.error !== null || result.state.cursor.col === state.cursor.col) return found;
+    state = result.state;
+    found.push(state.cursor.col);
+  }
+}
+
+/** `key` pressed `times` times, as a count when that is shorter. */
+function repeat(key: Key, times: number): Key[] {
+  if (times <= 0) return [];
+  if (times === 1) return [key];
+  if (times === 2) return [key, key];
+  return [...String(times), key];
+}
+
+function blot(rng: Rng, length: number): string {
+  let text = '';
+  while (text.length < length) {
+    const next = pick(rng, BLOT_CHARS);
+    if (next !== text[text.length - 1]) text += next;
+  }
+  return text;
+}
+
+/** A word-start column `w` reaches from column 0, never the last word (where `$` would compete). */
+function wordStopTarget(rng: Rng, line: string, min: number, max: number): { col: number; presses: number } {
+  const starts = stops(line, 'w', 0).slice(0, -1);
+  const presses = int(rng, Math.min(min, starts.length), Math.min(max, starts.length));
+  return { col: starts[presses - 1] ?? 0, presses };
+}
+
+function swapLetter(rng: Rng, original: string): string {
+  const options = 'aeioustrnl'.split('').filter(letter => letter !== original.toLowerCase());
+  return pick(rng, options);
+}
+
+/** Columns of lowercase letters inside words, away from both ends of the line. */
+function letterCols(line: string): number[] {
+  return [...line].flatMap((char, col) => (/[a-z]/.test(char) && col > 0 && col < line.length - 2 ? [col] : []));
+}
+
+// ---------------------------------------------------------------------------
+// World 0: steps and counts
+// ---------------------------------------------------------------------------
+
+const hjkl: Design = (rng, difficulty) => {
+  const rows = difficulty === 1 ? 3 : 5;
+  const lines = corpusLines(rng, rows);
+  const across = difficulty === 1 ? int(rng, 0, 1) * int(rng, 1, 2) : int(rng, 1, MAX_PLAIN_STEPS);
+  const down = difficulty === 1 ? (across === 0 ? int(rng, 1, 2) : 0) : int(rng, 1, difficulty === 2 ? 2 : MAX_PLAIN_STEPS);
+  const goingDown = rng() < 0.5;
+  const goingRight = rng() < 0.5;
+  const startLine = goingDown ? int(rng, 0, rows - 1 - down) : int(rng, down, rows - 1);
+  const startCol = int(rng, 6, 20);
+  const vertical = goingDown ? 'j' : 'k';
+  const horizontal = goingRight ? 'l' : 'h';
+  return {
+    goal: 'reach', goalText: 'Step onto the marked letter.', lines, cursor: { line: startLine, col: startCol },
+    keys: [...Array<Key>(down).fill(vertical), ...Array<Key>(across).fill(horizontal)],
+  };
+};
+
+const count: Design = (rng, difficulty) => {
+  const rows = 8;
+  const lines = corpusLines(rng, rows);
+  const down = difficulty === 2 ? 0 : int(rng, 4, rows - 1);
+  const across = difficulty === 1 ? 0 : int(rng, 4, MAX_COUNT);
+  const goingDown = rng() < 0.5;
+  const goingRight = rng() < 0.5;
+  const startLine = down === 0 ? int(rng, 0, rows - 1) : goingDown ? int(rng, 0, rows - 1 - down) : int(rng, down, rows - 1);
+  const startCol = goingRight ? int(rng, 2, 12) : int(rng, 14, 24);
+  return {
+    goal: 'reach', goalText: 'Reach the marked letter: put a number before the move.', lines,
+    cursor: { line: startLine, col: startCol },
+    keys: [...repeat(goingDown ? 'j' : 'k', down), ...repeat(goingRight ? 'l' : 'h', across)],
+  };
+};
+
+// ---------------------------------------------------------------------------
+// World 1: words and line ends
+// ---------------------------------------------------------------------------
+
+const word: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3);
+  const text = lines[1] ?? '';
+  if (difficulty === 1) {
+    const target = wordStopTarget(rng, text, 1, 2);
+    return { goal: 'reach', goalText: 'Jump to the marked word.', lines, cursor: { line: 1, col: 0 }, keys: repeat('w', target.presses) };
+  }
+  const variant = difficulty === 2 ? pick(rng, ['b', 'e'] as const) : pick(rng, ['w', 'b', 'e'] as const);
+  const presses = int(rng, 2, 4);
+  if (variant === 'b') {
+    const end = text.length - 1;
+    return { goal: 'reach', goalText: 'Jump back to the marked word.', lines, cursor: { line: 1, col: end }, keys: repeat('b', presses) };
+  }
+  const startStops = stops(text, 'w', 0);
+  const from = difficulty === 3 ? (startStops[int(rng, 0, 1)] ?? 0) : 0;
+  return {
+    goal: 'reach', goalText: variant === 'e' ? 'Jump to the marked word end.' : 'Jump to the marked word.',
+    lines, cursor: { line: 1, col: from }, keys: repeat(variant, presses),
+  };
+};
+
+const line: Design = (rng, difficulty) => {
+  const rows = difficulty === 3 ? 4 : 3;
+  const lines = corpusLines(rng, rows);
+  // A count on $ moves down first (3$ is 2j$), so two-line jumps only go to a line start.
+  const toEnd = difficulty !== 3 && rng() < 0.5;
+  const distance = difficulty === 1 ? 0 : difficulty === 2 ? 1 : 2;
+  const startLine = toEnd ? int(rng, 0, rows - 1 - distance) : int(rng, distance, rows - 1);
+  const middle = stops(lines[startLine] ?? '', 'w', 0);
+  const col = middle[int(rng, 1, Math.max(1, middle.length - 3))] ?? 4;
+  const vertical = toEnd ? 'j' : 'k';
+  return {
+    goal: 'reach', goalText: toEnd ? 'Jump to the end of the marked line.' : 'Jump to the start of the marked line.',
+    lines, cursor: { line: startLine, col }, keys: [...repeat(vertical, distance), toEnd ? '$' : '0'],
+  };
+};
+
+// ---------------------------------------------------------------------------
+// World 2: x r dd u . and insert
+// ---------------------------------------------------------------------------
+
+const deleteChar: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3);
+  const text = lines[1] ?? '';
+  const length = difficulty === 1 ? 1 : int(rng, 3, 4);
+  if (difficulty === 3) {
+    // Ink goes before a word that follows a space, so it is a word of its own; next to other punctuation
+    // it would merge with it. Presses are counted on the inked line, where the word boundaries now are.
+    const afterSpace = stops(text, 'w', 0).slice(0, -1).filter(col => text[col - 1] === ' ');
+    const col = pick(rng, afterSpace.slice(0, 6));
+    const ink = blot(rng, int(rng, 1, 3));
+    lines[1] = `${text.slice(0, col)}${ink}${text.slice(col)}`;
+    return {
+      goal: 'transform', goalText: 'Rub out the ink.', lines, cursor: { line: 1, col: 0 },
+      keys: [...repeat('w', stops(lines[1], 'w', 0).indexOf(col) + 1), ...repeat('x', ink.length)],
+    };
+  }
+  const col = int(rng, 2, text.length - 3);
+  lines[1] = `${text.slice(0, col)}${blot(rng, length)}${text.slice(col)}`;
+  return { goal: 'transform', goalText: 'Rub out the ink.', lines, cursor: { line: 1, col }, keys: repeat('x', length) };
+};
+
+const replaceChar: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3);
+  const text = lines[1] ?? '';
+  const typo = (source: string, col: number): string => `${source.slice(0, col)}${swapLetter(rng, source[col] ?? 'a')}${source.slice(col + 1)}`;
+  if (difficulty === 1) {
+    const col = pick(rng, letterCols(text));
+    lines[1] = typo(text, col);
+    return { goal: 'transform', goalText: 'Fix the typo.', lines, cursor: { line: 1, col }, keys: ['r', text[col] ?? 'a'] };
+  }
+  const starts = stops(text, 'w', 0).filter(col => /[a-z]/.test(text[col] ?? ''));
+  const first = int(rng, 0, Math.max(0, starts.length - 3));
+  const firstCol = starts[first] ?? 0;
+  const firstPresses = stops(text, 'w', 0).indexOf(firstCol) + 1;
+  let broken = typo(text, firstCol);
+  const keys: Key[] = [...repeat('w', firstPresses), 'r', text[firstCol] ?? 'a'];
+  if (difficulty === 3) {
+    const secondCol = starts[int(rng, first + 1, starts.length - 1)] ?? firstCol;
+    broken = typo(broken, secondCol);
+    keys.push(...repeat('w', stops(text, 'w', firstCol).indexOf(secondCol) + 1), 'r', text[secondCol] ?? 'a');
+  }
+  lines[1] = broken;
+  return { goal: 'transform', goalText: difficulty === 3 ? 'Fix both typos.' : 'Fix the typo.', lines, cursor: { line: 1, col: 0 }, keys };
+};
+
+function blotLine(rng: Rng): string {
+  return blot(rng, int(rng, 12, 20));
+}
+
+const deleteLine: Design = (rng, difficulty) => {
+  const text = corpusLines(rng, 4);
+  const blots = difficulty === 2 ? int(rng, 3, 4) : 1;
+  const at = difficulty === 3 ? int(rng, 2, 4) : int(rng, 0, 3);
+  const lines = [...text.slice(0, at), ...Array.from({ length: blots }, () => blotLine(rng)), ...text.slice(at)];
+  const startLine = difficulty === 3 ? 0 : at;
+  return {
+    goal: 'transform', goalText: blots > 1 ? 'Delete the ink-blotted lines.' : 'Delete the ink-blotted line.',
+    lines, cursor: { line: startLine, col: 0 },
+    keys: [...repeat('j', at - startLine), ...(blots > 1 ? [String(blots)] : []), 'd', 'd'],
+  };
+};
+
+const undo: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 4);
+  const row = int(rng, 0, 2);
+  const cursor = { line: row, col: int(rng, 2, 12) };
+  if (difficulty === 1) {
+    return { goal: 'transform', goalText: 'Oops. Bring the deleted line back.', lines, cursor, setup: ['d', 'd'], keys: ['u'] };
+  }
+  if (difficulty === 2) {
+    return { goal: 'transform', goalText: 'Two slips. Bring both back.', lines, cursor, setup: ['x', 'j', 'd', 'd'], keys: ['u', 'u'] };
+  }
+  return { goal: 'transform', goalText: 'You undid one change too many. Redo it.', lines, cursor, setup: ['d', 'd', 'u'], keys: ['<C-r>'] };
+};
+
+const dot: Design = (rng, difficulty) => {
+  const text = corpusLines(rng, 4);
+  const lines: string[] = [];
+  const blotRows: number[] = [];
+  const pushBlot = (): void => { blotRows.push(lines.length); lines.push(blotLine(rng)); };
+  lines.push(text[0] ?? '');
+  pushBlot();
+  if (difficulty === 1) pushBlot();
+  else lines.push(text[1] ?? '');
+  if (difficulty >= 2) pushBlot();
+  if (difficulty === 3) { lines.push(text[2] ?? ''); pushBlot(); }
+  lines.push(text[3] ?? '');
+  const keys: Key[] = difficulty === 1 ? ['.'] : difficulty === 2 ? ['j', '.'] : ['j', '.', 'j', '.'];
+  return {
+    goal: 'transform', goalText: 'You deleted one blotted line. Repeat it on the others.',
+    lines, cursor: { line: blotRows[0] ?? 1, col: 0 }, setup: ['d', 'd'], keys,
+  };
+};
+
+/** A folio line with one word taken out; `col` is where it goes back in. */
+function missingWord(rng: Rng): { original: string; broken: string; word: string; col: number } {
+  const original = corpusLines(rng, 1, folio)[0] ?? '';
+  const words = original.split(' ');
+  const index = int(rng, 1, words.length - 2);
+  const removed = words[index] ?? '';
+  const col = words.slice(0, index).join(' ').length + 1;
+  const broken = [...words.slice(0, index), ...words.slice(index + 1)].join(' ');
+  return { original, broken, word: removed, col };
+}
+
+function moveTo(text: string, from: number, col: number): Key[] {
+  const forward = stops(text, 'w', from).indexOf(col);
+  if (forward >= 0) return repeat('w', forward + 1);
+  const back = stops(text, 'b', from).indexOf(col);
+  if (back >= 0) return repeat('b', back + 1);
+  throw new Error(`No word move from ${from} to ${col} in "${text}"`);
+}
+
+const insert: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, folio);
+  const gap = missingWord(rng);
+  lines[1] = gap.broken;
+  const from = difficulty === 1 ? gap.col : difficulty === 2 ? 0 : gap.broken.length - 1;
+  return {
+    goal: 'transform', goalText: `A word fell out: "${gap.word}". Put it back.`, lines, cursor: { line: 1, col: from },
+    keys: [...(from === gap.col ? [] : moveTo(gap.broken, from, gap.col)), 'i', ...chars(`${gap.word} `), '<Esc>'],
+  };
+};
+
+const append: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, folio);
+  const target = difficulty === 3 ? 2 : 1;
+  const text = lines[target] ?? '';
+  const words = text.split(' ');
+  const candidates = words.flatMap((entry, index) => (/^[a-z]{5,}$/.test(entry) ? [index] : []));
+  const index = candidates.length > 0 ? pick(rng, candidates) : 1;
+  const whole = words[index] ?? '';
+  const cut = int(rng, 1, Math.min(3, whole.length - 2));
+  const kept = whole.slice(0, whole.length - cut);
+  const end = words.slice(0, index).join(' ').length + (index > 0 ? 1 : 0) + kept.length - 1;
+  const broken = [...words.slice(0, index), kept, ...words.slice(index + 1)].join(' ');
+  lines[target] = broken;
+  const ends = stops(broken, 'e', 0);
+  const toEnd = (): Key[] => (end === 0 ? [] : repeat('e', ends.indexOf(end) + 1));
+  const move: Key[] = difficulty === 1 ? [] : difficulty === 2 ? toEnd() : ['j', ...toEnd()];
+  return {
+    goal: 'transform', goalText: `Finish the word "${whole}".`, lines,
+    cursor: difficulty === 1 ? { line: 1, col: end } : { line: difficulty === 3 ? 1 : 1, col: 0 },
+    keys: [...move, 'a', ...chars(whole.slice(kept.length)), '<Esc>'],
+  };
+};
+
+const INDENT = '    ';
+
+const edges: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, folio);
+  const endLine = lines[0] ?? '';
+  const trimmed = endLine.slice(0, -1);
+  const startText = lines[1] ?? '';
+  const firstSpace = startText.indexOf(' ');
+  const firstWord = startText.slice(0, firstSpace);
+  const indentedBroken = `${INDENT}${startText.slice(firstSpace + 1)}`;
+  if (difficulty === 1) {
+    lines[0] = trimmed;
+    return {
+      goal: 'transform', goalText: 'The line lost its full stop. Add it back.', lines, cursor: { line: 0, col: int(rng, 4, 16) },
+      keys: ['A', '.', '<Esc>'],
+    };
+  }
+  lines[1] = indentedBroken;
+  if (difficulty === 2) {
+    return {
+      goal: 'transform', goalText: `The indented line lost its first word: "${firstWord}".`, lines,
+      cursor: { line: 1, col: int(rng, 10, 20) }, keys: ['I', ...chars(`${firstWord} `), '<Esc>'],
+    };
+  }
+  lines[0] = trimmed;
+  return {
+    goal: 'transform', goalText: `Add the full stop, then the lost first word "${firstWord}".`, lines,
+    cursor: { line: 0, col: int(rng, 4, 16) }, keys: ['A', '.', '<Esc>', 'j', 'I', ...chars(`${firstWord} `), '<Esc>'],
+  };
+};
+
+const SHORT_LINES: readonly string[] = ['Turn back.', 'Keep going.', 'The end.', 'return rows', 'break', 'save(page)', 'pass', 'Not yet.'];
+
+const open: Design = (rng, difficulty) => {
+  const text = corpusLines(rng, 4);
+  const first = pick(rng, SHORT_LINES);
+  const second = pick(rng, SHORT_LINES.filter(entry => entry !== first));
+  if (difficulty === 3) {
+    return {
+      goal: 'transform', goalText: `Add "${first}" under line 1 and "${second}" under line 2.`, lines: text,
+      cursor: { line: 0, col: int(rng, 2, 12) }, keys: ['o', ...chars(first), '<Esc>', 'j', 'o', ...chars(second), '<Esc>'],
+    };
+  }
+  const below = difficulty === 1 ? 0 : int(rng, 2, 3);
+  return {
+    goal: 'transform', goalText: `Add a new line "${first}" under line ${below + 1}.`, lines: text,
+    cursor: { line: 0, col: int(rng, 2, 12) }, keys: [...repeat('j', below), 'o', ...chars(first), '<Esc>'],
+  };
+};
+
+/** A line that ends in a letter, so ink stuck to its end is a separate Vim word. */
+function plainEnd(text: string): string {
+  return text.endsWith('.') ? text.slice(0, -1) : text;
+}
+
+const deleteToEnd: Design = (rng, difficulty) => {
+  const lines = corpusLines(rng, 3, folio).map(plainEnd);
+  const inked = (row: number): number => {
+    const clean = lines[row] ?? '';
+    lines[row] = `${clean}${blot(rng, int(rng, 3, 6))}`;
+    return clean.length;
+  };
+  if (difficulty === 1) {
+    const col = inked(1);
+    return { goal: 'transform', goalText: 'Ink ran off the end of the line. Cut it off.', lines, cursor: { line: 1, col }, keys: ['D'] };
+  }
+  inked(1);
+  if (difficulty === 2) {
+    return { goal: 'transform', goalText: 'Ink ran off the end of the line. Cut it off.', lines, cursor: { line: 1, col: 0 }, keys: ['$', 'b', 'D'] };
+  }
+  return {
+    goal: 'transform', goalText: 'Ink ran off the end of the line. Cut it off.', lines, cursor: { line: 0, col: int(rng, 2, 12) },
+    keys: ['j', '$', 'b', 'D'],
+  };
+};
+
+const DESIGNS: Readonly<Record<SkillId, Design>> = {
+  'motion.hjkl': hjkl, 'motion.count': count, 'motion.word': word, 'motion.line': line,
+  'edit.x': deleteChar, 'edit.r': replaceChar, 'edit.dd': deleteLine, 'edit.undo': undo, 'edit.dot': dot,
+  'mode.insert': insert, 'mode.append': append, 'mode.edges': edges, 'mode.open': open, 'edit.D': deleteToEnd,
+};
+
+export function hasGenerator(skill: SkillId): boolean {
+  return Object.hasOwn(DESIGNS, skill);
+}
+
+/** Deterministic: the same skill, seed and difficulty always give the same rep. */
+/**
+ * Deterministic: the same skill, seed and difficulty always give the same rep. Motion reps are checked with the
+ * solver (a few ms each) and redrawn from the same stream while a shorter route exists, so par is always the best.
+ * Edit reps are too slow to search live; drills.test.ts proves their par instead.
+ */
+export function generateRep(skill: SkillId, seed: number, difficulty: Difficulty): DrillRep {
+  const design = DESIGNS[skill];
+  if (design === undefined) throw new Error(`No drill generator for ${skill}`);
+  const rng = createRng((seed + difficulty * DIFFICULTY_STREAM) >>> 0);
+  let rep = buildRep(skill, difficulty, seed, design(rng, difficulty));
+  if (!skill.startsWith('motion.')) return rep;
+  for (let attempt = 0; attempt < MAX_REDRAWS; attempt += 1) {
+    const shorter = solve(rep.level, { maxKeys: rep.level.par - 1 });
+    if (shorter === null) return rep;
+    rep = attempt + 1 < MAX_REDRAWS ? buildRep(skill, difficulty, seed, design(rng, difficulty))
+      : { ...rep, level: { ...rep.level, par: shorter.keys.length, solution: shorter.keys } };
+  }
+  return rep;
+}

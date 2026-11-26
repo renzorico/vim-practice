@@ -437,7 +437,7 @@ it('shows saved total stars on the title after a reload', () => {
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
   values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
-  flush(); key('j'); key('j'); key('j'); key('j'); key('Enter');
+  flush(); key('j'); key('j'); key('j'); key('j'); key('j'); key('Enter'); // Continue, Stages, Keys, Intro, Copybook, New game
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
@@ -605,7 +605,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
   expect(savedProgress().story.ending).toBe('recover');
   const finished = values.get(PROGRESS_KEY);
-  key('Enter'); key('k'); key('k'); key('k'); key('Enter');
+  key('Enter'); key('k'); key('k'); key('k'); key('k'); key('Enter'); // New game, Copybook, Intro, Keys, Stages
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   expect(session().world.stage).toBe('last-page');
   expect(session().story.ending).toBeNull();
@@ -792,7 +792,8 @@ it('renders the prologue and cleans up its canvas effect when no canvas exists',
   hooks.pending.splice(0).forEach(run => run());
 });
 it('keeps the new title menu indices correct with and without Continue', () => {
-  flush(); key('k'); expect(appHtml()).toMatch(/aria-current="true">Intro/);
+  flush(); key('k'); expect(appHtml()).toMatch(/aria-current="true">Copybook/);
+  key('k'); expect(appHtml()).toMatch(/aria-current="true">Intro/);
   key('k'); expect(appHtml()).toMatch(/aria-current="true">Keys/);
   key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
   key('Escape'); key('j'); key('j'); key('j'); key('j'); key('j');
@@ -838,13 +839,13 @@ it('completing Intro returns to the title, while Continue and Stages bypass it',
 it('mounts a fresh opening after closing on beat four, without replaying its tone', () => {
   autoSkipIntro = false;
   const sound = vi.spyOn(synth, 'play').mockReturnValue(() => {});
-  flush(); key('k'); key('Enter');
+  flush(); key('k'); key('k'); key('Enter'); // New game, Copybook, Intro
   for (let beat = 0; beat < 3; beat++) { key('Enter'); key('Enter'); }
   expect(introProps()?.beat).toBe(3);
   key('Escape'); sound.mockClear(); key('Enter');
   expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
   expect(sound.mock.calls.flatMap(call => call[0]).filter(cue => cue.kind === 'fixed')).toHaveLength(0);
-  key('Escape'); key('j'); key('Enter');
+  key('Escape'); key('j'); key('j'); key('Enter'); // Intro, Copybook, New game
   expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
 });
 
@@ -881,7 +882,7 @@ it('retains seen banners on returning to title and clears them only for New game
   key('Enter'); expect(bannerWorld(appTree)).toBeUndefined();
   hooks.session = { ...session(), world: { ...session().world, status: 'cleared' }, queue: [], clearCard: false }; flush();
   key('Enter');
-  for (let choice = 0; choice < 4; choice++) key('j');
+  for (let choice = 0; choice < 5; choice++) key('j'); // Continue to New game
   key('Enter'); expect(bannerWorld(appTree)).toBe('margin');
 });
 

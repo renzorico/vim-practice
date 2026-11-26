@@ -143,7 +143,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .stage-select button:hover:not(:disabled) { background: var(--paper-edge); }
 .stage-select button:focus-visible { outline-color: var(--ink); }
 .stage-select kbd { padding: 0 5px; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 2px; }
-.stage-select > p { color: var(--ink-muted); line-height: 1.6; }
+.stage-select > p { margin: 8px 0 0; color: var(--ink-muted); line-height: 1.6; }
 .stage-select .folio-map { color: var(--ink-muted); }
 .stage-select .folio-map [data-state='current'] { color: var(--ink); }
 .stage-select .folio-map [data-state='current'] .folio-map__dot { outline-color: var(--ink); }
@@ -157,16 +157,26 @@ kbd { font-family: var(--font-mono); color: var(--you); }
 .stage-select__list { grid-column: 1; grid-row: 1; min-width: 0; }
 .stage-picture { display: block; width: 100%; aspect-ratio: 2; image-rendering: pixelated; border: 1px solid var(--ink); background: var(--ink); }
 .stage-picture--text { box-sizing: border-box; margin: 0; padding: 16px; overflow: hidden; color: var(--ink); background: var(--paper); font: 13px/1.6 var(--font-mono); }
-.stage-select section { margin-bottom: 24px; }
+.stage-select section { margin-bottom: 16px; }
 .stage-select section h2 { margin: 0 0 4px; padding-bottom: 4px; font-size: 24px; font-weight: 400; border-bottom: 1px solid var(--paper-edge); }
 .stage-select ul { list-style: none; margin: 0; padding: 0; }
-.stage-select li button { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%; min-height: 40px; padding: 6px 12px; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--paper-rule); }
+.stage-select li button { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%; min-height: 36px; padding: 4px 12px; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--paper-rule); }
 .stage-select li button[aria-current="true"] { background: var(--tab-gold); }
 .stage-select li button:disabled { color: var(--ink-muted); opacity: 0.8; cursor: default; }
 .stage-select__score { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stage-select__preview .stage-select__score { margin: 0; color: var(--ink-muted); }
 .stage-select__missing { opacity: 0.25; }
 .stage-select__locked { font-size: 15px; }
+.stage-select .stage-select__folded { margin-bottom: 0; }
+.stage-select .stage-select__folded h2 { margin: 0; padding: 0; font-size: 20px; border: 0; }
+.stage-select__folded h2 button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 36px; padding: 2px 0; font: inherit; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--paper-edge); }
+.stage-select__folded .stage-select__score { font-size: 15px; color: var(--ink-muted); }
+/* The book fits one screen: on a short one the list scrolls inside its page, never the page itself. */
+@media (min-width: 801px) {
+  .stage-select { box-sizing: border-box; display: flex; flex-direction: column; height: 100svh; }
+  .stage-select__spread { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  .stage-select__list { max-height: 100%; overflow-y: auto; padding-right: 4px; }
+}
 @media (max-width: 800px) {
   .stage-select { padding: 16px; }
   .stage-select__spread { grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -414,7 +424,7 @@ kbd { font-family: var(--font-mono); color: var(--you); }
   .objective-hud, .play-controls > *, .dialogue, .hint-slip, .action-toast, .play-panel.play-card > *, .play-title__menu, .world-banner__card, .notebook { zoom: 1.3333; }
   .play-screen .objective-hud { height: 72px; }
   .stage-select, .help-reference { zoom: 1.2; }
-  .stage-select { min-height: 83.4svh; }
+  .stage-select { min-height: 83.33svh; height: 83.33svh; }
 }
 @media (max-width: 640px) { .play-header h1 { font-size: 18px; } .objective-hud__hearts { font-size: 15px; } .objective-hud__place { gap: 0 6px; } .register-row > span:first-child { font-size: 12px; } .play-header { flex-basis: auto; height: auto; min-height: 98px; } }
 @media (max-width: 899px) { .counter-gauge__slots { display: none; } .counter-gauge { white-space: nowrap; } }

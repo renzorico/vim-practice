@@ -5,9 +5,11 @@ import type { Session } from './session.js';
 import { starsFor } from './progress.js';
 import { isScoredStage, solutionCaps } from './feedback.js';
 
-export function StageClearCard({ session, stage, onContinue, onReplay }: {
+export function StageClearCard({ session, stage, onContinue, onReplay, practise }: {
   readonly session: Session; readonly stage: Stage;
   readonly onContinue: () => void; readonly onReplay: () => void;
+  /** The keys this stage taught, drilled in the Copybook. */
+  readonly practise?: { readonly keys: readonly string[]; readonly onPractise: () => void };
 }) {
   const turns = session.world.turn;
   const stars = starsFor(turns, stage.parTurns);
@@ -27,6 +29,8 @@ export function StageClearCard({ session, stage, onContinue, onReplay }: {
     </div>)}
     <div className="stage-clear__actions">
       <button autoFocus onClick={onContinue}><kbd>Enter</kbd> continue</button>
+      {practise && <button onClick={practise.onPractise}><kbd>p</kbd> practise {practise.keys.map(key =>
+        <kbd className="learned-key" key={key}>{key}</kbd>)}</button>}
       <button onClick={onReplay}><kbd>r</kbd> replay this stage</button>
     </div>
   </section>;

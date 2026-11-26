@@ -61,8 +61,11 @@ interface PlayScreenProps {
   readonly scriptStamp?: boolean;
   readonly onAdvance: () => void;
   readonly onReplay?: () => void;
+  /** Keys the Copybook can drill after this stage; empty hides the clear card's practise button. */
+  readonly practiseKeys?: readonly string[];
+  readonly onPractise?: () => void;
 }
-export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, practiseKeys = [], onPractise, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
   const notebook = useNotebook(session, stage, content, clearedStages);
   const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
@@ -132,7 +135,8 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
       {...(hints.available && onAskHint ? { onAskHint } : {})} stuck={hints.stuck && !quiet}
       sound={onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />} />
     {showKeyCard && <Notebook key={notebook.entries.map(entry => entry.key).join()} entries={notebook.entries} suspended={helpOpen} onDismiss={notebook.close} onOpenHelp={onOpenHelp} />}
-    {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
+    {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})}
+      {...(onPractise && practiseKeys.length > 0 ? { practise: { keys: practiseKeys, onPractise } } : {})} />}
     {world.status === 'dead' ? <section className="play-panel play-card play-card--death" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>
