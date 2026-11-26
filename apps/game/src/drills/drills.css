@@ -1,38 +1,109 @@
-/* The Copybook reuses the script panel's parchment (play.css); these rules only add what drills need. */
-.script-panel.drill, .script-panel.copybook { position: fixed; inset: 0; z-index: 40; height: auto; }
-.drill kbd, .copybook kbd { color: var(--bg); }
-.drill .learned-key, .copybook .learned-key { border-color: var(--text-muted); }
-.drill button, .copybook button { color: var(--bg); background: var(--text-soft); border-color: var(--text-muted); }
-.drill button:hover, .copybook button:hover { background: var(--text-muted); }
-.drill button:focus-visible, .copybook button:focus-visible { outline-color: var(--bg); }
+/* The Copybook: a school copybook on the scribe's desk. Ruled paper, a red margin line, keys written large. */
+main.copybook-desk {
+  --rule: 36px;
+  --margin-line: 72px;
+  position: fixed; inset: 0; z-index: 40; overflow: auto; height: auto; box-sizing: border-box;
+  padding: clamp(16px, 4vh, 48px) 16px;
+  color: var(--ink); font-family: var(--font-ui);
+  background: repeating-linear-gradient(0deg, var(--desk) 0 7px, var(--desk-grain) 8px 9px, var(--desk) 10px 48px);
+}
+.copybook-page {
+  position: relative; box-sizing: border-box; max-width: 920px; min-height: 100%; margin: 0 auto;
+  padding: 32px 40px 32px calc(var(--margin-line) + 24px);
+  background:
+    linear-gradient(90deg, transparent calc(var(--margin-line) - 1px), color-mix(in srgb, var(--red-ink) 55%, transparent) calc(var(--margin-line) - 1px) calc(var(--margin-line) + 1px), transparent calc(var(--margin-line) + 1px)),
+    repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule) - 1px), var(--paper-rule) calc(var(--rule) - 1px) var(--rule)),
+    var(--paper);
+  background-position: 0 0, 0 20px, 0 0;
+  border: 1px solid var(--paper-edge);
+  box-shadow: var(--paper-drop);
+}
+/* Binding holes down the left edge, so the page reads as torn from a copybook rather than a web card. */
+.copybook-page::before {
+  content: ''; position: absolute; top: 24px; bottom: 24px; left: 20px; width: 12px;
+  background: radial-gradient(circle at 6px 6px, var(--desk) 0 5px, transparent 6px) 0 0 / 12px 72px repeat-y;
+  opacity: 0.85;
+}
+.copybook-page kbd {
+  display: inline-block; min-width: 1.6em; padding: 1px 7px; box-sizing: border-box; text-align: center;
+  color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted); border-bottom-width: 3px;
+  font: 16px/1.4 var(--font-mono);
+}
+.copybook-page button {
+  font: inherit; color: var(--ink); background: var(--paper-secondary); border: 1px solid var(--ink-muted);
+  border-bottom-width: 3px; padding: 6px 16px; cursor: pointer;
+}
+.copybook-page button:hover:not(:disabled) { background: var(--paper-edge); }
+.copybook-page button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-.drill-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.copybook-head { margin-bottom: 24px; }
+.copybook-head h1 { margin: 0; font-size: 48px; font-weight: 400; line-height: 1; }
+.copybook-head > p, .copybook-head div > p { max-width: 60ch; margin: 8px 0 0; color: var(--ink-muted); line-height: 1.5; }
+.copybook-kicker { margin: 0 0 4px; color: var(--red-ink); font-size: 18px; letter-spacing: 0.04em; }
+.copybook-empty { max-width: 48ch; margin: 48px 0; font-size: 22px; line-height: var(--rule); color: var(--ink-muted); }
+
+.copybook-world { margin: 0 0 16px; }
+.copybook-world h2 { margin: 0; font-size: 20px; font-weight: 400; line-height: var(--rule); color: var(--ink-muted); }
+.copybook-world ol { margin: 0; padding: 0; list-style: none; }
+.copybook-world li { position: relative; }
+.copybook-world li button {
+  display: grid; grid-template-columns: 168px minmax(0, 1fr) auto 64px; align-items: center; gap: 16px;
+  width: 100%; min-height: var(--rule); padding: 2px 8px; text-align: left; font-size: 20px;
+  background: transparent; border: 0;
+}
+.copybook-world li button:hover { background: color-mix(in srgb, var(--paper-edge) 35%, transparent); }
+/* The chosen line is marked as a scribe would: a highlighter stroke, not a box. */
+.copybook-world li button[aria-current='true'] {
+  background: linear-gradient(transparent 14%, color-mix(in srgb, var(--tab-gold) 70%, transparent) 14% 86%, transparent 86%);
+}
+.copybook-keys { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.copybook-keys--large kbd { min-width: 2em; padding: 4px 10px; font-size: 24px; }
+.copybook-status { color: var(--red-ink); font-size: 16px; text-align: right; }
+/* A teacher's note in the margin, left of the red line. */
+.copybook-next {
+  position: absolute; top: 50%; right: calc(100% + 32px); translate: 0 -50%;
+  color: var(--red-ink); font-size: 18px; rotate: -6deg; white-space: nowrap;
+}
+.copybook-next::after { content: ' →'; }
+
+.copybook-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; color: var(--ink-muted); }
+.copybook-foot p { margin: 0; }
+.copybook-foot kbd { font-size: 14px; }
+
+.drill-box { display: inline-flex; gap: 5px; vertical-align: middle; }
+.drill-box span { width: 10px; height: 10px; border: 2px solid var(--ink-muted); border-radius: 50%; }
+.drill-box span[data-filled='true'] { background: var(--ink); border-color: var(--ink); }
+
+/* A drill: the same page, with the rep's buffer written on it. */
+.copybook-page--drill { display: flex; flex-direction: column; }
+.drill-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.drill-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; width: 100%; font-size: 18px; color: var(--ink-muted); }
+.drill-results { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.drill-results li { width: 16px; height: 16px; box-sizing: border-box; border: 2px solid var(--paper-edge); border-radius: 50%; }
+.drill-results li[data-result='current'] { border-color: var(--ink); }
+.drill-results li[data-result='clean'] { background: var(--green-ink); border-color: var(--green-ink); }
+.drill-results li[data-result='done'] { background: linear-gradient(90deg, var(--ink-muted) 50%, transparent 50%); border-color: var(--ink-muted); }
+.drill-results li[data-result='missed'] { border-color: var(--red-ink); border-style: dashed; }
+.drill .script-goal { margin: 0 0 16px; font-size: 22px; line-height: 1.4; }
+.drill-recall { color: var(--red-ink); }
+.drill .script-columns { gap: 24px; }
+.drill .script-editor, .drill .script-target { box-shadow: none; }
+.drill .script-editor { padding: 12px 16px; }
+.drill .cell--target { outline: 2px dashed var(--red-ink); outline-offset: -1px; border-radius: 2px; }
+.drill-count, .drill-replay-key { margin: 8px 0 0; font-size: 18px; color: var(--ink-muted); }
+.drill-count[data-over='true'] { color: var(--red-ink); }
 .drill-keys { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
-.drill-keys .learned-key { margin-right: 0; }
-.drill-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-family: var(--font-mono); }
-.drill-results { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.drill-results li { width: 14px; height: 14px; border: 2px solid var(--text-muted); border-radius: 50%; }
-.drill-results li[data-result="current"] { border-color: var(--bg); }
-.drill-results li[data-result="clean"] { background: var(--bg); border-color: var(--bg); }
-.drill-results li[data-result="done"] { background: linear-gradient(90deg, var(--bg) 50%, transparent 50%); border-color: var(--bg); }
-.drill-results li[data-result="missed"] { border-style: dashed; }
-
-/* The reach target, outlined like the field's goal tile; ui.css is not loaded in play. */
-.drill .cell--target { outline: 2px solid var(--door); outline-offset: 0; border-radius: 2px; }
-.drill-recall { font-weight: 600; }
-.drill-count, .drill-replay-key { margin: 8px 0 0; font-family: var(--font-mono); font-size: 14px; }
+.drill-keys .learned-key { min-width: 0; margin: 0; }
 .drill-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
-.drill-actions button { padding: 8px 16px; }
-.drill-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 24px 0 0; font-family: var(--font-mono); font-size: 14px; }
-.drill-summary h3 { margin: 0 0 12px; font-size: 24px; }
-.drill-summary p { margin: 0 0 12px; max-width: 60ch; line-height: 1.5; }
+.drill-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: auto 0 0; padding-top: 24px; font-size: 18px; color: var(--ink-muted); }
+.drill-summary h2 { margin: 0 0 8px; font-size: 40px; font-weight: 400; }
+.drill-summary p { max-width: 60ch; margin: 0 0 8px; font-size: 20px; line-height: var(--rule); }
 
-.drill-box { display: inline-flex; gap: 4px; vertical-align: middle; }
-.drill-box span { width: 10px; height: 10px; border: 2px solid var(--text-muted); border-radius: 50%; }
-.drill-box span[data-filled="true"] { background: var(--bg); border-color: var(--bg); }
-
-.copybook-list { display: flex; flex-direction: column; gap: 8px; max-width: 640px; margin: 0 0 24px; padding: 0; list-style: none; }
-.copybook-list button { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 16px; width: 100%; padding: 10px 16px; text-align: left; }
-.copybook-list button[aria-current="true"] { outline: 2px solid var(--bg); outline-offset: 2px; }
-.copybook-name { font-weight: 600; }
-.copybook .play-menu-hint { color: var(--bg); font-size: 13px; }
+@media (max-width: 720px) {
+  main.copybook-desk { --margin-line: 40px; padding: 8px; }
+  .copybook-page { padding: 24px 16px 24px calc(var(--margin-line) + 12px); }
+  .copybook-page::before, .copybook-next { display: none; }
+  .copybook-world li button { grid-template-columns: minmax(0, 1fr) auto; }
+  .copybook-world li .copybook-name { grid-column: 1 / -1; grid-row: 2; }
+  .copybook-status { display: none; }
+}

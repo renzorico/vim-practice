@@ -29,7 +29,7 @@ import { StageSelect } from './play2/StageSelect.js';
 import { PlayScreen } from './play2/PlayScreen.js';
 import { drillSkillsForStage, type SkillId } from '@escape/curriculum';
 import { DrillScreen } from './drills/DrillScreen.js';
-import { Copybook, copybookSkills } from './drills/Copybook.js';
+import { Copybook, clearedForCopybook, copybookSkills } from './drills/Copybook.js';
 import { readDrills, saveDrills, type DrillProgress } from './drills/store.js';
 import './ui/fonts.css';
 import './ui/tokens.css';
@@ -42,7 +42,8 @@ const controller = createSession({ sim: createWorldSim(createEngine()), storyEng
 const storage = () => window.localStorage;
 const nowIso = (): string => new Date().toISOString();
 /** Title menu: Continue (when there is a save), then these, in order, offset by one when Continue shows. */
-const MENU = { stages: 0, keys: 1, intro: 2, copybook: 3, newGame: 4, sound: 5 } as const;
+/** Grouped by what you came to do: play on (Stages, Copybook), learn (Keys, Intro), start over, then sound. */
+const MENU = { stages: 0, copybook: 1, keys: 2, intro: 3, newGame: 4, sound: 5 } as const;
 interface Practice { readonly skills: readonly SkillId[]; readonly from: 'clear' | 'copybook' }
 const scoredStages = stages.filter(({ stage }) => isScoredStage(stage));
 const stageIds = stages.map(item => item.stage.id);
@@ -259,11 +260,11 @@ export function App() {
     {reference && <HelpOverlay {...reference} worlds={content.worlds} onClose={closeHelp} />}
   </SoundModeContext.Provider>;
   if (intro) return <Prologue key={introRun} onComplete={finishIntro} soundEnabled={sound.enabled} />;
-  const cleared = [...new Set([...clearedSince, ...session.story.clearedStages, ...(saved?.story.clearedStages ?? [])])];
+  const cleared = clearedForCopybook(saved, stageIds, [...clearedSince, ...session.story.clearedStages]);
   const drillScreen = practice && <DrillScreen skills={practice.skills} progress={drillProgress} onProgress={updateDrills} now={nowIso}
     exitLabel={practice.from === 'clear' ? 'Back to the stage' : 'Back to the Copybook'}
     onExit={() => { if (practice.from === 'copybook') setCopybookOpen(true); setPractice(null); }} />;
-  if (copybookOpen) return <Copybook skills={copybookSkills(cleared, drillProgress, nowIso())} progress={drillProgress} now={nowIso()}
+  if (copybookOpen) return <Copybook skills={copybookSkills(cleared)} progress={drillProgress} now={nowIso()}
     onPlay={skill => { setCopybookOpen(false); setPractice({ skills: [skill], from: 'copybook' }); }} onBack={() => setCopybookOpen(false)} />;
   if (practice?.from === 'copybook') return drillScreen;
   if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onChoose={setSelectedStage} onBack={backToTitle} />);
@@ -276,10 +277,10 @@ export function App() {
       {canContinue && <button aria-current={choice === 0 ? 'true' : undefined} onClick={() => choose(true)}>Continue</button>}
       {saved?.best && scoredStages.some(({ stage }) => saved.best?.[stage.id]) && <p className="play-stars">Stars: {scoredStages.reduce((sum, { stage }) => sum + (saved.best?.[stage.id]?.stars ?? 0), 0)} / {scoredStages.length * 3}</p>}
       <button aria-current={choice === menu.stages ? 'true' : undefined} onClick={openStages}>Stages</button>
-      <button aria-current={choice === menu.keys ? 'true' : undefined} onClick={openHelp}>Keys</button>
-      <button aria-current={choice === menu.intro ? 'true' : undefined} onClick={watchIntro}>Intro</button>
       <button aria-current={choice === menu.copybook ? 'true' : undefined} onClick={() => setCopybookOpen(true)}>Copybook</button>
-      <button aria-current={choice === menu.newGame ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
+      <button className="play-menu__group" aria-current={choice === menu.keys ? 'true' : undefined} onClick={openHelp}>Keys</button>
+      <button aria-current={choice === menu.intro ? 'true' : undefined} onClick={watchIntro}>Intro</button>
+      <button className="play-menu__group" aria-current={choice === menu.newGame ? 'true' : undefined} onClick={() => choose(false)}>New game</button>
       <div className="play-menu__sound">
         <SoundButton selected={choice === menu.sound} enabled={sound.enabled} onToggle={sound.toggle} />
       </div>

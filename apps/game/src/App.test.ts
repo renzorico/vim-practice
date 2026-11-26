@@ -437,7 +437,7 @@ it('shows saved total stars on the title after a reload', () => {
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
   values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
-  flush(); key('j'); key('j'); key('j'); key('j'); key('j'); key('Enter'); // Continue, Stages, Keys, Intro, Copybook, New game
+  flush(); key('j'); key('j'); key('j'); key('j'); key('j'); key('Enter'); // Continue, Stages, Copybook, Keys, Intro, New game
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
@@ -605,7 +605,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
   expect(savedProgress().story.ending).toBe('recover');
   const finished = values.get(PROGRESS_KEY);
-  key('Enter'); key('k'); key('k'); key('k'); key('k'); key('Enter'); // New game, Copybook, Intro, Keys, Stages
+  key('Enter'); key('k'); key('k'); key('k'); key('k'); key('Enter'); // New game, Intro, Keys, Copybook, Stages
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   expect(session().world.stage).toBe('last-page');
   expect(session().story.ending).toBeNull();
@@ -778,11 +778,11 @@ it('Intro follows Keys and returns to the title without dispatch or save changes
   values.set(PROGRESS_KEY, JSON.stringify(reachedSave())); flush();
   const before = session(); const saved = values.get(PROGRESS_KEY);
   expect(appHtml()).toMatch(/Keys<\/button>.*Intro<\/button>.*New game<\/button>/);
-  key('j'); key('j'); key('j'); key('Enter');
+  key('j'); key('j'); key('j'); key('j'); key('Enter'); // Stages, Copybook, Keys, Intro
   expect(introProps()).toBeDefined(); key('Escape');
   expect(appHtml()).toContain('Start game'); expect(session()).toBe(before);
   expect(values.get(PROGRESS_KEY)).toBe(saved);
-  key('k'); key('k'); key('k'); key('Enter'); expect(introProps()).toBeUndefined();
+  key('k'); key('k'); key('k'); key('k'); key('Enter'); expect(introProps()).toBeUndefined();
   expect(session().world.stage).toBe('quarry-road');
 });
 it('renders the prologue and cleans up its canvas effect when no canvas exists', () => {
@@ -792,9 +792,9 @@ it('renders the prologue and cleans up its canvas effect when no canvas exists',
   hooks.pending.splice(0).forEach(run => run());
 });
 it('keeps the new title menu indices correct with and without Continue', () => {
-  flush(); key('k'); expect(appHtml()).toMatch(/aria-current="true">Copybook/);
-  key('k'); expect(appHtml()).toMatch(/aria-current="true">Intro/);
+  flush(); key('k'); expect(appHtml()).toMatch(/aria-current="true">Intro/);
   key('k'); expect(appHtml()).toMatch(/aria-current="true">Keys/);
+  key('k'); expect(appHtml()).toMatch(/aria-current="true">Copybook/);
   key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
   key('Escape'); key('j'); key('j'); key('j'); key('j'); key('j');
   expect(appHtml()).toContain('data-sound-toggle="true" aria-label="Sound: on" aria-current="true"');
@@ -827,11 +827,11 @@ it('completing Intro returns to the title, while Continue and Stages bypass it',
   autoSkipIntro = false;
   values.set(PROGRESS_KEY, JSON.stringify(reachedSave())); flush();
   const before = session(); const saved = values.get(PROGRESS_KEY);
-  key('j'); key('j'); key('j'); key('Enter');
+  key('j'); key('j'); key('j'); key('j'); key('Enter'); // Stages, Copybook, Keys, Intro
   for (let beat = 0; beat < CAPTIONS.length; beat++) key('Enter');
   expect(introProps()).toBeUndefined(); expect(appHtml()).toContain('Start game');
   expect(session()).toBe(before); expect(values.get(PROGRESS_KEY)).toBe(saved);
-  key('k'); key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
+  key('k'); key('k'); key('k'); key('Enter'); expect(stageMenuProps(appTree)).toBeDefined();
   stageMenuProps(appTree)?.onSelect('quarry-road'); flush();
   expect(introProps()).toBeUndefined(); expect(session().world.stage).toBe('quarry-road');
 });
@@ -839,13 +839,13 @@ it('completing Intro returns to the title, while Continue and Stages bypass it',
 it('mounts a fresh opening after closing on beat four, without replaying its tone', () => {
   autoSkipIntro = false;
   const sound = vi.spyOn(synth, 'play').mockReturnValue(() => {});
-  flush(); key('k'); key('k'); key('Enter'); // New game, Copybook, Intro
+  flush(); key('k'); key('Enter'); // New game, Intro
   for (let beat = 0; beat < 3; beat++) { key('Enter'); key('Enter'); }
   expect(introProps()?.beat).toBe(3);
   key('Escape'); sound.mockClear(); key('Enter');
   expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
   expect(sound.mock.calls.flatMap(call => call[0]).filter(cue => cue.kind === 'fixed')).toHaveLength(0);
-  key('Escape'); key('j'); key('j'); key('Enter'); // Intro, Copybook, New game
+  key('Escape'); key('j'); key('Enter'); // Intro, New game
   expect(introProps()).toMatchObject({ beat: 0, elapsed: 0, shown: 0 });
 });
 

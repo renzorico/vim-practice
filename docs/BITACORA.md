@@ -3,6 +3,19 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · DR-polish: the Copybook as a page, and a title menu with a reason
+**Who:** Opus (diagnosis, design, build, browser check).
+
+**Why:** Renzo on the live site: the Copybook was empty, looked "too AI and boring", and the title menu order "seems weird and random".
+
+**Root causes:** P-35 turned `.script-panel` into a dark desk with paper sheets; the Copybook list and drill buttons sat on the desk in ink, so they were invisible. Separately, older saves record progress in `best` and `entries` but not always in `story.clearedStages`, so the list had no cleared stages to draw from.
+
+**What:** The Copybook is a copybook page on the desk: binding holes, a red margin line, ruled rows, keys as large keycaps, skills grouped by world in teaching order, five mastery dots and a word (new, fading, kept), and a red "next" note in the margin beside the weakest skill (selected on open). Drills sit on the same page; the key count turns red over par; rep dots are green when clean. Cleared stages now also come from best scores and any stage before the furthest reached. Title menu: Continue · Stages, Copybook (play on) · Keys, Intro (learn) · New game · Sound, with a gap between groups.
+
+**Tests:** clearedForCopybook, nextSkill, skillStatus; App menu tests updated for the new order.
+
+---
+
 ## Entry template
 
 ```

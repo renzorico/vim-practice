@@ -8,7 +8,7 @@ import { applySetResult } from '@escape/curriculum';
 import { StageClearCard } from '../play2/StageClearCard.js';
 import { createSession } from '../play2/session.js';
 import { content, legend, stage } from '../play2/content.js';
-import { copybookSkills } from './Copybook.js';
+import { clearedForCopybook, copybookSkills, nextSkill, skillStatus } from './Copybook.js';
 import { focusedButton } from './focusedButton.js';
 import { keyLabel } from './DrillScreen.js';
 import { DRILLS_KEY, EMPTY_DRILLS, nextSeed, readDrills, saveDrills, type DrillProgress } from './store.js';
@@ -41,11 +41,25 @@ describe('drill store', () => {
 });
 
 describe('copybookSkills', () => {
-  it('lists only skills from cleared stages, weakest first', () => {
-    expect(copybookSkills([], EMPTY_DRILLS, NOW)).toEqual([]);
+  it('lists only skills from cleared stages, in teaching order, and marks the weakest next', () => {
+    expect(copybookSkills([])).toEqual([]);
     const strong = applySetResult(applySetResult(undefined, 'motion.hjkl', true, NOW), 'motion.hjkl', true, NOW);
-    const ids = copybookSkills(['margin', 'lowlands'], { mastery: { 'motion.hjkl': strong }, seeds: {} }, NOW).map(skill => skill.id);
-    expect(ids).toEqual(['motion.count', 'motion.word', 'motion.line', 'motion.hjkl']);
+    const progress = { mastery: { 'motion.hjkl': strong }, seeds: {} };
+    const skills = copybookSkills(['margin', 'lowlands']);
+    expect(skills.map(skill => skill.id)).toEqual(['motion.hjkl', 'motion.count', 'motion.word', 'motion.line']);
+    expect(nextSkill(skills, progress, NOW)?.id).toBe('motion.count');
+    expect(skillStatus(skills[0]!, progress, NOW)).toBe('');
+    expect(skillStatus(skills[1]!, progress, NOW)).toBe('new');
+  });
+});
+
+describe('clearedForCopybook', () => {
+  const ids = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut'];
+  const story = createStoryEngine().init(content);
+  it('counts stages before the furthest one reached, and stages with a best score, for saves without a cleared list', () => {
+    expect(clearedForCopybook(null, ids, [])).toEqual([]);
+    const cleared = clearedForCopybook({ stage: 'quarry-road', story, best: { cut: { turns: 4, stars: 2 } } }, ids, []);
+    expect([...cleared].sort()).toEqual(['cut', 'lighthouse', 'lowlands', 'margin']);
   });
 });
 

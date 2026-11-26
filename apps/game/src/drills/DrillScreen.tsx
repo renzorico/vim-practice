@@ -172,12 +172,16 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
   const score = scoreSet(drill.results);
   const box = progress.mastery[skill.id]?.box ?? 0;
 
-  return <main ref={mainRef} tabIndex={-1} className="script-panel drill" aria-label={`Copybook: ${skill.name}`}>
-    <header className="script-heading drill-heading">
+  return <main ref={mainRef} tabIndex={-1} className="script-panel drill copybook-desk" aria-label={`Copybook: ${skill.name}`}>
+    <article className="copybook-page copybook-page--drill">
+    <header className="copybook-head drill-heading">
       <div>
-        <h2>Copybook · {skill.name}</h2>
-        <KeyRow keys={skill.keys} label="Keys" />
+        <p className="copybook-kicker">The Copybook</p>
+        <h1>{skill.name}</h1>
       </div>
+      <span className="copybook-keys copybook-keys--large" aria-label={`Keys: ${skill.keys.join(' ')}`}>
+        {skill.keys.map(key => <kbd key={key}>{keyLabel(key)}</kbd>)}
+      </span>
       <div className="drill-progress">
         <span>{drill.phase === 'finished' ? 'Set done' : `Rep ${drill.index + 1} of ${drill.set.reps.length}`}</span>
         <ol className="drill-results" aria-label="Reps">
@@ -191,7 +195,7 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
     </header>
 
     {drill.phase === 'finished' ? <section className="drill-summary" role="status">
-      <h3>{score.passed ? 'Set passed.' : 'Not yet.'}</h3>
+      <h2>{score.passed ? 'Set passed.' : 'Not yet.'}</h2>
       <p>{score.clean} clean · {score.done} over par · {score.missed} missed. A set passes with 8 done and 6 of them clean.</p>
       <p>Mastery: <BoxDots box={box} /></p>
       <div className="drill-actions">
@@ -213,7 +217,7 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
           <output className="script-mode" aria-label="Vim mode">
             {SHOWN_MODES.has(drill.run.state.mode) ? `-- ${drill.run.state.mode.replaceAll('-', ' ').toUpperCase()} --` : ''}
           </output>
-          <p className="drill-count">Keys {drill.keys.length} · par {rep.level.par}</p>
+          <p className="drill-count" data-over={drill.keys.length > rep.level.par}>{drill.keys.length} of {rep.level.par} keys</p>
         </div>
         <Target rep={rep} engineState={drill.run.state} />
       </div>
@@ -227,5 +231,6 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
       <span>Last rep, you:</span> <KeyRow keys={drill.feedback.keys} label="Your keys" />
       <span>par:</span> <KeyRow keys={drill.feedback.par} label="Par keys" />
     </p>}
+    </article>
   </main>;
 }
