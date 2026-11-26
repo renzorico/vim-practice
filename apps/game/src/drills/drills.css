@@ -1,0 +1,38 @@
+/* The Copybook reuses the script panel's parchment (play.css); these rules only add what drills need. */
+.script-panel.drill, .script-panel.copybook { position: fixed; inset: 0; z-index: 40; height: auto; }
+.drill kbd, .copybook kbd { color: var(--bg); }
+.drill .learned-key, .copybook .learned-key { border-color: var(--text-muted); }
+.drill button, .copybook button { color: var(--bg); background: var(--text-soft); border-color: var(--text-muted); }
+.drill button:hover, .copybook button:hover { background: var(--text-muted); }
+.drill button:focus-visible, .copybook button:focus-visible { outline-color: var(--bg); }
+
+.drill-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.drill-keys { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
+.drill-keys .learned-key { margin-right: 0; }
+.drill-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-family: var(--font-mono); }
+.drill-results { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.drill-results li { width: 14px; height: 14px; border: 2px solid var(--text-muted); border-radius: 50%; }
+.drill-results li[data-result="current"] { border-color: var(--bg); }
+.drill-results li[data-result="clean"] { background: var(--bg); border-color: var(--bg); }
+.drill-results li[data-result="done"] { background: linear-gradient(90deg, var(--bg) 50%, transparent 50%); border-color: var(--bg); }
+.drill-results li[data-result="missed"] { border-style: dashed; }
+
+/* The reach target, outlined like the field's goal tile; ui.css is not loaded in play. */
+.drill .cell--target { outline: 2px solid var(--door); outline-offset: 0; border-radius: 2px; }
+.drill-recall { font-weight: 600; }
+.drill-count, .drill-replay-key { margin: 8px 0 0; font-family: var(--font-mono); font-size: 14px; }
+.drill-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.drill-actions button { padding: 8px 16px; }
+.drill-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 24px 0 0; font-family: var(--font-mono); font-size: 14px; }
+.drill-summary h3 { margin: 0 0 12px; font-size: 24px; }
+.drill-summary p { margin: 0 0 12px; max-width: 60ch; line-height: 1.5; }
+
+.drill-box { display: inline-flex; gap: 4px; vertical-align: middle; }
+.drill-box span { width: 10px; height: 10px; border: 2px solid var(--text-muted); border-radius: 50%; }
+.drill-box span[data-filled="true"] { background: var(--bg); border-color: var(--bg); }
+
+.copybook-list { display: flex; flex-direction: column; gap: 8px; max-width: 640px; margin: 0 0 24px; padding: 0; list-style: none; }
+.copybook-list button { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 16px; width: 100%; padding: 10px 16px; text-align: left; }
+.copybook-list button[aria-current="true"] { outline: 2px solid var(--bg); outline-offset: 2px; }
+.copybook-name { font-weight: 600; }
+.copybook .play-menu-hint { color: var(--bg); font-size: 13px; }

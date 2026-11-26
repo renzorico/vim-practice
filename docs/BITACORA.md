@@ -869,6 +869,19 @@ Tags: `#design` `#gates`
 
 ---
 
+## 2026-11-26 · DR-pilot: Drill mode ("the Copybook"), Worlds 0-2
+**Who:** Opus (spec, contracts, build, browser check). Renzo accepted the spec defaults.
+
+**Why:** Renzo's playtest: stages are too short to learn a key (about 700 keystrokes for the whole game), and the game must take players to proficiency.
+
+**What:** Ten-rep text drills per key, built on the existing engine, runner, solver and Leitner mastery. Reps 1-3 isolate the key, 4-7 vary it, 8-10 mix in earlier keys. Clean = at most par; after a rep over par the strip shows your keys and the par keys. Missing (3x par, or Show me) replays the par route, then gives one retry. A set passes with 8 done and 6 clean, and moves the skill one box. Entry points: `p` on a stage's clear card (keys that stage taught) and a Copybook item on the title menu (cleared keys, weakest first). Progress is saved under `unsaved.drills.v1`.
+
+**Tests:** 14 generators x 3 difficulties x 200 seeds replay their par to a win on the last key; the solver finds nothing shorter for motion and edit reps; corpus rules; session, scoring, store and clear-card tests. Two App tests updated for the new menu order. Full suite: 4749 passed.
+
+**Not done:** Worlds 3-6 skills, castle gate, Unwrite storms, JSON corpus via Ollama. Spec deviations are listed in `docs/briefs/drills/DRILLS.md` section 10.
+
+---
+
 ## 2026-11-24 · P-15: Places that look like places
 **Who:** Codex (build, fix round), Sonnet (review), Opus (brief, art direction, fixes, browser check).
 

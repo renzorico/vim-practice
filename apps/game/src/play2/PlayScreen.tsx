@@ -48,6 +48,9 @@ interface PlayScreenProps {
   readonly scriptStamp?: boolean;
   readonly onAdvance: () => void;
   readonly onReplay?: () => void;
+  /** Keys the Copybook can drill after this stage; empty hides the clear card's practise button. */
+  readonly practiseKeys?: readonly string[];
+  readonly onPractise?: () => void;
 }
 function BeatView({ beat }: { readonly beat: Beat | undefined }) {
   if (!beat) return null;
@@ -58,7 +61,7 @@ function BeatView({ beat }: { readonly beat: Beat | undefined }) {
     case 'image': return <div role="img" aria-label={beat.image} data-image={beat.image} />;
   }
 }
-export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
+export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, practiseKeys = [], onPractise, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
   const [dismissedEntry, setDismissedEntry] = useState<Session['stageEntry'] | null>(null);
   const cardEntries = keyCardEntries(stage.id, session.story, clearedStages);
@@ -119,7 +122,8 @@ export function PlayScreen({ onOpenHelp, helpCommand, helpOpen = false, clearedS
       {onToggleSound && <SoundButton compact enabled={soundEnabled} onToggle={onToggleSound} />}
     </footer>
     {showKeyCard && <KeyCard key={stage.id} entries={cardEntries} suspended={helpOpen} onDismiss={dismissKeyCard} />}
-    {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})} />}
+    {session.clearCard && !scriptStamp && <StageClearCard session={session} stage={stage} onContinue={onAdvance} onReplay={onReplay ?? (() => {})}
+      {...(onPractise && practiseKeys.length > 0 ? { practise: { keys: practiseKeys, onPractise } } : {})} />}
     {world.status === 'dead' ? <section className="play-panel" role="dialog" aria-label="You were unwritten">
       <h2>You were unwritten.</h2><p><KeyText text={deathHint(content, world.stage)} /></p>
       <button onClick={onAdvance}>Press any key to return</button>

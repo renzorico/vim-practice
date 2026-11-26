@@ -344,7 +344,7 @@ it('shows saved total stars on the title after a reload', () => {
 it('New game resets the story and preserves best records in the save', () => {
   const best = { lowlands: { turns: 1, stars: 3 } };
   values.set(PROGRESS_KEY, JSON.stringify({ ...reachedSave(), best, previous: { stage: 'lowlands', story: createStoryEngine().init(content) } }));
-  flush(); key('j'); key('j'); key('j'); key('Enter');
+  flush(); key('j'); key('j'); key('j'); key('j'); key('Enter'); // Continue, Stages, Keys, Copybook, New game
   expect(session().world.stage).toBe('margin');
   expect(session().story.flags['lowlands.knows-w']).toBeUndefined();
   expect(session().stageEntry.best).toEqual(best);
@@ -511,7 +511,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   flush(); key('Enter'); dismiss(); play(lastPage.solution); dismiss();
   expect(savedProgress().story.ending).toBe('recover');
   const finished = values.get(PROGRESS_KEY);
-  key('Enter'); key('k'); key('k'); key('Enter');
+  key('Enter'); key('k'); key('k'); key('k'); key('Enter'); // New game, Copybook, Keys, Stages
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   expect(session().world.stage).toBe('last-page');
   expect(session().story.ending).toBeNull();
@@ -519,7 +519,7 @@ it('replaying Last Page from a finished recover save preserves its ending throug
   expect(savedProgress().story.ending).toBe('recover');
   expect(values.get(PROGRESS_KEY)).toBe(finished);
   // Completing the replay also leaves the finished save untouched.
-  key('k'); key('k'); key('Enter');
+  key('k'); key('k'); key('k'); key('Enter');
   stageMenuProps(appTree)?.onSelect('last-page'); flush();
   dismiss(); play(lastPage.solution); dismiss();
   expect(values.get(PROGRESS_KEY)).toBe(finished);
