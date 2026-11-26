@@ -152,3 +152,12 @@ Differences, decided while building:
 5. **Interleaving:** two of reps 8-10, at random places, are an earlier skill at difficulty 2, run with that skill's own allow-list.
 
 Files: `packages/curriculum/src/drills/**`, `apps/game/src/drills/**`, plus small changes to `App.tsx` (title menu item, drill overlay) and `StageClearCard.tsx` (`p` practise).
+
+## 11. Pass A: World 3, the Wordwood
+
+Five skills: Find a letter (`f t`), Find again (`; ,`), Paragraphs (`{ }`), File ends (`gg G`), Matching bracket (`%`).
+
+- `<C-d>`/`<C-u>` have no drill yet. Half a screen is 14 lines (window height 28), and the drill page shows the whole buffer, not a window onto it. They need a windowed buffer first.
+- `; ,` reps never put the target three finds away: `3fc` would beat `fc;;`, and the solver is right to prefer it. Two finds tie (`fc;` vs `2fc`), and `,` reps need a letter behind the cursor that `b`, `0` and `9h` cannot reach.
+- `NG` reps start at least 10 lines below line N, beyond the solver's longest count (`9k`).
+- New test: every skill's par uses at least one of its own keys (60 seeds x 3 difficulties), so a solver fallback can never quietly drill a different key.

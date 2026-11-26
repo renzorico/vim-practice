@@ -11,8 +11,14 @@ const QUARRY_ROAD = [...LOWLANDS, 'x', 'r'] as const;
 const CUT = [...QUARRY_ROAD, 'dd', 'u', '<C-r>'] as const;
 const SHAFT = [...CUT, '.'] as const;
 const LEDGER = [...SHAFT, 'o', 'D', 'i', 'a', 'A', 'I', '<Esc>'] as const;
+const CANOPY = [...LEDGER, 'f', 't', ';', ','] as const;
+const GLADES = [...CANOPY, '{', '}', 'gg', 'G'] as const;
+const GATES = [...GLADES, '%', '<C-d>', '<C-u>'] as const;
 
-/** Pilot scope: Worlds 0-2. Teaching order; later skills interleave earlier ones in reps 8-10. */
+/**
+ * Worlds 0-3, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
+ * half a screen is 14 lines, and the drill page shows the whole buffer, not a window onto it.
+ */
 export const DRILL_SKILLS: readonly DrillSkill[] = [
   { id: 'motion.hjkl', name: 'Steps', keys: ['h', 'j', 'k', 'l'], stage: 'margin', allowed: MARGIN },
   { id: 'motion.count', name: 'Counts', keys: ['5j', '3l'], stage: 'margin', allowed: MARGIN },
@@ -28,6 +34,11 @@ export const DRILL_SKILLS: readonly DrillSkill[] = [
   { id: 'mode.edges', name: 'Line edges', keys: ['A', 'I'], stage: 'ledger', allowed: LEDGER },
   { id: 'mode.open', name: 'Open a line', keys: ['o'], stage: 'ledger', allowed: LEDGER },
   { id: 'edit.D', name: 'Delete to the end', keys: ['D'], stage: 'ledger', allowed: LEDGER },
+  { id: 'motion.find', name: 'Find a letter', keys: ['f', 't'], stage: 'canopy', allowed: CANOPY },
+  { id: 'motion.find-repeat', name: 'Find again', keys: [';', ','], stage: 'canopy', allowed: CANOPY },
+  { id: 'motion.paragraph', name: 'Paragraphs', keys: ['{', '}'], stage: 'glades', allowed: GLADES },
+  { id: 'motion.file', name: 'File ends', keys: ['gg', 'G'], stage: 'glades', allowed: GLADES },
+  { id: 'motion.match', name: 'Matching bracket', keys: ['%'], stage: 'gates', allowed: GATES },
 ];
 
 export function drillSkill(id: SkillId): DrillSkill | undefined {

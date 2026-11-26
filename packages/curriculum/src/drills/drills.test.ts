@@ -16,6 +16,7 @@ import type { DrillRep, RepResult } from './types.js';
 const DIFFICULTIES: readonly Difficulty[] = [1, 2, 3];
 const SEEDS = 200;
 const SOLVER_SEEDS = 12;
+const OWN_KEY_SEEDS = 60;
 /** Insert-mode text cannot be searched by the solver, and setup reps start from a state it cannot load. */
 const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open']);
 const RUN_OF_FOUR_LETTERS = /([A-Za-z])\1{3}/;
@@ -61,6 +62,19 @@ describe.each(DRILL_SKILLS.map(skill => skill.id))('generator %s', (skill) => {
       expect(run.status, `${rep.level.id} ${rep.level.solution.join('')}`).toBe('won');
       expect(run.keystrokes).toBe(rep.level.par);
       for (const text of rep.level.startLines) expect(text).not.toMatch(RUN_OF_FOUR_LETTERS);
+    }
+  });
+});
+
+describe.each(DRILL_SKILLS)('$id', (skill) => {
+  it('drills its own keys: every par uses at least one of them', () => {
+    // A counted key ('5j') is drilled by its number, in any direction.
+    const uses = (solution: string): boolean => skill.keys.some(key => (/^\d/.test(key) ? /\d/.test(solution) : solution.includes(key)));
+    for (const difficulty of DIFFICULTIES) {
+      for (let seed = 0; seed < OWN_KEY_SEEDS; seed += 1) {
+        const solution = generateRep(skill.id, seed, difficulty).level.solution.join('');
+        expect(uses(solution), `${skill.id} ${difficulty} ${seed}: ${solution}`).toBe(true);
+      }
     }
   });
 });
