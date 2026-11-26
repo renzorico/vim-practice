@@ -266,7 +266,7 @@ export function App() {
   if (copybookOpen) return <Copybook skills={copybookSkills(cleared, drillProgress, nowIso())} progress={drillProgress} now={nowIso()}
     onPlay={skill => { setCopybookOpen(false); setPractice({ skills: [skill], from: 'copybook' }); }} onBack={() => setCopybookOpen(false)} />;
   if (practice?.from === 'copybook') return drillScreen;
-  if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onBack={backToTitle} />);
+  if (selecting) return withHelp(<StageSelect stages={stages} content={content} progress={saved} selected={selectedStage} onSelect={playStage} onChoose={setSelectedStage} onBack={backToTitle} />);
   if (!started) return withHelp(<main className="play-title">
     <TitleScene saved={saved?.story.ending === 'recover'} />
     <div className="play-title__menu">
