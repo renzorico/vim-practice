@@ -254,10 +254,12 @@ export function App() {
   const clearedStages = cleared;
   return withHelp(<>
     {drillScreen}
+    {/* While a drill is open the game under it is inert: no focus, no clicks, no native Enter on its buttons. */}
+    <div className="play-root" {...(practice ? { inert: '' } : {})}>
     {banner.visible && <WorldBanner world={banner.visible} onDismiss={() => { banner.dismiss(); }} />}
     <PlayScreen clearedStages={clearedStages} helpOpen={helpOpen} soundEnabled={sound.enabled} onToggleSound={sound.toggle} session={session} stage={current.stage} legend={current.legend} content={content}
     onOpenHelp={openHelp} helpCommand={helpCommand} objectives={storyEngine.objectives(session.story, content)} showSource={showSource} scriptStamp={scriptStamp} onAdvance={advance} onReplay={replay}
-    practiseKeys={stageDrills.flatMap(skill => skill.keys)} onPractise={() => onKey('p')} /></>);
+    practiseKeys={stageDrills.flatMap(skill => skill.keys)} onPractise={() => onKey('p')} /></div></>);
 }
 
 const TITLE_WIDTH = 384;

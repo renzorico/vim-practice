@@ -109,7 +109,13 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
   const drillRef = useRef<DrillState | null>(null);
   const setDrill = useCallback((next: DrillState) => { drillRef.current = next; setDrillState(next); }, []);
   const firstSkill = skills[0];
-  useEffect(() => { if (firstSkill !== undefined) setDrill(begin(firstSkill)); }, [firstSkill, begin, setDrill]);
+  // StrictMode runs effects twice in development; one opened set must reserve one seed.
+  const begunFor = useRef<SkillId | null>(null);
+  useEffect(() => {
+    if (firstSkill === undefined || begunFor.current === firstSkill) return;
+    begunFor.current = firstSkill;
+    setDrill(begin(firstSkill));
+  }, [firstSkill, begin, setDrill]);
 
   const finish = useCallback((state: DrillState) => {
     const { passed } = scoreSet(state.results);
@@ -120,16 +126,21 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
     onProgress(next);
   }, [now, onProgress]);
 
-  const onKey = useCallback((key: Key) => {
+  /** Every change to the drill goes through here, so any path into 'finished' saves mastery exactly once. */
+  const transition = useCallback((step: (state: DrillState) => DrillState) => {
     const current = drillRef.current;
     if (current === null) return;
-    const next = stepDrill(current, key);
+    const next = step(current);
     if (next.phase === 'finished' && current.phase !== 'finished') finish(next);
     setDrill(next);
   }, [finish, setDrill]);
-  const giveUp = useCallback(() => { if (drillRef.current) setDrill(giveUpRep(drillRef.current)); }, [setDrill]);
-  const retry = useCallback(() => { if (drillRef.current) setDrill(continueDrill(drillRef.current)); }, [setDrill]);
+  const onKey = useCallback((key: Key) => transition(state => stepDrill(state, key)), [transition]);
+  const giveUp = useCallback(() => transition(giveUpRep), [transition]);
+  const retry = useCallback(() => transition(continueDrill), [transition]);
   const again = useCallback(() => { if (drillRef.current) setDrill(begin(drillRef.current.set.skill)); }, [begin, setDrill]);
+  // Take focus from whatever was under the drill (the clear card's Continue), so Enter cannot press it.
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => { mainRef.current?.focus(); }, []);
   const nextSkill = skills[position + 1];
   const advance = useCallback(() => {
     if (nextSkill === undefined) { onExit(); return; }
@@ -160,7 +171,7 @@ export function DrillScreen({ skills, progress, onProgress, onExit, exitLabel, n
   const score = scoreSet(drill.results);
   const box = progress.mastery[skill.id]?.box ?? 0;
 
-  return <main className="script-panel drill" aria-label={`Copybook: ${skill.name}`}>
+  return <main ref={mainRef} tabIndex={-1} className="script-panel drill" aria-label={`Copybook: ${skill.name}`}>
     <header className="script-heading drill-heading">
       <div>
         <h2>Copybook · {skill.name}</h2>

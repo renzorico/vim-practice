@@ -172,12 +172,15 @@ const deleteChar: Design = (rng, difficulty) => {
   const text = lines[1] ?? '';
   const length = difficulty === 1 ? 1 : int(rng, 3, 4);
   if (difficulty === 3) {
-    const target = wordStopTarget(rng, text, 1, 4);
-    lines[1] = `${text.slice(0, target.col)}${blot(rng, int(rng, 1, 3))}${text.slice(target.col)}`;
-    const blotLength = (lines[1].length - text.length);
+    // Ink goes before a word that follows a space, so it is a word of its own; next to other punctuation
+    // it would merge with it. Presses are counted on the inked line, where the word boundaries now are.
+    const afterSpace = stops(text, 'w', 0).slice(0, -1).filter(col => text[col - 1] === ' ');
+    const col = pick(rng, afterSpace.slice(0, 6));
+    const ink = blot(rng, int(rng, 1, 3));
+    lines[1] = `${text.slice(0, col)}${ink}${text.slice(col)}`;
     return {
       goal: 'transform', goalText: 'Rub out the ink.', lines, cursor: { line: 1, col: 0 },
-      keys: [...repeat('w', target.presses), ...repeat('x', blotLength)],
+      keys: [...repeat('w', stops(lines[1], 'w', 0).indexOf(col) + 1), ...repeat('x', ink.length)],
     };
   }
   const col = int(rng, 2, text.length - 3);

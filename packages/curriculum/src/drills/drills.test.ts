@@ -65,6 +65,19 @@ describe.each(DRILL_SKILLS.map(skill => skill.id))('generator %s', (skill) => {
   });
 });
 
+describe.each(['edit.x', 'edit.dd', 'edit.D'])('%s', (skill) => {
+  it.each(DIFFICULTIES)('difficulty %i: the goal removes every ink blot and nothing else', (difficulty) => {
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const goal = generateRep(skill, seed, difficulty).level.goals[0];
+      if (goal?.type !== 'transform') throw new Error('expected a transform goal');
+      for (const text of goal.targetLines) {
+        expect(text, `seed ${seed}`).not.toMatch(/[#*%~]/);
+        expect(CORPUS.some(line => line.text === text || line.text === `${text}.`), `seed ${seed}: ${text}`).toBe(true);
+      }
+    }
+  });
+});
+
 describe.each(DRILL_SKILLS.map(skill => skill.id).filter(skill => !SOLVER_SKIPS.has(skill)))('par for %s', (skill) => {
   it.each(DIFFICULTIES)('difficulty %i: the solver finds nothing shorter', (difficulty) => {
     for (let seed = 0; seed < SOLVER_SEEDS; seed += 1) {

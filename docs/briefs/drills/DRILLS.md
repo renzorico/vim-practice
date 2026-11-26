@@ -36,7 +36,7 @@ Interleaving (reps 8-10) is the most important part for transfer to real Vim and
 
 - **Clean rep:** goal met in at most par keystrokes.
 - **Done rep:** goal met, over par.
-- **Missed rep:** more than 3x par keystrokes (existing `OVER_PAR_FACTOR`), or `<Esc><Esc>` to give up. The par solution plays back as ghost keys over the buffer, the rep reloads once, then the set moves on.
+- **Missed rep:** more than 3x par keystrokes (existing `OVER_PAR_FACTOR`), or the Show me button. (Not `<Esc><Esc>`: pressing Esc twice is a common Vim habit and would give up by accident.) The par solution plays back as ghost keys over the buffer, the rep reloads once, then the set moves on.
 - After every non-clean rep the strip under the buffer shows `You: llllllll   Par: $`. One line, no text. This is where choice is taught.
 - **Set passed:** at least 8 of 10 done and at least 6 of 10 clean.
 
