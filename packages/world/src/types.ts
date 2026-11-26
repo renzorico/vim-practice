@@ -68,6 +68,12 @@ export interface TileDef {
    * Default false. (Path rule, 2026-11-26: counted word motions crossed walls and skipped whole stages.)
    */
   readonly gap?: boolean;
+  /**
+   * Walkable on foot, but a word or line-end motion that leaves its line may not pass through it: a ladder is climbed,
+   * not leapt. Lets rows of stones be joined by ladders without a counted `12e` falling down them. Default false.
+   * (2026-11-27, World 1 redesign.)
+   */
+  readonly climb?: boolean;
 }
 
 /** One legend per world, so a world has one look and one vocabulary of tiles. */

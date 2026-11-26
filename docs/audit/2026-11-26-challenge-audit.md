@@ -53,6 +53,9 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 | Last Page | 15 | none | - | - | 0 / 0 |
 | Ledger, Manifest, Harbour, Contract, Study | script | not audited | | | |
 
+**Update 2026-11-27 (World 1 redesign):** Margin par 6 uses `h j k l`; Lowlands par 11 uses `w b e $` and needs Wren;
+the Lighthouse par 7 teaches and uses `0`. Checked by `apps/game/src/play2/challenge.test.ts`.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

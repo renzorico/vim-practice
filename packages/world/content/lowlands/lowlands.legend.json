@@ -74,6 +74,15 @@
       "walkable": true,
       "fixed": true,
       "label": "Lighthouse door"
+    },
+    {
+      "char": "H",
+      "kind": "object",
+      "sprite": "ladder",
+      "walkable": true,
+      "fixed": true,
+      "label": "ladder",
+      "climb": true
     }
   ],
   "fallback": {

@@ -91,7 +91,7 @@ describe('authored objective guides', () => {
   it('offers walkable cells at each tutorial step, including after the quarry deletion', () => {
     const tutorialRoutes: Readonly<Record<string, readonly string[]>> = {
       'margin.warning': entryFor('margin').stage.solution,
-      'lowlands.lighthouse': [...'9lwwwwl11l4j', '<CR>', ...'ll$'],
+      'lowlands.lighthouse': entryFor('lowlands').stage.solution,
       'quarry.road': [...'13l4x8l2j7l5r=8l2j', '<CR>'],
     };
     for (const [questId, route] of Object.entries(tutorialRoutes)) {
@@ -171,12 +171,15 @@ describe('authored objective guides', () => {
   });
   it('the Lowlands guide hops a stone, and $ clears from the jetty', () => {
     const { game, session } = start('lowlands', 'lowlands.lighthouse');
-    const hopped = play(game, move(session, { line: 7, col: 13 }), guideFor('lowlands.lighthouse', 'cross')?.keys ?? []);
-    expect(hopped.world.engine.cursor).toEqual({ line: 7, col: 18 });
-    const crossed = play(game, hopped, [...'wwl']);
-    expect(crossed.story.quests['lowlands.lighthouse']?.step).toBe(1);
+    // Wren first: the end of the path is her edge of the field.
+    const met = dismiss(game, play(game, session, ['e']));
+    expect(met.story.quests['lowlands.lighthouse']?.step).toBe(1);
+    const hopped = play(game, move(met, { line: 7, col: 13 }), guideFor('lowlands.lighthouse', 'cross')?.keys ?? []);
+    expect(hopped.world.engine.cursor).toEqual({ line: 7, col: 16 });
+    const crossed = play(game, hopped, ['w', '2', 'j', '2', 'e', '2', 'j', '2', 'b', '2', 'j', '3', 'e', 'l']);
+    expect(crossed.story.quests['lowlands.lighthouse']?.step).toBe(2);
     // The door also needs the Scribe's note, read from the jetty beside it.
-    const cleared = play(game, move(crossed, { line: 11, col: 40 }), ['<CR>', '$']);
+    const cleared = play(game, move(crossed, { line: 14, col: 40 }), ['<CR>', '$']);
     expect(cleared.world.status).toBe('cleared');
   });
   it('the Quarry guide opens rubble, and each marked bank replaces the four water cells', () => {

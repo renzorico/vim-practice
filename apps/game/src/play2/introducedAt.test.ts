@@ -21,7 +21,10 @@ it('introduces replacement and deletion on Quarry Road, leaving dd and u for the
   expect(entries.map(entry => entry.key)).toEqual(['x', 'r']);
 });
 it('shows no card in a stage with no new keys', () => {
-  expect(keyCardEntries('lighthouse', createStoryEngine().init(content))).toEqual([]);
+  expect(keyCardEntries('labyrinth', createStoryEngine().init(content))).toEqual([]);
+});
+it('teaches 0 in the Lighthouse, where its route needs it', () => {
+  expect(keyCardEntries('lighthouse', createStoryEngine().init(content)).map(entry => entry.key)).toEqual(['0']);
 });
 it('does not show a card after clear or during an earlier replay', () => {
   const story = createStoryEngine().init(content);

@@ -22,7 +22,7 @@
   "legend": "margin",
   "start": {
     "line": 7,
-    "col": 2
+    "col": 12
   },
   "hearts": 3,
   "entities": [
@@ -181,14 +181,14 @@
   ],
   "parTurns": 6,
   "solution": [
-    "3",
-    "k",
-    "4",
-    "l",
-    "<CR>",
-    "6",
-    "j",
     "5",
+    "h",
+    "4",
+    "k",
+    "<CR>",
+    "7",
+    "j",
+    "4",
     "l",
     "<CR>",
     "3",

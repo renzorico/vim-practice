@@ -41,32 +41,32 @@ describe('Margin session', () => {
     expect(dismiss(initial).world.engine.cursor).toEqual(stage.start);
   });
   it('takes counts from the engine as one turn', () => {
-    const session = walk('4k');
-    expect(session.world.engine.cursor).toEqual({ line: 3, col: 2 });
+    const session = walk('5h');
+    expect(session.world.engine.cursor).toEqual({ line: 7, col: 7 });
     expect(session.world.turn).toBe(1);
     expect(resultData(session).keys).toBe(2);
   });
   it('rejects editing and blocks Bram before the lesson', () => {
     const edited = walk('x');
     expect(edited.world.engine.lines).toEqual(stage.map);
-    const blocked = walk('14l');
+    const blocked = walk('4l');
     expect(blocked.world.engine.cursor).toEqual({ line: 7, col: 16 });
     expect(game.reduce(blocked, 'l').lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'solid-entity' }));
   });
   it('Mira asks for the Elder first', () => {
-    const early = game.reduce(walk('8l3j'), '<CR>');
+    const early = game.reduce(walk('2h3j'), '<CR>');
     expect(dialogueId(early)).toBeUndefined();
-    const next = game.reduce(walk('l', walk('8l3j')), '<CR>');
+    const next = game.reduce(walk('l', walk('2h3j')), '<CR>');
     expect(dialogueId(next)).toBe('margin.mira-early');
     expect(dismiss(next).story.flags['margin.knows-counts']).not.toBe(true);
   });
   it('walks to the Elder, learns counts from Mira, and clears with three hearts', () => {
-    let session = walk('kkkklll');
+    let session = walk('hhhhhkkkk');
     session = game.reduce(session, '<CR>');
     expect(dialogueId(session)).toBe('margin.elder');
     session = dismiss(session);
     expect(session.story.flags['margin.met-elder']).toBe(true);
-    session = walk('jlllljjjjjjll', session);
+    session = walk('jjjjjjjllll', session);
     session = game.reduce(session, '<CR>');
     expect(dialogueId(session)).toBe('margin.mira');
     session = dismiss(session);

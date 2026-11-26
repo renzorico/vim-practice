@@ -79,6 +79,21 @@
         "entity": "lamplighter"
       },
       "once": false
+    },
+    {
+      "id": "lighthouse.landing",
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 1
+        },
+        "to": {
+          "line": 5,
+          "col": 19
+        }
+      },
+      "once": true
     }
   ],
   "scripts": [],

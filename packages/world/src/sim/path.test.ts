@@ -10,7 +10,7 @@ const tile = (char: string, walkable: boolean, gap = false): TileDef =>
   ({ char, kind: walkable ? 'ground' : 'barrier', sprite: char, walkable, fixed: true, label: char, ...(gap ? { gap } : {}) });
 const legend: Legend = {
   id: 'path', fallback: tile('?', false),
-  tiles: [tile('.', true), tile('#', false), tile('~', false, true), tile('a', true)],
+  tiles: [tile('.', true), tile('#', false), tile('~', false, true), tile('a', true), { ...tile('H', true), climb: true }],
 };
 
 describe('jumpBlocked', () => {
@@ -33,6 +33,11 @@ describe('jumpBlocked', () => {
     const open = { ...legend, emptyRow: tile(' ', true) };
     expect(jumpBlocked(['aa', '', 'aa'], { line: 0, col: 1 }, { line: 2, col: 1 }, open)).toEqual({ line: 1, col: 1 });
     expect(jumpBlocked(['aa', '', 'aa'], { line: 0, col: 0 }, { line: 2, col: 0 }, open)).toBeNull();
+  });
+  it('a ladder is climbed, not leapt: a run may not fall down it', () => {
+    const lines = ['a~~a', '###H', 'a~~a'];
+    expect(jumpBlocked(lines, { line: 0, col: 0 }, { line: 2, col: 3 }, legend)).toEqual({ line: 1, col: 0 });
+    expect(jumpBlocked(lines, { line: 0, col: 3 }, { line: 2, col: 3 }, legend)).toEqual({ line: 1, col: 3 });
   });
   it('treats the space past a row end as solid, so ragged rows are no way round', () => {
     const lines = ['a.', '#...', '....'];

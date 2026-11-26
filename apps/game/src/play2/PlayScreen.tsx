@@ -192,7 +192,9 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
   if (stageId === 'manifest') return ['h', 'j', 'k', 'l', '0', '$', 'x', 'r', 'dd', 'u', 'D', 'i', 'a', '<Esc>', 'f', ';', '%', '}', 'G', 't'];
   return ['h', 'j', 'k', 'l', ...(flags['margin.knows-counts'] ? ['3l'] : []),
     ...(flags['lowlands.knows-w'] ? ['w', 'b'] : []),
-    ...(flags['lowlands.knows-dollar'] ? ['$', '0'] : []),
+    ...(flags['lowlands.knows-e'] ? ['e'] : []),
+    ...(flags['lowlands.knows-dollar'] ? ['$'] : []),
+    ...(flags['lighthouse.knows-zero'] ? ['0'] : []),
     ...(flags['quarry.knows-x'] ? ['x', '4x'] : []),
     ...(flags['quarry.knows-r'] ? ['r', '5r='] : []),
     ...(flags['cut.knows-dd'] ? ['dd'] : []),

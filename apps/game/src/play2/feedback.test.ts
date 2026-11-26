@@ -111,7 +111,7 @@ it('persists only improving bests, loads old saves, and rejects invalid best res
 it('pins caps for authored Gallery, Mouth, and Margin solutions', () => {
   expect(solutionCaps(gallery)).toEqual(['3w', '3#', 'b', '#', 'e', '<CR>']);
   expect(solutionCaps(mouth)).toEqual(['?x<CR>', 'n', 'n', 'l', '<CR>']);
-  expect(solutionCaps(stage)).toEqual(['3k', '4l', '<CR>', '6j', '5l', '<CR>', '3k', '28l']);
+  expect(solutionCaps(stage)).toEqual(['5h', '4k', '<CR>', '7j', '4l', '<CR>', '3k', '28l']);
 });
 it('never labels the player cell after a completed find', () => {
   const controller = createSession({ sim, storyEngine: createStoryEngine(), stages, stage: canopy, legend: canopyLegend, content });

@@ -25,7 +25,7 @@ function move(session: Session, line: number, col: number): Session {
   return { ...session, world: moved.state };
 }
 it('keeps Margin story, resets hearts, presents the ending before entering Lowlands, and shows each intro once', () => {
-  let session = keys(dismiss(controller.init()), ['4','k','3','l','<CR>', 'j', ...'llll', ...'jjjjjj', 'l','l','<CR>', 'k','k','k','8','l','3','0','l']);
+  let session = keys(dismiss(controller.init()), ['5','h','4','k','<CR>', ...'jjjjjjj', ...'llll', '<CR>', 'k','k','k','8','l','3','0','l']);
   expect(session.world.status).toBe('cleared');
   expect(session.queue[0]).toMatchObject({ dialogue: 'margin.end' });
   const flags = session.story.flags;
@@ -46,45 +46,58 @@ it('Wren calls out at the edge once, teaches w, and answers repeat interactions'
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.wren', index: 0 });
   session = dismiss(session);
   expect(session.story.flags['lowlands.knows-w']).toBe(true);
-  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(0);
+  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
   session = keys(session, ['l','h','l']);
   expect(session.queue).toEqual([]);
   session = controller.reduce(session, '<CR>');
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.wren-again' });
 });
-it('l bumps into blank; w leaps each gap, b returns, and the far-side trigger advances the quest', () => {
+it('l bumps into blank; w, e and b cross four rows of stones, and the far side advances the quest', () => {
   let session = dismiss(keys(startLowlands(), ['9','l']));
   session = keys(session, ['w']);
-  expect(session.world.engine.cursor.col).toBe(13);
+  expect(session.world.engine.cursor).toEqual({ line: 7, col: 13 });
   session = keys(session, ['l']); // second cell of the first stone
   const bumped = controller.reduce(session, 'l');
   expect(bumped.world.engine.cursor.col).toBe(14);
   expect(bumped.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
   session = keys(bumped, ['w','b']);
-  expect(session.world.engine.cursor.col).toBe(13);
-  session = keys(session, ['w','w']);
+  expect(session.world.engine.cursor).toEqual({ line: 7, col: 13 });
+  session = keys(session, ['2','w','2','j']);
+  expect(session.world.engine.cursor).toEqual({ line: 9, col: 19 });
+  expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.long-stone' });
+  session = keys(dismiss(session), ['2','e']);
+  expect(session.world.engine.cursor).toEqual({ line: 9, col: 31 });
+  session = dismiss(keys(session, ['2','j']));
+  expect(session.story.flags['lowlands.knows-e']).toBe(true);
+  // East is a dead end: the next word is the hedge.
+  const east = controller.reduce(session, 'w');
+  expect(east.world.engine.cursor).toEqual({ line: 11, col: 31 });
+  session = keys(session, ['2','b','2','j','3','e']);
+  expect(session.world.engine.cursor).toEqual({ line: 13, col: 33 });
   expect(session.world.firedTriggers).not.toContain('lowlands.far-side');
-  session = keys(session, ['w']);
-  expect(session.world.engine.cursor.col).toBe(26);
-  // The last stone already counts as across: the next objective shows before the player tries one `w` too many.
-  expect(session.world.firedTriggers).toContain('lowlands.far-side');
-  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(1);
-  session = controller.reduce(session, 'w');
-  expect(session.world.engine.cursor).toEqual({ line: 7, col: 26 });
-  expect(session.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
   session = keys(session, ['l']);
-  expect(session.world.engine.cursor).toEqual({ line: 7, col: 27 });
+  expect(session.world.firedTriggers).toContain('lowlands.far-side');
+  expect(session.story.quests['lowlands.lighthouse']?.step).toBe(2);
+});
+it('a ladder is climbed: a counted jump cannot fall down it, so each row has to be crossed', () => {
+  const onB = keys(move(startLowlands(), 9, 31), []);
+  const fall = controller.reduce(onB, '8');
+  const fallen = controller.reduce(fall, 'e');
+  expect(fallen.world.engine.cursor).toEqual({ line: 9, col: 31 });
+  expect(fallen.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall', at: { line: 10, col: 31 } }));
+  expect(keys(onB, ['2', 'j']).world.engine.cursor).toEqual({ line: 11, col: 31 });
 });
 function jetty(): Session {
-  // Step onto the far side first: the door needs the crossing as well as the note.
-  const crossed = keys(move(startLowlands(), 7, 30), ['l']);
-  const read = dismiss(controller.reduce(move(crossed, 11, 38), '<CR>'));
+  // Wren, the far side and the note: the door needs all three.
+  const met = dismiss(keys(startLowlands(), ['e']));
+  const crossed = keys(move(met, 13, 36), ['l']);
+  const read = dismiss(controller.reduce(move(crossed, 14, 38), '<CR>'));
   return dismiss(keys(read, ['l', 'l']));
 }
 it('the note blocks the jetty until read, then is removed', () => {
-  const approach = move(startLowlands(), 11, 38);
+  const approach = move(startLowlands(), 14, 38);
   const blocked = controller.reduce(approach, 'l');
-  expect(blocked.world.engine.cursor).toEqual({ line: 11, col: 38 });
+  expect(blocked.world.engine.cursor).toEqual({ line: 14, col: 38 });
   expect(blocked.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'solid-entity' }));
   const reading = controller.reduce(blocked, '<CR>');
   expect(reading.queue[0]).toMatchObject({ dialogue: 'lowlands.note' });
@@ -94,7 +107,7 @@ it('the note blocks the jetty until read, then is removed', () => {
   expect(read.story.flags['lowlands.knows-dollar']).toBe(true);
   expect(read.world.entities.some(entity => entity.id === 'scribe-note')).toBe(false);
   const entered = keys(read, ['l']);
-  expect(entered.world.engine.cursor).toEqual({ line: 11, col: 39 });
+  expect(entered.world.engine.cursor).toEqual({ line: 14, col: 39 });
   expect(entered.world.firedTriggers).not.toContain('lowlands.jetty');
 });
 it('the old 5$ shortcut runs into the trees: the field has to be crossed (path rule)', () => {
@@ -105,16 +118,16 @@ it('the old 5$ shortcut runs into the trees: the field has to be crossed (path r
   expect(shortcut.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
 });
 it('the door does not open before the far side and the Scribe\'s note', () => {
-  const atDoor = move(startLowlands(), 11, 55);
+  const atDoor = move(startLowlands(), 14, 55);
   const stepped = keys(atDoor, ['h', 'l']);
   expect(stepped.world.status).toBe('playing');
 });
 it('$ crosses the jetty untouched; single steps lose exactly two hearts', () => {
   const start = jetty();
-  expect(start.world.engine.cursor).toEqual({ line: 11, col: 40 });
+  expect(start.world.engine.cursor).toEqual({ line: 14, col: 40 });
   expect(start.world.firedTriggers).toContain('lowlands.jetty');
   expect(start.world.entities.filter(entity => entity.def.kind === 'blot').map(entity => entity.at))
-    .toEqual([{ line: 11, col: 50 }, { line: 11, col: 53 }]);
+    .toEqual([{ line: 14, col: 50 }, { line: 14, col: 53 }]);
   expect(start.story.flags['lowlands.knows-dollar']).toBe(true);
   const leap = controller.reduce(start, '$');
   expect(leap.world.status).toBe('cleared'); expect(leap.world.hearts).toBe(3);
@@ -123,10 +136,8 @@ it('$ crosses the jetty untouched; single steps lose exactly two hearts', () => 
   expect(slow.world.status).toBe('cleared'); expect(slow.world.hearts).toBe(1);
 });
 it('advances the Lighthouse quest and enters the castle after its ending', () => {
-  let session = dismiss(keys(startLowlands(), ['9','l']));
-  session = keys(session, ['w','w','w','w','l']);
-  session = keys(session, ['1','1','l','4','j','<CR>','l','l','$']);
-  expect(session.story.quests['lowlands.lighthouse']).toEqual({ step: 3, done: false });
+  const session = keys(startLowlands(), lowlands.solution);
+  expect(session.story.quests['lowlands.lighthouse']).toEqual({ step: 4, done: false });
   expect(session.queue).toHaveLength(1);
   expect(session.queue[0]).toMatchObject({ dialogue: 'lowlands.end' });
   const ended = dismiss(session);
@@ -173,8 +184,8 @@ it('the solver route crosses the field and reads the Scribe\'s note before the d
   expect(cleared.world.status).toBe('cleared');
   expect(cleared.story.flags['lowlands.crossed']).toBe(true);
   expect(cleared.story.flags['lowlands.read-note']).toBe(true);
-  // A counted e still hops past Wren's lesson at the edge: the Lowlands redesign is the place to fix that.
-  expect(cleared.story.flags['lowlands.knows-w']).toBeUndefined();
+  // Wren is on the route: the door needs her lesson too.
+  expect(cleared.story.flags['lowlands.knows-w']).toBe(true);
   expect(cleared.queue).toEqual([{ type: 'dialogue', dialogue: 'lowlands.end', index: 0 }]);
   expect(dismiss(cleared).world.stage).toBe('lighthouse');
 });
