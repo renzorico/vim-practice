@@ -6,7 +6,7 @@ import { checkGoals, stepLevel } from '../runner/index.js';
 import { solve } from '../solver/index.js';
 import { CORPUS } from './corpus.js';
 import { DRILL_SKILLS, drillSkillsForStage } from './skills.js';
-import { generateRep, hasGenerator } from './generators.js';
+import { generateRep, hasGenerator, solverAffordable } from './generators.js';
 import { repStartState } from './rep.js';
 import {
   applySetResult, buildDrillSet, continueDrill, giveUpRep, scoreSet, startDrill, stepDrill,
@@ -17,13 +17,8 @@ const DIFFICULTIES: readonly Difficulty[] = [1, 2, 3];
 const SEEDS = 200;
 const SOLVER_SEEDS = 12;
 const OWN_KEY_SEEDS = 60;
-/**
- * Longer pars are typed text (ciw, ci(, ci"): the solver cannot search insert-mode text, and six keys deep over a
- * World 5 allow-list takes more than 4 GB. Their delete reps (3-4 keys) are still checked.
- */
-const MAX_SOLVER_PAR = 5;
 /** Insert-mode text cannot be searched by the solver, and setup reps start from a state it cannot load. */
-const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open', 'register.named', 'operator.c']);
+const SOLVER_SKIPS = new Set(['edit.undo', 'edit.dot', 'mode.insert', 'mode.append', 'mode.edges', 'mode.open', 'register.named', 'operator.c', 'mark.jump']);
 const RUN_OF_FOUR_LETTERS = /([A-Za-z])\1{3}/;
 
 function playRep(rep: DrillRep, keys: readonly Key[]): LevelRun {
@@ -100,7 +95,7 @@ describe.each(DRILL_SKILLS.map(skill => skill.id).filter(skill => !SOLVER_SKIPS.
   it.each(DIFFICULTIES)('difficulty %i: the solver finds nothing shorter', (difficulty) => {
     for (let seed = 0; seed < SOLVER_SEEDS; seed += 1) {
       const rep = generateRep(skill, seed, difficulty);
-      if (rep.level.par > MAX_SOLVER_PAR) continue;
+      if (!solverAffordable(rep)) continue;
       const shorter = solve(rep.level, { maxKeys: rep.level.par - 1 });
       expect(shorter?.keys.join(' ') ?? null, `${rep.level.id}: par ${rep.level.solution.join(' ')}`).toBeNull();
     }
@@ -169,6 +164,27 @@ describe('World 5 reps that a shorter route used to beat', () => {
       const at = after.indexOf(typed, Math.max(0, rep.level.startCursor.col - typed.length - 8));
       const old = start.slice(at, at + start.length - after.length + typed.length);
       expect([old[0] === typed[0], old.at(-1) === typed.at(-1)], `seed ${seed}: ${old} -> ${typed}`).toEqual([false, false]);
+    }
+  });
+});
+
+describe('World 6 search reps', () => {
+  it('no line jump (G, gg, NG) and a find gets there in fewer keys than the search', () => {
+    for (const difficulty of DIFFICULTIES) {
+      for (let seed = 0; seed < SEEDS; seed += 1) {
+        const rep = generateRep('search.pattern', seed, difficulty);
+        const goal = rep.level.goals[0];
+        if (goal?.type !== 'reach') throw new Error('expected a reach goal');
+        const text = rep.level.startLines[goal.target.line] ?? '';
+        const jumps: Key[][] = [['G'], ['g', 'g'], ...rep.level.startLines.map((_, row) => [...String(row + 1), 'G'])];
+        for (const jump of jumps) {
+          for (const char of new Set(text)) {
+            const keys: Key[] = [...jump, 'f', char];
+            if (keys.length >= rep.level.par) continue;
+            expect(playRep(rep, keys).status, `seed ${seed} difficulty ${difficulty}: ${keys.join('')}`).not.toBe('won');
+          }
+        }
+      }
     }
   });
 });

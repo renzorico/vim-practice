@@ -18,6 +18,8 @@ export interface RepDesign {
   readonly setup?: readonly Key[];
   /** The intended (par) solution. A trailing <Esc> is dropped: the goal is met on the last typed key. */
   readonly keys: readonly Key[];
+  /** Keep a trailing <Esc>: a block insert (<C-v>I) only reaches the other lines when insert mode ends. */
+  readonly keepEsc?: boolean;
 }
 
 function requireSkill(id: SkillId): DrillSkill {
@@ -52,7 +54,7 @@ function trimEsc(keys: readonly Key[]): readonly Key[] {
 export function buildRep(skillId: SkillId, difficulty: Difficulty, seed: number, design: RepDesign): DrillRep {
   const skill = requireSkill(skillId);
   const setup = design.setup ?? [];
-  const keys = trimEsc(design.keys);
+  const keys = design.keepEsc === true ? design.keys : trimEsc(design.keys);
   const start = startState(design.lines, design.cursor, setup, skill.allowed);
   const end = play(start, keys, skill.allowed);
   const goal: Goal = design.goal === 'reach'

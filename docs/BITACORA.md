@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · DR-caves: Copybook drills for World 6
+**Who:** Opus (design, build).
+
+**What:** Four skills for the Echo Caves: Search, Search for this word, Marks, Visual selections. Every world now has Copybook drills. Not drilled: `` ` ` `` (engine bug after `G`), `V` (counted `dd`/`yy` beat it), `<C-d>`/`<C-u>` (need a windowed buffer). The solver check is budgeted by allow-list size and par instead of a fixed par cap. Notes in DRILLS.md section 14.
+
+**Tests:** 233 drill tests, 0.67 GB peak; 61 game drill and App tests.
+
+---
+
 ## 2026-11-26 · DR-library: Copybook drills for World 5
 **Who:** Opus (design, build).
 

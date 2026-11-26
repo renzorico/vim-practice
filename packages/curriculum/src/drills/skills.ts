@@ -23,9 +23,13 @@ const READING = [...STACKS, 'i(', 'a(', 'ib', 'ab'] as const;
 const ARCHIVE = [...READING, 'ip', 'ap'] as const;
 const NOTARY = [...ARCHIVE, 'i[', 'a[', 'i{', 'a{', 'iB', 'aB', 'it', 'at'] as const;
 const CONTRACT = [...NOTARY, 'i"', 'a"', "i'", "a'"] as const;
+const MOUTH = [...CONTRACT, '/', '?', 'n', 'N'] as const;
+const GALLERY = [...MOUTH, '*', '#'] as const;
+const MARKED = [...GALLERY, 'm', '`', "'"] as const;
+const STUDY = [...MARKED, 'v', 'V', '<C-v>'] as const;
 
 /**
- * Worlds 0-5, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
+ * Worlds 0-6, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
  * half a screen is 14 lines, and the drill page shows the whole buffer, not a window onto it.
  */
 export const DRILL_SKILLS: readonly DrillSkill[] = [
@@ -58,6 +62,10 @@ export const DRILL_SKILLS: readonly DrillSkill[] = [
   { id: 'textobj.paragraph', name: 'Paragraph objects', keys: ['dap', 'd2ap'], stage: 'archive', allowed: ARCHIVE },
   { id: 'textobj.bracket', name: 'Bracket and tag objects', keys: ['di[', 'di{', 'dit'], stage: 'notary', allowed: NOTARY },
   { id: 'textobj.quote', name: 'Quote objects', keys: ['di"', 'ci"', 'da"'], stage: 'contract', allowed: CONTRACT },
+  { id: 'search.pattern', name: 'Search', keys: ['/', '?', 'n'], stage: 'mouth', allowed: MOUTH },
+  { id: 'search.word', name: 'Search for this word', keys: ['*', '#'], stage: 'gallery', allowed: GALLERY },
+  { id: 'mark.jump', name: 'Marks', keys: ['m', '`', "'"], stage: 'marked', allowed: MARKED },
+  { id: 'visual.select', name: 'Visual selections', keys: ['v', '<C-v>'], stage: 'study', allowed: STUDY },
 ];
 
 export function drillSkill(id: SkillId): DrillSkill | undefined {
