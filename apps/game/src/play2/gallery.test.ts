@@ -39,7 +39,6 @@ it('follows whole words past the decoys, including the keyword after punctuation
   expect(session.world.engine.cursor).toEqual({ line: 5, col: 2 });
   session = keys(session, 'w*');
   expect(session.world.engine.cursor).toEqual({ line: 7, col: 2 });
-  expect(keys(start(), '/ink<CR>').world.engine.cursor).toEqual({ line: 1, col: 13 });
 });
 it('replays the six-turn route with three hearts, then dialogue, flag and ending in order', () => {
   const atEcho = route(start(), gallery.solution);
@@ -119,6 +118,15 @@ it('bounds the Mouth vocabulary by expansions and simulation steps', () => {
   expect(steps).toBeGreaterThan(0);
   expect(steps).toBeLessThanOrEqual(2_000_000);
   console.info(`Gallery old vocabulary: ${steps} simulation steps (3 turns / 50 expansions)`);
+});
+it('refuses / and ?: a typed search found the lone . of the exit in one turn', () => {
+  // Every character on the map, searched either way, leaves the cursor where it was.
+  const chars = new Set(gallery.map.join('').replace(/\s/g, ''));
+  for (const input of [...[...chars].flatMap(char => [`/${char}<CR>`, `?${char}<CR>`]), '/key<CR>']) {
+    expect(keys(start(), input).world.engine.cursor, input).toEqual(gallery.start);
+  }
+  // Learned in the Mouth, so the toast says it is off here, not that it is still to come.
+  expect(keys(start(), '/.<CR>').lastEvents).toEqual([{ type: 'engine-error', error: { code: 'not-allowed', message: '/ does nothing here.' } }]);
 });
 // The full GALLERY_COMMANDS search cannot reach depth 6; par is proven on the focused
 // vocabulary below (a guarded test with no assertion proves nothing: removed in review).

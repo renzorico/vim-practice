@@ -3,6 +3,17 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · Gallery: no search shortcut
+**Who:** Opus (diagnosis, fix, browser check). Found by the challenge audit; Renzo: "that /. teleport is bad".
+
+**Root cause:** the Gallery's par (6) was proven only on a three-key vocabulary (`* w e`); its test said the full search "cannot reach depth 6". With the real keys, `/.<CR>` searched for the map's lone `.` (the exit, beside the Echo) and cleared the stage in 1 turn. `/key<CR>n` was nearly as cheap.
+
+**Fix:** the Gallery's `allowedCommands` leave out `/` and `?`; the intro says the rock swallows a typed search. A learned command a stage switches off now says "/ does nothing here." instead of "not available yet".
+
+**Tests:** every map character searched either way is refused (mutation-checked: fails without the fix); the toast text. A bounded solver check (100 expansions) was tried and dropped: it passed with the bug back in, so it proved nothing. Par 6 is still proven on the focused vocabulary only; the challenge audit is checking every stage for the same gap.
+
+---
+
 ## 2026-11-26 · DR-caves: Copybook drills for World 6
 **Who:** Opus (design, build).
 

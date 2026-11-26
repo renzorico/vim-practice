@@ -71,6 +71,18 @@ export function resultData(session: Session) {
 export function stageCommands(stage: Stage): readonly string[] {
   return STAGE_COMMANDS[stage.id] ?? WORLD_COMMANDS[stage.world] ?? LEARNED_COMMANDS;
 }
+/** The engine's refusal names the command last: "Command not available yet: /". */
+const NOT_ALLOWED_PREFIX = 'Command not available yet: ';
+/**
+ * A command the player has learned but this stage switches off (its allowedCommands leave it out) is not "not
+ * available yet": it is off here. Anything else the engine refused keeps the engine's words.
+ */
+export function offHere(event: WorldEvent, stage: Stage): WorldEvent {
+  if (event.type !== 'engine-error' || event.error.code !== 'not-allowed' || stage.allowedCommands === undefined) return event;
+  const command = event.error.message.startsWith(NOT_ALLOWED_PREFIX) ? event.error.message.slice(NOT_ALLOWED_PREFIX.length) : '';
+  if (!stageCommands(stage).includes(command) || stage.allowedCommands.includes(command)) return event;
+  return { ...event, error: { ...event.error, message: `${command} does nothing here.` } };
+}
 /** The only bridge between the two pure engines. No Vim behaviour lives here. */
 export function createSession({ sim, storyEngine, stage, legend, content, stages = [{ stage, legend }] }: SessionDependencies) {
   function entry(id: string): SessionStage {
@@ -297,7 +309,7 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
       && world.engine.cursor.line === session.world.engine.cursor.line
       && world.engine.cursor.col === session.world.engine.cursor.col;
     const events: readonly WorldEvent[] = failedFind
-      ? [{ type: 'bump', reason: 'edge', at: world.engine.cursor }] : stepped.events;
+      ? [{ type: 'bump', reason: 'edge', at: world.engine.cursor }] : stepped.events.map(event => offHere(event, current.stage));
     // Rejected commands and unfinished keys cannot change story conditions.
     if (stepped.events.every(event => event.type === 'bump' || event.type === 'engine-error')) return { ...session, keys: session.keys + 1, world, lastEvents: events };
     // Only these events can change a StoryCondition; movement and row hints cannot.
