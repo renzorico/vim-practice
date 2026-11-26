@@ -430,7 +430,8 @@ const find: Design = (rng, difficulty) => {
   // `t` stops one short, so its target needs a character between the cursor and the one it names.
   const target = pick(rng, firstFinds(text, from).filter(entry => key === 'f' || entry.col - from > MIN_FIND_DISTANCE));
   return {
-    goal: 'reach', goalText: key === 'f' ? 'Find the marked letter.' : 'Stop just before the marked letter.',
+    // The mark is where the cursor lands: on the letter for `f`, one short of the named letter for `t`.
+    goal: 'reach', goalText: key === 'f' ? 'Find the marked letter.' : `The mark is just before a "${target.char}". Land on it with t.`,
     lines, cursor: { line: 1, col: from }, keys: [...(row === 2 ? ['j'] : []), key, target.char],
   };
 };
@@ -462,7 +463,7 @@ const findRepeat: Design = (rng, difficulty) => {
   });
   const choice = pick(rng, options);
   return {
-    goal: 'reach', goalText: key === 'f' ? `Find the second "${choice.char}": find once, then ; to go on.` : `Stop just before the second "${choice.char}".`,
+    goal: 'reach', goalText: key === 'f' ? `Find the second "${choice.char}": find once, then ; to go on.` : `The mark is just before the second "${choice.char}". Land on it with t, then ;`,
     lines, cursor: { line: 1, col: 0 }, keys: [key, choice.char, ';'],
   };
 };
