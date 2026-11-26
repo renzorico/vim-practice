@@ -1,0 +1,82 @@
+# Challenge audit, 2026-11-26
+
+Renzo, playing the Lowlands: "extremely easy... a shortcut 5$ to complete it without talking to the other character...
+Game must be non-repetitive but somehow represent a challenge... otherwise there is no sense of achievement."
+
+Run after the path rule (PR 117). Tool: `apps/game/src/play2/audit/challengeAudit.test.ts`, one stage per process,
+about 150 MB and 1-2 s each:
+
+```bash
+AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/audit
+```
+
+## Method and limits
+
+- **Shortcut probe.** From each stage's start, in the real session (story, triggers, clear rules): every motion the
+  stage allows with every count 1-40, every one-character `/` and `?` where search is allowed; then any one plain
+  motion; then a talk. A clear in fewer turns than par is a shortcut. Probes that end in the same state (cursor,
+  remembered column, last search and find, text, flags, fired triggers) are explored once. This is how `5$` (Lowlands) and `/.`, `23e`,
+  `8Ge` (Gallery) were found. Checked: on the old Gallery map it finds `?y<CR>`, 1 turn against par 6.
+- **Not proof.** Routes of three or more moves are not searched. A full solver search over a late stage's whole
+  vocabulary needs more than 4.5 GB (tried; it dies). Where a stage's `allowedCommands` is small (the Gallery now),
+  the full search fits and is the real proof.
+- **Par route.** Reads each stage's stored solution for the keys the stage teaches, and replays it to count the
+  conversations it starts (interact triggers that fire; a `<CR>` that submits a search is not one).
+- **Text stages** (Ledger, Manifest, Harbour, Contract, Study) are script edits; their par is in keystrokes inside
+  the script and is not audited here (rows show par 0).
+
+## Results
+
+| Stage | Par | Shortcut | Taught | Par route uses | Talks (route / available) |
+|---|---|---|---|---|---|
+| Margin | 6 | none | h j k l | j k l | 2 / 4 |
+| Lowlands | 4 | none | 0 w b e $ | e $ | 1 / 3 |
+| Lighthouse | 7 | none | - | - | 1 / 1 |
+| Quarry Road | 3 | none | x r | r | 1 / 5 |
+| Cut | 4 | none | dd u C-r | dd u | 1 / 2 |
+| Shaft | 3 | none | . | (none) | 1 / 1 |
+| Canopy | 7 | none | f t ; , | f t , | 1 / 4 |
+| Glades | 4 | none | { } gg G | G | 3 / 3 |
+| Gates | 8 | none | % C-d C-u | % | 3 / 4 |
+| Jetty | 6 | none | d | d | 1 / 2 |
+| Warehouse | 15 | none | y p | y p | 1 / 1 |
+| Customs | 16 | none | " | " | 1 / 1 |
+| Counter | 12 | none | - | - | 0 / 1 |
+| Stacks | 6 | none | iw aw | aw | 1 / 1 |
+| Reading | 6 | none | i( a( ib ab | i( a( | 1 / 1 |
+| Archive | 8 | none | ip ap | ap | 0 / 0 |
+| Notary | 11 | none | i[ a[ i{ a{ iB aB it at | a[ a{ it | 0 / 0 |
+| Mouth | 4 | none | / ? n N | ? n | 1 / 1 |
+| Gallery | 5 | none | * # | # | 1 / 1 |
+| Marked | 4 | none | m ` ' | m ` | 1 / 1 |
+| Labyrinth | 5 | none | - | - | 0 / 0 |
+| Last Page | 15 | none | - | - | 0 / 0 |
+| Ledger, Manifest, Harbour, Contract, Study | script | not audited | | | |
+
+## Findings, worst first
+
+1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,
+   Lowlands, Cut, Glades, Mouth, Marked 4). A key is met and used once or twice; there is no second room where it is
+   needed in a new way. This is the "no sense of achievement" Renzo felt.
+2. **The best route skips keys the stage teaches.** The Lowlands teaches `w` and its par route never presses it (`5e`
+   instead); the Shaft teaches `.` and never needs it; the Glades teaches `{ } gg G` and needs only `G`; the Gates
+   needs `%` but not `<C-d> <C-u>`. A player can clear these without the lesson, and an expert never meets it.
+3. **Characters are optional.** Quarry Road has 5 people to talk to and the route needs 1; Margin 2 of 4; Canopy 1
+   of 4. Optional side characters are fine; but where the story says "talk to X" the clear rule should need it, as the
+   Lowlands door now needs the Scribe's note.
+4. **Shortcuts:** none left within two moves and a talk, after the path rule. Deeper ones are not ruled out except in
+   the Gallery (full search).
+5. **Hearts rarely matter** (Renzo's earlier report; not measured here): few stages have enemies on the par route.
+
+## Recommended next steps
+
+For each world, in order:
+
+1. **Every taught key on the par route.** Add a test per stage: the stored par route uses each key the stage
+   teaches. Redesign until it holds (a second room that needs `w` and not `e`; a row of blots only `.` clears).
+2. **Required story beats in the clear rule**, as in the Lowlands: the door needs the characters the story sends
+   you to.
+3. **Two or three rooms per stage**, par around 8-15: meet the key, use it in a new layout, then mix it with earlier
+   keys under pressure (an enemy on the route, so hearts count).
+4. **A small `allowedCommands` per stage**, so the full solver fits in memory and proves par over every key the
+   player can press, as the Gallery does now.

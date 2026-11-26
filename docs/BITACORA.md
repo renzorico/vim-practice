@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · Challenge audit
+**Who:** Opus (tool, run, report). Renzo: "Start the audit".
+
+**What:** `apps/game/src/play2/audit/challengeAudit.test.ts` (off in CI) probes each stage in the real session: every allowed motion with counts 1-40 and one-character searches, then one more motion, then a talk; any clear under par is a shortcut. It also reads each par route for the stage's taught keys and talks. A full solver search over late vocabularies was tried first and needed more than 4.5 GB per stage; the probe needs 150 MB and 1-2 s. Checked against the old Gallery map: it finds `?y<CR>`, 1 turn against par 6.
+
+**Findings** (`docs/audit/2026-11-26-challenge-audit.md`): no shortcut within two moves and a talk after the path rule; seven stages clear in 4 turns or fewer; par routes skip taught keys (Lowlands `w`, Shaft `.`, Glades `{ } gg`, Gates `<C-d> <C-u>`); many characters are optional. Text stages not audited.
+
+---
+
 ## 2026-11-26 · Path rule: counted runs stop at walls; Lowlands and Gallery
 **Who:** Opus (diagnosis, design, build, browser check); Codex (found the Gallery's other shortcuts). Renzo: "5$ ... without talking to the other character... that's not how you learn" and "path rule".
 
