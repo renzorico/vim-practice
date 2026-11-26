@@ -31,7 +31,8 @@
       "sprite": "hollow",
       "walkable": false,
       "fixed": true,
-      "label": "the hollow"
+      "label": "the hollow",
+      "gap": true
     },
     {
       "char": "(",

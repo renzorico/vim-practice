@@ -39,7 +39,8 @@
       "sprite": "air",
       "walkable": false,
       "fixed": true,
-      "label": "open air"
+      "label": "open air",
+      "gap": true
     },
     {
       "char": "#",

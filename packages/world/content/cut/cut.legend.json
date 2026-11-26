@@ -39,7 +39,8 @@
       "sprite": "chasm",
       "walkable": false,
       "fixed": true,
-      "label": "the drop"
+      "label": "the drop",
+      "gap": true
     }
   ]
 }

@@ -106,13 +106,13 @@ it('the shortest solver route enters the Quarry alive after the ending', () => {
   expect(ended.story.flags['lighthouse.lit']).toBe(true);
 });
 
-it('completes the third quest step on the lit flag after the normal Lowlands route', () => {
+it('completes the last quest step on the lit flag after the normal Lowlands route', () => {
   const initial = controller.resume({ stage: 'lowlands', story: storyEngine.apply(storyEngine.init(content),
     [{ type: 'start-quest', quest: 'lowlands.lighthouse' }], content).state });
   const crossing = keys(initial, ['9','l','w','w','w','w','l','1','1','l','4','j','<CR>','l','l','$']);
   const entered = dismiss(crossing);
-  expect(entered.story.quests['lowlands.lighthouse']).toEqual({ step: 2, done: false });
+  expect(entered.story.quests['lowlands.lighthouse']).toEqual({ step: 3, done: false });
   const cleared = dismiss(keys(entered, lighthouse.solution));
   expect(cleared.story.flags['lighthouse.lit']).toBe(true);
-  expect(cleared.story.quests['lowlands.lighthouse']).toEqual({ step: 3, done: true });
+  expect(cleared.story.quests['lowlands.lighthouse']).toEqual({ step: 4, done: true });
 });

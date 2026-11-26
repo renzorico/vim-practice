@@ -32,6 +32,10 @@
         {
           "speaker": "system",
           "text": "Stand on a word. Press `*`: you jump to its\nnext copy. `#` jumps back."
+        },
+        {
+          "speaker": "system",
+          "text": "The rock swallows searches and long leaps:\nonly a word you stand on carries."
         }
       ],
       "then": []

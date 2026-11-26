@@ -162,13 +162,28 @@
           "col": 55
         }
       }
+    },
+    {
+      "type": "flag",
+      "flag": "lowlands.crossed"
+    },
+    {
+      "type": "flag",
+      "flag": "lowlands.read-note"
     }
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 1,
+  "parTurns": 4,
   "solution": [
     "5",
+    "e",
+    "5",
+    "$",
+    "1",
+    "5",
+    "h",
+    "<CR>",
     "$"
   ],
   "hints": [

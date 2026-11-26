@@ -3,6 +3,23 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · Path rule: counted runs stop at walls; Lowlands and Gallery
+**Who:** Opus (diagnosis, design, build, browser check); Codex (found the Gallery's other shortcuts). Renzo: "5$ ... without talking to the other character... that's not how you learn" and "path rule".
+
+**Root cause:** a motion lands where Vim puts the cursor and the world checked only the landing square. Any square was one or two counted motions away: `5$` cleared the Lowlands in 1 turn past three characters, `23e` the Gallery. Pars were proven on cut-down vocabularies (the Gallery's on `* w e`), so nobody saw it.
+
+**Rule (packages/world, sim/movement.ts):** a word or line-end motion (`w b e W B E 0 ^ $`, any count) that leaves its line needs a clear path: either L-shaped route round one corner, with no solid tile on it. Gaps (water, river, the drop, void, blank ground, open air, the hollow: new `gap` flag on TileDef, frozen contract, changed by the design lead) can be crossed; the space past a row end is solid. Walks (`hjkl`) keep their step check. Unchanged on purpose: same-row moves (`f[`, the Lowlands stone hops), searches and marks, and the structural leaps `G gg % { } <C-d> <C-u>` that Gates and Glades are built on. A first, stricter version (every jump) broke 90 tests across 20 stages: their puzzles are leaps over barriers.
+
+**Lowlands:** the door needs `lowlands.crossed` and a new `lowlands.read-note` (the Scribe's note on the jetty), with a new objective step for the note. Par 1 to 4 (`5e 5$ 15h <CR> $`). Still open: a counted `e` hops past Wren's `w` lesson.
+
+**Gallery:** allows only `h j k l w b e 0 $ * # n N`; the last room's walls are punctuation found nowhere else, so `*`/`#` reach it only through `key`. Par 6 to 5, now proven with every allowed key (a `#` wrap route; the intended `*` chain earns two stars). A learned command a stage switches off says "/ does nothing here."; the status bar lists only keys that work.
+
+**Glades** now needs its own keys: Wordwood motions alone find no route within 8 turns.
+
+**Tests:** 5402 passed. New: path rule unit and field tests; Lowlands shortcut blocked and door locked; Gallery shortcuts (Codex's five) fail and no route under par.
+
+---
+
 ## 2026-11-26 · DR-caves: Copybook drills for World 6
 **Who:** Opus (design, build).
 

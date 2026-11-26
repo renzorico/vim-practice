@@ -39,7 +39,8 @@
       "sprite": "river",
       "walkable": false,
       "fixed": false,
-      "label": "river"
+      "label": "river",
+      "gap": true
     },
     {
       "char": "=",

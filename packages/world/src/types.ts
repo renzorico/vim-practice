@@ -62,6 +62,12 @@ export interface TileDef {
   readonly damage?: number;
   /** Plain-words name for the HUD and screen readers: "stepping stone". */
   readonly label: string;
+  /**
+   * Open but not standable: water, a drop, blank ground. A word or line-end motion that leaves its line (5$, 23e)
+   * may pass over a gap but not through any other non-walkable tile (rock, wall, tree). Other jumps are unchanged.
+   * Default false. (Path rule, 2026-11-26: counted word motions crossed walls and skipped whole stages.)
+   */
+  readonly gap?: boolean;
 }
 
 /** One legend per world, so a world has one look and one vocabulary of tiles. */

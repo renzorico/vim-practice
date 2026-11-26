@@ -6,7 +6,8 @@
     "sprite": "page-void",
     "walkable": false,
     "fixed": true,
-    "label": "void"
+    "label": "void",
+    "gap": true
   },
   "emptyRow": {
     "char": " ",

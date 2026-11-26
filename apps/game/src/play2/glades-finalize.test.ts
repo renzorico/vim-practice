@@ -10,15 +10,21 @@ import { sessionSolver } from './solver.js';
 // glades.test.ts proves edits leave terrain unchanged (no-op edits can spend a turn), so undo,
 // redo and repeat have no edits to act on. Search motions without undo histories.
 const EDITS = new Set(['x', 'r', 'dd', 'u', '<C-r>', '.']);
-it.each([['Glades', GLADES_COMMANDS], ['old motions', WORDWOOD_COMMANDS]] as const)('proves the %s optimum', (name, commands) => {
+it('proves the Glades optimum', () => {
   const solver = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
     stage: glades, legend: gladesLegend });
-  const options = { learnedCommands: commands.filter(command => !EDITS.has(command)), flags: {} };
+  const options = { learnedCommands: GLADES_COMMANDS.filter(command => !EDITS.has(command)), flags: {} };
   const solution = solveStage(solver, glades, gladesLegend, options, { maxTurns: 8, maxExpanded: 200_000 });
   expect(solution).not.toBeNull();
   if (!solution) throw new Error('No solution');
   expect(playKeys(solver, glades, gladesLegend, options, solution.keys).state.status).toBe('cleared');
-  expect(solution.turns).toBe(name === 'Glades' ? glades.parTurns : 8);
+  expect(solution.turns).toBe(glades.parTurns);
+}, 120_000);
+it('needs its own keys: the Wordwood motions alone find no route within 8 turns (word runs stop at brambles)', () => {
+  const solver = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
+    stage: glades, legend: gladesLegend });
+  const options = { learnedCommands: WORDWOOD_COMMANDS.filter(command => !EDITS.has(command)), flags: {} };
+  expect(solveStage(solver, glades, gladesLegend, options, { maxTurns: 8, maxExpanded: 200_000 })).toBeNull();
 }, 120_000);
 it('the authored solution clears in par', () => {
   const solver = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content,
