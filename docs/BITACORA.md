@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-26 · DR-library: Copybook drills for World 5
+**Who:** Opus (design, build).
+
+**What:** Five text-object skills for the Library: Word, Paren, Paragraph, Bracket and tag, Quote objects. Short reps of every skill are now solver-checked when generated; the drill test's "starts solved" check works for the first time. Notes in DRILLS.md section 13.
+
+**Tests:** 204 drill tests, 0.6 GB peak.
+
+---
+
 ## 2026-11-26 · DR-copper: Copybook drills for World 4
 **Who:** Opus (design, build, browser check).
 

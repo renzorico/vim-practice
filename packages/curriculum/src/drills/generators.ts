@@ -13,6 +13,8 @@ const engine = createEngine();
 const DIFFICULTY_STREAM = 7919;
 const MAX_COUNT = 9;
 const MAX_REDRAWS = 20;
+/** Deeper searches over a late-world allow-list take seconds and gigabytes; see generateRep. */
+const MAX_LIVE_SOLVE_PAR = 5;
 /** Plain moves stay within this many steps per axis: `2l` only ties `ll`; from 3 steps a count is shorter. */
 const MAX_PLAIN_STEPS = 2;
 
@@ -29,6 +31,7 @@ function chars(text: string): Key[] {
 /** `n` distinct corpus lines matching `keep`, in random order. */
 function corpusLines(rng: Rng, n: number, keep: (line: CorpusLine) => boolean = () => true): string[] {
   const pool = CORPUS.filter(keep).map(line => line.text);
+  if (pool.length < n) throw new Error(`Corpus has ${pool.length} matching lines; a rep needs ${n}`);
   const chosen: string[] = [];
   while (chosen.length < n) {
     const text = pick(rng, pool);
@@ -729,30 +732,177 @@ const lineCopy: Design = (rng, difficulty) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// World 5: text objects iw aw i( a( ip ap i[ i{ it i" a"
+// ---------------------------------------------------------------------------
+
+interface Span { readonly open: number; readonly close: number }
+
+/** Columns strictly inside a span, past its first inner character and outside any span nested in it. */
+function innerCols(span: Span, nested: readonly Span[], text: string): number[] {
+  const cols: number[] = [];
+  for (let col = span.open + 2; col < span.close; col += 1) {
+    const inNested = nested.some(other => other.open > span.open && other.open <= col && col <= other.close);
+    if (!inNested && !'()[]{}"<>'.includes(text[col] ?? '')) cols.push(col);
+  }
+  return cols;
+}
+
+/** Every bracket pair and string on a line, of any length: the spans a cursor must not stand inside. */
+function allSpans(text: string): Span[] {
+  return [...bracketPairs(text, 0), ...quoteSpans(text, 0)];
+}
+
+/** Bracket spans of one kind on a line, as `%` matches them. */
+function spansOf(text: string, opener: string, minInner: number): Span[] {
+  return bracketPairs(text, 0).filter(pair => text[pair.open] === opener && pair.close - pair.open - 1 >= minInner)
+    .map(pair => ({ open: pair.open, close: pair.close }));
+}
+
+/** Double-quoted strings on a line, paired from the start as Vim pairs them. */
+function quoteSpans(text: string, minInner: number): Span[] {
+  const quotes = [...text].flatMap((char, col) => (char === '"' ? [col] : []));
+  const spans: Span[] = [];
+  for (let index = 0; index + 1 < quotes.length; index += 2) {
+    const open = quotes[index] ?? 0;
+    const close = quotes[index + 1] ?? 0;
+    if (close - open - 1 >= minInner) spans.push({ open, close });
+  }
+  return spans;
+}
+
+/** The inner text of a tag pair, `<b>text</b>`, as a span from `>` to `<`. */
+function tagSpans(text: string, minInner: number): Span[] {
+  const found = /<(\w+)[^>]*>([^<]+)<\/\1>/.exec(text);
+  if (found === null) return [];
+  const open = found.index + found[0].indexOf('>');
+  const close = open + 1 + (found[2]?.length ?? 0);
+  return close - open - 1 >= minInner ? [{ open, close }] : [];
+}
+
+/** A code line with a span of the right kind, and a cursor inside it (never on its first inner character). */
+function spanRep(rng: Rng, spans: (text: string) => Span[]): { lines: string[]; span: Span; col: number } {
+  const usable = (text: string): Span[] => spans(text).filter(span => innerCols(span, allSpans(text), text).length > 0);
+  // Only the edited middle line needs the span; the lines around it are any other code.
+  const text = corpusLines(rng, 1, entry => entry.kind === 'code' && usable(entry.text).length > 0)[0] ?? '';
+  const around = corpusLines(rng, 2, entry => entry.kind === 'code' && entry.text !== text);
+  const lines = [around[0] ?? '', text, around[1] ?? ''];
+  const span = pick(rng, usable(text));
+  return { lines, span, col: pick(rng, innerCols(span, allSpans(text), text)) };
+}
+
+const wordObject: Design = (rng, difficulty) => {
+  const changeable = (text: string): boolean => longWords(text, 5).some(entry => entry.col + entry.word.length < text.length);
+  const lines = corpusLines(rng, 3, line => line.kind === 'folio' && changeable(plainEnd(line.text))).map(plainEnd);
+  const text = lines[1] ?? '';
+  if (difficulty === 2) {
+    // A wrong word: change it from anywhere inside it.
+    const right = longWord(rng, text, 5);
+    const wrong = pick(rng, WORDS.filter(entry => entry.length >= 4 && entry !== right.word));
+    lines[1] = `${text.slice(0, right.col)}${wrong}${text.slice(right.col + right.word.length)}`;
+    return {
+      goal: 'transform', goalText: `"${wrong}" should read "${right.word}". Change the whole word from where you stand: ciw.`, lines,
+      cursor: { line: 1, col: right.col + int(rng, 1, wrong.length - 1) }, keys: ['c', 'i', 'w', ...chars(right.word), '<Esc>'],
+    };
+  }
+  const ink = difficulty === 1 ? blot(rng, INK_WORD) : `${blot(rng, INK_WORD)} ${blot(rng, INK_WORD)}`;
+  const inked = inkedWord(rng, text, ink);
+  lines[1] = inked.line;
+  return {
+    goal: 'transform', goalText: difficulty === 1 ? 'Delete the ink word and its space from inside it: daw.' : 'Delete both ink words from inside the first: d2aw.',
+    lines, cursor: { line: 1, col: inked.col + int(rng, 2, INK_WORD - 2) },
+    keys: difficulty === 1 ? ['d', 'a', 'w'] : ['d', '2', 'a', 'w'],
+  };
+};
+
+const parenObject: Design = (rng, difficulty) => {
+  const { lines, span, col } = spanRep(rng, text => spansOf(text, '(', 3));
+  const text = lines[1] ?? '';
+  if (difficulty === 2) {
+    const value = pick(rng, ['rows', 'page', 'path', 'name'].filter(entry => entry !== text.slice(span.open + 1, span.close)));
+    return {
+      goal: 'transform', goalText: `Replace what is inside the brackets with "${value}": ci(.`, lines,
+      cursor: { line: 1, col }, keys: ['c', 'i', '(', ...chars(value), '<Esc>'],
+    };
+  }
+  const inside = difficulty === 1;
+  return {
+    goal: 'transform', goalText: inside ? `Empty the brackets: "${text.slice(span.open + 1, span.close)}" goes.` : 'Delete the brackets and everything in them: da(.',
+    lines, cursor: { line: 1, col }, keys: ['d', inside ? 'i' : 'a', '('],
+  };
+};
+
+const paragraphObject: Design = (rng, difficulty) => {
+  const sizes = Array.from({ length: 4 }, () => int(rng, 2, 3));
+  const { lines, blanks } = paragraphs(rng, sizes);
+  // Ink paragraphs replace text ones; the cursor stands inside the first of them.
+  const inkFirst = difficulty === 3 ? sizes.length - 1 : int(rng, 1, sizes.length - (difficulty === 2 ? 2 : 1));
+  const count = difficulty === 2 ? 2 : 1;
+  const starts = [0, ...blanks.map(row => row + 1)];
+  for (let index = inkFirst; index < inkFirst + count; index += 1) {
+    const start = starts[index] ?? 0;
+    for (let row = start; row < start + (sizes[index] ?? 0); row += 1) lines[row] = blotLine(rng);
+  }
+  const first = starts[inkFirst] ?? 0;
+  return {
+    goal: 'transform', goalText: count === 2 ? 'Delete both ink paragraphs and their gaps: d2ap.' : 'Delete the ink paragraph and its gap: dap.',
+    lines, cursor: { line: first + int(rng, 0, (sizes[inkFirst] ?? 1) - 1), col: int(rng, 2, 8) },
+    keys: count === 2 ? ['d', '2', 'a', 'p'] : ['d', 'a', 'p'],
+  };
+};
+
+const bracketObject: Design = (rng, difficulty) => {
+  const kind = difficulty === 1 ? '[' : difficulty === 2 ? '{' : 't';
+  const spans = (text: string): Span[] => (kind === 't' ? tagSpans(text, 3) : spansOf(text, kind, 3));
+  const { lines, col } = spanRep(rng, spans);
+  return {
+    goal: 'transform', goalText: kind === 't' ? 'Empty the tag: its text goes, the tags stay. dit.' : `Empty the ${kind === '[' ? 'square' : 'curly'} brackets from inside: di${kind}.`,
+    lines, cursor: { line: 1, col }, keys: ['d', 'i', kind],
+  };
+};
+
+const quoteObject: Design = (rng, difficulty) => {
+  const { lines, span, col } = spanRep(rng, text => quoteSpans(text, 3));
+  if (difficulty === 2) {
+    const value = pick(rng, ['done', 'saved', 'rows'].filter(entry => entry !== (lines[1] ?? '').slice(span.open + 1, span.close)));
+    return {
+      goal: 'transform', goalText: `Rewrite the string as "${value}": ci".`, lines,
+      cursor: { line: 1, col }, keys: ['c', 'i', '"', ...chars(value), '<Esc>'],
+    };
+  }
+  const inside = difficulty === 1;
+  return {
+    goal: 'transform', goalText: inside ? 'Empty the string: the quotes stay. di".' : 'Delete the string, quotes and all: da".',
+    lines, cursor: { line: 1, col }, keys: ['d', inside ? 'i' : 'a', '"'],
+  };
+};
+
 const DESIGNS: Readonly<Record<SkillId, Design>> = {
   'motion.hjkl': hjkl, 'motion.count': count, 'motion.word': word, 'motion.line': line,
   'edit.x': deleteChar, 'edit.r': replaceChar, 'edit.dd': deleteLine, 'edit.undo': undo, 'edit.dot': dot,
   'mode.insert': insert, 'mode.append': append, 'mode.edges': edges, 'mode.open': open, 'edit.D': deleteToEnd,
   'motion.find': find, 'motion.find-repeat': findRepeat, 'motion.paragraph': paragraph, 'motion.file': file, 'motion.match': match,
   'operator.d': deleteMotion, 'operator.y': yankPut, 'register.named': register, 'operator.c': change, 'edit.lines': lineCopy,
+  'textobj.word': wordObject, 'textobj.paren': parenObject, 'textobj.paragraph': paragraphObject,
+  'textobj.bracket': bracketObject, 'textobj.quote': quoteObject,
 };
 
 export function hasGenerator(skill: SkillId): boolean {
   return Object.hasOwn(DESIGNS, skill);
 }
 
-/** Deterministic: the same skill, seed and difficulty always give the same rep. */
 /**
- * Deterministic: the same skill, seed and difficulty always give the same rep. Motion reps are checked with the
- * solver (a few ms each) and redrawn from the same stream while a shorter route exists, so par is always the best.
- * Edit reps are too slow to search live; drills.test.ts proves their par instead.
+ * Deterministic: the same skill, seed and difficulty always give the same rep. Every rep of up to
+ * `MAX_LIVE_SOLVE_PAR` keys without setup is checked with the solver (a few ms) and redrawn from the same stream
+ * while a shorter route exists, so its par is the best. Typed-text reps are longer (the solver cannot type), and
+ * setup reps start from a state the solver cannot load; drills.test.ts covers those.
  */
 export function generateRep(skill: SkillId, seed: number, difficulty: Difficulty): DrillRep {
   const design = DESIGNS[skill];
   if (design === undefined) throw new Error(`No drill generator for ${skill}`);
   const rng = createRng((seed + difficulty * DIFFICULTY_STREAM) >>> 0);
   let rep = buildRep(skill, difficulty, seed, design(rng, difficulty));
-  if (!skill.startsWith('motion.')) return rep;
+  if (rep.setup.length > 0 || rep.level.par > MAX_LIVE_SOLVE_PAR) return rep;
   for (let attempt = 0; attempt < MAX_REDRAWS; attempt += 1) {
     const shorter = solve(rep.level, { maxKeys: rep.level.par - 1 });
     if (shorter === null) return rep;

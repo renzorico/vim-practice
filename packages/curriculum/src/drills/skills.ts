@@ -18,9 +18,14 @@ const JETTY = [...GATES, 'd'] as const;
 const WAREHOUSE = [...JETTY, 'y', 'p'] as const;
 const CUSTOMS = [...WAREHOUSE, '"'] as const;
 const HARBOUR = [...CUSTOMS, 'c', 'C', 'P', 'yy'] as const;
+const STACKS = [...HARBOUR, 'iw', 'aw'] as const;
+const READING = [...STACKS, 'i(', 'a(', 'ib', 'ab'] as const;
+const ARCHIVE = [...READING, 'ip', 'ap'] as const;
+const NOTARY = [...ARCHIVE, 'i[', 'a[', 'i{', 'a{', 'iB', 'aB', 'it', 'at'] as const;
+const CONTRACT = [...NOTARY, 'i"', 'a"', "i'", "a'"] as const;
 
 /**
- * Worlds 0-4, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
+ * Worlds 0-5, in teaching order; later skills interleave earlier ones in reps 8-10. <C-d>/<C-u> have no drill yet:
  * half a screen is 14 lines, and the drill page shows the whole buffer, not a window onto it.
  */
 export const DRILL_SKILLS: readonly DrillSkill[] = [
@@ -48,6 +53,11 @@ export const DRILL_SKILLS: readonly DrillSkill[] = [
   { id: 'register.named', name: 'Named registers', keys: ['"a', '"ap'], stage: 'customs', allowed: CUSTOMS },
   { id: 'operator.c', name: 'Change', keys: ['cw', 'C'], stage: 'harbour', allowed: HARBOUR },
   { id: 'edit.lines', name: 'Copy and move lines', keys: ['yy', 'P'], stage: 'harbour', allowed: HARBOUR },
+  { id: 'textobj.word', name: 'Word objects', keys: ['daw', 'ciw', 'd2aw'], stage: 'stacks', allowed: STACKS },
+  { id: 'textobj.paren', name: 'Paren objects', keys: ['di(', 'ci(', 'da('], stage: 'reading', allowed: READING },
+  { id: 'textobj.paragraph', name: 'Paragraph objects', keys: ['dap', 'd2ap'], stage: 'archive', allowed: ARCHIVE },
+  { id: 'textobj.bracket', name: 'Bracket and tag objects', keys: ['di[', 'di{', 'dit'], stage: 'notary', allowed: NOTARY },
+  { id: 'textobj.quote', name: 'Quote objects', keys: ['di"', 'ci"', 'da"'], stage: 'contract', allowed: CONTRACT },
 ];
 
 export function drillSkill(id: SkillId): DrillSkill | undefined {
