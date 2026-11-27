@@ -24,6 +24,6 @@ it('replays the ten-turn Quarry route through the story: Ash, the shaft, the bri
  */
 it.skipIf(process.env.PROVE === undefined)('proves par: no route even reaches the gate room in fewer turns', () => {
   const gateRoom: Stage = { ...stage, clear: [{ type: 'reach', area: { from: { line: 1, col: 20 }, to: { line: 2, col: 28 } } }] };
-  const found = solveStage(createWorldSim(createEngine()), gateRoom, legend, options, { maxTurns: stage.parTurns, maxExpanded: 400_000 });
+  const found = solveStage(createWorldSim(createEngine()), gateRoom, legend, options, { maxTurns: stage.parTurns, maxExpanded: 400_000, skipBumpedCounts: 10 });
   expect(found?.turns).toBe(stage.parTurns);
 }, 900_000);

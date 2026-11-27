@@ -441,7 +441,7 @@ describe('clearings and half-screen routes', () => {
   ] as const)('finds %s routes through clearings', (command, map, startLine, endLine) => {
     const room = stage({ map, start: { line: startLine, col: 0 }, clear: [{ type: 'reach', area: area(endLine, 0) }] });
     const settings = { learnedCommands: [command], flags: {} };
-    const solution = solveStage(sim, room, clearingLegend, settings, { maxTurns: 1 });
+    const solution = solveStage(sim, room, clearingLegend, settings, { maxTurns: 1, skipBumpedCounts: 10 });
     expect(solution?.turns).toBe(1);
     expect(solution?.keys).toEqual(['2', command]);
     expect(playKeys(sim, room, clearingLegend, settings, solution?.keys ?? []).state.status).toBe('cleared');
@@ -451,12 +451,12 @@ describe('clearings and half-screen routes', () => {
     const room = stage({ map: ['o', 'T', 'T', 'o'], start: { line: startLine, col: 0 },
       clear: [{ type: 'reach', area: area(endLine, 0) }], windowHeight: 10 });
     const settings = { learnedCommands: [command], flags: {} };
-    const solution = solveStage(sim, room, legend, settings, { maxTurns: 1 });
+    const solution = solveStage(sim, room, legend, settings, { maxTurns: 1, skipBumpedCounts: 10 });
     expect(solution?.turns).toBe(1);
     expect(playKeys(sim, room, legend, settings, solution?.keys ?? []).state.status).toBe('cleared');
     const adjacent = { ...room, map: ['o', 'o', 'T', 'T'], start: { line: 0, col: 0 },
       clear: [{ type: 'reach' as const, area: area(1, 0) }] };
-    const adjacentSolution = solveStage(sim, adjacent, legend, { learnedCommands: ['<C-d>'], flags: {} }, { maxTurns: 1 });
+    const adjacentSolution = solveStage(sim, adjacent, legend, { learnedCommands: ['<C-d>'], flags: {} }, { maxTurns: 1, skipBumpedCounts: 10 });
     expect(adjacentSolution?.keys).toEqual(['1', '<C-d>']);
   });
 });
@@ -491,7 +491,7 @@ describe('counted runs past a rejected count', () => {
     const stage = { ...FIXTURE_STAGE, id: 'runs', legend: 'runs', map: ['.#', '.#', '..'], start: { line: 0, col: 0 },
       entities: [], triggers: [], scripts: [], allowedCommands: ['e'], parTurns: 1, solution: ['3', 'e'],
       clear: [{ type: 'reach' as const, area: { from: { line: 2, col: 1 }, to: { line: 2, col: 1 } } }] };
-    const found = solveStage(createWorldSim(createEngine()), stage, legend, { learnedCommands: ['e'], flags: {} }, { maxTurns: 1 });
+    const found = solveStage(createWorldSim(createEngine()), stage, legend, { learnedCommands: ['e'], flags: {} }, { maxTurns: 1, skipBumpedCounts: 10 });
     expect(found?.turns).toBe(1);
   });
 });

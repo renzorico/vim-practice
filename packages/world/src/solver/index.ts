@@ -12,6 +12,12 @@ export interface StageSolution {
 export interface StageSolveLimits {
   readonly maxTurns?: number;
   readonly maxExpanded?: number;
+  /**
+   * Bumped counts in a row a counted run or find may skip before larger counts are given up (`2e` hits rock, `3e`
+   * lands). Default 0: stop at the first bump, which can miss routes. Exact proofs pass a larger value; it costs
+   * memory on big vocabularies (Canopy and Jetty run out of 4 GB with it).
+   */
+  readonly skipBumpedCounts?: number;
 }
 
 const MOTIONS = new Set([
@@ -82,7 +88,7 @@ const SATURATING = new Set([
 
 /** Generate counts lazily; feedback is the simulated identity, or null for a rejection. */
 function* baseFieldActions(
-  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number,
+  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number, skipBumped: number,
 ): Generator<readonly Key[], void, string | null> {
   const characters = [...new Set((state.engine.lines[state.engine.cursor.line] ?? '').split(''))].sort();
   const dimension = Math.max(state.engine.lines.length, ...state.engine.lines.map((line) => line.length));
@@ -123,13 +129,17 @@ function* baseFieldActions(
       if (['0', '^'].includes(command)) continue;
       const maxCount = command === '%' ? 100
         : ['w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#'].includes(command) ? totalCells : dimension;
+      let rejected = 0;
       for (let count = command === 'G' || command === '%' ? 1 : 2; count <= maxCount; count += 1) {
         const current = yield [...String(count), ...sequence];
+        rejected = current === null ? rejected + 1 : 0;
         // Absolute line/percentage counts must keep scanning: adjacent counts can round
         // to the same destination before a later count reaches a new one.
         // A walk checks every cell, so once one count bumps every larger one does. A run or find checks its landing
-        // and its route: `2e` can hit rock where `3e` lands clear, so only a repeated landing ends those.
-        if (SATURATING.has(command) && ((current === null && WALKS.has(command)) || (current !== null && current === previous))) break;
+        // and its route: `2e` can hit rock where `3e` lands clear, so it keeps going until a landing repeats, or
+        // until more than `skipBumped` counts in a row bump (scanning every count to the buffer's end runs out of memory).
+        if (SATURATING.has(command) && ((current === null && (WALKS.has(command) || rejected > skipBumped))
+          || (current !== null && current === previous))) break;
         previous = current;
       }
     }
@@ -162,9 +172,9 @@ function* operatorActions(
 }
 
 function* fieldActions(
-  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number, textObjects: boolean,
+  state: WorldState, commands: readonly string[], legend: Legend, windowHeight: number, textObjects: boolean, skipBumped: number,
 ): Generator<readonly Key[], void, string | null> {
-  yield* baseFieldActions(state, commands, legend, windowHeight);
+  yield* baseFieldActions(state, commands, legend, windowHeight, skipBumped);
   const characters = [...new Set(Array.from(state.engine.lines.join(''))) ].sort();
   for (const prompt of ['/', '?']) if (commands.includes(prompt)) {
     for (const char of characters) yield [prompt, char, '<CR>'];
@@ -247,6 +257,7 @@ export function solveStage(
 ): StageSolution | null {
   const maxTurns = limits.maxTurns ?? 60;
   const maxExpanded = limits.maxExpanded ?? 200000;
+  const skipBumped = limits.skipBumpedCounts ?? 0;
   if (!Number.isFinite(maxTurns) || maxTurns < 0 || !Number.isFinite(maxExpanded) || maxExpanded < 0) return null;
   const search = SEARCH_WORLDS.has(stage.world);
   const commands = options.learnedCommands.filter(command => (search || !SEARCH_COMMANDS.has(command))
@@ -282,7 +293,7 @@ export function solveStage(
       })();
     } else {
       actions = (function* () {
-        yield* fieldActions(node.state, commands, legend, windowHeight, TEXT_OBJECT_WORLDS.has(stage.world));
+        yield* fieldActions(node.state, commands, legend, windowHeight, TEXT_OBJECT_WORLDS.has(stage.world), skipBumped);
         if (stage.triggers.some((trigger) => canInteract(node.state, trigger))) yield ['<CR>'];
       })();
     }

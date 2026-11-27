@@ -56,7 +56,8 @@
       "sprite": "ladder",
       "walkable": true,
       "fixed": true,
-      "label": "rope ladder"
+      "label": "rope ladder",
+      "climb": true
     },
     {
       "char": "@",

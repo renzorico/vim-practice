@@ -69,4 +69,13 @@ describe('the path rule in the field', () => {
   it('structural leaps (G) keep jumping over trees', () => {
     expect(play(['ooooo', 'TTTTT', 'ooooo'], 'G').state.engine.cursor).toEqual({ line: 2, col: 0 });
   });
+  it('a run never starts on a ladder: climb off first', () => {
+    const sim = createWorldSim(createEngine());
+    const stage = { ...FIXTURE_STAGE, map: ['..', 'H.', 'aa'], start: { line: 1, col: 0 }, entities: [], triggers: [] };
+    const options = { learnedCommands: ['w', 'j'], flags: {} };
+    const ladder = sim.step(sim.init(stage, legend, options), 'w', stage, legend, options);
+    expect(ladder.events).toContainEqual({ type: 'bump', reason: 'wall', at: { line: 1, col: 0 } });
+    const below = sim.step(sim.step(sim.init(stage, legend, options), 'j', stage, legend, options).state, 'w', stage, legend, options);
+    expect(below.state.engine.cursor).toEqual({ line: 2, col: 1 });
+  });
 });

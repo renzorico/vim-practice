@@ -97,6 +97,8 @@ export function validateMovement(before: EngineState, after: EngineState, comman
   }
   // On its own line too: a run hops gaps, never rock (2026-11-27; `e` crossed eight cells of Quarry bedrock).
   if (commands.some(command => command.kind === 'motion' && PATH_CHECKED.has(command.id))) {
+    // You climb off a ladder before you run: a run from a climb tile could wrap into the next row (Lowlands `4e`).
+    if (tileAt(legend, before.lines, before.cursor)?.climb === true) return { reason: 'wall', at: before.cursor };
     const at = jumpBlocked(before.lines, before.cursor, after.cursor, legend);
     if (at !== null) return { reason: 'wall', at };
   }
