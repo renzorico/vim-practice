@@ -3,14 +3,36 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 4 checked: no changes needed
+**Who:** Opus. Renzo: "Start World 4".
+
+With the exact solver and the path rules, the audit finds no shortcut in the Jetty (par 6), Warehouse (15), Customs (16) or Counter (12), and each par route uses the keys its stage teaches (`d`; `y p`; `"`). The Jetty, Warehouse and Customs join `challenge.test.ts`; the Counter (the castle) teaches no new key. The Jetty's par is proven; the Warehouse, Customs and Counter pars are best known (register edits make a full search too large).
+
+CI's time limit goes from 20 to 45 minutes: the exhaustive proofs take minutes each on a runner, and PRs 121 and 122 were cancelled at 20.
+
+---
+
+## 2026-11-27 · World 3: every taught key on the par route
+**Who:** Opus (design, build, proofs). Renzo: "Start World 3". Built on the exact solver (PR 121).
+
+**Canopy** (par 7, proven exactly): a second thorn past the lift, so `;` repeats `t@` and stops on it; the route is `fH 2j , 2j t@ 2j ;`. A new note line teaches it.
+
+**Glades** (par 4, proven): the stored route is `G`, `2{` to the lamp, `gg` to the rope, `4}` back to Pilcrow. The stage stays short; a counted `G` still ties `{ } gg`.
+
+**Gates** (par 8, proven): the window is 24 rows (half a page is 12 lines), and the upper lamp waits for the lower one. Route: `%` to Ope, `24 Ctrl-d` to the lower lamp, `12 Ctrl-u` to the upper, `G`, Shut, `%`. Plain presses take two more turns (`Ctrl-d` twice, `Ctrl-u` once). The camera shows twice as much of the trunk.
+
+**Ties:** `;`, `{ } gg` and counted scrolls each tie another one-turn command (`t@`, a counted `G`, `N%`), like the Shaft's `.`. The par routes use them; turns can't force them. `challenge.test.ts` lists all nine World 1-3 stages.
+
+---
+
 ## 2026-11-27 · World 2 redesign: Quarry Road, Cut, Shaft; runs stop at rock on their own row
 **Who:** Opus (design, build, solver proofs). Renzo: "Start World 2".
 
 **Path rule, same row:** word and line-end runs (`w b e W B E 0 ^ $`) now find a clear path on their own row too, not only when they leave it: gaps are hopped, rock is not. The solver found `e` crossing eight cells of Quarry bedrock (`,` and `#` are both punctuation, one Vim word) for a 3-turn clear. `movement.ts` drops the `crossesLines` guard; finds (`f t`) still cross anything on a row. Three stages hopped solids on a row: the Warehouse, Customs and Counter crate lips (`]`, and the Customs nets) are now gap tiles, so their routes stand; the Gallery's `3w` over bedrock is gone and its par goes 5 to 6 (`# w # w # e`, found by the full solver).
 
-**Solver:** the state key holds `lastChange` only when `.` is allowed. Without it, every no-op `r` forked every state. And (Codex review) a counted run or find stopped trying counts at the first one that bumped, so `3e` was never tried after `2e` hit rock: proofs missed routes. New limit `skipBumpedCounts` lets a search skip that many bumped counts in a row; exact proofs (Lowlands, Lighthouse, Quarry, Cut, Shaft) pass 10. The default stays 0, because scanning every count ran the Canopy and Jetty proofs out of 4 GB in CI.
+**Solver:** the state key holds `lastChange` only when `.` is allowed. Without it, every no-op `r` forked every state. And (Codex review) a counted run or find stopped trying counts at the first one that bumped, so `3e` was never tried after `2e` hit rock: proofs missed routes. Now every count is tried (`skipBumpedCounts`, default Infinity; a finite value prunes and is no longer a proof). That ran the Canopy, Cut and Jetty proofs out of memory until `sessionSolver` stopped caching steps still waiting for their motion (`1`, `12`...); exhaustive, the Cut needs 1.4 GB and the Canopy 2.7 GB and 8 min. The Canopy's World 1 motions need 10 turns, not twice par (7).
 
-**Ladders, again:** with exact counts the solver found three more holes. A run may not start on a ladder now (climb off first): from the Lowlands ladder bottom, `4e` wrapped into the next row and skipped the `b` room, and the Lighthouse cleared in 6 with `41b`. The Canopy's `H` ladders get `climb` (a `19e` cleared it in 4, par 7). After the fix the Lowlands solver's own best route is the stored one, `2b` included; Lighthouse par stays 7.
+**Ladders, again:** with exact counts the solver found three more holes. A run may not start on a ladder now (climb off first): from the Lowlands ladder bottom, `4e` wrapped into the next row and skipped the `b` room,  The Canopy's `H` ladders get `climb` (a `19e` cleared it in 4, par 7). After the fix the Lowlands solver's own best route is the stored one, `2b` included. The **Lighthouse** has no ladder tiles: with every count tried it clears in 6 (`9h 41b 3k 0 3k 9l`, a run back up the open stair lane), so par 7 to 6; the old route still clears in 7.
 
 **Quarry Road** (par 3 to 10, `allowedCommands` `h j k l w b e 0 $ x r`): a shaft drops onto a boulder in the road. `4x` on the gravel slides the whole row west, boulder and all, until open road lies under the shaft (only `4x` or `5x` works; `:e!` undoes a wrong count). At the river, `5r=` from the bank meets the stairs on the far side; `5x` would drag the far bank and its stairs four columns west of the flight above. The clear needs Ash, the Scribe's note and the gate. Camp, passages and yard are packed earth (fixed), so only the road and the bank can be edited; the river is no longer a gap, so no run hops it; the stairs are their own fixed, climbed tile, so no single `r` letter paves bank, river and stairs. **Proof:** a search through the story runs out of memory, so `quarry-finalize` searches the plain world for the gate room alone (talks take no turns, the story adds no world effects): 10 turns (33 min with exact counts). Opt-in (`PROVE=1`); CI replays the route.
 

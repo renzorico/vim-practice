@@ -34,7 +34,7 @@
         },
         {
           "id": "lift",
-          "objective": "Ride the lift: stand next to it, press `Enter`.",
+          "objective": "Ride the lift: `;` stops short of the thorns again, then `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "canopy"
@@ -128,6 +128,10 @@
         {
           "speaker": "scribe",
           "text": "Thorns past the gap: press `t@` to stop one\ntile short. `f@` is blocked."
+        },
+        {
+          "speaker": "system",
+          "text": "Thorns again past the lift, below. `;`\nrepeats your `t@`: it stops you on the lift."
         }
       ],
       "then": [

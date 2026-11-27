@@ -17,7 +17,8 @@ permissions:
 jobs:
   gates:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Exhaustive solver proofs (Canopy, Cut, Glades) take minutes each on a CI runner.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

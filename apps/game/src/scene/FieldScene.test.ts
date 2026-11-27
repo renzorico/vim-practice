@@ -521,14 +521,14 @@ it('blinks between real bracket partners, cuts the camera and settles on interru
   playback.targets.value = 0.5; playback.onUpdate();
   expect(player?.alpha).toBe(0);
   expect(player?.y).toBe(8);
-  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 96);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 12 * 16);
   playback.targets.value = 0.75; playback.onUpdate();
   expect(player?.alpha).toBe(0.5);
   scene.finish();
   expect(player?.alpha).toBe(1);
   expect(player?.y).toBe(8);
 });
-it.each([false, true])('scrolls exactly half the twelve-row window with no arc (reduced motion: %s)', async reducedMotion => {
+it.each([false, true])('scrolls exactly half the 24-row window with no arc (reduced motion: %s)', async reducedMotion => {
   const { gates, gatesLegend } = await import('../play2/content.js');
   const { GATES_COMMANDS } = await import('../play2/session.js');
   const sim = createWorldSim(createEngine());
@@ -542,12 +542,12 @@ it.each([false, true])('scrolls exactly half the twelve-row window with no arc (
   if (!reducedMotion) {
     const playback = fake.tween.mock.calls.at(-1)?.[0];
     playback.targets.value = 0.5; playback.onUpdate();
-    expect(player?.y).toBe(3 * 16 + 8);
-    expect(fake.centerOn).toHaveBeenLastCalledWith(72, 9 * 16);
+    expect(player?.y).toBe(6 * 16 + 8);
+    expect(fake.centerOn).toHaveBeenLastCalledWith(72, 18 * 16);
     playback.targets.value = 1; playback.onUpdate(); scene.finish();
   }
-  expect(player?.y).toBe(6 * 16 + 8);
-  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 12 * 16);
+  expect(player?.y).toBe(12 * 16 + 8);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(72, 24 * 16);
 });
 
 it.each([false, true])('tips Jetty junk, splashes, then slides the row and actors (reduced motion: %s)', async reducedMotion => {

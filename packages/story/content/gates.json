@@ -152,7 +152,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand over the hollow, top of the trunk. Press\n`Ctrl-d` four times: down to the lower lamp."
+          "text": "Stand over the hollow, top of the trunk. Press\n`Ctrl-d` twice: down to the lower lamp."
         }
       ],
       "then": [
@@ -193,7 +193,7 @@
         },
         {
           "speaker": "system",
-          "text": "Now the upper lamp. Press `Ctrl-u` twice:\nhalf a screen up each time."
+          "text": "Now the upper lamp, 12 lines up: `12 Ctrl-u`.\nA count sets how far a scroll goes."
         }
       ],
       "then": [

@@ -8,7 +8,7 @@ import { LOWLANDS_COMMANDS } from './session.js';
 
 it('proves the Lowlands with the actual solver and story', () => {
   const sim = sessionSolver({ sim: createWorldSim(createEngine()), storyEngine: createStoryEngine(), content, stage, legend });
-  const solution = solveStage(sim, stage, legend, { learnedCommands: LOWLANDS_COMMANDS, flags: {} }, { maxTurns: 12, maxExpanded: 30000, skipBumpedCounts: 10 });
+  const solution = solveStage(sim, stage, legend, { learnedCommands: LOWLANDS_COMMANDS, flags: {} }, { maxTurns: 12, maxExpanded: 30000 });
   // The solver's own best route is the stored one, `2b` included: a run can't start on a ladder and wrap past the dead end.
   expect(solution?.keys).toEqual(stage.solution);
   expect(solution?.turns).toBe(stage.parTurns);
