@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "fetch",
-          "objective": "Mark `ma`, search `/x` and `/o`, return `` `a ``.",
+          "objective": "Mark `ma`. The oil is at the start of this line: `'a`. Search `/x`, return `` `a ``.",
           "completeWhen": {
             "type": "flag",
             "flag": "marked.both",
@@ -42,6 +42,10 @@
         {
           "speaker": "system",
           "text": "At the fork, press `ma`: it marks the spot.\nLater, `` `a `` brings you back from anywhere."
+        },
+        {
+          "speaker": "system",
+          "text": "`'a` goes to the start of the marked line:\nthe oil is there. `` `a `` is the exact spot."
         }
       ],
       "then": []

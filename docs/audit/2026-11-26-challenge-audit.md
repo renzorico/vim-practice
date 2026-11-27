@@ -67,6 +67,10 @@ too; the Gallery's par went 5 to 6 under that rule.
 **Update 2026-11-27 (World 4):** unchanged and passing: Jetty `d`, Warehouse `y p`, Customs `"` on their par routes,
 no shortcut in the probe. Counter teaches nothing new.
 
+**Update 2026-11-27 (Worlds 5-6):** every field stage that teaches a key now has it on its par route
+(`challenge.test.ts`, 19 stages). Pars changed: Stacks 8, Archive 7, Notary 12, Marked 4 (proven). Text stages are still
+not audited.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

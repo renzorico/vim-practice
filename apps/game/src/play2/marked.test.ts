@@ -50,6 +50,7 @@ it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive
   expect(lines('marked.intro')).toEqual([
     'A fork in the tunnel. You need a crystal and\nlamp oil, sealed somewhere in the rock.',
     'At the fork, press `ma`: it marks the spot.\nLater, `` `a `` brings you back from anywhere.',
+    "`'a` goes to the start of the marked line:\nthe oil is there. `` `a `` is the exact spot.",
   ]);
   for (const item of [null, first, second]) {
     if (item) session = dismiss(keys(session, `/${item}<CR>`));

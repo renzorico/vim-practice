@@ -12,7 +12,7 @@ export const SURFACES = {
   mortar: 'preserve', scaffold: 'preserve', gallery: 'preserve', platform: 'preserve',
   jetty: 'preserve', plank: 'preserve', road: 'preserve', gravel: 'preserve',
   blank: 'paper', 'page-paper': 'paper', 'page-blank': 'paper', 'page-void': 'paper',
-  'clause-gap': 'preserve', air: 'preserve', chasm: 'preserve',
+  'clause-gap': 'preserve', air: 'preserve', chasm: 'preserve', 'cave-rock': 'preserve',
 } as const;
 export function surface(sprite: string): 'natural' | 'preserve' | 'paper' | undefined {
   return Object.prototype.hasOwnProperty.call(SURFACES, sprite) ? SURFACES[sprite as keyof typeof SURFACES] : undefined;

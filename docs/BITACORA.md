@@ -3,6 +3,18 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 6: Mouth, Gallery, Marked
+**Who:** Opus (design, routes, Marked redesign); Claude Sonnet via dispatch (W6-tests: test updates); Codex (review). Renzo: "Start World 6".
+
+- **Mouth** (par 4): `?x n n /=`: the last step searches forward to the ledge beside Echo (`l` ties).
+- **Gallery** (par 6): `* w # w * e`.
+- **Marked** (par 4, proven exactly over its allowed commands): the oil moved to the start of the fork's line, behind rock, past a dark edge tile, so `'a` lands on it; Echo's platform is ledge tiles and Echo sits at its far end. Route `ma /x 'a \`a`. Review rounds closed three bypasses: walking to the oil (`/x /o 5l`, 3 turns), `/.` and `/=` searches landing beside Echo, and a same-row `4f=` from the oil. Finds are now off in the Marked (`allowedCommands` without `f t ; ,`: the caves are dark).
+- **Labyrinth** teaches nothing new.
+
+**Ties:** the Mouth's `/` and the Marked's `'` each tie another one-turn move; the routes use them.
+
+---
+
 ## 2026-11-27 · World 5 by dispatch: Stacks, Archive, Notary
 **Who:** Opus (design, briefs, integration, review fixes); three Claude Sonnet builders via `tools/agents/dispatch.sh` (W5-stacks, W5-archive, W5-notary, one worktree each); Codex (review). Renzo: "use dispatch for World 5".
 
