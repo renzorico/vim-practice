@@ -75,6 +75,9 @@ not audited.
 back; par 7, proven over the stage's whole vocabulary, and no clear without `m`, `` ` `` or `'`. It joins
 `challenge.test.ts`.
 
+**Update 2026-11-27 (World 7):** the Last Page is unchanged: its clear needs the repaired page, the R door and `:w`
+(own block in `challenge.test.ts`, since `:w` is an Ex command). No shortcut in the probe; par 15 is best-known.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

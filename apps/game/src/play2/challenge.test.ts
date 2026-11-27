@@ -3,7 +3,7 @@
  * par route needs every key it teaches: a player can't clear it while skipping the lesson.
  */
 import { describe, expect, it } from 'vitest';
-import { stages } from './content.js';
+import { content, stages } from './content.js';
 import { introducedAt, REFERENCE_ONLY } from './introducedAt.js';
 import { stageCommands } from './session.js';
 import { commandsIn } from './audit/commandsIn.js';
@@ -26,5 +26,24 @@ describe.each(REDESIGNED)('%s', id => {
   it('needs every key it teaches on its par route', () => {
     const used = commandsIn(stage.solution, new Set(commands));
     expect(taught.filter(key => !used.includes(key))).toEqual([]);
+  });
+});
+
+// The Last Page teaches `:w`, an Ex command outside the stage's command list, so the rule above can't see it. Its clear
+// rule needs the story beats instead: the repaired page opens the doors, only the R door sets last.recover, and
+// `saved` only holds after `:w` (in either order).
+describe('last-page', () => {
+  const entry = stages.find(item => item.stage.id === 'last-page');
+  if (entry === undefined) throw new Error('No stage last-page');
+  const { stage } = entry;
+
+  it('clears only on Recover and a write', () => {
+    expect(stage.clear).toEqual([{ type: 'flag', flag: 'last.recover' }, { type: 'saved' }]);
+    expect(stage.triggers.find(trigger => trigger.id === 'last.door-r')).toMatchObject({ onlyIf: 'last.whole' });
+    const recover = content.reactions.filter(reaction => reaction.then.some(effect => effect.type === 'set-flag' && effect.flag === 'last.recover'));
+    expect(recover.map(reaction => reaction.when)).toEqual([{ type: 'trigger', trigger: 'last.door-r' }]);
+  });
+  it('writes with `:w` on its par route', () => {
+    expect(stage.solution.join('')).toContain(':w<CR>');
   });
 });
