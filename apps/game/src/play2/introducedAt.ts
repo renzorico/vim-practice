@@ -26,7 +26,7 @@ export const introducedAt: Readonly<Record<string, string>> = {
 };
 
 /** Aliases and app controls: listed in `:help`, but a card for them would bury the key being taught. */
-const REFERENCE_ONLY: ReadonlySet<string> = new Set([':e!', ':q', 'I', 'N', 'ib', 'ab', 'iB', 'aB', "i'", "a'"]);
+export const REFERENCE_ONLY: ReadonlySet<string> = new Set([':e!', ':q', 'I', 'N', 'ib', 'ab', 'iB', 'aB', "i'", "a'"]);
 
 const HELP_KEY_NAMES: ReadonlySet<string> = new Set(HELP_KEYS.map(entry => entry.key));
 /** Longest first, so `dd` wins over `d` and `i(` over `i`. */

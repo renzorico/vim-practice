@@ -94,3 +94,12 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | B-E | Spawned entities' start cells are not checked for walkability; flag references are not linted | B-F |
 | P3 review | Old `escape.save.v1` Phase 2 saves are not migrated: the redesign replaced every level, so there is nothing meaningful to carry over (decision, not a bug) | orchestrator |
 | P3 browser | Lesson card sits small top-left with no header; map glyph colours for N could be warmer | P3-H polish |
+
+### World 5 challenge (2026-11-27, briefs in `.agents/briefs/`)
+
+| ID | Task | Owns files | Runner | Reviewer | Branch | Status |
+|---|---|---|---|---|---|---|
+| W5-stacks | Stacks par route needs `iw` (a shelf that keeps its gap) | `packages/world/content/stacks/**`, `packages/story/content/stacks.json`, `apps/game/src/play2/stacks*.test.ts` | claude-sonnet | codex | task/W5-stacks | running |
+| W5-archive | Archive par route needs `ip` (paste into a gap that has its blank lines) | `packages/world/content/archive/**`, `packages/story/content/archive.json`, `apps/game/src/play2/archive*.test.ts` | claude-sonnet | codex | task/W5-archive | running |
+| W5-notary | Notary par route needs `i[ i{ at` (empty lock, empty seal, whole tag) | `packages/world/content/notary/**`, `packages/story/content/notary.json`, `apps/game/src/play2/notary*.test.ts` | claude-sonnet | codex | task/W5-notary | running |
+
