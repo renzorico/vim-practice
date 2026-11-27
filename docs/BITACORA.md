@@ -6,9 +6,9 @@ Written so it can become a LinkedIn post or a talk later: each entry ends with t
 ## 2026-11-27 · World 7: the Last Page checked
 **Who:** Opus (audit, test); Codex (review). Renzo: "continue with next world".
 
-- **Unchanged, passing:** the Last Page (par 15) needs the repair (`xp`, `daw`, `ddp`, an undo after each tear), then the R door, then `:w`. The doors open only on a whole page; the clear rule is `last.recover` and `saved`.
+- **Unchanged, passing:** the Last Page (par 15) needs the repair (`xp`, `daw`, `ddp`, an undo after each tear), the R door and `:w` (R and the write in either order). The doors open only on a whole page; the clear rule is `last.recover` and `saved`.
 - **Shortcut probe:** 9,870 probes, none under par. A full solver search is out of reach here (every learned key), so par stays best-known.
-- **Test:** `:w` is an Ex command, outside the stage's command list, so the generic "taught key on the route" rule can't see it. `challenge.test.ts` gets a Last Page block: clear needs Recover and a write, the R door needs the whole page, and the route writes with `:w`.
+- **Test:** `:w` is an Ex command, outside the stage's command list, so the generic "taught key on the route" rule can't see it. `challenge.test.ts` gets a Last Page block: clear needs Recover and a write, the R door needs the whole page and is the only thing that sets Recover, and the route writes with `:w`.
 
 **Agentic lesson:** a generic check that passes by seeing nothing is worse than no check. Give the odd stage its own small test.
 
