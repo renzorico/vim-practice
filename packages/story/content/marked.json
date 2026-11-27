@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "fetch",
-          "objective": "Mark `ma`. The oil is at the start of this line: `'a`. Search `/x`, return `` `a ``.",
+          "objective": "Mark `ma`. Walk the tunnel to the crystal. `'a` for the oil, `` `a `` home.",
           "completeWhen": {
             "type": "flag",
             "flag": "marked.both",
@@ -37,7 +37,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A fork in the tunnel. You need a crystal and\nlamp oil, sealed somewhere in the rock."
+          "text": "A fork in the tunnel. Too dark to search.\nYou need a crystal and lamp oil."
         },
         {
           "speaker": "system",
@@ -46,6 +46,10 @@
         {
           "speaker": "system",
           "text": "`'a` goes to the start of the marked line:\nthe oil is there. `` `a `` is the exact spot."
+        },
+        {
+          "speaker": "system",
+          "text": "The crystal is at the end of the tunnel.\nWalk there; the mark will bring you home."
         }
       ],
       "then": []
