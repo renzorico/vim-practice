@@ -3,7 +3,7 @@
   "world": "quarry",
   "type": "field",
   "title": "The Cut",
-  "goalText": "Find who is caged at the end of the ledge.",
+  "goalText": "Free who is caged below the end of the ledge, and bring them back.",
   "map": [
     "################################",
     "#       :::::::::::::::::::::::#",
@@ -11,8 +11,8 @@
     "#       :::::::::::::::::::::::#",
     "#       ::::::::::::::::::::: :#",
     "..............................",
-    "........:::::::::::::::::::::::#",
-    "#       :::::::::::::::::::::::#",
+    "........::::::::::::::::::::: :#",
+    "#       ::::::::::::::::::::: :#",
     "#       :::::::::::::::::::::::#",
     "#       :::::::::::::::::::::::#",
     "#       :::::::::::::::::::::::#",
@@ -46,7 +46,7 @@
       "kind": "npc",
       "sprite": "dot-cage",
       "at": {
-        "line": 4,
+        "line": 7,
         "col": 29
       },
       "behaviour": {
@@ -157,11 +157,24 @@
     {
       "type": "flag",
       "flag": "cut.dot-free"
+    },
+    {
+      "type": "reach",
+      "area": {
+        "from": {
+          "line": 5,
+          "col": 1
+        },
+        "to": {
+          "line": 5,
+          "col": 7
+        }
+      }
     }
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 4,
+  "parTurns": 6,
   "solution": [
     "3",
     "j",
@@ -171,10 +184,26 @@
     "2",
     "6",
     "l",
-    "<CR>"
+    "j",
+    "<CR>",
+    "<C-r>"
   ],
   "hints": [
-    "Stand on the ledge, let the Blots reach your row, then press `dd`.",
-    "Press `u`: the ledge comes back, the Blots stay gone."
+    "Stand on the ledge, let the Blots reach your row, then press `dd`. Then `u`: the ledge comes back, they don't.",
+    "Dot is free and the ledge is long. `Ctrl-r` redoes your `dd`, and puts you back where you did it."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "0",
+    "$",
+    "dd",
+    "u",
+    "<C-r>"
   ]
 }

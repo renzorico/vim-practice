@@ -199,6 +199,7 @@ export function learnedKeycaps(flags: Readonly<Record<string, boolean>>, textSta
     ...(flags['quarry.knows-r'] ? ['r', '5r='] : []),
     ...(flags['cut.knows-dd'] ? ['dd'] : []),
     ...(flags['cut.knows-u'] ? ['u'] : []),
+    ...(flags['cut.knows-redo'] ? ['<C-r>'] : []),
     ...(flags['shaft.knows-dot'] ? ['.'] : []),
     ...(textStage && flags['ledger.knows-o'] ? ['o', 'D'] : []),
     ...(flags['canopy.knows-f'] ? ['f', 'fH'] : []),

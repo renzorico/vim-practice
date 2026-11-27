@@ -18,11 +18,20 @@
         },
         {
           "id": "dot",
-          "objective": "Open the cage: stand next to it, press `Enter`.",
+          "objective": "Open the cage: drop into the pit beside it, press `Enter`.",
           "completeWhen": {
             "type": "flag",
             "flag": "cut.dot-free",
             "value": true
+          },
+          "then": []
+        },
+        {
+          "id": "back",
+          "objective": "Bring Dot back to the start: `Ctrl-r` redoes your `dd`, right where you did it.",
+          "completeWhen": {
+            "type": "stage-cleared",
+            "stage": "cut"
           },
           "then": []
         }
@@ -35,7 +44,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "The Cut: a ledge over a long drop. Someone is\ncrying in a cage at the far end. Reach it."
+          "text": "The Cut: a ledge over a long drop. Someone is\ncaged past the far end. Bring them back."
         }
       ],
       "then": []
@@ -154,6 +163,16 @@
               }
             }
           ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "cut.knows-dd",
+          "value": true
+        },
+        {
+          "type": "set-flag",
+          "flag": "cut.knows-u",
+          "value": true
         }
       ]
     },
@@ -167,12 +186,16 @@
         },
         {
           "speaker": "system",
-          "text": "The cage opens. A small ink dot hops out\nand looks up at you."
+          "text": "The cage opens. A small ink dot hops out\nand into your pocket."
         },
         {
           "speaker": "npc",
           "text": "Again. ...again.",
           "name": "Dot"
+        },
+        {
+          "speaker": "system",
+          "text": "Blots pour back onto the ledge. `Ctrl-r`\nredoes your `dd`, right where you did it."
         }
       ],
       "then": [
@@ -191,22 +214,63 @@
             {
               "type": "spawn",
               "entity": {
-                "id": "dot",
-                "kind": "npc",
-                "sprite": "dot",
+                "id": "cut.wave-0",
+                "kind": "blot",
+                "sprite": "blot",
                 "at": {
-                  "line": 4,
-                  "col": 29
+                  "line": 5,
+                  "col": 12
                 },
                 "behaviour": {
-                  "type": "follow"
+                  "type": "chase"
                 },
                 "every": 1,
-                "damage": 0,
-                "solid": true
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.wave-1",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 17
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
+              }
+            },
+            {
+              "type": "spawn",
+              "entity": {
+                "id": "cut.wave-2",
+                "kind": "blot",
+                "sprite": "blot",
+                "at": {
+                  "line": 5,
+                  "col": 22
+                },
+                "behaviour": {
+                  "type": "chase"
+                },
+                "every": 1,
+                "damage": 1,
+                "solid": false
               }
             }
           ]
+        },
+        {
+          "type": "set-flag",
+          "flag": "cut.knows-redo",
+          "value": true
         }
       ]
     },
@@ -215,7 +279,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "On the ledge, press `dd` to wipe the Blots in\nyour row. Then `u` to bring the ledge back."
+          "text": "On the ledge, `dd` wipes your row's Blots. `u`\nbrings it back. `Ctrl-r` deletes it again."
         }
       ],
       "then": []

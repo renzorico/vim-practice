@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import { createStoryEngine } from '@escape/story';
 import { createWorldSim } from '@escape/world';
-import { content, stages, stage, legend, quarry } from '../play2/content.js';
+import { content, stages, stage, legend } from '../play2/content.js';
 import { moodFor, paceFor, STAGE_PACE, TEMPO_FACTOR, type MoodInput } from './mood.js';
 
 const sim = createWorldSim(createEngine());
@@ -21,7 +21,7 @@ it('follows the current main quest, including the last open step of longer quest
   expect(moodFor({ ...base, stage: text }).energy).toBe(1);
 });
 it.each([0, 1, 2, 3, 5, 6])('measures contact damage using Manhattan distance (%s cells)', distance => {
-  const spawn = quarry.entities.find(entity => entity.damage > 0)!;
+  const spawn = stages.flatMap(entry => entry.stage.entities).find(entity => entity.damage > 0)!;
   const cursor = base.world.engine.cursor;
   const world = { ...base.world, entities: [{ id: spawn.id, def: spawn, at: { line: cursor.line + Math.min(distance, 2), col: cursor.col + Math.max(0, distance - 2) }, pathIndex: 0 }] };
   expect(moodFor({ ...base, world }).danger).toBe(distance <= 2 ? 2 : distance <= 5 ? 1 : 0);

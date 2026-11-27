@@ -36,13 +36,14 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
     lamp: { ...guide(['8', 'k'], [cell(25, 1), cell(17, 1)]), within: { from: cell(12, 0), to: cell(25, 20) } },
   },
   'quarry.road': {
-    cut: { ...guide(['4', 'x'], [cell(6, 15)]), whileRow: { line: 6, has: 'R' } },
-    river: guide(['5', 'r', '='], Array.from({ length: 11 }, (_, index) => cell(index + 1, 30))),
+    // Once four of the five gravel cells are gone, the road has slid: nothing asks for 4x again.
+    cut: { ...guide(['4', 'x'], [cell(9, 5)]), whileRow: { line: 9, has: '.....' } },
+    river: guide(['5', 'r', '='], [cell(6, 15)]),
     // Enter reaches the gate from beside it, not from its own cell.
-    south: guide(['<CR>'], [cell(10, 42), cell(9, 43), cell(11, 43)]),
+    south: guide(['<CR>'], [cell(1, 23), cell(2, 24), cell(1, 25)]),
   },
-  'quarry.cut': { ledge: use('dd', 'u'), dot: guide(['<CR>']) },
-  'quarry.mason': { mason: use('10dd') },
+  'quarry.cut': { ledge: use('dd', 'u'), dot: guide(['<CR>']), back: use('<C-r>') },
+  'quarry.mason': { mason: use('4dd', 'j', '.') },
   'wordwood.ferry': { canopy: use('fH'), lift: guide(['<CR>']) },
   'wordwood.glades': { floor: use('G'), lamp: use('{'), rope: use('gg'), gate: use('G') },
   'port.jetty': { bitt: guide(['<CR>']), ream: guide(['<CR>']) },

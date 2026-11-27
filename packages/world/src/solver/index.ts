@@ -74,6 +74,7 @@ class Frontier {
   }
 }
 
+const WALKS = new Set(['h', 'j', 'k', 'l']);
 const SATURATING = new Set([
   'h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '{', '}', 'n', 'N', '*', '#',
   'f', 'F', 't', 'T',
@@ -126,7 +127,9 @@ function* baseFieldActions(
         const current = yield [...String(count), ...sequence];
         // Absolute line/percentage counts must keep scanning: adjacent counts can round
         // to the same destination before a later count reaches a new one.
-        if (SATURATING.has(command) && (current === null || current === previous)) break;
+        // A walk checks every cell, so once one count bumps every larger one does. A run or find checks its landing
+        // and its route: `2e` can hit rock where `3e` lands clear, so only a repeated landing ends those.
+        if (SATURATING.has(command) && ((current === null && WALKS.has(command)) || (current !== null && current === previous))) break;
         previous = current;
       }
     }
@@ -226,10 +229,11 @@ function periodFor(stage: Stage): number {
   return entities.reduce((period, entity) => period / gcd(period, entity.every) * entity.every, 1);
 }
 
-function identity(state: WorldState, period: number, history: boolean, windowHeight: number, registers: readonly string[], marks: boolean): string {
+/** `repeat`: the last change only matters to a later `.`; without it, two edits leaving the same text are one state. */
+function identity(state: WorldState, period: number, history: boolean, windowHeight: number, registers: readonly string[], marks: boolean, repeat: boolean): string {
   const engine = state.engine;
   return JSON.stringify([
-    marks ? engine.marks['a'] ?? null : null, engine.lines, registers.map(name => engine.registers[name] ?? null), engine.lastChange, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
+    marks ? engine.marks['a'] ?? null : null, engine.lines, registers.map(name => engine.registers[name] ?? null), repeat ? engine.lastChange : null, history ? [engine.undoStack, engine.redoStack] : null, engine.cursor, engine.desiredCol, engine.scroll || Math.floor(windowHeight / 2), engine.lastFind, engine.lastSearch, engine.saved, engine.modified,
     state.entities.map((entity) => [entity.id, entity.at, entity.pathIndex]),
     state.hearts, state.turn % state.entities.reduce((value, entity) => value / gcd(value, entity.def.every) * entity.def.every, period),
     Object.keys(state.flags).sort().map((flag) => [flag, state.flags[flag]]),
@@ -248,6 +252,7 @@ export function solveStage(
   const commands = options.learnedCommands.filter(command => (search || !SEARCH_COMMANDS.has(command))
     && (stage.allowedCommands === undefined || stage.allowedCommands.includes(command)));
   const marks = search && commands.some(command => ['m', '`', "'"].includes(command));
+  const repeat = commands.includes('.');
   const period = periodFor(stage);
   const windowHeight = stage.windowHeight ?? 28;
   // Undo/redo futures depend on snapshots, even when current text and cursor match.
@@ -257,7 +262,7 @@ export function solveStage(
   const initial = sim.init(stage, legend, options);
   const frontier = new Frontier();
   let order = 0;
-  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight, registers, marks), order: order++ };
+  const root: Node = { state: initial, keys: [], identity: identity(initial, period, history, windowHeight, registers, marks, repeat), order: order++ };
   frontier.push(root);
   const best = new Map<string, Node>([[root.identity, root]]);
   let expanded = 0;
@@ -305,12 +310,12 @@ export function solveStage(
         keys.push(key);
         if (state.status !== 'playing' || (node.state.script !== null && state.script === null)) break;
       }
-      if (!rejected) feedback = identity(state, period, history, windowHeight, registers, marks);
+      if (!rejected) feedback = identity(state, period, history, windowHeight, registers, marks, repeat);
       if (rejected || state.status === 'dead' || state.hearts <= 0 || state.turn > maxTurns
         || state.pending !== null || state.engine.mode !== 'normal' || state.engine.pendingKeys.length !== 0) continue;
       // Script solutions are atomic, never search their intermediate editor states.
       if (node.state.script !== null && state.script !== null) continue;
-      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight, registers, marks), order: order++ };
+      const next: Node = { state, keys: [...node.keys, ...keys], identity: feedback ?? identity(state, period, history, windowHeight, registers, marks, repeat), order: order++ };
       const sibling = successors.get(next.identity);
       if (sibling === undefined || compare(next, sibling) < 0) successors.set(next.identity, next);
     }

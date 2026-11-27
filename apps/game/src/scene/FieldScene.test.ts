@@ -287,10 +287,10 @@ it('swaps the lamp sprite when lighthouse.lit changes without a buffer edit', ()
 });
 
 it.each([
-  { command: 'x', approach: '13l', removed: 0 },
-  { command: '4x', approach: '13l', removed: 4 },
-  { command: '5r=', approach: '13l4x8l2j7l', removed: 5 },
-  { command: '5x', approach: '13l4x8l2j7l', removed: 5 },
+  { command: 'x', approach: '', removed: 0 },
+  { command: '4x', approach: '3j', removed: 4 },
+  { command: '5r=', approach: '3j4x7k5l7j5l3k', removed: 5 },
+  { command: '5x', approach: '3j4x7k5l7j5l3k', removed: 5 },
 ])('redraws $command immediately with one dust frame and no white flash', ({ command, approach, removed }) => {
   const sim = createWorldSim(createEngine());
   const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
@@ -430,16 +430,17 @@ it('shades hazard cells, adds sheen only on existing walkable cells and marks th
   const sim = createWorldSim(createEngine());
   const state = sim.init(shaft, shaftLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} });
   const scene = new FieldScene({ ...frame, stage: shaft, legend: shaftLegend, state,
-    hazards: [{ from: { line: 4, col: 0 }, to: { line: 26, col: 8 } }] }, true);
+    hazards: [{ from: { line: 3, col: 0 }, to: { line: 8, col: 8 } }] }, true);
   scene.create();
+  // Rows 3-8: top boards (9), mortar (not walkable, no sheen), a beam cell (1), the next boards (9).
   const sheen = fake.images.filter(image => image.texture === 'field:wet-sheen');
   const edges = fake.images.filter(image => image.texture === 'field:wet-edge');
-  expect(sheen).toHaveLength(91);
+  expect(sheen).toHaveLength(19);
   expect(sheen.every(image => image.alpha === 0.6)).toBe(true);
-  expect(fake.images.filter(image => image.texture === 'rectangle')).toHaveLength(91);
+  expect(fake.images.filter(image => image.texture === 'rectangle')).toHaveLength(19);
   expect(edges).toHaveLength(9);
-  expect(edges.every(image => image.y === 4 * 16 + 8)).toBe(true);
-  expect(sheen.every(image => image.y >= 4 * 16 + 8 && image.y <= 14 * 16 + 8)).toBe(true);
+  expect(edges.every(image => image.y === 3 * 16 + 8)).toBe(true);
+  expect(sheen.every(image => image.y >= 3 * 16 + 8 && image.y <= 8 * 16 + 8)).toBe(true);
 });
 
 it('draws Canopy actors, hashed branch variants and an arc from the real fH event', async () => {

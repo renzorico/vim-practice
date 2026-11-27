@@ -92,7 +92,7 @@ describe('authored objective guides', () => {
     const tutorialRoutes: Readonly<Record<string, readonly string[]>> = {
       'margin.warning': entryFor('margin').stage.solution,
       'lowlands.lighthouse': entryFor('lowlands').stage.solution,
-      'quarry.road': [...'13l4x8l2j7l5r=8l2j', '<CR>'],
+      'quarry.road': entryFor('quarry-road').stage.solution,
     };
     for (const [questId, route] of Object.entries(tutorialRoutes)) {
       const id = stageForQuest[questId] ?? '';
@@ -147,21 +147,22 @@ describe('authored objective guides', () => {
     expect(guideApplies(guide, session.world.engine.cursor, [])).toBe(false);
     expect(guideApplies({ kind: 'use', keys: ['w'] }, { line: 0, col: 0 }, [])).toBe(true);
   });
-  it('stops asking for 4x once the rubble is gone, and one step east is already the river', () => {
+  it('stops asking for 4x once the road has slid, and the shaft then lands on open road', () => {
     const { game, session: initial } = start('quarry-road', 'quarry.road');
     const guide = guideFor('quarry.road', 'cut');
     if (!guide?.standAt?.[0]) throw new Error('Missing Quarry guide');
     const at = guide.standAt[0];
     const before = dismiss(game, move(initial, at));
     expect(guideApplies(guide, at, before.world.engine.lines)).toBe(true);
-    const cleared = dismiss(game, play(game, before, guide.keys));
-    expect(guideApplies(guide, at, cleared.world.engine.lines)).toBe(false);
-    expect(cleared.story.quests['quarry.road']?.step).toBe(0);
-    expect(dismiss(game, play(game, cleared, ['l'])).story.quests['quarry.road']?.step).toBe(1);
+    const slid = dismiss(game, play(game, before, guide.keys));
+    expect(guideApplies(guide, at, slid.world.engine.lines)).toBe(false);
+    expect(slid.story.quests['quarry.road']?.step).toBe(0);
+    expect(dismiss(game, play(game, slid, [...'7k5l7j'])).story.quests['quarry.road']?.step).toBe(1);
   });
   it('Enter at every cell of the Quarry gate guide clears the stage', () => {
     const { game, session: initial } = start('quarry-road', 'quarry.road');
-    const far = dismiss(game, play(game, initial, [...'13l4x8l2j7l5r=l']));
+    const route = entryFor('quarry-road').stage.solution;
+    const far = dismiss(game, play(game, initial, route.slice(0, -3)));
     expect(far.story.quests['quarry.road']?.step).toBe(2);
     const guide = guideFor('quarry.road', 'south');
     expect(guide?.standAt?.length).toBeGreaterThan(0);
@@ -182,20 +183,14 @@ describe('authored objective guides', () => {
     const cleared = play(game, move(crossed, { line: 14, col: 40 }), ['<CR>', '$']);
     expect(cleared.world.status).toBe('cleared');
   });
-  it('the Quarry guide opens rubble, and each marked bank replaces the four water cells', () => {
+  it('the Quarry river guide bridges from the bank onto the stairs', () => {
     const { game, session } = start('quarry-road', 'quarry.road');
-    const opened = play(game, move(session, { line: 6, col: 15 }), guideFor('quarry.road', 'cut')?.keys ?? []);
-    expect(opened.world.engine.lines[6]).not.toContain('R');
-    const through = play(game, opened, [...'8l']);
-    expect(through.story.quests['quarry.road']?.step).toBe(1);
+    const route = entryFor('quarry-road').stage.solution;
+    const bank = dismiss(game, play(game, session, route.slice(0, route.indexOf('r') - 1)));
     const river = guideFor('quarry.road', 'river');
-    expect(river?.standAt).toHaveLength(11);
-    for (const at of river?.standAt ?? []) {
-      expect(at.col).toBe(30);
-      expect(through.world.engine.lines[at.line]?.slice(31, 35)).toBe('~~~~');
-      const bridge = play(game, move(through, at), river?.keys ?? []);
-      expect(bridge.world.engine.lines[at.line]?.slice(30, 35)).toBe('=====');
-      expect(play(game, bridge, [...'5l']).story.quests['quarry.road']?.step).toBe(2);
-    }
+    expect(river?.standAt).toEqual([bank.world.engine.cursor]);
+    const bridge = play(game, bank, river?.keys ?? []);
+    expect(bridge.world.engine.lines[6]?.slice(15, 20)).toBe('=====');
+    expect(play(game, bridge, [...'4l']).story.quests['quarry.road']?.step).toBe(2);
   });
 });

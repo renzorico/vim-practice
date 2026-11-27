@@ -8,7 +8,8 @@ import { introducedAt } from './introducedAt.js';
 import { stageCommands } from './session.js';
 import { commandsIn } from './audit/commandsIn.js';
 
-const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse'];
+// The Shaft's `.` ties with retyping `4dd` (a turn each): its par route uses `.`, but turns cannot force it.
+const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut', 'shaft'];
 
 describe.each(REDESIGNED)('%s', id => {
   const entry = stages.find(item => item.stage.id === id);

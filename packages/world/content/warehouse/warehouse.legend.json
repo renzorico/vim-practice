@@ -39,7 +39,8 @@
       "sprite": "shelf-lip",
       "walkable": false,
       "fixed": true,
-      "label": "shelf lip"
+      "label": "shelf lip",
+      "gap": true
     },
     {
       "char": "o",

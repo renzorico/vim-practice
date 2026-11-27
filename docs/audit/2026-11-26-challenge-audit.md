@@ -56,6 +56,11 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 **Update 2026-11-27 (World 1 redesign):** Margin par 6 uses `h j k l`; Lowlands par 11 uses `w b e $` and needs Wren;
 the Lighthouse par 7 teaches and uses `0`. Checked by `apps/game/src/play2/challenge.test.ts`.
 
+**Update 2026-11-27 (World 2 redesign):** Quarry Road par 10 uses `x r` and needs Ash, the note and the gate; the
+Cut par 6 uses `dd u <C-r>` (`<C-r>` is the only one-turn way back); the Shaft par 6 uses `.` (it ties with retyping
+`4dd`: a turn each). No shortcut in the probe for any of them. Runs (`w b e 0 $`) now stop at rock on their own row
+too; the Gallery's par went 5 to 6 under that rule.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

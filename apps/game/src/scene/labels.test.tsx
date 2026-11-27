@@ -52,7 +52,7 @@ const standing = (id: string, cursor: Position): WorldState => {
   const state = sim.init(stage, legend, { learnedCommands: [], flags: {} });
   return { ...state, engine: { ...state.engine, cursor } };
 };
-it.each([['quarry-road', { line: 10, col: 42 }, 'Enter: go south'], ['canopy', { line: 7, col: 27 }, 'Enter: take lift']] as const)(
+it.each([['quarry-road', { line: 1, col: 23 }, 'Enter: go south'], ['canopy', { line: 7, col: 27 }, 'Enter: take lift']] as const)(
   '%s: says what Enter does beside the exit', (id, cursor, text) => {
     const { stage } = entry(id);
     const state = standing(id, cursor);
@@ -66,13 +66,13 @@ const render = (id: string, state: WorldState, more: object = {}): string => {
     signs: signsFor(state), named: undefined, view: { width: 1000, height: 600 }, camera: { x: 0, y: 0, follow: null } }));
 };
 it('draws one keycap prompt beside what Enter reaches, and none while somebody speaks', () => {
-  const state = standing('quarry-road', { line: 10, col: 42 });
+  const state = standing('quarry-road', { line: 1, col: 23 });
   expect(render('quarry-road', state).match(/field-label--prompt/g)).toHaveLength(1);
   expect(render('quarry-road', state)).toContain('<kbd>Enter</kbd>go south');
   expect(render('quarry-road', state, { hideObjective: true })).not.toContain('field-label--prompt');
 });
 it('draws the key that lands on a tile, unless a command is half typed or the tile is dark', () => {
-  const state = standing('quarry-road', { line: 10, col: 42 });
+  const state = standing('quarry-road', { line: 1, col: 23 });
   const at = { line: 10, col: 40 };
   expect(render('quarry-road', state, { markers: [{ key: 'b', at }] })).toContain('>b</kbd>');
   expect(render('quarry-road', { ...state, pending: { type: 'key' } as unknown as WorldState['pending'] }, { markers: [{ key: 'b', at }] })).not.toContain('>b</kbd>');

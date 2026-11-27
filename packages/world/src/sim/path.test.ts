@@ -62,8 +62,9 @@ describe('the path rule in the field', () => {
   it('the same run passes over water', () => {
     expect(play(['ooooo', '~~~~~', 'ooooo'], '3$').state.engine.cursor).toEqual({ line: 2, col: 4 });
   });
-  it('a word run stays free on its own row, over blank ground (as in the Lowlands)', () => {
-    expect(play(['o\t\t\to'], 'w').state.engine.cursor).toEqual({ line: 0, col: 4 });
+  it('a word run on its own row stops at rock too (here a tab the legend does not know); gaps it still hops', () => {
+    expect(play(['o\t\t\to'], 'w').state.engine.cursor).toEqual({ line: 0, col: 0 });
+    expect(play(['o~~~o'], '2w').state.engine.cursor).toEqual({ line: 0, col: 4 });
   });
   it('structural leaps (G) keep jumping over trees', () => {
     expect(play(['ooooo', 'TTTTT', 'ooooo'], 'G').state.engine.cursor).toEqual({ line: 2, col: 0 });

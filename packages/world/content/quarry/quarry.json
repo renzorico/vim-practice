@@ -5,24 +5,23 @@
   "title": "The Quarry Road",
   "goalText": "Find the road south.",
   "map": [
-    "##############################################",
-    "#            ########          ~~~~          #",
-    "#  HH        ########          ~~~~          #",
-    "#  HH        ########          ~~~~          #",
-    "#            ########          ~~~~          #",
-    "#            ########          ~~~~          #",
-    "#...............RRR             #  ~~~~      #",
-    "#            ########          ~~~~          #",
-    "#            ########          ~~~~          #",
-    "#      HH    ########          ~~~~          #",
-    "#      HH    ########          ~~~~          #",
-    "#            ########          ~~~~          #",
-    "##############################################"
+    "##############################",
+    "#     ##########~~~~#        #",
+    "#          #####~~~~#        #",
+    "# HH  #### #####~~~~###|######",
+    "# HH  #### #####~~~~###|######",
+    "#     #### #### ~~~~###|######",
+    "#     #### ####.~~~~   |######",
+    "#     #### #### ~~~~##########",
+    "#     #### #### ~~~~##########",
+    "#    .....#RRR       #########",
+    "#     ########################",
+    "##############################"
   ],
   "legend": "quarry",
   "start": {
     "line": 6,
-    "col": 2
+    "col": 5
   },
   "hearts": 3,
   "entities": [
@@ -31,8 +30,8 @@
       "kind": "npc",
       "sprite": "ash",
       "at": {
-        "line": 5,
-        "col": 11
+        "line": 10,
+        "col": 5
       },
       "behaviour": {
         "type": "still"
@@ -46,8 +45,8 @@
       "kind": "npc",
       "sprite": "kit",
       "at": {
-        "line": 8,
-        "col": 5
+        "line": 6,
+        "col": 2
       },
       "behaviour": {
         "type": "still"
@@ -61,8 +60,8 @@
       "kind": "prop",
       "sprite": "note",
       "at": {
-        "line": 4,
-        "col": 29
+        "line": 5,
+        "col": 15
       },
       "behaviour": {
         "type": "still"
@@ -77,7 +76,7 @@
       "sprite": "crack",
       "at": {
         "line": 2,
-        "col": 44
+        "col": 1
       },
       "behaviour": {
         "type": "still"
@@ -87,42 +86,12 @@
       "solid": true
     },
     {
-      "id": "blot-1",
-      "kind": "blot",
-      "sprite": "blot",
-      "at": {
-        "line": 3,
-        "col": 38
-      },
-      "behaviour": {
-        "type": "chase"
-      },
-      "every": 2,
-      "damage": 1,
-      "solid": false
-    },
-    {
-      "id": "blot-2",
-      "kind": "blot",
-      "sprite": "blot",
-      "at": {
-        "line": 9,
-        "col": 38
-      },
-      "behaviour": {
-        "type": "chase"
-      },
-      "every": 2,
-      "damage": 1,
-      "solid": false
-    },
-    {
       "id": "gate",
       "kind": "prop",
       "sprite": "quarry-gate",
       "at": {
-        "line": 10,
-        "col": 43
+        "line": 1,
+        "col": 24
       },
       "behaviour": {
         "type": "still"
@@ -139,12 +108,12 @@
       "on": "enter",
       "area": {
         "from": {
-          "line": 5,
-          "col": 9
+          "line": 9,
+          "col": 4
         },
         "to": {
-          "line": 7,
-          "col": 15
+          "line": 9,
+          "col": 6
         }
       }
     },
@@ -190,12 +159,12 @@
       "on": "enter",
       "area": {
         "from": {
-          "line": 1,
-          "col": 16
+          "line": 9,
+          "col": 10
         },
         "to": {
-          "line": 11,
-          "col": 30
+          "line": 9,
+          "col": 20
         }
       }
     },
@@ -206,11 +175,11 @@
       "area": {
         "from": {
           "line": 1,
-          "col": 34
+          "col": 20
         },
         "to": {
-          "line": 11,
-          "col": 44
+          "line": 6,
+          "col": 28
         }
       }
     },
@@ -228,27 +197,60 @@
   "clear": [
     {
       "type": "flag",
+      "flag": "quarry.knows-x"
+    },
+    {
+      "type": "flag",
+      "flag": "quarry.knows-r"
+    },
+    {
+      "type": "flag",
       "flag": "quarry.south"
     }
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 3,
+  "parTurns": 10,
   "solution": [
-    "2",
-    "6",
+    "3",
+    "j",
+    "4",
+    "x",
+    "7",
+    "k",
+    "5",
+    "l",
+    "7",
+    "j",
+    "5",
+    "l",
+    "3",
+    "k",
+    "<CR>",
+    "5",
     "r",
     "=",
     "4",
-    "j",
-    "1",
-    "6",
-    "r",
-    "=",
+    "l",
+    "5",
+    "k",
     "<CR>"
   ],
   "hints": [
-    "On the last gravel before the rubble, press `4x`: that gravel plus 3 stones.",
-    "On the last dirt before the river, press `5r=`: that dirt plus 4 water tiles."
+    "Stand on the road and press `4x`: the road slides west, and open ground slides under the shaft.",
+    "On the last dirt before the river, press `5r=`. `x` would pull the far bank away from its stairs."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "0",
+    "$",
+    "x",
+    "r"
   ]
 }

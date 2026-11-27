@@ -78,7 +78,7 @@ it('shows the Lighthouse death hint and Lamplighter portrait', () => {
 it('reveals Quarry keycaps from flags and selects its authored death hint', () => {
   expect(learnedKeycaps({ 'quarry.knows-x': true }).slice(-2)).toEqual(['x', '4x']);
   expect(learnedKeycaps({ 'quarry.knows-r': true }).slice(-2)).toEqual(['r', '5r=']);
-  expect(deathHint(content, 'quarry-road')).toBe('Rubble: `4x` from the last gravel before it.\nRiver: `5r=` from the last dirt before it.');
+  expect(deathHint(content, 'quarry-road')).toBe('Road: `4x` on the gravel slides it west.\nRiver: `5r=` from the bank.');
   expect(deathHint(content, 'unknown')).toBe(deathHint(content, 'margin'));
 });
 

@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "mason",
-          "objective": "Reach the Mason: `10dd` at the lip, then talk.",
+          "objective": "Reach the Mason: `4dd` on the top boards, then `j` and `.` on each board below.",
           "completeWhen": {
             "type": "flag",
             "flag": "shaft.mason-cured",
@@ -28,7 +28,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "You need the Mason, at the bottom of this shaft.\nWalk to the lip: `j` `j`. Then look down."
+          "text": "You need the Mason, at the bottom of this shaft.\nWalk to the boards at its lip: `2j`."
         }
       ],
       "then": []
@@ -43,7 +43,11 @@
         },
         {
           "speaker": "system",
-          "text": "Stay at the lip. Press `10dd`: the shaft rises.\nShort of the Mason? `.` repeats your last `dd`."
+          "text": "Mortar can't be walked. `4dd` on the boards:\nthey go, with three rows, and a beam rises."
+        },
+        {
+          "speaker": "system",
+          "text": "Then `j` onto the next boards and press `.`:\nit repeats your last change, right there."
         }
       ],
       "then": [
@@ -61,21 +65,13 @@
                 "kind": "keeper",
                 "sprite": "mason",
                 "at": {
-                  "line": 14,
-                  "col": 4
+                  "line": 17,
+                  "col": 5
                 },
                 "behaviour": {
-                  "type": "build",
-                  "rows": [
-                    ".........",
-                    ".........",
-                    ".........",
-                    ".........",
-                    ".........",
-                    "........."
-                  ]
+                  "type": "still"
                 },
-                "every": 2,
+                "every": 1,
                 "damage": 0,
                 "solid": true
               }
@@ -87,7 +83,7 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 7,
+                  "line": 8,
                   "col": 1
                 },
                 "behaviour": {
@@ -105,44 +101,8 @@
                 "kind": "blot",
                 "sprite": "blot",
                 "at": {
-                  "line": 9,
-                  "col": 7
-                },
-                "behaviour": {
-                  "type": "chase"
-                },
-                "every": 2,
-                "damage": 1,
-                "solid": false
-              }
-            },
-            {
-              "type": "spawn",
-              "entity": {
-                "id": "shaft.blot-2",
-                "kind": "blot",
-                "sprite": "blot",
-                "at": {
-                  "line": 11,
-                  "col": 2
-                },
-                "behaviour": {
-                  "type": "chase"
-                },
-                "every": 2,
-                "damage": 1,
-                "solid": false
-              }
-            },
-            {
-              "type": "spawn",
-              "entity": {
-                "id": "shaft.blot-3",
-                "kind": "blot",
-                "sprite": "blot",
-                "at": {
                   "line": 13,
-                  "col": 6
+                  "col": 7
                 },
                 "behaviour": {
                   "type": "chase"
@@ -160,16 +120,6 @@
           "value": true
         }
       ]
-    },
-    {
-      "id": "shaft.thrown",
-      "lines": [
-        {
-          "speaker": "system",
-          "text": "Wet mortar! It flings you back up to the lip.\nDon't climb. Pull the shaft up to you."
-        }
-      ],
-      "then": []
     },
     {
       "id": "shaft.mason",
@@ -202,7 +152,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Stay at the lip. `10dd` deletes ten rows and the\nshaft rises. Then `Enter` next to the Mason."
+          "text": "On the boards, `4dd`. Then `j` and `.` for each\nboard below. `Enter` next to the Mason."
         }
       ],
       "then": []
@@ -238,42 +188,6 @@
         {
           "type": "dialogue",
           "dialogue": "shaft.lip"
-        }
-      ]
-    },
-    {
-      "id": "shaft.thrown",
-      "when": {
-        "type": "trigger",
-        "trigger": "shaft.down"
-      },
-      "once": true,
-      "then": [
-        {
-          "type": "dialogue",
-          "dialogue": "shaft.thrown"
-        }
-      ]
-    },
-    {
-      "id": "shaft.throw-back",
-      "when": {
-        "type": "trigger",
-        "trigger": "shaft.down"
-      },
-      "once": false,
-      "then": [
-        {
-          "type": "world",
-          "effects": [
-            {
-              "type": "move-player",
-              "to": {
-                "line": 2,
-                "col": 4
-              }
-            }
-          ]
         }
       ]
     },

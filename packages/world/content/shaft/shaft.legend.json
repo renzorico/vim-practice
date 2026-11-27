@@ -13,9 +13,9 @@
       "char": ".",
       "kind": "barrier",
       "sprite": "mortar",
-      "walkable": true,
+      "walkable": false,
       "fixed": false,
-      "label": "fresh mortar"
+      "label": "wet mortar"
     },
     {
       "char": "#",
@@ -40,6 +40,14 @@
       "walkable": true,
       "fixed": true,
       "label": "stone floor"
+    },
+    {
+      "char": "-",
+      "kind": "barrier",
+      "sprite": "plank",
+      "walkable": true,
+      "fixed": false,
+      "label": "loose boards"
     }
   ]
 }

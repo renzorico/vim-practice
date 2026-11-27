@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEngine } from '@escape/engine';
 import { createWorldSim, FIXTURE_LEGEND, FIXTURE_STAGE, playKeys } from '@escape/world';
-import type { Stage, WorldOptions, WorldSim, WorldState } from '../types.js';
+import type { Legend, Stage, WorldOptions, WorldSim, WorldState } from '../types.js';
 import { finalizeStage, solveStage, stageReplayIssue } from './index.js';
 
 const sim = createWorldSim(createEngine());
@@ -481,4 +481,17 @@ it('caps scroll counts at the window height and coalesces implicit half-height s
   expect(new Set(counts)).toEqual(new Set([null, 1, 2]));
   expect(expandedScrolls.length).toBeGreaterThan(0);
   expect(new Set(expandedScrolls)).toEqual(new Set([0]));
+});
+
+describe('counted runs past a rejected count', () => {
+  it('tries 3e after 2e bumps on rock (Codex, 2026-11-27)', () => {
+    const legend: Legend = { id: 'runs', fallback: { char: '?', kind: 'barrier', sprite: 'rock', walkable: false, fixed: true, label: 'rock' },
+      tiles: [{ char: '.', kind: 'barrier', sprite: 'floor', walkable: true, fixed: true, label: 'floor' },
+        { char: '#', kind: 'barrier', sprite: 'rock', walkable: false, fixed: true, label: 'rock' }] };
+    const stage = { ...FIXTURE_STAGE, id: 'runs', legend: 'runs', map: ['.#', '.#', '..'], start: { line: 0, col: 0 },
+      entities: [], triggers: [], scripts: [], allowedCommands: ['e'], parTurns: 1, solution: ['3', 'e'],
+      clear: [{ type: 'reach' as const, area: { from: { line: 2, col: 1 }, to: { line: 2, col: 1 } } }] };
+    const found = solveStage(createWorldSim(createEngine()), stage, legend, { learnedCommands: ['e'], flags: {} }, { maxTurns: 1 });
+    expect(found?.turns).toBe(1);
+  });
 });
