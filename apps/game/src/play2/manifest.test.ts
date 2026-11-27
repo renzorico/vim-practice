@@ -126,9 +126,8 @@ it('validates content and replays every bundled stage with its own commands', ()
   }
 });
 
-it('stores the replayed 57-key best-known route in both solutions', () => {
-  expect(book.par).toBe(57);
-  expect(book.solution).toEqual(parseKeys(SHORTER));
-  expect(manifest.solution).toEqual(book.solution);
+it('stores the best-known route in both solutions; the walkthrough route is longer', () => {
   expect(book.solution).toHaveLength(book.par);
+  expect(parseKeys(SHORTER).length).toBeGreaterThan(book.par);
+  expect(manifest.solution).toEqual(book.solution);
 });

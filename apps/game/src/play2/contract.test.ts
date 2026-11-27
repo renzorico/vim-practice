@@ -17,9 +17,9 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: contract, legend: contractLegend });
 const book = contract.scripts[0]!;
 const target = book.goals.find(goal => goal.type === 'transform')!.targetLines;
-const PROVIDED = '2jci"the Librarians<Esc>9j.j.j.gg2j3f"ci"the Readers<Esc>2j0f(ci(unless they want to<Esc>j0f[ci[until the Scribe returns<Esc>}jdapf<citTilde<Esc>}jcipGuardian of the caves: the Minotaur.<Esc>';
+const PROVIDED = '2jci"the Librarians<Esc>9j.j.j.gg2j3f"ci"the Readers<Esc>2j0f(ci(unless they want to<Esc>j0da"f[ci[until the Scribe returns<Esc>}jdapf<citTilde<Esc>}jcipGuardian of the caves: the Minotaur.<Esc>';
 const SHORTER = PROVIDED.replace('gg2j3f"', '3G$');
-const OLD_TOOLS = '2jf"lct"the Librarians<Esc>9j0f"l.j0f"l.j0f"l.gg2j0f";;lct"the Readers<Esc>2j0f(lc2t)unless they want to<Esc>j0f[lct]until the Scribe returns<Esc>}j3ddf>lct<Tilde<Esc>}jddCGuardian of the caves: the Minotaur.<Esc>';
+const OLD_TOOLS = '2jf"lct"the Librarians<Esc>9j0f"l.j0f"l.j0f"l.gg2j0f";;lct"the Readers<Esc>2j0f(lc2t)unless they want to<Esc>j0f"df"x0f[lct]until the Scribe returns<Esc>}j3ddf>lct<Tilde<Esc>}jddCGuardian of the caves: the Minotaur.<Esc>';
 // Sign and name the guardian first, then change the parties/seals and clauses.
 // G and paragraph objects make the notes independent of row deletions; strike Clause 3 last.
 const REORDERED = '10jf<citTilde<Esc>G2kcipGuardian of the caves: the Minotaur.<Esc>gg0'
@@ -59,7 +59,7 @@ it('enters contract after notary.end with statue Q, retained story and the contr
   expect(session.story.clearedStages).toContain('notary');
   expect(session.story.unlockedStages).toContain('contract');
   expect(session.story.quests['library.contract']).toEqual({ step: 0, done: false });
-  expect(storyEngine.objectives(session.story, content)).toContain('Rewrite it: `ci"`, `ci(`, `dap`, `cit`.');
+  expect(storyEngine.objectives(session.story, content)).toContain('Rewrite it: `ci"`, `ci(`, `da"`, `dap`, `cit`.');
   expect(keys(session, SHORTER).story.quests['library.contract']).toEqual({ step: 1, done: true });
 });
 
@@ -181,10 +181,10 @@ it('validates content and replays every bundled stage with its own commands', ()
   }
 });
 
-it('stores the 163-key best-known route and preserves the 167/189-key comparison', () => {
-  expect(parseKeys(PROVIDED)).toHaveLength(167);
-  expect(parseKeys(OLD_TOOLS)).toHaveLength(189);
-  expect(book.par).toBe(163);
-  expect(book.solution).toEqual(parseKeys(SHORTER));
+it('stores the best-known route; the walkthrough and old-tools routes are longer', () => {
+  expect(book.solution).toHaveLength(book.par);
+  expect(parseKeys(SHORTER).length).toBeGreaterThan(book.par);
+  expect(parseKeys(PROVIDED).length).toBeGreaterThan(parseKeys(SHORTER).length);
+  expect(parseKeys(OLD_TOOLS).length).toBeGreaterThan(parseKeys(PROVIDED).length);
   expect(contract.solution).toEqual(book.solution);
 });

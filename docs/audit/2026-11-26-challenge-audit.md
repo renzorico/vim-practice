@@ -117,6 +117,14 @@ Golfed routes (keys joined; a space is a typed space):
 taught key is on the shortest route (an append only `A` reaches, a linewise block only `V` cuts cleanly, a quoted
 string `a"` removes with its quotes), and decide whether text stages show keys against par.
 
+**Update 2026-11-27 (text stages redesigned):** every text stage's par is now the best route found, and each taught key
+is on it. Pars: Ledger 52, Manifest 53, Harbour 90, Contract 154, Study 30, checked by `challenge.test.ts`. New text:
+the Ledger's title needs `i` and `A` and a smudged "Kt" needs `a`; the Contract's Clause 2 has an "always" only `da"`
+removes in three keys; the Study's final line is split, with a scribble before "Last", so `vjd` mends it. Three Codex
+golf rounds: without `A`, `a` or `o` the Ledger takes 53, without `v` the Study 31; no route without `a"`
+was found at 154 or less. Ties: the Study's `V` (`Vd`, `dd`), the Contract's `i"` (`cw`), the Ledger's `i` (`I`). Visual mode has no `p`,
+so `V` cannot win outright. Text stages are still unscored.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

@@ -18,12 +18,12 @@ const targetOf = (id: string): readonly string[] => {
 
 /** Each task done the way its instructions say, starting from row 1 or wherever the last one ended. */
 const DONE_AS_TOLD: Readonly<Record<string, readonly string[]>> = {
-  'ledger.book': ['ggjdd3j.j.', 'ggj13l2xj.j.j.', 'gg03jllra', 'jfdlD', 'Godoor<Esc>'],
+  'ledger.book': ['gg0iTHE <Esc>A, SETTLED<Esc>', 'ggjdd3j.j.', '3G0ai<Esc>', 'ggj013l2xj.j.j.', '4G0llra', '5G013l4lD', 'Godoor<Esc>'],
   'manifest.book': ['ggfo;x', 'gg2G$i, Shut, Ope<Esc>', '6G0f2r4', 'jdd', '9G$i, on three<Esc>', 'G0f:lDa today.<Esc>'],
   'harbour.book': ['2G02wct,Ream<Esc>', 'GddggP', '6Gddp', '6G$bcwreal<Esc>j$b.j$b.', '11G02wCthe ferry, today<Esc>', 'yyp03wct,rope boat<Esc>', 'G02wCTilde, for Ream<Esc>'],
   'contract.book': ['3G0ci"the Librarians<Esc>', '12G0ci"the Librarians<Esc>j.j.', '3G$ci"the Readers<Esc>', '5G0f(ci(unless they want to<Esc>',
-    'j0f[ci[until the Scribe returns<Esc>', '8Gdap', '8G0f<citTilde<Esc>', '13GcipGuardian of the caves: the Minotaur.<Esc>'],
-  'study.book': ['3G0f|<C-v>7j9ld', '3G0fl<C-v>7j$cfound<Esc>', '3G0<C-v>7jI* <Esc>', '12GV2jd'],
+    '6G0da"', '6G0f[ci[until the Scribe returns<Esc>', '8Gdap', '8G0f<citTilde<Esc>', '13GcipGuardian of the caves: the Minotaur.<Esc>'],
+  'study.book': ['3G0f|w<C-v>7j$cfound<Esc>', '3G0<C-v>7jI* <Esc>', '14GVd', '12G$bvjd'],
 };
 
 for (const script of scripts) it(`${script.id}: the instructions, followed, finish each task and then the script`, () => {

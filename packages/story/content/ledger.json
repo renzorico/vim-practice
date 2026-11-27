@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "ledger",
-          "objective": "Fix the ledger: `dd`, `x`, `r`, `D`, `o`.",
+          "objective": "Fix the ledger: `i`, `A`, `dd`, `x`, `a`, `D`, `o`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "ledger"

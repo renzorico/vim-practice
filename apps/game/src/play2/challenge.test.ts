@@ -7,6 +7,7 @@ import { content, stages } from './content.js';
 import { introducedAt, REFERENCE_ONLY } from './introducedAt.js';
 import { stageCommands } from './session.js';
 import { commandsIn } from './audit/commandsIn.js';
+import { solvedAt } from './audit/solvedAt.js';
 
 // Some keys tie with another one-turn command, so the par route uses them but turns cannot force them: the Shaft's `.`
 // (retyping `4dd`), the Canopy's `;` (`t@`), the Glades' `{ } gg` (a counted `G`), the Gates' counted scrolls (`N%`).
@@ -45,5 +46,31 @@ describe('last-page', () => {
   });
   it('writes with `:w` on its par route', () => {
     expect(stage.solution.join('')).toContain(':w<CR>');
+  });
+});
+
+// Text stages are scored in keys inside their script. Par is the best route found (span cuts and a golfing review),
+// not a proven optimum. The Study's `V` ties `dd` and its `v` (`vjd`) ties `d4w`; the Manifest teaches nothing new.
+const TEXT_STAGES: readonly string[] = ['ledger', 'manifest', 'harbour', 'contract', 'study'];
+// Best routes found so far: par may only go down from here.
+const TEXT_BEST: Readonly<Record<string, number>> = { ledger: 52, manifest: 53, harbour: 90, contract: 154, study: 30 };
+
+describe.each(TEXT_STAGES)('%s script', id => {
+  const entry = stages.find(item => item.stage.id === id);
+  if (entry === undefined) throw new Error(`No stage ${id}`);
+  const { stage } = entry;
+  const commands = stageCommands(stage);
+  const script = stage.scripts[0];
+  if (script === undefined) throw new Error(`No script in ${id}`);
+  const taught = Object.entries(introducedAt).filter(([key, at]) => at === id && commands.includes(key) && !REFERENCE_ONLY.has(key)).map(([key]) => key);
+
+  it('solves in exactly par keys, no more than the best route found', () => {
+    expect(script.par).toBeLessThanOrEqual(TEXT_BEST[id] ?? 0);
+    expect(script.solution).toHaveLength(script.par);
+    expect(solvedAt(script, script.solution, script.allowedCommands ?? commands)).toBe(script.par);
+  });
+  it('needs every key it teaches on its par route', () => {
+    const used = commandsIn(script.solution, new Set(commands));
+    expect(taught.filter(key => !used.includes(key))).toEqual([]);
   });
 });

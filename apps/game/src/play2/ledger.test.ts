@@ -50,8 +50,8 @@ it('chains the real shaft clear through its story into the open ledger and quest
   for (const key of book.solution) session = controller.reduce(session, key);
   expect(session.story.quests['quarry.ledger']).toEqual({ step: 1, done: true });
 });
-it('replays the best-known 38 keys with the real engine and clears without a field turn', () => {
-  expect(book.solution).toHaveLength(38);
+it('replays the best-known route in par keys with the real engine and clears without a field turn', () => {
+  expect(book.solution).toHaveLength(book.par);
   const engine = createEngine();
   let buffer = engine.init(book.startLines, book.startCursor);
   for (const key of book.solution) {
@@ -112,7 +112,8 @@ it('shows the goal, ghost, cursor, insert mode, and one tick per matching line',
   const html = screen(session);
   expect(visibleText(html)).toContain('Strike the wall rows');
   expect(html).toContain('The ledger should read:');
-  expect(html.match(/aria-label="Line matches"/g)).toHaveLength(1);
+  // The title changes too, so no row matches yet.
+  expect(html.match(/aria-label="Line matches"/g)).toBeNull();
   expect(html).toContain('cell--cursor-block');
   expect(html).not.toContain('FIELD');
   expect(screen(keys(session, 'o'))).toContain('-- INSERT --');
@@ -123,10 +124,12 @@ it('shows the goal, ghost, cursor, insert mode, and one tick per matching line',
   expect(matched.match(/aria-label="Line matches"/g)).toHaveLength(6);
 });
 it('explains the first unfinished task from the start, and the next once it is done', () => {
-  const struck = keys(start(), 'jdd3j.2j.');
-  expect(visibleText(screen(start()))).toContain('Go to a row that says wall.');
+  const titled = keys(start(), 'iTHE <Esc>A, SETTLED<Esc>');
+  const struck = keys(titled, 'jdd3j.j.');
+  expect(visibleText(screen(start()))).toContain('On the title row');
+  expect(visibleText(screen(titled))).toContain('Go to a row that says wall.');
   expect(visibleText(screen(struck))).not.toContain('Go to a row that says wall.');
-  expect(visibleText(screen(struck))).toContain('Cursor on the u of unpaid.');
+  expect(visibleText(screen(struck))).toContain('Cursor on the K of Kt.');
 });
 it('validates content, the text-stage map and the raw world replay', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);
@@ -137,7 +140,7 @@ it('validates content, the text-stage map and the raw world replay', () => {
 
 it('runs a bounded keystroke search and keeps the replayed route when its budget is exhausted', () => {
   const result = searchScript(createEngine(), book, {
-    maxKeys: 38, maxExpanded: 1000,
+    maxKeys: book.par, maxExpanded: 1000,
     alphabet: [...new Set([...book.solution, ...'hjk lwbe0$xrdDuoiaAI123456789'.replaceAll(' ', ''), '<Esc>'])],
   });
   expect(result).toEqual({ solution: null, expanded: 1000, exhausted: true });

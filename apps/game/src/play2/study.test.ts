@@ -18,9 +18,9 @@ const storyEngine = createStoryEngine();
 const controller = createSession({ sim, storyEngine, content, stages, stage: study, legend: studyLegend });
 const book = study.scripts[0]!;
 const target = book.goals.find(goal => goal.type === 'transform')!.targetLines;
-const PROVIDED = '2jf|<C-v>7j9ld$b<C-v>7j$cfound<Esc>0<C-v>7jI* <Esc>}jV2jd';
-const SHORTER = '2jf|<C-v>7j9ldw<C-v>7j$cfound<Esc>0<C-v>7jI* <Esc>}j3dd';
-const OLD_TOOLS = '2jf|d10lj.j.j.j.j.j.j.7k$bcwfound<Esc>jb.jb.jb.jb.jb.jb.jb.7k0I* <Esc>j.j.j.j.j.j.j.}j3dd';
+const PROVIDED = '2jf|<C-v>7j9ld$b<C-v>7j$cfound<Esc>0<C-v>7jI* <Esc>}j$bvjdjVd';
+const SHORTER = '2jf|<C-v>7j9ldw<C-v>7j$cfound<Esc>0<C-v>7jI* <Esc>}j3wd12wjdd';
+const OLD_TOOLS = '2jf|d10lj.j.j.j.j.j.j.7k$bcwfound<Esc>jb.jb.jb.jb.jb.jb.jb.7k0I* <Esc>j.j.j.j.j.j.j.}j3wd12wjdd';
 const OLD_COMMANDS = [...CONTRACT_COMMANDS, '/', '?', 'n', 'N', '*', '#', 'm', '`', "'"];
 function dismiss(session: Session): Session {
   let next = session;
@@ -55,7 +55,7 @@ it('enters study after the castle ending, keeping statue A, flags, and the new m
   expect(session.story.clearedStages).toContain('labyrinth');
   expect(session.story.unlockedStages).toContain('study');
   expect(session.story.quests['caves.study']).toEqual({ step: 0, done: false });
-  expect(storyEngine.objectives(session.story, content)).toContain('Fix the index: `Ctrl-v`, then `d`, `c`, `I`.');
+  expect(storyEngine.objectives(session.story, content)).toContain('Fix the index: `Ctrl-v`, then `c` and `I`; `V` and `v`.');
   expect(keys(session, SHORTER).story.quests['caves.study']).toEqual({ step: 1, done: true });
 });
 
@@ -102,7 +102,7 @@ it('changes every row end and inserts a star on all eight rows after Escape', ()
   const starred = keys(changed, '0<C-v>7jI* <Esc>');
   expect(starred.world.script?.engine.lines.slice(2, 10)).toEqual(target.slice(2, 10));
   expect(starred.world.status).toBe('playing');
-  expect(keys(starred, '}jV2jd').world.status).toBe('cleared');
+  expect(keys(starred, '}j$bvjdjVd').world.status).toBe('cleared');
 });
 
 it('allows visual and insert modes here, while the castle rejects insert and change', () => {
@@ -180,10 +180,10 @@ it('validates content and replays every stage with its own commands', () => {
   }
 });
 
-it('stores the 35-key best-known route and preserves the 37/81-key comparisons', () => {
-  expect(parseKeys(PROVIDED)).toHaveLength(37);
-  expect(parseKeys(OLD_TOOLS)).toHaveLength(81);
-  expect(book.par).toBe(35);
-  expect(book.solution).toEqual(parseKeys(SHORTER));
+it('stores the best-known route; the walkthrough and old-tools routes are longer', () => {
+  expect(book.solution).toHaveLength(book.par);
+  expect(parseKeys(SHORTER).length).toBeGreaterThan(book.par);
+  expect(parseKeys(PROVIDED).length).toBeGreaterThanOrEqual(parseKeys(SHORTER).length);
+  expect(parseKeys(OLD_TOOLS).length).toBeGreaterThan(parseKeys(PROVIDED).length);
   expect(study.solution).toEqual(book.solution);
 });
