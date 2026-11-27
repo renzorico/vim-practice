@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · Text stages audited
+**Who:** Opus (audit tool, findings); Codex (golf, every route replayed through the engine). Renzo: "Start the text stages audit".
+
+- **Tool:** `audit/textAudit.test.ts` replays each script route, lists taught keys used, and cuts spans out of it; `audit/solvedAt.ts` replays any candidate. `commandsIn` now counts `<Esc>` and reads `ci"` as `c` on `i"`.
+- **Findings:** text stages are unscored (no par or stars shown). Every par is loose: Ledger 38 to 35, Manifest 57 to 53, Harbour 100 to 92, Contract 163 to 151, Study 35 to 26. Skipped lessons: Ledger `i a A`, Contract `a"`, Study `v V`.
+- **No content changed.** Redesign is the next step, per stage.
+
+**Agentic lesson:** a cheap "cut a span" probe found two loose pars in seconds; a strong golfer found the rest. Neither proves an optimum, so both go in as "best known".
+
 ## 2026-11-27 · World 7: the Last Page checked
 **Who:** Opus (audit, test); Codex (review). Renzo: "continue with next world".
 
