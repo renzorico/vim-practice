@@ -38,13 +38,13 @@ const markup = (session: Session) => renderToStaticMarkup(createElement(PlayScre
   session, stage: notary, legend: notaryLegend, content, objectives: [], showSource: false, onAdvance: () => {},
 }));
 
-it('opens the six locks in 14 turns with 3 hearts and 4 clauses', () => {
+it('opens the six locks in 12 turns with 3 hearts and 6 clauses', () => {
   const session = route(start(), notary.solution);
   expect(session.world.status).toBe('cleared');
-  expect(session.world.turn).toBe(14);
-  expect(notary.parTurns).toBe(14);
+  expect(session.world.turn).toBe(12);
+  expect(notary.parTurns).toBe(12);
   expect(session.world.hearts).toBe(3);
-  expect(notaryClauses(session.world)).toBe(4);
+  expect(notaryClauses(session.world)).toBe(6);
   expect(session.world.engine.lines.slice(2, 13)).toEqual([
     '.......#', '.############', '.......#', '.############', '.<w></w>.#', '.############',
     '.[]......#', '.############', '.{}......#', '.############', '..#',
@@ -61,7 +61,8 @@ it('opens the six locks in 14 turns with 3 hearts and 4 clauses', () => {
 });
 
 it('reaches each lock row by count-G; deletes around brackets, inside tags, but leaves [] with di[', () => {
-  const stair = keys(start(), '3G');
+  // The fuse fires on even turns, so a splash plan needs the player's edit on an odd turn: `2G` on the start row shifts the parity.
+  const stair = keys(start(), '2G3G');
   expect(stair.world.engine.cursor).toEqual({ line: 2, col: 0 });
   const lock = keys(stair, 'da[');
   expect(lock.world.engine.lines[2]).toBe('.......#');
@@ -69,29 +70,32 @@ it('reaches each lock row by count-G; deletes around brackets, inside tags, but 
   const seal = keys(lock, '5Gda{');
   expect(seal.world.engine.lines[4]).toBe('.......#');
   expect(jettyDeletion(seal.world, seal.lastEvents)?.junk).toBe('{kkk}');
-  const tag = keys(seal, '7Gwdit');
+  const tag = keys(seal, '7Gdit');
   expect(tag.world.engine.lines[6]).toBe('.<w></w>.#');
   expect(jettyDeletion(tag.world, tag.lastEvents)?.junk).toBe('wwww');
-  const inner = route(start(), parseKeys('3Gdi[5Gda{7Gwdit'));
+  const inner = route(start(), parseKeys('3Gdi[5Gda{7Gdit'));
   expect(inner.world.engine.lines[2]).toBe('.[]......#');
   expect(inner.world.status).toBe('playing');
 });
 
 it('keeps the lock and seal with di[ / di{, and removes the whole tag with dat', () => {
-  const before = keys(start(), '3Gda[5Gda{7Gwdit9G');
+  const before = keys(start(), '3Gda[5Gda{7Gdit9G');
   const lock = keys(before, 'di[');
   expect(lock.world.engine.lines[8]).toBe('.[]......#');
-  // On the par route di[ lands on turn 9, a fuse turn: the Notary's put is then the latest edit, so no splash plan.
-  // One extra step shifts it to turn 10, where the player's edit is the latest.
+  // On the par route di[ lands on turn 8, a fuse turn: the Notary's put is then the latest edit, so no splash plan.
+  // One extra step shifts it to turn 9, where the player's edit is the latest.
   const unfused = keys(keys(before, 'h'), 'di[');
   expect(jettyDeletion(unfused.world, unfused.lastEvents)?.junk).toBe('kkk');
   const seal = keys(lock, '11Gdi{');
   expect(seal.world.engine.lines[10]).toBe('.{}......#');
-  const tag = keys(seal, '13Gwdat');
+  const tag = keys(seal, '13Gdat');
   expect(tag.world.engine.lines[12]).toBe('..#');
-  // The splash planner (scene/jettyDeletion.ts) does not match whole tags yet, so no splash plan.
-  expect(jettyDeletion(tag.world, tag.lastEvents)).toBeNull();
   expect(tag.world.status).toBe('cleared');
+  // The splash planner (scene/jettyDeletion.ts) does not match whole tags yet, so no splash plan,
+  // checked on an unfused turn (the shifted route) so the Notary's put is not the reason.
+  const shifted = keys(keys(unfused, '11Gdi{'), '13Gdat');
+  expect(shifted.world.turn % 2).toBe(1);
+  expect(jettyDeletion(shifted.world, shifted.lastEvents)).toBeNull();
 });
 
 it.each(['k', 'gg'])('cannot reach the Notary with %s', input => {
@@ -108,12 +112,12 @@ it('2G stays on the supplied walkable start row rather than reaching the desk', 
   expect(session.world.hearts).toBe(3);
 });
 
-it('a stalled run loses on turn 21, repeats its fuse line, and retries cleanly', () => {
+it('a stalled run loses on turn 14, repeats its fuse line, and retries cleanly', () => {
   const stall = parseKeys('jk'.repeat(14));
   let attempt = start();
   for (let index = 0; index < 2; index++) {
     const fused = route(attempt, stall);
-    expect(fused.world.turn).toBe(21);
+    expect(fused.world.turn).toBe(14);
     expect(fused.queue[0]).toMatchObject({ dialogue: 'notary.fuse' });
     expect(markup(fused)).toContain('Seven. Signed and sealed.');
     const dead = dismiss(fused);
@@ -128,14 +132,14 @@ it('a stalled run loses on turn 21, repeats its fuse line, and retries cleanly',
   }
 });
 
-it('idle turns fill the gauge and fuse at 21; signing slides one whole clause', () => {
+it('idle turns fill the gauge and fuse at 14; signing slides one whole clause', () => {
   let session = start();
-  for (let turn = 1; turn <= 21; turn++) {
+  for (let turn = 1; turn <= 14; turn++) {
     const before = session;
     session = keys(session, turn % 2 ? 'j' : 'k');
-    expect(notaryClauses(session.world)).toBe(Math.floor(turn / 3));
-    expect(markup(session)).toContain('Clauses ' + Math.floor(turn / 3) + '/7');
-    expect(counterStamp(before.world, session.world, session.lastEvents)).toEqual(turn % 3 ? null
+    expect(notaryClauses(session.world)).toBe(Math.floor(turn / 2));
+    expect(markup(session)).toContain('Clauses ' + Math.floor(turn / 2) + '/7');
+    expect(counterStamp(before.world, session.world, session.lastEvents)).toEqual(turn % 2 ? null
       : { entity: 'notary', line: 0, col: 2, length: 4 });
   }
   expect(markup(session)).toContain('data-full="true"');
@@ -143,15 +147,25 @@ it('idle turns fill the gauge and fuse at 21; signing slides one whole clause', 
 });
 
 it('clear wins on clause seven: no fuse line or damage; Q lights only after the ending', () => {
-  // Seven safe turns (three stair trips and a `2G` on the start row) delay the 14-turn route until turn 21.
-  const session = route(keys(start(), 'jkjkjk2G'), notary.solution);
-  expect(session.world.turn).toBe(21);
+  // Two safe turns (one stair trip) delay the 12-turn route until turn 14.
+  const session = route(keys(start(), 'jk'), notary.solution);
+  expect(session.world.turn).toBe(14);
   expect(notaryClauses(session.world)).toBe(7);
   expect(session.world.status).toBe('cleared');
   expect(session.queue.some(item => item.type === 'dialogue' && item.dialogue === 'notary.fuse')).toBe(false);
   expect(session.story.statues).not.toContain('Q');
   expect(dismiss(session).story.statues).toContain('Q');
   expect(dismiss(session).world.hearts).toBe(3);
+});
+
+it('a route that avoids the new objects takes 17 turns and dies to the fuse at turn 14', () => {
+  const avoiding = parseKeys('3Gldt.5Gdt.7Gf>ldiw9Gdiw11Gdiw13G0ldt.');
+  const fused = route(start(), avoiding);
+  expect(fused.world.turn).toBe(14);
+  expect(fused.queue[0]).toMatchObject({ dialogue: 'notary.fuse' });
+  const dead = dismiss(fused);
+  expect(dead.world.status).toBe('dead');
+  expect(dead.world.hearts).toBe(0);
 });
 
 it('archive ending enters Notary with story and quest; Continue restores the castle', () => {

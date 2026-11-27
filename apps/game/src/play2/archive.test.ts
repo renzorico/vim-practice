@@ -56,7 +56,7 @@ it('lifts the misfiled paragraph from its middle, files it and copies atlases in
   expect(filed.world.engine.lines.slice(5, 12)).toEqual(['bbbbbbbb', 'bbbbbbbb', '', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx', '']);
   const copied = keys(filed, '6kyip');
   expect(copied.world.engine.registers['"']).toEqual({ text: 'aaaaaaaa\naaaaaaaa\n', linewise: true });
-  const end = keys(copied, 'GkP');
+  const end = keys(copied, '13GP');
   expect(end.world.engine.lines).toHaveLength(16);
   expect(end.world.engine.lines.slice(-4)).toEqual(['aaaaaaaa', 'aaaaaaaa', '', '|========|']);
   expect(end.world.firedTriggers).toContain('archive.filed');
@@ -121,7 +121,7 @@ it('gates paragraph objects, exposes the keycaps and restores Archive through Co
   expect(controller.resume(progress).world.stage).toBe('archive');
 });
 it('keeps the cursor visible after }, gg and G as the buffer grows from 14 to 16 rows', () => {
-  for (const session of [keys(start(), '}'), keys(start(), 'gg'), keys(start(), 'G'), keys(start(), 'dap}p6kyipGkP')]) {
+  for (const session of [keys(start(), '}'), keys(start(), 'gg'), keys(start(), 'G'), keys(start(), 'dap}p6kyip13GP')]) {
     const cursor = session.world.engine.cursor;
     const target = cameraTarget(bufferSize(session.world.engine.lines), { width: 480, height: 192 }, cursor, 3);
     expect((cursor.line + 0.5) * 16).toBeGreaterThanOrEqual(target.y - 32);
