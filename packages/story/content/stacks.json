@@ -26,7 +26,7 @@
       "steps": [
         {
           "id": "dust",
-          "objective": "Dust three shelves: `daw`, then `j` and `.`.",
+          "objective": "Dust four shelves: `daw`, `.` and `diw`.",
           "completeWhen": {
             "type": "flag",
             "flag": "stacks.dusted",
@@ -54,6 +54,11 @@
           "speaker": "npc",
           "name": "Quire",
           "text": "Quire, librarian. Dust sits between the books,\nand I may not touch one. You need my door: dust."
+        },
+        {
+          "speaker": "npc",
+          "name": "Quire",
+          "text": "One shelf keeps its gap: I reshelve that volume.\nThere, `diw` takes the dust, leaves the space."
         },
         {
           "speaker": "system",
@@ -104,7 +109,7 @@
         {
           "speaker": "npc",
           "name": "Quire",
-          "text": "Three shelves. I'm not allowed to, you see."
+          "text": "Four shelves. I'm not allowed to, you see."
         },
         {
           "speaker": "system",
@@ -242,6 +247,55 @@
       ]
     },
     {
+      "id": "stacks.shelf-4",
+      "when": {
+        "type": "trigger",
+        "trigger": "stacks.shelf-4"
+      },
+      "once": true,
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.shelf-4",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.lower-3",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.shelf-3",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.shelf-4",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.lower",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "stacks.lower-4",
+      "when": {
+        "type": "flag",
+        "flag": "stacks.shelf-4",
+        "value": true
+      },
+      "once": true,
+      "onlyIf": "stacks.shelf-3",
+      "then": [
+        {
+          "type": "set-flag",
+          "flag": "stacks.lower",
+          "value": true
+        }
+      ]
+    },
+    {
       "id": "stacks.upper-1",
       "when": {
         "type": "flag",
@@ -283,7 +337,7 @@
         "value": true
       },
       "once": true,
-      "onlyIf": "stacks.shelf-3",
+      "onlyIf": "stacks.lower",
       "then": [
         {
           "type": "set-flag",
@@ -293,10 +347,10 @@
       ]
     },
     {
-      "id": "stacks.dusted-3",
+      "id": "stacks.dusted-lower",
       "when": {
         "type": "flag",
-        "flag": "stacks.shelf-3",
+        "flag": "stacks.lower",
         "value": true
       },
       "once": true,

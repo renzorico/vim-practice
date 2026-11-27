@@ -3,13 +3,14 @@
   "world": "library",
   "type": "field",
   "title": "The Stacks",
-  "goalText": "Dust the three shelves and tell the librarian.",
+  "goalText": "Dust the four shelves and tell the librarian.",
   "map": [
     "|=================|",
     "|bbb bbbb ddddd bb|",
     "|bb bbb dddd bbbbb|",
     "|b bbb dddddd bbbb|",
-    "#######=###########"
+    "|bb dddd bbb bbbbb|",
+    "####=##############"
   ],
   "legend": "stacks",
   "start": {
@@ -23,8 +24,8 @@
       "kind": "npc",
       "sprite": "quire",
       "at": {
-        "line": 4,
-        "col": 7
+        "line": 5,
+        "col": 4
       },
       "behaviour": {
         "type": "still"
@@ -77,6 +78,21 @@
       "every": 1,
       "damage": 0,
       "solid": false
+    },
+    {
+      "id": "shelf-4",
+      "kind": "prop",
+      "sprite": "shelf-end",
+      "at": {
+        "line": 4,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
     }
   ],
   "triggers": [
@@ -109,6 +125,13 @@
       "on": "text",
       "anchor": "shelf-3",
       "text": "b bbb bbbb|"
+    },
+    {
+      "id": "stacks.shelf-4",
+      "once": true,
+      "on": "text",
+      "anchor": "shelf-4",
+      "text": "bb  bbb bbbbb|"
     }
   ],
   "scripts": [],
@@ -120,7 +143,7 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 6,
+  "parTurns": 8,
   "solution": [
     "j",
     "d",
@@ -130,10 +153,14 @@
     ".",
     "j",
     ".",
+    "j",
+    "d",
+    "i",
+    "w",
     "<CR>"
   ],
   "hints": [
     "Stand anywhere in a dust word and press `daw`: it deletes the word and the space after it.",
-    "Use `daw`, not `diw`: `diw` leaves a double gap. Then `j`, and `.` repeats `daw` on the next shelf."
+    "Shelves 1 to 3: `daw`, then `j` and `.` repeats it. The last shelf keeps its gap: use `diw` there, not `daw`."
   ]
 }
