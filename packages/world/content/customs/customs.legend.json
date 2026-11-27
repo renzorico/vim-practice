@@ -39,7 +39,8 @@
       "sprite": "crate-lip",
       "walkable": false,
       "fixed": true,
-      "label": "crate lip"
+      "label": "crate lip",
+      "gap": true
     },
     {
       "char": "|",
@@ -71,7 +72,8 @@
       "sprite": "nets",
       "walkable": false,
       "fixed": false,
-      "label": "nets"
+      "label": "nets",
+      "gap": true
     }
   ]
 }

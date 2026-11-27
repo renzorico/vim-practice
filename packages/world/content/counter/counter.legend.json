@@ -47,7 +47,8 @@
       "sprite": "crate-lip",
       "walkable": false,
       "fixed": true,
-      "label": "crate lip"
+      "label": "crate lip",
+      "gap": true
     },
     {
       "char": "o",

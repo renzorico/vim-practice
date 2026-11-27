@@ -8,21 +8,21 @@
     "#########",
     "#,,,,,,,#",
     "#,,,,,,,#",
-    ".........",
-    ".........",
-    ".........",
-    ".........",
-    ".........",
-    ".........",
-    ".........",
-    ".........",
+    "---------",
     ".........",
     ".........",
     ".........",
     "####=####",
-    "#########",
-    "#########",
-    "#########",
+    "---------",
+    ".........",
+    ".........",
+    ".........",
+    "####=####",
+    "---------",
+    ".........",
+    ".........",
+    ".........",
+    "###===###",
     "#########",
     "#########",
     "#########",
@@ -46,8 +46,8 @@
       "kind": "keeper",
       "sprite": "mason",
       "at": {
-        "line": 14,
-        "col": 4
+        "line": 17,
+        "col": 5
       },
       "behaviour": {
         "type": "still"
@@ -89,21 +89,6 @@
       }
     },
     {
-      "id": "shaft.down",
-      "once": false,
-      "on": "enter",
-      "area": {
-        "from": {
-          "line": 4,
-          "col": 0
-        },
-        "to": {
-          "line": 26,
-          "col": 8
-        }
-      }
-    },
-    {
       "id": "shaft.talk-mason",
       "once": false,
       "on": "interact",
@@ -122,18 +107,36 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 3,
+  "parTurns": 6,
   "solution": [
+    "2",
     "j",
-    "j",
-    "1",
-    "0",
+    "4",
     "d",
     "d",
+    "j",
+    ".",
+    "j",
+    ".",
     "<CR>"
   ],
   "hints": [
-    "Stay at the lip. `10dd` deletes 10 rows: the shaft rises to you.",
-    "Short of the Mason? `.` repeats your last `dd`."
+    "On the top boards, `4dd`: boards and three rows of mortar go, and the beam below rises to you.",
+    "Step down onto the next boards with `j`, then `.`: it repeats your `4dd` right there."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "0",
+    "$",
+    "dd",
+    "u",
+    "<C-r>",
+    "."
   ]
 }

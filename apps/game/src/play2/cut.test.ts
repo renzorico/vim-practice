@@ -74,18 +74,27 @@ it('dd at column 15 bumps because its landing is the drop', () => {
   expect(bumped.world.engine.lines).toEqual(cut.map);
   expect(bumped.world.turn).toBe(east.world.turn);
 });
-it('frees Dot alive in five turns and presents the ending before To be continued', () => {
-  const atDot = keys(start(), '3jddu029l<CR>');
+it('frees Dot in the pit, then <C-r> deletes the ledge again and lands back at the start: cleared in six', () => {
+  const atDot = keys(start(), '3jddu26lj<CR>');
   expect(atDot.queue[0]).toMatchObject({ dialogue: 'cut.dot' });
-  let ended = atDot;
-  for (let line = 0; line < 3; line += 1) ended = controller.reduce(ended, '<CR>');
+  const freed = dismiss(atDot);
+  expect(freed.world.status).toBe('playing');
+  expect(freed.story.flags['cut.dot-free']).toBe(true);
+  expect(blots(freed).filter(entity => entity.id.startsWith('cut.wave'))).toHaveLength(3);
+  const ended = controller.reduce(freed, '<C-r>');
   expect(ended.world.status).toBe('cleared');
-  expect(ended.world.turn).toBe(5);
+  expect(ended.world.engine.cursor).toEqual({ line: 5, col: 3 });
+  expect(ended.world.turn).toBe(cut.parTurns);
   expect(ended.world.hearts).toBe(3);
-  expect(ended.world.entities.some(entity => entity.id === 'dot-caged')).toBe(false);
-  expect(ended.world.entities.find(entity => entity.id === 'dot')?.def.behaviour).toEqual({ type: 'follow' });
+  expect(blots(ended)).toHaveLength(0);
+  // Dot rides in your pocket: nothing is left behind in the pit when <C-r> takes you back.
+  expect(ended.world.entities.some(entity => entity.id === 'dot' || entity.id === 'dot-caged')).toBe(false);
   expect(ended.queue[0]).toMatchObject({ dialogue: 'cut.end' });
-  expect(dismiss(ended).queue).toEqual([]);
+});
+it('freeing Dot alone does not clear: the stage ends back at the start ledge', () => {
+  const freed = dismiss(keys(start(), '3jddu26lj<CR>'));
+  expect(freed.world.status).toBe('playing');
+  expect(freed.world.engine.cursor).toEqual({ line: 6, col: 29 });
 });
 it('walking east one step at a time dies', () => {
   let next = ledge();
@@ -127,35 +136,11 @@ it('3j26l<CR> dies on the three cage guards before Dot can be freed', () => {
   expect(result.events).toContainEqual({ type: 'player-died' });
   expect(result.state.flags['cut.dot-free']).not.toBe(true);
 });
-it('2j26r. bumps against the fixed drop', () => {
-  const before = keys(start(), '2j');
-  const bumped = keys(before, '26r.');
-  expect(bumped.lastEvents).toEqual([expect.objectContaining({ type: 'bump', reason: 'fixed' })]);
-  expect(bumped.world.engine.lines).toEqual(cut.map);
-  expect(bumped.world.turn).toBe(before.world.turn);
-  expect(blots(bumped)).toHaveLength(3);
-});
-
-it('x on the ledge cannot shift the guards off the cage: the ledge ends at the cage cell', () => {
-  const replay = sessionSolver(dependencies);
-  const options = { learnedCommands: QUARRY_COMMANDS, flags: {} };
-  for (const route of ['3jx26l<CR>', '3j3x26l<CR>', '3j$<CR>', '3jxu26l<CR>']) {
-    const result = playKeys(replay, cut, cutLegend, options, parseKeys(route));
-    expect(result.state.status, route).not.toBe('cleared');
-    expect(result.state.flags['cut.dot-free'], route).not.toBe(true);
+it('x and r do nothing in the Cut', () => {
+  const before = keys(start(), '3j');
+  for (const edit of ['x', '3x', 'r.']) {
+    const refused = keys(before, edit);
+    expect(refused.world.engine.lines, edit).toEqual(before.world.engine.lines);
+    expect(refused.world.turn, edit).toBe(before.world.turn);
   }
-});
-
-it('x and r on the dirt bump: the cage never moves', () => {
-  const before = keys(start(), '2j');
-  for (const edit of ['4x', 'x', '3r.']) {
-    const bumped = keys(before, edit);
-    expect(bumped.world.engine.lines, edit).toEqual(cut.map);
-  }
-});
-it('accepted alternative: counted x over the ledge, then u, also frees Dot', () => {
-  const replay = sessionSolver(dependencies);
-  const result = playKeys(replay, cut, cutLegend, { learnedCommands: QUARRY_COMMANDS, flags: {} }, parseKeys('3j27xu26l<CR>'));
-  expect(result.state.flags['cut.dot-free']).toBe(true);
-  expect(result.state.entities.filter(entity => entity.def.kind === 'blot')).toHaveLength(0);
 });

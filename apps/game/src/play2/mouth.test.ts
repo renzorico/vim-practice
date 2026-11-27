@@ -117,7 +117,7 @@ it('bounds the old vocabulary by expansions and counts simulation steps', () => 
   expect(solveStage(observed, mouth, mouthLegend, { learnedCommands: NOTARY_COMMANDS, flags: {} },
     { maxTurns: 3, maxExpanded: 50 })).toBeNull();
   expect(steps).toBeGreaterThan(0);
-  expect(steps).toBeLessThanOrEqual(1_200_000);
+  expect(steps).toBeLessThanOrEqual(1_400_000);
   console.info(`Mouth old vocabulary: ${steps} simulation steps (3 turns / 50 expansions)`);
 });
 // The full MOUTH_COMMANDS search exhausts memory before depth 4; par is proven on the

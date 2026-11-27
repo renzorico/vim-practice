@@ -153,10 +153,10 @@ it('finds a route with a focused gallery search vocabulary', () => {
   console.info('Gallery focused solver:', result);
 });
 
-it('the intended word chain still clears, one turn over par', () => {
+it('the intended word chain with * also clears at par', () => {
   let session = route(start(), ['*', 'w', '*', 'w', '*', 'e', '<CR>']);
   expect(session.queue[0]).toMatchObject({ dialogue: 'gallery.talk' });
   session = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
   expect(session.world.flags['gallery.through']).toBe(true);
-  expect(session.world.turn).toBe(gallery.parTurns + 1);
+  expect(session.world.turn).toBe(gallery.parTurns);
 });

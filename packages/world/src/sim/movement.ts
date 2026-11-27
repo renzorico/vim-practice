@@ -33,8 +33,8 @@ export function isWalk(command: CommandRecord): boolean {
 }
 
 /**
- * Word and line-end motions: the moves a count turns into a long run across the page. Only these, when they leave their
- * line, must find a clear path. Everything else keeps its old behaviour: searches and marks jump anywhere; the
+ * Word and line-end motions: the moves a count turns into a long run across the page. Only these must find a clear
+ * path, on their own line or off it. Everything else keeps its old behaviour: searches and marks jump anywhere; the
  * structural leaps (G gg % { } <C-d> <C-u>) are what whole stages are built on (Gates, Glades); finds stay on a row.
  */
 const PATH_CHECKED: ReadonlySet<string> = new Set(['w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$']);
@@ -67,7 +67,7 @@ function route(from: Position, corner: Position, to: Position): Position[] {
 }
 
 /**
- * A run (a word or line-end motion leaving its line) may not pass through a solid tile. It is clear when either L-shaped route (down then across, or across then
+ * A run (a word or line-end motion) may not pass through a solid tile. It is clear when either L-shaped route (down then across, or across then
  * down) is: a jump can go round one corner, never through rock. Returns the first solid cell of the down-first route.
  */
 export function jumpBlocked(lines: readonly string[], from: Position, to: Position, legend: Legend): Position | null {
@@ -95,8 +95,10 @@ export function validateMovement(before: EngineState, after: EngineState, comman
       if (reason !== null) return { reason, at };
     }
   }
-  const crossesLines = before.cursor.line !== after.cursor.line;
-  if (crossesLines && commands.some(command => command.kind === 'motion' && PATH_CHECKED.has(command.id))) {
+  // On its own line too: a run hops gaps, never rock (2026-11-27; `e` crossed eight cells of Quarry bedrock).
+  if (commands.some(command => command.kind === 'motion' && PATH_CHECKED.has(command.id))) {
+    // You climb off a ladder before you run: a run from a climb tile could wrap into the next row (Lowlands `4e`).
+    if (tileAt(legend, before.lines, before.cursor)?.climb === true) return { reason: 'wall', at: before.cursor };
     const at = jumpBlocked(before.lines, before.cursor, after.cursor, legend);
     if (at !== null) return { reason: 'wall', at };
   }

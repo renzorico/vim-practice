@@ -14,8 +14,8 @@
       "kind": "ground",
       "sprite": "dirt",
       "walkable": true,
-      "fixed": false,
-      "label": "dirt"
+      "fixed": true,
+      "label": "packed earth"
     },
     {
       "char": ".",
@@ -39,8 +39,7 @@
       "sprite": "river",
       "walkable": false,
       "fixed": false,
-      "label": "river",
-      "gap": true
+      "label": "river"
     },
     {
       "char": "=",
@@ -65,6 +64,15 @@
       "walkable": false,
       "fixed": false,
       "label": "rubble"
+    },
+    {
+      "char": "|",
+      "kind": "barrier",
+      "sprite": "ladder",
+      "walkable": true,
+      "fixed": true,
+      "label": "stone stairs",
+      "climb": true
     }
   ]
 }

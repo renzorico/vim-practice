@@ -20,10 +20,16 @@ function keys(session: Session, input: string): Session {
   return [...input].reduce((next, key) => controller.reduce(dismiss(next), key), session);
 }
 const start = () => dismiss(controller.init());
-const edge = () => keys(start(), '13l');
-const bank = () => keys(edge(), '4x8l2j7l');
-const learner = 'l12l4x8l2j7l5r=8l2j';
-it('validates the unchanged map and all four replay solutions', () => {
+/** On the gravel by Ash: the road's first cell. */
+const road = () => keys(start(), '3j');
+/** 4x has slid the road: open ground now lies under the shaft. */
+const slid = () => keys(road(), '4x');
+/** At the bottom of the shaft, past the boulder. */
+const below = () => keys(slid(), '7k5l7j');
+/** On the riverbank, the Scribe's note read. */
+const bank = () => dismiss(controller.reduce(keys(below(), '5l3k'), '<CR>'));
+
+it('validates the map and all four replay solutions', () => {
   expect(lintStage(quarry, quarryLegend)).toEqual([]);
   for (const entry of stages) {
     // Margin and Lighthouse clear through story effects; replay the existing session adapter.
@@ -41,39 +47,53 @@ it('keeps story and starts the Quarry quest after the Lighthouse ending', () => 
   expect(entered.story.statues).toContain('R');
   expect(entered.story.quests['quarry.road']).toEqual({ step: 0, done: false });
 });
-it('Ash calls out once; x bumps and 4x opens the cut', () => {
-  const atCut = edge();
-  expect(atCut.queue[0]).toMatchObject({ dialogue: 'quarry.ash' });
-  const ready = dismiss(atCut);
+it('Ash calls out on the road; packed earth will not delete, and 4x slides the road under the shaft', () => {
+  const atRoad = road();
+  expect(atRoad.queue[0]).toMatchObject({ dialogue: 'quarry.ash' });
+  const ready = dismiss(atRoad);
   expect(ready.story.flags['quarry.knows-x']).toBe(true);
-  const bump = keys(ready, 'x');
-  expect(bump.lastEvents).toEqual([expect.objectContaining({ type: 'bump' })]);
-  expect(bump.world.turn).toBe(ready.world.turn);
-  expect(bump.world.engine.lines).toEqual(quarry.map);
-  const open = keys(bump, '4x');
-  expect(open.world.engine.lines[6]).not.toContain('R');
-  expect(keys(open, 'hl').queue).toEqual([]);
+  const camp = keys(ready, 'kx');
+  expect(camp.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'fixed' }));
+  const open = keys(ready, '4x');
+  expect(open.world.engine.lines[9]?.slice(5, 14)).toBe('.#RRR    ');
+  // Before the slide the shaft ends on the boulder (7j bumps at the top); after it, on open road.
+  expect(keys(ready, '7k5l7j').world.engine.cursor).toEqual({ line: 2, col: 10 });
+  expect(keys(open, '7k5l7j').world.engine.cursor).toEqual({ line: 9, col: 10 });
+  expect(keys(open, '7k5l7j').world.firedTriggers).toContain('quarry.through');
 });
-it('5r= lays planks and 5x also reaches the far side', () => {
+it.each(['3x', '6x'])('a wrong count (%s) leaves the shaft blocked or bumps the boulder; :e! puts the road back', count => {
+  const tried = keys(road(), count);
+  expect(keys(tried, '7k5l7j').world.firedTriggers).not.toContain('quarry.through');
+  const restored = controller.reduce(keys(tried, ':e!'), '<CR>');
+  expect(restored.world.engine.lines).toEqual(quarry.map);
+  expect(restored.world.hearts).toBe(3);
+});
+it('5r= bridges the river onto the stairs; 5x drags the far bank off them', () => {
   const before = bank();
-  expect(before.world.engine.cursor).toEqual({ line: 8, col: 30 });
+  expect(before.world.engine.cursor).toEqual({ line: 6, col: 15 });
+  expect(before.story.flags['quarry.knows-r']).toBe(true);
   const bridge = keys(before, '5r=');
-  expect(bridge.world.engine.lines[8]?.slice(30, 35)).toBe('=====');
-  expect(keys(bridge, '8l').world.firedTriggers).toContain('quarry.far');
+  expect(bridge.world.engine.lines[6]?.slice(15, 24)).toBe('=====   |');
+  expect(keys(bridge, '4l5k').world.engine.cursor).toEqual({ line: 1, col: 23 });
   const deleted = keys(before, '5x');
-  expect(deleted.world.engine.lines[8]).not.toContain('~');
-  expect(keys(deleted, '7l').world.firedTriggers).toContain('quarry.far');
+  expect(deleted.world.engine.lines[6]?.slice(15, 19)).toBe('   |');
+  // The stairs went with the bank: four columns west of the flight above them.
+  expect(keys(deleted, '3l5k').world.engine.cursor).toEqual({ line: 6, col: 18 });
 });
-it('the nine-turn learner route clears with three hearts and presents the ending', () => {
-  const ended = controller.reduce(keys(start(), learner), '<CR>');
+it('the gate needs the Scribe\'s note: crossing without reading it does not clear', () => {
+  const unread = keys(below(), '5l3k5r=4l5k');
+  expect(unread.story.flags['quarry.knows-r']).not.toBe(true);
+  expect(dismiss(controller.reduce(unread, '<CR>')).world.status).toBe('playing');
+});
+it('the ten-turn route clears with three hearts and presents the ending', () => {
+  const ended = controller.reduce(keys(bank(), '5r=4l5k'), '<CR>');
   expect(ended.world.status).toBe('cleared');
-  expect(ended.world.turn).toBe(9);
+  expect(ended.world.turn).toBe(quarry.parTurns);
   expect(ended.world.hearts).toBe(3);
   expect(ended.queue[0]).toMatchObject({ dialogue: 'quarry-road.end' });
-  expect(dismiss(ended).queue).toEqual([]);
 });
 it('Continue restores Quarry entry and its story', () => {
-  const moved = bank();
+  const moved = slid();
   const continued = dismiss(controller.resume(moved.stageEntry));
   expect(continued.world.stage).toBe('quarry-road');
   expect(continued.world.engine.lines).toEqual(quarry.map);
@@ -81,22 +101,6 @@ it('Continue restores Quarry entry and its story', () => {
   expect(continued.story).toEqual(moved.stageEntry.story);
 });
 
-it.each(['11l9x', '12x'])('restores the cut after overcounting %s without losing hearts or story', route => {
-  const sealed = keys(start(), route);
-  expect(sealed.world.engine.lines).not.toEqual(quarry.map);
-  expect(sealed.world.status).toBe('playing');
-  const command = keys(sealed, ':e!');
-  expect(command.world.engine.commandLine).toBe(':e!');
-  const restored = controller.reduce(command, '<CR>');
-  expect(restored.world.engine.lines).toEqual(quarry.map);
-  expect(restored.world.engine.cursor).toEqual(quarry.start);
-  expect(restored.world.hearts).toBe(3);
-  expect(restored.world.turn).toBe(0);
-  expect(restored.world.pending).toBeNull();
-  // S-1: :e! restores the story with the world (flags set after the last save revert).
-  expect(restored.story).toEqual({ ...command.storyCheckpoint, learnedSkills: command.story.learnedSkills });
-  expect(restored.lastEvents).toContainEqual({ type: 'checkpoint-restored' });
-});
 it('teaches retry in Ash’s first dialogue, before the closing 4x instruction', () => {
   const lines = content.dialogues.find(dialogue => dialogue.id === 'quarry.ash')?.lines ?? [];
   expect(lines).toContainEqual({
@@ -105,27 +109,8 @@ it('teaches retry in Ash’s first dialogue, before the closing 4x instruction',
   });
   expect(lines.at(-1)).toEqual({
     speaker: 'system',
-    text: 'Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone.',
+    text: 'The shaft drops onto a boulder. Stand on the\ngravel, press `4x`: the road slides under it.',
   });
-});
-it('clears at the remapped gate after shortening all three old clear rows', () => {
-  const shortened = keys(start(), '26r=3j8xj8xj8x');
-  expect(shortened.world.engine.lines.slice(9, 12).map(row => row.length)).toEqual([38, 38, 38]);
-  expect(shortened.world.entities.find(entity => entity.id === 'gate')?.at).toEqual({ line: 10, col: 35 });
-  const atGate = keys(shortened, 'k7l');
-  expect(atGate.world.engine.cursor).toEqual({ line: 10, col: 34 });
-  const cleared = controller.reduce(atGate, '<CR>');
-  expect(cleared.world.status).toBe('cleared');
-  expect(cleared.story.flags['quarry.south']).toBe(true);
-  expect(cleared.queue[0]).toMatchObject({ dialogue: 'quarry-road.end' });
-});
-it('clears the three-turn replacement route at the gate with Enter', () => {
-  const ready = keys(start(), '26r=4j16r=');
-  expect(ready.world.status).toBe('playing');
-  const cleared = controller.reduce(ready, '<CR>');
-  expect(cleared.world.status).toBe('cleared');
-  expect(cleared.world.turn).toBe(3);
-  expect(cleared.world.hearts).toBe(3);
 });
 
 it.each(stages)('supports :e! in $stage.id', entry => {
@@ -145,10 +130,12 @@ it.each(stages)('supports :e! in $stage.id', entry => {
   expect(session.world.turn).toBe(session.world.checkpoint.turn);
 });
 it('restores the last :w checkpoint rather than the stage start', () => {
-  let session = dismiss(keys(edge(), '4x'));
+  let session = slid();
   const options = { learnedCommands: [...QUARRY_COMMANDS, ':w'], flags: session.story.flags };
+  // :w is taught on the Last Page; this stage's command list leaves it out, so save as a stage without one.
+  const { allowedCommands: _unused, ...saving } = quarry;
   for (const key of [':', 'w', '<CR>']) {
-    const result = sim.step(session.world, key, quarry, quarryLegend, options);
+    const result = sim.step(session.world, key, saving, quarryLegend, options);
     session = { ...session, world: result.state, lastEvents: result.events };
   }
   const checkpoint = session.world.checkpoint;
@@ -165,7 +152,3 @@ it('only intercepts exactly :e! followed by Enter', () => {
   expect(after.lastEvents).not.toContainEqual({ type: 'checkpoint-restored' });
 });
 
-it('keeps the river aligned after the learner deletes four rubble cells', () => {
-  const open = keys(edge(), '4x');
-  for (let line = 1; line <= 11; line++) expect(open.world.engine.lines[line]?.slice(31, 35), `row ${line}`).toBe('~~~~');
-});

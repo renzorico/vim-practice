@@ -3,6 +3,25 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 2 redesign: Quarry Road, Cut, Shaft; runs stop at rock on their own row
+**Who:** Opus (design, build, solver proofs). Renzo: "Start World 2".
+
+**Path rule, same row:** word and line-end runs (`w b e W B E 0 ^ $`) now find a clear path on their own row too, not only when they leave it: gaps are hopped, rock is not. The solver found `e` crossing eight cells of Quarry bedrock (`,` and `#` are both punctuation, one Vim word) for a 3-turn clear. `movement.ts` drops the `crossesLines` guard; finds (`f t`) still cross anything on a row. Three stages hopped solids on a row: the Warehouse, Customs and Counter crate lips (`]`, and the Customs nets) are now gap tiles, so their routes stand; the Gallery's `3w` over bedrock is gone and its par goes 5 to 6 (`# w # w # e`, found by the full solver).
+
+**Solver:** the state key holds `lastChange` only when `.` is allowed. Without it, every no-op `r` forked every state. And (Codex review) a counted run or find stopped trying counts at the first one that bumped, so `3e` was never tried after `2e` hit rock: proofs missed routes. New limit `skipBumpedCounts` lets a search skip that many bumped counts in a row; exact proofs (Lowlands, Lighthouse, Quarry, Cut, Shaft) pass 10. The default stays 0, because scanning every count ran the Canopy and Jetty proofs out of 4 GB in CI.
+
+**Ladders, again:** with exact counts the solver found three more holes. A run may not start on a ladder now (climb off first): from the Lowlands ladder bottom, `4e` wrapped into the next row and skipped the `b` room, and the Lighthouse cleared in 6 with `41b`. The Canopy's `H` ladders get `climb` (a `19e` cleared it in 4, par 7). After the fix the Lowlands solver's own best route is the stored one, `2b` included; Lighthouse par stays 7.
+
+**Quarry Road** (par 3 to 10, `allowedCommands` `h j k l w b e 0 $ x r`): a shaft drops onto a boulder in the road. `4x` on the gravel slides the whole row west, boulder and all, until open road lies under the shaft (only `4x` or `5x` works; `:e!` undoes a wrong count). At the river, `5r=` from the bank meets the stairs on the far side; `5x` would drag the far bank and its stairs four columns west of the flight above. The clear needs Ash, the Scribe's note and the gate. Camp, passages and yard are packed earth (fixed), so only the road and the bank can be edited; the river is no longer a gap, so no run hops it; the stairs are their own fixed, climbed tile, so no single `r` letter paves bank, river and stairs. **Proof:** a search through the story runs out of memory, so `quarry-finalize` searches the plain world for the gate room alone (talks take no turns, the story adds no world effects): 10 turns (33 min with exact counts). Opt-in (`PROVE=1`); CI replays the route.
+
+**Cut** (par 4 to 6, `allowedCommands` `h j k l w b e 0 $ dd u <C-r>`): Dot's cage is in a pit below the ledge's far end, and the stage clears back at the start (cols 1-7: a run from the pit lands at col 0). `dd` wipes the Blots, `u` restores the ledge, walk out and free Dot (a new wave pours onto the ledge), then `<C-r>`: it deletes the ledge again and puts the cursor back where the `dd` was, at the start. Walking back takes two turns. Proven by the solver with and without `<C-r>`.
+
+**Shaft** (par 3 to 6): three drops of loose boards over three rows of wet mortar (not walkable), each ending on a fixed beam. `4dd` on the boards, `j`, `.`, `j`, `.`, then the Mason. A fixed beam stops one long `dd`; a short one would leave you on mortar. The throw-back trigger is gone. New keycap: `<C-r>` once Dot is free; the ledge dialogue itself now teaches `dd u`. `.` ties with retyping `4dd` (a turn each); the par route uses it but turns cannot force it.
+
+**Lesson:** a stage whose edits leave many possible texts can't be proven by a full search; design the editable cells to be few (fixed ground everywhere else) and prove a lower bound on a relaxed goal.
+
+---
+
 ## 2026-11-27 · World 1 redesign: Margin, Lowlands, Lighthouse
 **Who:** Opus (design, build, solver proofs, browser check). Renzo: "Start World 1", after the challenge audit.
 

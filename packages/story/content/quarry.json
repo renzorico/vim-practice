@@ -23,7 +23,7 @@
       "steps": [
         {
           "id": "cut",
-          "objective": "Clear the rubble: `4x` from the last gravel.",
+          "objective": "Slide the road: `4x` on the gravel, then down the shaft.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "quarry.through"
@@ -32,7 +32,7 @@
         },
         {
           "id": "river",
-          "objective": "Cross the river: `5r=` from the last dirt.",
+          "objective": "Cross the river: `5r=` from the bank.",
           "completeWhen": {
             "type": "trigger",
             "trigger": "quarry.far"
@@ -41,7 +41,7 @@
         },
         {
           "id": "south",
-          "objective": "Follow the road to the gate on the far bank.",
+          "objective": "Climb the stairs to the gate on the far bank.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "quarry-road"
@@ -79,7 +79,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone."
+          "text": "The shaft drops onto a boulder. Stand on the\ngravel, press `4x`: the road slides under it."
         }
       ],
       "then": [
@@ -100,7 +100,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the last gravel before the rubble.\nPress `4x`: the rubble is gone."
+          "text": "The shaft drops onto a boulder. Stand on the\ngravel, press `4x`: the road slides under it."
         }
       ],
       "then": []
@@ -136,7 +136,7 @@
         },
         {
           "speaker": "system",
-          "text": "Stand on the last dirt before the water.\nPress `5r=`: five planks, across the river."
+          "text": "Stand on the bank. Press `5r=`: five planks.\nDeleting the water drags the stairs away."
         }
       ],
       "then": [
@@ -152,7 +152,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "A river, and Blots on the far bank. A note is\npinned at the water's edge. Read it."
+          "text": "The river. A note is pinned by the water.\nRead it before you cross."
         }
       ],
       "then": []
@@ -172,7 +172,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "Rubble: `4x` from the last gravel before it.\nRiver: `5r=` from the last dirt before it."
+          "text": "Road: `4x` on the gravel slides it west.\nRiver: `5r=` from the bank."
         }
       ],
       "then": []
