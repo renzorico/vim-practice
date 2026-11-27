@@ -3,6 +3,12 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · Notary splashes: `dat` and fuse turns
+**Who:** Opus. Two backlog items, one cause.
+
+- **Cause:** the splash planner read the top undo entry. On a fuse turn the fuse's own edit sits above the player's, so no deletion splashed; and `dat`'s whole tag pair (`<w>wwww</w>`) was not in the Notary's junk pattern.
+- **Fix:** skip one undo entry per entity edit that came after the player's in the same turn; accept a whole `<w>...</w>` pair. A test walks every Notary deletion.
+
 ## 2026-11-27 · Text stages scored
 **Who:** Opus (scoring, tests, browser check); Codex (review). Renzo: "Score text stages".
 
