@@ -18,7 +18,7 @@ const targetOf = (id: string): readonly string[] => {
 
 /** Each task done the way its instructions say, starting from row 1 or wherever the last one ended. */
 const DONE_AS_TOLD: Readonly<Record<string, readonly string[]>> = {
-  'ledger.book': ['gg0iTHE <Esc>A, SETTLED<Esc>', 'ggjdd3j.j.', 'ggj02w2xj02w.j02w.j02w.', '3G0ai<Esc>', '4G0llra', '5G02w4lD', 'Godoor<Esc>'],
+  'ledger.book': ['gg0iTHE <Esc>A, SETTLED<Esc>', 'ggjdd3j.j.', '3G0ai<Esc>', 'ggj013l2xj.j.j.', '4G0llra', '5G013l4lD', 'Godoor<Esc>'],
   'manifest.book': ['ggfo;x', 'gg2G$i, Shut, Ope<Esc>', '6G0f2r4', 'jdd', '9G$i, on three<Esc>', 'G0f:lDa today.<Esc>'],
   'harbour.book': ['2G02wct,Ream<Esc>', 'GddggP', '6Gddp', '6G$bcwreal<Esc>j$b.j$b.', '11G02wCthe ferry, today<Esc>', 'yyp03wct,rope boat<Esc>', 'G02wCTilde, for Ream<Esc>'],
   'contract.book': ['3G0ci"the Librarians<Esc>', '12G0ci"the Librarians<Esc>j.j.', '3G$ci"the Readers<Esc>', '5G0f(ci(unless they want to<Esc>',

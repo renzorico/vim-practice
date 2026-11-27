@@ -10,9 +10,9 @@ Written so it can become a LinkedIn post or a talk later: each entry ends with t
 - **Contract** (par 154): Clause 2 reads `stays "always" shut`; `da"` removes the word, its quotes and a space in three keys.
 - **Study** (par 30): the final line is split as "final: the Lost" over "x-x-x-x-x-x Last Page". `vjd` mends it in three; `d12w` takes four. A draft row below goes with `Vd` (ties `dd`).
 - **Manifest** 53 and **Harbour** 90: par set to the best route found.
-- **Also:** hints, quest objectives, guides and the in-game task list follow the new text; `challenge.test.ts` checks every text stage's route and taught keys; stage tests compare against `par` instead of fixed numbers.
+- **Also:** hints, quest objectives, guides and the in-game task list follow the new text (Codex caught two task instructions that failed when followed: fixed); `challenge.test.ts` checks every text stage's route and taught keys; `challenge.test.ts` pins each par to the best route found.
 
-**Agentic lesson:** each golf round found a key or two the designer missed (`2D`, `}4w`, `<C-u>`). Write tests against par, not a number, and let the reviewer keep lowering it.
+**Agentic lesson:** each golf round found a key or two the designer missed (`2D`, `}4w`, `<C-u>`). Pin each par to the best route found, so it can only go down, and let the reviewer keep lowering it.
 
 ## 2026-11-27 · Text stages audited
 **Who:** Opus (audit tool, findings); Codex (golf, every route replayed through the engine). Renzo: "Start the text stages audit".

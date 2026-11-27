@@ -129,7 +129,7 @@ it('explains the first unfinished task from the start, and the next once it is d
   expect(visibleText(screen(start()))).toContain('On the title row');
   expect(visibleText(screen(titled))).toContain('Go to a row that says wall.');
   expect(visibleText(screen(struck))).not.toContain('Go to a row that says wall.');
-  expect(visibleText(screen(struck))).toContain('Cursor on the u of unpaid.');
+  expect(visibleText(screen(struck))).toContain('Cursor on the K of Kt.');
 });
 it('validates content, the text-stage map and the raw world replay', () => {
   expect(validateContent(content, { skills: [...SKILL_IDS], worldFlags: [] })).toEqual([]);

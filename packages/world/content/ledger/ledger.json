@@ -106,8 +106,8 @@
       "hints": [
         "`i` types before the cursor and `A` at the end of the row: the title needs both. `Esc` stops typing.",
         "Press `dd` on a wall row to strike it. `.` repeats a change.",
-        "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for the row below.",
         "`a` types after the cursor: on the K of Kt, `ai` makes Kit. On the e of Brem, `r` then `a` makes Bram.",
+        "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for each row below.",
         "On Mira's row, cursor just after paid. `D` cuts the rest of the row; `2D` takes the wall row below too. Last, `o` opens a row below: type door, then `Esc`."
       ],
       "effects": []
@@ -179,8 +179,8 @@
   "hints": [
     "`i` types before the cursor and `A` at the end of the row: the title needs both. `Esc` stops typing.",
     "Press `dd` on a wall row to strike it. `.` repeats a change.",
-    "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for the row below.",
     "`a` types after the cursor: on the K of Kt, `ai` makes Kit. On the e of Brem, `r` then `a` makes Bram.",
+    "Cursor on the u of unpaid, press `2x`. Then `j` and `.` for each row below.",
     "On Mira's row, cursor just after paid. `D` cuts the rest of the row; `2D` takes the wall row below too. Last, `o` opens a row below: type door, then `Esc`."
   ]
 }
