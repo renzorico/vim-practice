@@ -49,7 +49,7 @@
     "col": 4
   },
   "hearts": 3,
-  "windowHeight": 12,
+  "windowHeight": 24,
   "entities": [
     {
       "id": "ope",
@@ -340,12 +340,12 @@
     "<CR>",
     "2",
     "l",
-    "6",
-    "5",
-    "%",
-    "3",
-    "3",
-    "%",
+    "2",
+    "4",
+    "<C-d>",
+    "1",
+    "2",
+    "<C-u>",
     "G",
     "2",
     "h",
@@ -355,6 +355,6 @@
   ],
   "hints": [
     "Stand on a gate mark and press `%`: you land on its partner.",
-    "`Ctrl-d` drops half a screen, `Ctrl-u` climbs half a screen: landings are that far apart."
+    "`Ctrl-d` drops half a screen, `Ctrl-u` climbs half a screen. A count sets how far: `12 Ctrl-u`."
   ]
 }

@@ -8,8 +8,9 @@ import { introducedAt } from './introducedAt.js';
 import { stageCommands } from './session.js';
 import { commandsIn } from './audit/commandsIn.js';
 
-// The Shaft's `.` ties with retyping `4dd` (a turn each): its par route uses `.`, but turns cannot force it.
-const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut', 'shaft'];
+// Some keys tie with another one-turn command, so the par route uses them but turns cannot force them: the Shaft's `.`
+// (retyping `4dd`), the Canopy's `;` (`t@`), the Glades' `{ } gg` (a counted `G`), the Gates' counted scrolls (`N%`).
+const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut', 'shaft', 'canopy', 'glades', 'gates'];
 
 describe.each(REDESIGNED)('%s', id => {
   const entry = stages.find(item => item.stage.id === id);

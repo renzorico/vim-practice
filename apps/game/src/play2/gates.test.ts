@@ -28,7 +28,7 @@ const start = () => dismiss(controller.init());
 function at(route: string, flags: Readonly<Record<string, boolean>> = {}) {
   return keys(dismiss(controller.resume({ stage: 'gates', story: { ...storyEngine.init(content), flags } })), route);
 }
-export const LEARNER = 'h<CR>%<CR>2l<C-d><C-d><C-d><C-d><C-u><C-u><C-d><C-d><C-d><C-d>2h<CR>%<CR>';
+export const LEARNER = 'h<CR>%<CR>2l<C-d><C-d><C-u><C-d><C-d>2h<CR>%<CR>';
 it('enters gates after glades.end and starts the quest', () => {
   const previous = dismiss(controller.resume({ stage: 'glades', story: storyEngine.init(content) }));
   const clear = keys(previous, 'G<CR>{{gg<CR>G<CR>');
@@ -50,13 +50,13 @@ it('failed percent bumps and spends no turn', () => {
   expect(after.world.turn).toBe(before.world.turn);
   expect(after.lastEvents).toContainEqual(expect.objectContaining({ type: 'bump' }));
 });
-it('walks bump on air, scroll lands every six, and a rejected count rolls back scroll', () => {
+it('walks bump on air, scroll lands every twelve (a 24-row window), and a rejected count rolls back scroll', () => {
   const top = keys(start(), 'h%2l');
   expect(top.world.engine.cursor).toEqual({ line: 0, col: 5 });
   expect(keys(top, '6j').world.turn).toBe(top.world.turn);
   const rejected = keys(top, '3<C-d>');
   expect(rejected.world.turn).toBe(top.world.turn);
-  expect(keys(rejected, '<C-d>').world.engine.cursor).toEqual({ line: 6, col: 5 });
+  expect(keys(rejected, '<C-d>').world.engine.cursor).toEqual({ line: 12, col: 5 });
 });
 it('successful scroll count persists until :e! resets it even after a lamp checkpoint', () => {
   const counted = keys(start(), 'h%2l12<C-d>');
@@ -66,7 +66,7 @@ it('successful scroll count persists until :e! resets it even after a lamp check
   expect(lit.world.engine.scroll).toBe(12);
   const reset = keys(lit, ':e!<CR>');
   expect(reset.world.engine.scroll).toBe(0);
-  expect(keys(reset, '<C-u>').world.engine.cursor).toEqual({ line: 18, col: 5 });
+  expect(keys(reset, '<C-u>').world.engine.cursor).toEqual({ line: 12, col: 5 });
 });
 it('upper lamp ignores an early visit without consuming its trigger', () => {
   const early = dismiss(keys(start(), 'h%<CR>2l12<C-d>'));
@@ -102,7 +102,7 @@ it.each([LEARNER, LEARNER.replace('2l<C-d>', '2l<C-d><C-u><C-d>')])('learner and
   while (clear.queue[0]?.type === 'dialogue') clear = controller.reduce(clear, '<CR>');
   expect(clear.world.status).toBe('cleared');
   expect(clear.world.hearts).toBeGreaterThanOrEqual(2);
-  expect(clear.world.turn).toBe(route === LEARNER ? 15 : 17);
+  expect(clear.world.turn).toBe(route === LEARNER ? 10 : 12);
   const ended = dismiss(clear);
   expect(ended.world.stage).toBe('manifest');
   expect(ended.world.script?.id).toBe('manifest.book');
@@ -143,7 +143,7 @@ it('teaches keys by flags and validates, lints and replays the content', () => {
 it('a counted scroll that fails at the top leaves Ctrl-d working', () => {
   const top = keys(start(), 'h%2l5<C-u>');
   expect(top.world.engine.scroll).toBe(0);
-  expect(keys(top, '<C-d>').world.engine.cursor).toEqual({ line: 6, col: 5 });
+  expect(keys(top, '<C-d>').world.engine.cursor).toEqual({ line: 12, col: 5 });
 });
 it('Shut sees the lamps without overlapping his introduction when the player skipped him', () => {
   const lit = dismiss(keys(start(), 'h%<CR>2l25G13G'));

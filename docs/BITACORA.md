@@ -3,6 +3,19 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 3: every taught key on the par route
+**Who:** Opus (design, build, proofs). Renzo: "Start World 3". Built on the exact solver (PR 121).
+
+**Canopy** (par 7, proven exactly): a second thorn past the lift, so `;` repeats `t@` and stops on it; the route is `fH 2j , 2j t@ 2j ;`. A new note line teaches it.
+
+**Glades** (par 4, proven): the stored route is `G`, `2{` to the lamp, `gg` to the rope, `4}` back to Pilcrow. The stage stays short; a counted `G` still ties `{ } gg`.
+
+**Gates** (par 8, proven): the window is 24 rows (half a page is 12 lines), and the upper lamp waits for the lower one. Route: `%` to Ope, `24 Ctrl-d` to the lower lamp, `12 Ctrl-u` to the upper, `G`, Shut, `%`. Plain presses take two more turns (`Ctrl-d` twice, `Ctrl-u` once). The camera shows twice as much of the trunk.
+
+**Ties:** `;`, `{ } gg` and counted scrolls each tie another one-turn command (`t@`, a counted `G`, `N%`), like the Shaft's `.`. The par routes use them; turns can't force them. `challenge.test.ts` lists all nine World 1-3 stages.
+
+---
+
 ## 2026-11-27 · World 2 redesign: Quarry Road, Cut, Shaft; runs stop at rock on their own row
 **Who:** Opus (design, build, solver proofs). Renzo: "Start World 2".
 

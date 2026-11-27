@@ -39,7 +39,7 @@
         },
         {
           "id": "gate",
-          "objective": "Go back down to Pilcrow: `G`.",
+          "objective": "Go back down to Pilcrow: `}` glade by glade, or `G`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "glades"
