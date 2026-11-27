@@ -45,11 +45,12 @@ it('ignores invalid JSON, invalid story shapes and unknown stage IDs', () => {
   }
 });
 
-it('does not record bests for hubs or text stages, preserving existing records', () => {
+it('does not record bests for hubs, preserving existing records; text stages record keys', () => {
   const best = { lowlands: { turns: 3, stars: 3 as const } };
-  for (const { stage } of stages.filter(({ stage }) => stage.id === 'margin' || stage.type === 'text')) {
+  for (const { stage } of stages.filter(({ stage }) => stage.id === 'margin')) {
     expect(recordBest(best, stage.id, 1, stage.parTurns)).toBe(best);
   }
+  expect(recordBest(best, 'ledger', 60, 52).ledger).toEqual({ turns: 60, stars: 2 });
   expect(recordBest(best, 'lowlands', 2, 6).lowlands).toEqual({ turns: 2, stars: 3 });
 });
 

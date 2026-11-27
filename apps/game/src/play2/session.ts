@@ -1,6 +1,7 @@
 import type { Key } from '@escape/engine';
 import type { StoryContent, StoryEffect, StoryEngine, StoryState, StoryStepResult } from '@escape/story';
 import { recordBest, type Progress } from './progress.js';
+import { stagePar } from './stageScoring.js';
 import type { Legend, Stage, WorldEffect, WorldEvent, WorldSim, WorldState } from '@escape/world';
 
 type PresentationEffect = Extract<StoryEffect, { type: 'dialogue' | 'cutscene' | 'teach' | 'ending' }>;
@@ -11,6 +12,8 @@ export interface Session {
   readonly stageEntry: Progress;
   readonly deferredEffects: readonly WorldEffect[];
   readonly keys: number;
+  /** Keys typed into a text stage's script, from the solve that cleared it: its score. */
+  readonly clearedKeys?: number;
   readonly world: WorldState;
   readonly story: StoryState;
   /**
@@ -245,9 +248,12 @@ export function createSession({ sim, storyEngine, stage, legend, content, stages
     if (next === session) return session;
     if (next.world.status === 'cleared' && session.world.status !== 'cleared') {
       const current = entry(next.world.stage).stage;
-      if (current.type === 'text') return next;
-      const best = recordBest(next.stageEntry.best, current.id, next.world.turn, current.parTurns);
-      next = { ...next, stageEntry: { ...next.stageEntry, best } };
+      const solved = next.lastEvents.find(event => event.type === 'script-solved');
+      const keys = solved?.type === 'script-solved' ? solved.keys : undefined;
+      if (current.type === 'text' && keys === undefined) return next;
+      const count = current.type === 'text' ? keys ?? 0 : next.world.turn;
+      const best = recordBest(next.stageEntry.best, current.id, count, stagePar(current));
+      next = { ...next, ...(current.type === 'text' ? { clearedKeys: count } : {}), stageEntry: { ...next.stageEntry, best } };
     }
     return next;
   }

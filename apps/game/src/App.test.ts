@@ -430,7 +430,7 @@ it('shows saved total stars on the title after a reload', () => {
   flush();
   hooks.cursor = 0;
   const html = renderToStaticMarkup(App());
-  expect(html).toContain('Stars: 2 / 63');
+  expect(html).toContain('Stars: 2 / 78');
   expect(html).toContain('Continue');
 });
 

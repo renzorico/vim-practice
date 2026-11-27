@@ -144,7 +144,7 @@ it('selects new motions across worlds, prioritizes taught skills and handles reu
   expect(newMotionKeys(teaching).slice(0, 2)).toEqual(['w', 'e']);
   expect(newMotionKeys(stages[2]!.stage)).toEqual([]);
 });
-it('text stages clear without recording a best or showing par and stars', () => {
+it('text stages clear with their keys scored against par, a best and stars, and no hearts line', () => {
   const controller = createSession({ sim, storyEngine: createStoryEngine(), stages, stage: ledger, legend: ledgerLegend, content });
   let session = controller.init(false);
   for (const key of ledger.solution) {
@@ -153,11 +153,11 @@ it('text stages clear without recording a best or showing par and stars', () => 
   }
   while (session.queue.length) session = controller.reduce(session, '<CR>');
   expect(session.clearCard).toBe(true);
-  expect(session.stageEntry.best?.ledger).toBeUndefined();
+  expect(session.stageEntry.best?.ledger).toEqual({ turns: ledger.scripts[0]?.par, stars: 3 });
   const html = renderToStaticMarkup(createElement(StageClearCard, { session, stage: ledger, onContinue: () => {}, onReplay: () => {} }));
   expect(html).toContain('cleared');
-  expect(html).toContain('hearts left');
-  expect(html).not.toMatch(/par|stars/i);
+  expect(html).toContain('3 of 3 stars');
+  expect(html).not.toContain('hearts left');
 });
 it('replays Shaft with entry quests and stage-cleared reactions firing once again', () => {
   const controller = createSession({ sim, storyEngine: createStoryEngine(), stages, stage: shaft, legend: shaftLegend, content });
