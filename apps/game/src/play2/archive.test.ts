@@ -48,22 +48,22 @@ it('enters archive only after reading.end, preserving story and starting its que
   expect(session.story.quests['library.archive']).toEqual({ step: 0, done: false });
   expect(content.worlds.find(world => world.id === 'library')?.stages).toEqual(['stacks', 'reading', 'archive', 'notary', 'contract']);
 });
-it('lifts the misfiled paragraph from its middle, files it and copies atlases with an aisle', () => {
+it('lifts the misfiled paragraph from its middle, files it and copies atlases into the gap', () => {
   const lifted = keys(start(), 'dap');
   expect(lifted.world.engine.lines).toEqual([...archive.map.slice(0, 5), ...archive.map.slice(9)]);
   expect(lifted.world.engine.registers['"']).toEqual({ text: 'xxxxxxxx\nxxxxxxxx\nxxxxxxxx\n\n', linewise: true });
   const filed = keys(lifted, '}p');
   expect(filed.world.engine.lines.slice(5, 12)).toEqual(['bbbbbbbb', 'bbbbbbbb', '', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx', '']);
-  const copied = keys(filed, 'gg2jyap');
-  expect(copied.world.engine.registers['"']).toEqual({ text: 'aaaaaaaa\naaaaaaaa\n\n', linewise: true });
-  const end = keys(copied, 'GP');
+  const copied = keys(filed, '6kyip');
+  expect(copied.world.engine.registers['"']).toEqual({ text: 'aaaaaaaa\naaaaaaaa\n', linewise: true });
+  const end = keys(copied, 'GkP');
   expect(end.world.engine.lines).toHaveLength(16);
   expect(end.world.engine.lines.slice(-4)).toEqual(['aaaaaaaa', 'aaaaaaaa', '', '|========|']);
   expect(end.world.firedTriggers).toContain('archive.filed');
 });
 it.each([
   ['paragraph objects', archive.solution, 8, ARCHIVE_COMMANDS],
-  ['old commands', parseKeys('{j4dd}pgg2j3yyGP'), 10, oldCommands],
+  ['old commands', parseKeys('{j4dd}pgg2j2yyGkP'), 11, oldCommands],
 ] as const)('replays %s with 3 hearts', (_label, input, turns, commands) => {
   const session = route(start(), input);
   expect(session.world.status).toBe('cleared');
@@ -79,7 +79,7 @@ it.each([
   expect(state.status).toBe('cleared');
   expect(state.turn).toBe(turns);
 });
-it.each(['dip}pgg2jyapGP', 'dap}pgg2jyipGP'])('rejects the aisle layout from %s', input => {
+it.each(['dip}pgg2jyapGP', 'dap}p6kyapGkP', 'dap}p6kyipGP'])('rejects a wrong layout from %s', input => {
   const session = keys(start(), input);
   expect(session.world.status).toBe('playing');
   expect(session.world.firedTriggers).not.toContain('archive.filed');
@@ -120,8 +120,8 @@ it('gates paragraph objects, exposes the keycaps and restores Archive through Co
   expect(controller.resume(progress).world.engine.lines).toEqual(archive.map);
   expect(controller.resume(progress).world.stage).toBe('archive');
 });
-it('keeps the cursor visible after }, gg and G as the buffer grows from 13 to 16 rows', () => {
-  for (const session of [keys(start(), '}'), keys(start(), 'gg'), keys(start(), 'G'), keys(start(), 'dap}pgg2jyapGP')]) {
+it('keeps the cursor visible after }, gg and G as the buffer grows from 14 to 16 rows', () => {
+  for (const session of [keys(start(), '}'), keys(start(), 'gg'), keys(start(), 'G'), keys(start(), 'dap}p6kyipGkP')]) {
     const cursor = session.world.engine.cursor;
     const target = cameraTarget(bufferSize(session.world.engine.lines), { width: 480, height: 192 }, cursor, 3);
     expect((cursor.line + 0.5) * 16).toBeGreaterThanOrEqual(target.y - 32);

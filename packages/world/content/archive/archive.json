@@ -3,7 +3,7 @@
   "world": "library",
   "type": "field",
   "title": "The Archive",
-  "goalText": "File the misfiled block last and put a copy of the atlases by the door.",
+  "goalText": "File the misfiled block last and put a copy of the atlases in the gap by the door.",
   "map": [
     "|========|",
     "",
@@ -16,6 +16,7 @@
     "",
     "bbbbbbbb",
     "bbbbbbbb",
+    "",
     "",
     "|========|"
   ],
@@ -67,18 +68,18 @@
     "p",
     "}",
     "p",
-    "g",
-    "g",
-    "2",
-    "j",
+    "6",
+    "k",
     "y",
-    "a",
+    "i",
     "p",
     "G",
+    "k",
     "P"
   ],
   "hints": [
     "`dap` deletes the shelf you stand in and the empty row after it. `}` jumps to the next empty row; `p` puts the shelf below.",
-    "`yap` copies a shelf with its empty row. `P` puts rows above you: the copy goes above the last rail."
+    "`yip` copies a shelf without its empty row. Count up with `6k`, then `G` and `k` to the gap by the door.",
+    "The gap already has empty rows on both sides: `P` above it keeps both. `yap` would bring a third one."
   ]
 }
