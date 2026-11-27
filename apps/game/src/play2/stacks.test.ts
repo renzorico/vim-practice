@@ -58,7 +58,7 @@ it('enters stacks after all harbour.end lines, keeping story and starting the Li
     id: 'library', order: 5, name: 'The Library', stages: ['stacks', 'reading', 'archive', 'notary', 'contract'], castle: 'notary', statue: 'Q',
   });
 });
-it('drops into the middle of dust, then daw and dot align all three shelves', () => {
+it('drops into the middle of dust, then daw and dot align the first three shelves', () => {
   let session = keys(start(), 'j');
   expect(session.world.engine.cursor).toEqual({ line: 1, col: 12 });
   session = keys(session, 'daw');
@@ -72,8 +72,21 @@ it('drops into the middle of dust, then daw and dot align all three shelves', ()
   session = keys(session, 'j.');
   expect(session.world.engine.cursor).toEqual({ line: 3, col: 7 });
   expect(session.world.firedTriggers).toContain('stacks.shelf-3');
-  expect(queued(session)).toEqual(['stacks.dusted']);
+  expect(queued(session)).toEqual([]);
   expect(session.world.turn).toBe(6);
+  session = keys(session, 'j');
+  expect(session.world.engine.cursor).toEqual({ line: 4, col: 7 });
+  session = keys(session, 'diw');
+  expect(session.world.engine.lines[4]).toBe('|bb  bbb bbbbb|');
+  expect(session.world.firedTriggers).toContain('stacks.shelf-4');
+  expect(queued(session)).toEqual(['stacks.dusted']);
+  expect(session.world.turn).toBe(8);
+});
+it('daw on shelf 4 closes the gap and does not fire its trigger; diw does', () => {
+  const session = keys(move(start(), 4, 7), 'daw');
+  expect(session.world.engine.lines[4]).toBe('|bb bbb bbbbb|');
+  expect(session.world.firedTriggers).not.toContain('stacks.shelf-4');
+  expect(keys(move(start(), 4, 7), 'diw').world.firedTriggers).toContain('stacks.shelf-4');
 });
 it('diw leaves two spaces; x removes the extra space and fires shelf 1', () => {
   const session = keys(start(), 'jdiw');
@@ -81,40 +94,38 @@ it('diw leaves two spaces; x removes the extra space and fires shelf 1', () => {
   expect(session.world.firedTriggers).not.toContain('stacks.shelf-1');
   expect(keys(session, 'x').world.firedTriggers).toContain('stacks.shelf-1');
 });
-it.each([
-  ['text objects', stacks.solution, 6],
-  ['World 4 tools', parseKeys('2hjdwjb.jb.<CR>'), 9],
-] as const)('replays %s with 3 hearts (%i turns)', (_label, input, turns) => {
-  const session = dismiss(route(start(), input));
+it('replays the stored text-object route with 3 hearts at par', () => {
+  const session = dismiss(route(start(), stacks.solution));
   expect(session.world.status).toBe('cleared');
-  expect(session.world.turn).toBe(turns);
+  expect(session.world.turn).toBe(stacks.parTurns);
   expect(session.world.hearts).toBe(3);
   expect(session.story.flags['stacks.through']).toBe(true);
   expect(screen(session)).toContain('To be continued.');
-  if (turns === 9) {
-    const old = sessionSolver({ sim, storyEngine, content, stage: stacks, legend: stacksLegend });
-    let state = old.init(stacks, stacksLegend, { learnedCommands: COUNTER_COMMANDS, flags: {} });
-    for (const key of input) state = old.step(state, key, stacks, stacksLegend, { learnedCommands: COUNTER_COMMANDS, flags: {} }).state;
-    expect(state.status).toBe('cleared');
-    expect(state.turn).toBe(9);
-  }
 });
-const orders = [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]];
-it.each(orders)('cascades dusted on the third shelf only: %i, %i, %i', (...order) => {
+it('the World 4 route no longer clears: three shelves are not enough', () => {
+  const session = dismiss(route(start(), parseKeys('2hjdwjb.jb.<CR>')));
+  expect(session.world.status).not.toBe('cleared');
+  expect(session.story.flags['stacks.through']).not.toBe(true);
+});
+const shelfOrders = (items: readonly number[]): number[][] => items.length <= 1 ? [[...items]]
+  : items.flatMap((item, index) => shelfOrders(items.filter((_, other) => other !== index)).map(rest => [item, ...rest]));
+const shelfSpot = [{ line: 1, col: 12 }, { line: 2, col: 10 }, { line: 3, col: 8 }, { line: 4, col: 5 }];
+it.each(shelfOrders([1, 2, 3, 4]))('cascades dusted on the fourth shelf only: %i, %i, %i, %i', (...order) => {
   let session = start();
   let down = 0;
   order.forEach((shelf, index) => {
-    session = keys(move(dismiss(session), shelf, shelf === 1 ? 12 : shelf === 2 ? 10 : 8), 'daw');
+    const spot = shelfSpot[shelf - 1] ?? { line: 0, col: 0 };
+    session = keys(move(dismiss(session), spot.line, spot.col), shelf === 4 ? 'diw' : 'daw');
     down += queued(session).filter(id => id === 'stacks.down').length;
-    expect(session.story.flags['stacks.dusted'] === true).toBe(index === 2);
-    expect(session.world.flags['stacks.dusted'] === true).toBe(index === 2);
-    if (index === 2) expect(queued(session)).toContain('stacks.dusted');
+    expect(session.story.flags['stacks.dusted'] === true).toBe(index === 3);
+    expect(session.world.flags['stacks.dusted'] === true).toBe(index === 3);
+    if (index === 3) expect(queued(session)).toContain('stacks.dusted');
   });
   expect(down).toBe(1);
 });
 it.each([false, true])('presents every Quire line exclusively when dusted=%s', dusted => {
   let session = dusted ? dismiss(route(start(), stacks.solution.slice(0, -1))) : start();
-  session = keys(move(session, 3, 7), '<CR>');
+  session = keys(move(session, 4, 4), '<CR>');
   const id = dusted ? 'stacks.quire-through' : 'stacks.quire-wait';
   expect(queued(session)).toEqual([id]);
   for (const line of content.dialogues.find(item => item.id === id)!.lines) {

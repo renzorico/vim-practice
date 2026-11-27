@@ -39,7 +39,7 @@ PROMPT="${ROLE_RULES}
 ## Your task (${TASK_ID})
 $(cat "$BRIEF")"
 
-ALLOWED_TOOLS="Read Glob Grep Edit Write Bash(npm install*) Bash(npm run *) Bash(npm test*) Bash(npx tsc*) Bash(npx vitest*) Bash(git add*) Bash(git commit*) Bash(git status*) Bash(git diff*) Bash(nvim --headless*)"
+ALLOWED_TOOLS="Read Glob Grep Edit Write Bash(npm install*) Bash(npm run *) Bash(npm test*) Bash(npx tsc*) Bash(npx vitest*) Bash(git add*) Bash(git commit*) Bash(git status*) Bash(git diff*) Bash(nvim --headless*) Bash(rtk vitest*) Bash(rtk tsc*) Bash(rtk npm install*) Bash(rtk npm run *) Bash(rtk npm test*) Bash(rtk git status*) Bash(rtk git diff*) Bash(rtk git add*) Bash(rtk git commit*)"
 
 case "$RUNNER" in
   claude-sonnet|claude-haiku)

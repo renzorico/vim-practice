@@ -734,7 +734,7 @@ it.each([false, true])('renders shelf spaces, posts and Quire; puffs dust before
     expect(fake.images.some(image => image.texture === `field:${sprite}`), sprite).toBe(true);
   }
   expect(fake.images.some(image => image.texture === 'field:shelf-end')).toBe(false);
-  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 40);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 48);
   let state = before;
   for (const key of ['d', 'a', 'w']) {
     const result = sim.step(state, key, stacks, stacksLegend, options);
@@ -761,7 +761,7 @@ it.each([false, true])('renders shelf spaces, posts and Quire; puffs dust before
     expect(post?.x).toBe((state.engine.lines[1]!.length - 1) * 16 + 8);
     for (const puff of puffs) expect(puff.destroy).toHaveBeenCalledOnce();
   }
-  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 40);
+  expect(fake.centerOn).toHaveBeenLastCalledWith(154, 48);
 });
 
 it.each([false, true])('folds Archive rows before sliding, unfolds puts and cleans up on rapid input (reduced=%s)', async reducedMotion => {

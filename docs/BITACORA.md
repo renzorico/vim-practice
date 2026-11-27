@@ -3,6 +3,25 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 5 by dispatch: Stacks, Archive, Notary
+**Who:** Opus (design, briefs, integration, review fixes); three Claude Sonnet builders via `tools/agents/dispatch.sh` (W5-stacks, W5-archive, W5-notary, one worktree each); Codex (review). Renzo: "use dispatch for World 5".
+
+**Design (lead), built by Sonnet:**
+- **Stacks** (par 6 to 8): a fourth shelf whose target keeps its gap (`bb  bbb`): `diw` leaves the two spaces, `daw` closes them. Route `j daw j . j . j diw`.
+- **Archive** (par 8 to 7): the copied atlases go into a gap that already has blank rows on both sides: `yip` fits, `yap` adds a row and the trigger does not fire. Route `dap } p 6k yip 13G P`. `2yy` ties `yip` (same two lines, one turn).
+- **Notary** (par 11 to 12): three more rows: an empty lock (`di[`), an empty seal (`di{`), a whole tag (`dat`). Route `3G da[ 5G da{ 7G dit 9G di[ 11G di{ 13G dat`: every object works from the stair. The fuse stays every 2 turns (turn 14): a route without the new objects (`dt.`, `diw`) takes 17 and dies.
+- **Reading** needed nothing: `ib ab iB aB` are aliases and no longer count as separate lessons (`REFERENCE_ONLY` is exported and `challenge.test.ts` skips them).
+
+**Proofs:** none of the three fits in memory (3.6-4.8 GB): their pars are best known, the proofs are opt-in (`PROVE=1`). The audit probe finds no shortcut. A Stacks "proof" first returned null under par with a node cap: null also means the budget ran out, so proofs now search to par and expect par.
+
+**Dispatch lessons:** the first run of all three builders stopped at once: a global hook rewrites `npx vitest` to `rtk vitest`, which `dispatch.sh`'s allow-list did not cover. Added the `rtk` forms; the second runs finished (5-18 min each). Builders ran only their own tests; the orchestrator runs the full suite.
+
+**Review (Codex), fixed:** the builders' pars were hand counts: the Notary cleared in 12 not 23, the Archive in 7 not 8; the longer fuse a builder added let a lesson-free Notary route through. `rtk npm*` in the allow-list also allowed `npm publish`/`exec`; narrowed to install/run/test. The challenge test checks the stored route only, not that a key is needed: the forcing is shown by the fuse test (Notary) and by ties being listed.
+
+**Open:** `dat` has no splash plan (`jettyDeletion.ts` matches only `[k+] {k+} k+ w+`); and with the fuse every 2 turns each par-route edit lands on a fuse turn, so no splash plays on the par route at all.
+
+---
+
 ## 2026-11-27 · World 4 checked: no changes needed
 **Who:** Opus. Renzo: "Start World 4".
 
