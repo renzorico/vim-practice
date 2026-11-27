@@ -12,6 +12,6 @@ const solver = () => sessionSolver({ sim: createWorldSim(createEngine()), storyE
 // Full search over the Shaft's commands. `.` and a retyped `4dd` both cost a turn, so the solver may pick either.
 it('proves the Shaft: three drops, never one, because the beams will not delete', () => {
   expect(stageReplayIssue(solver(), shaft, shaftLegend, options)).toBeNull();
-  const found = solveStage(solver(), shaft, shaftLegend, options, { maxTurns: shaft.parTurns, maxExpanded: 30_000, skipBumpedCounts: 10 });
+  const found = solveStage(solver(), shaft, shaftLegend, options, { maxTurns: shaft.parTurns, maxExpanded: 30_000 });
   expect(found?.turns).toBe(shaft.parTurns);
 }, 120_000);

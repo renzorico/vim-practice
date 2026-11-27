@@ -14,8 +14,8 @@ export interface StageSolveLimits {
   readonly maxExpanded?: number;
   /**
    * Bumped counts in a row a counted run or find may skip before larger counts are given up (`2e` hits rock, `3e`
-   * lands). Default 0: stop at the first bump, which can miss routes. Exact proofs pass a larger value; it costs
-   * memory on big vocabularies (Canopy and Jetty run out of 4 GB with it).
+   * lands). Default Infinity: every count is tried, so a search is exact. A finite value prunes, and then a result
+   * is no longer a proof.
    */
   readonly skipBumpedCounts?: number;
 }
@@ -257,7 +257,7 @@ export function solveStage(
 ): StageSolution | null {
   const maxTurns = limits.maxTurns ?? 60;
   const maxExpanded = limits.maxExpanded ?? 200000;
-  const skipBumped = limits.skipBumpedCounts ?? 0;
+  const skipBumped = limits.skipBumpedCounts ?? Infinity;
   if (!Number.isFinite(maxTurns) || maxTurns < 0 || !Number.isFinite(maxExpanded) || maxExpanded < 0) return null;
   const search = SEARCH_WORLDS.has(stage.world);
   const commands = options.learnedCommands.filter(command => (search || !SEARCH_COMMANDS.has(command))

@@ -31,7 +31,9 @@ export function sessionSolver(dependencies: SessionDependencies): WorldSim {
       const found = cached.get(key);
       if (found) return found;
       const result = remember(controller.reduce(lookup(state), key));
-      cached.set(key, result);
+      // A count still waiting for its motion (`1`, `12`...) is cheap to redo; keeping every one alive for the whole
+      // search is what ran exhaustive count scans out of memory.
+      if (result.state.pending === null) cached.set(key, result);
       return result;
     },
     apply: (state, effects, stage, legend) => {
