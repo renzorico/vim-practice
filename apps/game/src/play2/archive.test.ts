@@ -62,7 +62,7 @@ it('lifts the misfiled paragraph from its middle, files it and copies atlases in
   expect(end.world.firedTriggers).toContain('archive.filed');
 });
 it.each([
-  ['paragraph objects', archive.solution, 8, ARCHIVE_COMMANDS],
+  ['paragraph objects', archive.solution, 7, ARCHIVE_COMMANDS],
   ['old commands', parseKeys('{j4dd}pgg2j2yyGkP'), 11, oldCommands],
 ] as const)('replays %s with 3 hearts', (_label, input, turns, commands) => {
   const session = route(start(), input);
