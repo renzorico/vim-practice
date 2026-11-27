@@ -4,7 +4,7 @@ export function heartsText(hearts: number, maxHearts: number): string {
   return '♥'.repeat(full) + '♡'.repeat(Math.max(maxHearts - full, 0));
 }
 
-/** "Turn 7". One wording for every count, so screen readers stay calm. */
-export function turnText(turn: number): string {
-  return `Turn ${Math.max(0, Math.floor(turn))}`;
+/** "Turn 7", or "Keys 12" in a text stage. One wording for every count, so screen readers stay calm. */
+export function turnText(turn: number, unit: 'turns' | 'keys' = 'turns'): string {
+  return `${unit === 'keys' ? 'Keys' : 'Turn'} ${Math.max(0, Math.floor(turn))}`;
 }

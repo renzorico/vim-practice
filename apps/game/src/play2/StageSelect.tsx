@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { StoryContent } from '@escape/story';
 import type { SessionStage } from './session.js';
 import type { Progress } from './progress.js';
-import { isScoredStage } from './stageScoring.js';
+import { isScoredStage, scoreUnit, stagePar, unitLabel } from './stageScoring.js';
 
 interface StageSelectProps {
   readonly stages: readonly SessionStage[];
@@ -40,7 +40,7 @@ export function StageSelect({ stages, content, progress, selected, onSelect, onC
         <StagePicture stage={shown.stage} legend={shown.legend} rows={PREVIEW_ROWS} cols={PREVIEW_COLS} className="stage-picture" />
         <h2>{shown.stage.title}</h2>
         <p>{shown.stage.goalText}</p>
-        {isScoredStage(shown.stage) && <p className="stage-select__score">{shownBest ? `Best: ${shownBest.turns} turns` : 'Not cleared yet'} · par {shown.stage.parTurns}</p>}
+        {isScoredStage(shown.stage) && <p className="stage-select__score">{shownBest ? `Best: ${shownBest.turns} ${unitLabel(scoreUnit(shown.stage), shownBest.turns)}` : 'Not cleared yet'} · par {stagePar(shown.stage)}</p>}
     </aside>}
     <div className="stage-select__list">
     {content.worlds.slice().sort((left, right) => left.order - right.order).map(world => {

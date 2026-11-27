@@ -3,6 +3,16 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · Text stages scored
+**Who:** Opus (scoring, tests, browser check); Codex (review). Renzo: "Score text stages".
+
+- **What changed:** text stages score the keys typed into their script against the script's par, with the same stars as field stages (3 at par, 2 within 1.5 times par). The HUD shows "Keys 12 · par 52" while typing; the clear card shows "Keys: 70 · par 52", the stars, and the par route when you missed it; the best is saved and the stage list shows "Best: N keys". The title screen's star total now counts the five text stages (out of 78).
+- **How:** `stageScoring.ts` gives each stage its unit and par; the session keeps the key count from the `script-solved` event (`clearedKeys`), since the script closes on solve. Hearts are not shown on a text stage's clear card (nothing can hurt you there).
+- **Also:** the Ledger's intro now asks for the title first, matching the task list.
+- **Checked in the browser:** a 70-key Ledger clear shows 2 stars, "Keys: 70 · par 52" and the par route.
+
+**Agentic lesson:** the score already existed as an event payload; the work was carrying it past the moment the script closes.
+
 ## 2026-11-27 · Text stages redesigned
 **Who:** Opus (text, routes, tests); Codex (three golf rounds, every route replayed). Renzo: "Redesign text stages".
 

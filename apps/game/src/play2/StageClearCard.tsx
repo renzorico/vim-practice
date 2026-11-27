@@ -4,6 +4,7 @@ import type { Stage } from '@escape/world';
 import type { Session } from './session.js';
 import { starsFor } from './progress.js';
 import { isScoredStage, solutionCaps } from './feedback.js';
+import { scoreUnit, stagePar } from './stageScoring.js';
 
 export function StageClearCard({ session, stage, onContinue, onReplay, practise }: {
   readonly session: Session; readonly stage: Stage;
@@ -11,8 +12,10 @@ export function StageClearCard({ session, stage, onContinue, onReplay, practise 
   /** The keys this stage taught, drilled in the Copybook. */
   readonly practise?: { readonly keys: readonly string[]; readonly onPractise: () => void };
 }) {
-  const turns = session.world.turn;
-  const stars = starsFor(turns, stage.parTurns);
+  const unit = scoreUnit(stage);
+  const turns = unit === 'keys' ? session.clearedKeys ?? 0 : session.world.turn;
+  const par = stagePar(stage);
+  const stars = starsFor(turns, par);
   return <section className="play-panel play-card stage-clear" role="dialog" aria-modal="true" aria-labelledby="clear-title">
     <h2 id="clear-title"><KeyText text={stage.title} /> cleared</h2>
     {isScoredStage(stage) && <><p className="stage-clear__stars" aria-label={`${stars} of 3 stars`}>
@@ -22,9 +25,9 @@ export function StageClearCard({ session, stage, onContinue, onReplay, practise 
           fill={star <= stars ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" />
       </svg>)}</span>
     </p>
-    <p>Turns: {turns} · par {stage.parTurns}</p></>}
-    <p>{session.world.hearts} of {stage.hearts} hearts left.</p>
-    {isScoredStage(stage) && (turns <= stage.parTurns ? <p>Par route found.</p> : <div className="stage-clear__route">
+    <p>{unit === 'keys' ? 'Keys' : 'Turns'}: {turns} · par {par}</p></>}
+    {unit === 'turns' && <p>{session.world.hearts} of {stage.hearts} hearts left.</p>}
+    {isScoredStage(stage) && (turns <= par ? <p>Par route found.</p> : <div className="stage-clear__route">
       <p>Par route:</p><div aria-label="Par route">{solutionCaps(stage).map((key, index) => <kbd className="learned-key" key={index}>{keyLabel(key)}</kbd>)}</div>
     </div>)}
     <div className="stage-clear__actions">

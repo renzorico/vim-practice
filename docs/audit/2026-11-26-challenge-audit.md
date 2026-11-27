@@ -123,7 +123,7 @@ the Ledger's title needs `i` and `A` and a smudged "Kt" needs `a`; the Contract'
 removes in three keys; the Study's final line is split, with a scribble before "Last", so `vjd` mends it. Three Codex
 golf rounds: without `A`, `a` or `o` the Ledger takes 53, without `v` the Study 31; no route without `a"`
 was found at 154 or less. Ties: the Study's `V` (`Vd`, `dd`), the Contract's `i"` (`cw`), the Ledger's `i` (`I`). Visual mode has no `p`,
-so `V` cannot win outright. Text stages are still unscored.
+so `V` cannot win outright. Text stages are now scored in keys against par (same stars as field stages).
 
 ## Findings, worst first
 

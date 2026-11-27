@@ -60,11 +60,11 @@
         {
           "speaker": "npc",
           "name": "The Mason",
-          "text": "My ledger's wrong. Strike the walls, mark the\ncrew paid, add a door at the end. A door!"
+          "text": "My ledger's wrong. Title it, strike the walls,\nmark the crew paid, add a door. A door!"
         },
         {
           "speaker": "system",
-          "text": "Start at the top. On a wall row, press `dd`:\nthe row is struck out. Work down from there."
+          "text": "Start at the top: `i` types before the cursor,\n`A` at the end of the row. Then `dd` the walls."
         }
       ],
       "then": [

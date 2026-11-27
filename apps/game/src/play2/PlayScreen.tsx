@@ -36,6 +36,7 @@ import { FieldView } from '../scene/FieldView.js';
 import { DialogueBox } from '../story-ui/DialogueBox.js';
 import { ObjectiveHud } from '../story-ui/ObjectiveHud.js';
 import { resultData, type Session } from './session.js';
+import { scoreUnit, stagePar } from './stageScoring.js';
 import type { StoryContent } from '@escape/story';
 
 /** A script shows its own instructions. */
@@ -67,10 +68,12 @@ interface PlayScreenProps {
 }
 export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpCommand, helpOpen = false, clearedStages, session, stage, legend, content, objectives, showSource, onAdvance, onReplay, practiseKeys = [], onPractise, scriptStamp = false, soundEnabled = true, onToggleSound }: PlayScreenProps) {
   const { world } = session;
+  // A text stage scores the keys typed into its script; after the solve the script is closed, so use the kept count.
+  const score = stage.type === 'text' ? session.clearedKeys ?? world.script?.keys ?? 0 : world.turn;
   const notebook = useNotebook(session, stage, content, clearedStages);
   const showKeyCard = notebook.entries.length > 0 && !scriptStamp;
   useNotebookDucking(showKeyCard);
-  useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(world.turn, stage.parTurns));
+  useStarChimes(Boolean(session.clearCard && !scriptStamp && isScoredStage(stage)), starsFor(score, stagePar(stage)));
   const field = useRef<HTMLDivElement>(null);
   const uses = useMotionUses(session);
   const markers = useMemo(() => landingMarkers({ world, queue: session.queue }, stage, legend, stages, uses),
@@ -114,7 +117,7 @@ export function PlayScreen({ onOpenHelp, hintRequests = 0, onAskHint, helpComman
         {stage.id === 'counter' && <CounterGauge world={world} />}
         {stage.id === 'notary' && <NotaryGauge world={world} />}
         {stage.id === 'labyrinth' && <HoofprintGauge world={world} />}
-      </>} guide={visibleGuide} positioned={positioned} objectives={shownObjectives} hearts={world.hearts} maxHearts={stage.hearts} turn={world.turn} {...(isScoredStage(stage) ? { par: stage.parTurns } : {})} />
+      </>} guide={visibleGuide} positioned={positioned} objectives={shownObjectives} hearts={world.hearts} maxHearts={stage.hearts} turn={score} unit={scoreUnit(stage)} {...(isScoredStage(stage) ? { par: stagePar(stage) } : {})} />
     </header>
     <div className="play-field" ref={field}>
       {script && scriptEngine ? <ScriptPanel script={script} engine={scriptEngine} solved={scriptStamp} /> : stage.type === 'text' ? null : <FieldView {...(darkness ? { darkness } : {})} state={world} events={session.lastEvents} stage={stage}

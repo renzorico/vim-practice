@@ -15,6 +15,8 @@ interface ObjectiveHudProps {
   readonly maxHearts: number;
   readonly turn: number;
   readonly par?: number;
+  /** What `turn` and `par` count: field turns, or keys typed in a text stage. */
+  readonly unit?: 'turns' | 'keys';
   readonly guide?: Guide | null;
   readonly positioned?: boolean;
 }
@@ -24,7 +26,7 @@ function plainText(objective: string): string {
   return keyParts(objective).map(part => part.text).join('');
 }
 
-export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, positioned, title, gauges }: ObjectiveHudProps) {
+export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, unit, guide, positioned, title, gauges }: ObjectiveHudProps) {
   const world = useContext(CurrentWorld);
   // With no tile to stand on, a guide would only repeat the keycaps already in the objective.
   const named = !guide?.standAt && keyParts(objectives[0] ?? '').some(part => part.keycap);
@@ -55,7 +57,7 @@ export function ObjectiveHud({ objectives, hearts, maxHearts, turn, par, guide, 
       </div>
       <div className="objective-hud__stats">
         {gauges}
-        <span className="objective-hud__turn">{turnText(turn)}{par !== undefined && <span style={{ opacity: turn > par ? 0.45 : 1 }}> · par {par}</span>}</span>
+        <span className="objective-hud__turn">{turnText(turn, unit)}{par !== undefined && <span style={{ opacity: turn > par ? 0.45 : 1 }}> · par {par}</span>}</span>
       </div>
     </aside>
   );
