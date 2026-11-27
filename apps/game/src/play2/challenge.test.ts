@@ -28,3 +28,20 @@ describe.each(REDESIGNED)('%s', id => {
     expect(taught.filter(key => !used.includes(key))).toEqual([]);
   });
 });
+
+// The Last Page teaches `:w`, an Ex command outside the stage's command list, so the rule above can't see it. Its clear
+// rule needs the story beats instead: the repaired page opens the doors, the R door sets last.recover, and `saved`
+// only holds after `:w`.
+describe('last-page', () => {
+  const entry = stages.find(item => item.stage.id === 'last-page');
+  if (entry === undefined) throw new Error('No stage last-page');
+  const { stage } = entry;
+
+  it('clears only on Recover and a write', () => {
+    expect(stage.clear).toEqual([{ type: 'flag', flag: 'last.recover' }, { type: 'saved' }]);
+    expect(stage.triggers.find(trigger => trigger.id === 'last.door-r')).toMatchObject({ onlyIf: 'last.whole' });
+  });
+  it('writes with `:w` on its par route', () => {
+    expect(stage.solution.join('')).toContain(':w<CR>');
+  });
+});
