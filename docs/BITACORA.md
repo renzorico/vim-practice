@@ -3,6 +3,16 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · The Marked: marks are needed
+**Who:** Opus (design, map, proof, tests); Codex (review). Renzo: "Rework the Marked".
+
+- **Why:** while `/` and `?` were allowed, a long enough search pattern reached any cell in one turn, so marks only tied or lost (par 3 by search).
+- **Change:** the caves are "too dark to search": the Marked allows only ``h j k l w b e 0 $ m ` '``. No search, no `*`/`#`, no counted `G`/`gg` (a `3G` would reach the oil like `'a`).
+- **Map:** the crystal sits at the end of a winding tunnel; the oil stays sealed at the start of the fork's line. Route ``ma 3h 2k 7l 7e 'a `a <CR>``, par 7 (walking the last bend instead of `7e` is 8).
+- **Proof:** full solver over the stage's whole vocabulary, about 1,100 states: nothing clears in 6, and without `m`, `` ` `` or `'` nothing clears within 14. The Marked joins the challenge test.
+
+**Agentic lesson:** when a key can't win, take away the key that beats it, not the puzzle. Shrinking the stage's command list made the proof cheap and exact.
+
 ## 2026-11-27 · World 6: Mouth, Gallery, Marked
 **Who:** Opus (design, routes, Marked redesign); Claude Sonnet via dispatch (W6-tests: test updates); Codex (review). Renzo: "Start World 6".
 

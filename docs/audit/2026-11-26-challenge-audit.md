@@ -71,6 +71,10 @@ no shortcut in the probe. Counter teaches nothing new.
 (`challenge.test.ts`, 19 stages). Pars changed: Stacks 8, Archive 7, Notary 12, Marked 4 (proven). Text stages are still
 not audited.
 
+**Update 2026-11-27 (Marked):** the Marked allows no search or counted `G`, so marks are the only way to the oil and
+back; par 7, proven over the stage's whole vocabulary, and no clear without `m`, `` ` `` or `'`. It joins
+`challenge.test.ts`.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

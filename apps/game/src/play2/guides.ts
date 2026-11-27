@@ -56,7 +56,7 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
   'library.contract': { contract: use('ci"', 'ci(', 'dap', 'cit') },
   'caves.mouth': { crystals: use('?x', '<CR>', 'n'), echo: guide(['<CR>']) },
   'caves.gallery': { follow: use('*', 'w') },
-  'caves.marked': { fetch: use('ma', '/', '`a'), echo: guide(['<CR>']) },
+  'caves.marked': { fetch: use('ma', "'a", '`a'), echo: guide(['<CR>']) },
   'caves.labyrinth': { levers: use('ma', '?', '`a') },
   'caves.study': { index: use('<C-v>') },
   'last.page': { write: guide([':w', '<CR>']) },

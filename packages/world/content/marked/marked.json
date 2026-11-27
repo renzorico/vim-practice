@@ -3,15 +3,14 @@
   "world": "echo-caves",
   "type": "field",
   "title": "The Marked Way",
-  "goalText": "Mark the fork, fetch the crystal and the lamp oil, and come back to the echo.",
+  "goalText": "Mark the fork, walk the tunnel to the crystal, take the lamp oil, and come back to the echo.",
   "map": [
     "######################",
-    "#=x=##################",
-    "######################",
-    " o####=====###########",
-    "#.##################",
-    "#.##################",
-    "#..........##",
+    "######........########",
+    "######.######.########",
+    " o####=====##.########",
+    "#############.########",
+    "##x...........########",
     "######################"
   ],
   "legend": "marked",
@@ -53,11 +52,11 @@
       "on": "enter",
       "area": {
         "from": {
-          "line": 1,
+          "line": 5,
           "col": 2
         },
         "to": {
-          "line": 1,
+          "line": 5,
           "col": 2
         }
       }
@@ -87,23 +86,28 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 3,
+  "parTurns": 7,
   "solution": [
-    "/",
-    "x",
-    "<CR>",
-    "/",
-    "o",
-    "<CR>",
-    "?",
-    "=",
-    "=",
-    "<CR>",
+    "m",
+    "a",
+    "3",
+    "h",
+    "2",
+    "k",
+    "7",
+    "l",
+    "7",
+    "e",
+    "'",
+    "a",
+    "`",
+    "a",
     "<CR>"
   ],
   "hints": [
     "`ma` marks the spot you stand on. `` `a `` jumps back to it from anywhere, even out of sealed rock.",
-    "`'a` jumps to the start of the marked line: the oil is there, behind the rock."
+    "`'a` jumps to the start of the marked line: the oil is there, behind the rock.",
+    "Too dark to search or count lines here. Walk the tunnel to the crystal; let the mark bring you home."
   ],
   "allowedCommands": [
     "h",
@@ -115,17 +119,6 @@
     "e",
     "0",
     "$",
-    "G",
-    "gg",
-    "{",
-    "}",
-    "%",
-    "/",
-    "?",
-    "n",
-    "N",
-    "*",
-    "#",
     "m",
     "`",
     "'"

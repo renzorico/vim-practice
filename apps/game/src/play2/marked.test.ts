@@ -4,7 +4,7 @@ import { createStoryEngine } from '@escape/story';
 import { createWorldSim, solveStage, stageReplayIssue } from '@escape/world';
 import { lintStage } from '../../../../tools/maps/lint.js';
 import { content, gallery, marked, markedLegend, stages } from './content.js';
-import { createSession, GALLERY_COMMANDS, MARKED_COMMANDS, stageCommands, type Session } from './session.js';
+import { createSession, MARKED_COMMANDS, stageCommands, type Session } from './session.js';
 import { sessionSolver } from './solver.js';
 import { learnedKeycaps } from './PlayScreen.js';
 import { readProgress, saveProgress } from './progress.js';
@@ -29,17 +29,18 @@ const keys = (session: Session, input: string) => parseKeys(input).reduce(contro
 const route = (session: Session, input: readonly string[]) => input.reduce((current, key) => controller.reduce(dismiss(current), key), session);
 const lines = (id: string) => content.dialogues.find(dialogue => dialogue.id === id)?.lines.map(line => line.text);
 
-it('marks the fork, collects a crystal and returns to the exact cell', () => {
-  const pocket = keys(start(), 'ma/x<CR>');
+const TUNNEL = '3h2k7l4j11h';
+it('marks the fork, walks the tunnel to the crystal and returns to the exact cell', () => {
+  const pocket = keys(start(), `ma${TUNNEL}`);
   expect(pocket.world.engine.marks.a).toEqual(marked.start);
-  expect(pocket.world.engine.cursor).toEqual({ line: 1, col: 2 });
+  expect(pocket.world.engine.cursor).toEqual({ line: 5, col: 2 });
   expect(pocket.story.flags['marked.crystal']).toBe(true);
   expect(pocket.queue).toEqual([{ type: 'dialogue', dialogue: 'marked.got-crystal', index: 0 }]);
   expect(lines('marked.got-crystal')).toEqual(['A crystal, warm in your hand.']);
   expect(keys(dismiss(pocket), '`a').world.engine.cursor).toEqual(marked.start);
 });
 it("keeps Vim linewise quote behavior: 'a lands on the first nonblank of the marked line, the oil", () => {
-  const pocket = dismiss(keys(start(), 'ma/x<CR>'));
+  const pocket = dismiss(keys(start(), `ma${TUNNEL}`));
   const result = keys(pocket, "'a");
   expect(result.world.engine.cursor).toEqual({ line: 3, col: 1 });
   expect(result.story.flags['marked.oil']).toBe(true);
@@ -48,12 +49,13 @@ it("keeps Vim linewise quote behavior: 'a lands on the first nonblank of the mar
 it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive Echo states', (first, second) => {
   let session = start();
   expect(lines('marked.intro')).toEqual([
-    'A fork in the tunnel. You need a crystal and\nlamp oil, sealed somewhere in the rock.',
+    'A fork in the tunnel. Too dark to search.\nYou need a crystal and lamp oil.',
     'At the fork, press `ma`: it marks the spot.\nLater, `` `a `` brings you back from anywhere.',
     "`'a` goes to the start of the marked line:\nthe oil is there. `` `a `` is the exact spot.",
+    'The crystal is at the end of the tunnel.\nWalk there; the mark will bring you home.',
   ]);
   for (const item of [null, first, second]) {
-    if (item) session = dismiss(keys(session, `/${item}<CR>`));
+    if (item) session = dismiss(keys(session, item === 'x' ? TUNNEL : "'a"));
     if (item) session = keys(session, '`a');
     else session = keys(session, 'ma');
     const both = item === second;
@@ -75,12 +77,12 @@ it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive
     { type: 'line', line: { speaker: 'system', text: 'Below, the labyrinth. Something heavy\nis walking its corridors.' } },
   ]);
 });
-it('replays the supplied solution in five turns with three hearts', () => {
-  const session = route(start(), parseKeys('ma/x<CR>`a/o<CR>`a<CR>'));
+it('replays the supplied solution in par turns with three hearts', () => {
+  const session = route(start(), marked.solution);
   // Finish Echo's handoff, leaving the ending queued before the next stage.
   const cleared = controller.reduce(controller.reduce(session, '<CR>'), '<CR>');
   expect(cleared.world.status).toBe('cleared');
-  expect(cleared.world.turn).toBe(5);
+  expect(cleared.world.turn).toBe(marked.parTurns);
   expect(cleared.world.hearts).toBe(3);
   expect(dismiss(cleared).world.stage).toBe('labyrinth');
 });
@@ -108,32 +110,21 @@ it('turns row 3 column 0 into non-walkable darkness rock', () => {
   expect(marked.map[3]?.[0]).toBe(' ');
 });
 it("jumps from the crystal to the oil with 'a and fires marked.oil", () => {
-  const crystal = dismiss(keys(start(), 'ma/x<CR>'));
-  expect(crystal.world.engine.cursor).toEqual({ line: 1, col: 2 });
+  const crystal = dismiss(keys(start(), `ma${TUNNEL}`));
+  expect(crystal.world.engine.cursor).toEqual({ line: 5, col: 2 });
   expect(crystal.story.flags['marked.oil']).not.toBe(true);
   const oil = keys(crystal, "'a");
   expect(oil.world.engine.cursor).toEqual({ line: 3, col: 1 });
   expect(oil.story.flags['marked.oil']).toBe(true);
 });
-it.each(['x'])('seals the %s pocket against walking and absolute edge motions without a mark', item => {
-  const pocket = dismiss(keys(start(), `/${item}<CR>`));
-  // Explore all reachable walking cells using the actual reducer; no hand-coded reachability rules.
-  const pending = [pocket];
-  const visited = new Set<string>();
-  while (pending.length) {
-    const session = pending.pop()!;
-    const at = session.world.engine.cursor;
-    const id = `${at.line}:${at.col}`;
-    if (visited.has(id)) continue;
-    visited.add(id);
-    expect(at.line).toBe(item === 'x' ? 1 : 3);
-    expect(at.col).toBeGreaterThanOrEqual(item === 'x' ? 1 : 12);
-    expect(at.col).toBeLessThanOrEqual(item === 'x' ? 3 : 14);
-    for (const command of ['gg', 'G', '0']) expect(keys(session, command).world.engine.cursor).toEqual(at);
-    for (const command of ['h', 'j', 'k', 'l']) pending.push(keys(session, command));
+it('seals the oil: no walk or run leaves it, only the mark does', () => {
+  const oil = dismiss(keys(start(), "ma'a"));
+  expect(oil.world.engine.cursor).toEqual({ line: 3, col: 1 });
+  for (const command of ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', '9w', '9e', '9b']) {
+    expect(keys(oil, command).world.engine.cursor, command).toEqual({ line: 3, col: 1 });
   }
-  expect(visited.size).toBe(3);
-  const reset = keys(pocket, ':e!<CR>');
+  expect(keys(oil, '`a').world.engine.cursor).toEqual(marked.start);
+  const reset = keys(oil, ':e!<CR>');
   expect(reset.world.engine.cursor).toEqual(marked.start);
   expect(reset.world.engine.marks).toEqual({});
 });
@@ -162,35 +153,17 @@ it('draws the oil jar and lights both item cells once collected', () => {
   expect(SPRITES['lamp-oil']).toBeDefined();
   expect(SPRITES['mark-flag']).toBeDefined();
   expect(darknessFor(marked, {})).toEqual({ radius: 3, lights: [] });
-  expect(darknessFor(marked, { 'marked.crystal': true, 'marked.oil': true })).toEqual({ radius: 3, lights: [{ line: 1, col: 2 }, { line: 3, col: 1 }] });
+  expect(darknessFor(marked, { 'marked.crystal': true, 'marked.oil': true })).toEqual({ radius: 3, lights: [{ line: 5, col: 2 }, { line: 3, col: 1 }] });
 });
-it('bounds the gallery vocabulary by expansions and simulation steps', () => {
+it('proves par over the whole vocabulary, and no clear without each mark key', () => {
   const solver = sessionSolver(dependencies);
-  let steps = 0;
-  const observed = { ...solver, step: (...args: Parameters<typeof solver.step>) => {
-    steps++;
-    return solver.step(...args);
-  } };
-  expect(solveStage(observed, marked, markedLegend, { learnedCommands: GALLERY_COMMANDS, flags: {} },
-    { maxTurns: 3, maxExpanded: 50 })).toBeNull();
-  expect(steps).toBeGreaterThan(0);
-  console.info(`Marked old vocabulary: ${steps} simulation steps (3 turns / 50 expansions)`);
-});
-it('a focused marks and search vocabulary finds no route under par', () => {
-  const result = solveStage(sessionSolver(dependencies), marked, markedLegend,
-    { learnedCommands: ['m', '`', '/'], flags: {} }, { maxTurns: 5, maxExpanded: 5000 });
-  expect(result).not.toBeNull();
-  if (!result) throw new Error('No marked route');
-  expect(result.turns).toBeGreaterThanOrEqual(marked.parTurns);
-  // Stop at marked.end; dismissing it now enters the labyrinth at turn zero.
-  for (const input of [marked.solution, result.keys]) {
-    let session = route(start(), input);
-    for (let line = 0; line < 80 && !session.queue.some(item => item.type === 'cutscene' && item.cutscene === 'marked.end'); line++) {
-      session = controller.reduce(session, '<CR>');
-    }
-    expect(session.queue[0]).toMatchObject({ cutscene: 'marked.end' });
-    expect(session.world.turn).toBe(input === marked.solution ? marked.parTurns : result.turns);
-    expect(session.world.status).toBe('cleared');
+  const limits = { maxExpanded: 2_000_000 };
+  const learned = (commands: readonly string[]) => ({ learnedCommands: commands, flags: {} });
+  expect(solveStage(solver, marked, markedLegend, learned(MARKED_COMMANDS), { ...limits, maxTurns: marked.parTurns - 1 })).toBeNull();
+  expect(solveStage(solver, marked, markedLegend, learned(MARKED_COMMANDS), { ...limits, maxTurns: marked.parTurns })?.turns).toBe(marked.parTurns);
+  // Search, counted G and gg are not allowed here, so nothing but a mark reaches the oil or leaves it.
+  for (const key of ['m', '`', "'"]) {
+    expect(solveStage(solver, marked, markedLegend, learned(MARKED_COMMANDS.filter(command => command !== key)),
+      { ...limits, maxTurns: 2 * marked.parTurns }), key).toBeNull();
   }
-  console.info('Marked focused solver:', result);
-});
+}, 120_000);
