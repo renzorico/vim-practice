@@ -34,11 +34,12 @@ it('handles both p after an empty row and P before the bottom rail', () => {
   const copied = command(put.state, 'gg2jyapG').state;
   const end = command(copied, 'P');
   const plan = archiveRows(copied, end.state, end.events);
-  expect(plan).toEqual({ type: 'put', fromLine: 12, count: 3 });
+  // The Archive gained a blank row before the bottom rail (World 5): everything below moved down one.
+  expect(plan).toEqual({ type: 'put', fromLine: 13, count: 3 });
   if (!plan) throw new Error('Missing plan');
-  expect(archiveRowPose(plan, 12, 0).scale).toBe(0);
-  expect(archiveRowPose(plan, 13, 1)).toEqual({ line: 13, scale: 1 });
-  expect(archiveRowPose(plan, 15, 0)).toEqual({ line: 12, scale: 1 });
+  expect(archiveRowPose(plan, 13, 0).scale).toBe(0);
+  expect(archiveRowPose(plan, 14, 1)).toEqual({ line: 14, scale: 1 });
+  expect(archiveRowPose(plan, 16, 0)).toEqual({ line: 13, scale: 1 });
   expect(archiveRowPose(plan, 15, 1)).toEqual({ line: 15, scale: 1 });
 });
 it('does not invent deleted rows for yank, pending commands, bumps or undo', () => {
