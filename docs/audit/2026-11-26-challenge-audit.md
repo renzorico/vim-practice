@@ -23,7 +23,7 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 - **Par route.** Reads each stage's stored solution for the keys the stage teaches, and replays it to count the
   conversations it starts (interact triggers that fire; a `<CR>` that submits a search is not one).
 - **Text stages** (Ledger, Manifest, Harbour, Contract, Study) are script edits; their par is in keystrokes inside
-  the script and is not audited here (rows show par 0).
+  the script. Audited separately: see "Text stages" below.
 
 ## Results
 
@@ -51,7 +51,7 @@ AUDIT_STAGE=lowlands AUDIT_OUT=/tmp/audit npx vitest run apps/game/src/play2/aud
 | Marked | 4 | none | m ` ' | m ` | 1 / 1 |
 | Labyrinth | 5 | none | - | - | 0 / 0 |
 | Last Page | 15 | none | - | - | 0 / 0 |
-| Ledger, Manifest, Harbour, Contract, Study | script | not audited | | | |
+| Ledger, Manifest, Harbour, Contract, Study | script | see Text stages | | | |
 
 **Update 2026-11-27 (World 1 redesign):** Margin par 6 uses `h j k l`; Lowlands par 11 uses `w b e $` and needs Wren;
 the Lighthouse par 7 teaches and uses `0`. Checked by `apps/game/src/play2/challenge.test.ts`.
@@ -77,6 +77,45 @@ back; par 7, proven over the stage's whole vocabulary, and no clear without `m`,
 
 **Update 2026-11-27 (World 7):** the Last Page is unchanged: its clear needs the repaired page, the R door and `:w`
 (own block in `challenge.test.ts`, since `:w` is an Ex command). No shortcut in the probe; par 15 is best-known.
+
+## Text stages, 2026-11-27
+
+Tool: `apps/game/src/play2/audit/textAudit.test.ts` (off in CI; `AUDIT_TEXT=1 AUDIT_OUT=/tmp/audit npx vitest run
+apps/game/src/play2/audit/textAudit.test.ts`). It replays each stored route, lists the taught keys it uses, and cuts
+every span of 1-8 keys out of it to see whether the script still solves. Codex then golfed each script; every route
+below replays through the real engine (`audit/solvedAt.ts`). Best-known, not proven: a key-by-key search cannot reach
+a 26-163 key optimum.
+
+| Stage | Par | Best known | Taught | Par route uses | Skips |
+|---|---|---|---|---|---|
+| Ledger | 38 | 35 | o D i a A Esc | o D Esc | i a A |
+| Manifest | 57 | 53 | (none new) | | |
+| Harbour | 100 | 92 | c C P yy | c C P yy | |
+| Contract | 163 | 151 | i" a" | i" | a" |
+| Study | 35 | 26 | v V C-v | C-v | v V |
+
+**Findings, worst first**
+
+1. **Text stages are unscored.** `isScoredStage` is false for `type: 'text'`: the player never sees par or stars,
+   so nothing rewards a short edit. This is where "no sense of achievement" is strongest.
+2. **Every par is too loose,** by 3 (Ledger) to 12 (Contract) keys. Examples: the Study's first block delete is
+   wasted (`8w`, then one `<C-v>7j$c` changes both columns); `ci(` and `ci[` find their brackets without `0f(`.
+3. **Taught keys skipped:** the Ledger never needs `i a A` (only `o` and `D`), the Contract never needs `a"`, the
+   Study never needs `v` or `V`. The golfed routes skip the same keys.
+4. **No shortcut found by cutting spans** except the Contract (161) and the Study (29); the rest of the slack needs
+   a different route, not fewer keys of the same one.
+
+Golfed routes (keys joined; a space is a typed space):
+
+- Ledger 35: `jdd$b2xj.j.0llrajdd2w2x4lDjddodoor<Esc>`
+- Manifest 53: `fo;xj$i, Shut, Ope<Esc>10er4jddG3wDatoday.<Esc>k$i, on three<Esc>`
+- Harbour 92: `7wct,Ream<Esc>GddggP5jddp$bCreal<Esc>kb.}b.5wCthe ferry, today<Esc>yyp3wct,rope boat<Esc>5wCTilde, for Ream<Esc>`
+- Contract 151: `2jci"the Librarians<Esc>9j.j.j.3G$bcwReaders<Esc>}jci(unless they want to<Esc>j0ci[until the Scribe returns<Esc>}jdap$citTilde<Esc>}jct Guardian of<Esc>3whC: the Minotaur.<Esc>jdd`
+- Study 26: `8w<C-v>7j$cfound<Esc>0<C-v>7jI* <Esc>}j3dd`
+
+**Next:** per stage, as for the field stages: set par to the best known, then reshape the target text so each
+taught key is on the shortest route (an append only `A` reaches, a linewise block only `V` cuts cleanly, a quoted
+string `a"` removes with its quotes), and decide whether text stages show keys against par.
 
 ## Findings, worst first
 
