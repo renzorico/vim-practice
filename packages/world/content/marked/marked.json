@@ -8,7 +8,7 @@
     "######################",
     "#=x=##################",
     "######################",
-    "#..........#=o=#######",
+    " o####=====###########",
     "#.##################",
     "#.##################",
     "#..........##",
@@ -17,7 +17,7 @@
   "legend": "marked",
   "start": {
     "line": 3,
-    "col": 6
+    "col": 9
   },
   "hearts": 3,
   "entities": [
@@ -27,7 +27,7 @@
       "sprite": "echo",
       "at": {
         "line": 3,
-        "col": 7
+        "col": 10
       },
       "behaviour": {
         "type": "still"
@@ -69,11 +69,11 @@
       "area": {
         "from": {
           "line": 3,
-          "col": 13
+          "col": 1
         },
         "to": {
           "line": 3,
-          "col": 13
+          "col": 1
         }
       }
     }
@@ -87,22 +87,47 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 4,
+  "parTurns": 3,
   "solution": [
-    "m",
-    "a",
-    "/",
-    "o",
-    "<CR>",
     "/",
     "x",
     "<CR>",
-    "`",
-    "a",
+    "/",
+    "o",
+    "<CR>",
+    "?",
+    "=",
+    "=",
+    "<CR>",
     "<CR>"
   ],
   "hints": [
     "`ma` marks the spot you stand on. `` `a `` jumps back to it from anywhere, even out of sealed rock.",
-    "Mark the fork before you search: nothing else here can find the way back."
+    "`'a` jumps to the start of the marked line: the oil is there, behind the rock."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "0",
+    "$",
+    "G",
+    "gg",
+    "{",
+    "}",
+    "%",
+    "/",
+    "?",
+    "n",
+    "N",
+    "*",
+    "#",
+    "m",
+    "`",
+    "'"
   ]
 }
