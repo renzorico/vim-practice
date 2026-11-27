@@ -10,6 +10,14 @@
   },
   "tiles": [
     {
+      "char": " ",
+      "kind": "ground",
+      "sprite": "cave-rock",
+      "walkable": false,
+      "fixed": true,
+      "label": "darkness"
+    },
+    {
       "char": "#",
       "kind": "barrier",
       "sprite": "cave-rock",
