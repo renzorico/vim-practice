@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 4 checked: no changes needed
+**Who:** Opus. Renzo: "Start World 4".
+
+With the exact solver and the path rules, the audit finds no shortcut in the Jetty (par 6), Warehouse (15), Customs (16) or Counter (12), and each par route uses the keys its stage teaches (`d`; `y p`; `"`). The Jetty, Warehouse and Customs join `challenge.test.ts`; the Counter (the castle) teaches no new key. The Jetty's par is proven; the Warehouse, Customs and Counter pars are best known (register edits make a full search too large).
+
+CI's time limit goes from 20 to 45 minutes: the exhaustive proofs take minutes each on a runner, and PRs 121 and 122 were cancelled at 20.
+
+---
+
 ## 2026-11-27 · World 3: every taught key on the par route
 **Who:** Opus (design, build, proofs). Renzo: "Start World 3". Built on the exact solver (PR 121).
 

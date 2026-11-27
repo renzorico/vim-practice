@@ -64,6 +64,9 @@ too; the Gallery's par went 5 to 6 under that rule.
 **Update 2026-11-27 (World 3):** the Canopy (par 7) uses `f t ; ,`, the Glades (par 4) `{ } gg G`, the Gates (par 8)
 `% <C-d> <C-u>`. No shortcut in the probe. `;`, `{ } gg` and counted scrolls tie another one-turn command.
 
+**Update 2026-11-27 (World 4):** unchanged and passing: Jetty `d`, Warehouse `y p`, Customs `"` on their par routes,
+no shortcut in the probe. Counter teaches nothing new.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

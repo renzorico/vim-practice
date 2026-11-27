@@ -10,7 +10,7 @@ import { commandsIn } from './audit/commandsIn.js';
 
 // Some keys tie with another one-turn command, so the par route uses them but turns cannot force them: the Shaft's `.`
 // (retyping `4dd`), the Canopy's `;` (`t@`), the Glades' `{ } gg` (a counted `G`), the Gates' counted scrolls (`N%`).
-const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut', 'shaft', 'canopy', 'glades', 'gates'];
+const REDESIGNED: readonly string[] = ['margin', 'lowlands', 'lighthouse', 'quarry-road', 'cut', 'shaft', 'canopy', 'glades', 'gates', 'jetty', 'warehouse', 'customs'];
 
 describe.each(REDESIGNED)('%s', id => {
   const entry = stages.find(item => item.stage.id === id);
