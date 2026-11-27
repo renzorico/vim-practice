@@ -38,11 +38,12 @@ it('marks the fork, collects a crystal and returns to the exact cell', () => {
   expect(lines('marked.got-crystal')).toEqual(['A crystal, warm in your hand.']);
   expect(keys(dismiss(pocket), '`a').world.engine.cursor).toEqual(marked.start);
 });
-it('keeps Vim linewise quote behavior: first nonblank is rock, so the jump bumps', () => {
+it("keeps Vim linewise quote behavior: 'a lands on the first nonblank of the marked line, the oil", () => {
   const pocket = dismiss(keys(start(), 'ma/x<CR>'));
   const result = keys(pocket, "'a");
-  expect(result.world.engine.cursor).toEqual(pocket.world.engine.cursor);
-  expect(result.lastEvents).toContainEqual({ type: 'bump', reason: 'wall', at: { line: 3, col: 0 } });
+  expect(result.world.engine.cursor).toEqual({ line: 3, col: 1 });
+  expect(result.story.flags['marked.oil']).toBe(true);
+  expect(result.lastEvents).not.toContainEqual(expect.objectContaining({ type: 'bump' }));
 });
 it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive Echo states', (first, second) => {
   let session = start();
@@ -100,7 +101,20 @@ it('enters marked after gallery.end, carrying story and both quest steps', () =>
   session = dismiss(keys(dismiss(session), '<CR>'));
   expect(session.story.quests['caves.marked']).toEqual({ step: 2, done: true });
 });
-it.each(['x', 'o'])('seals the %s pocket against walking and absolute edge motions without a mark', item => {
+it('turns row 3 column 0 into non-walkable darkness rock', () => {
+  const tile = markedLegend.tiles.find(entry => entry.char === ' ' && entry.kind === 'ground');
+  expect(tile).toMatchObject({ label: 'darkness', walkable: false, fixed: true, sprite: 'cave-rock' });
+  expect(marked.map[3]?.[0]).toBe(' ');
+});
+it("jumps from the crystal to the oil with 'a and fires marked.oil", () => {
+  const crystal = dismiss(keys(start(), 'ma/x<CR>'));
+  expect(crystal.world.engine.cursor).toEqual({ line: 1, col: 2 });
+  expect(crystal.story.flags['marked.oil']).not.toBe(true);
+  const oil = keys(crystal, "'a");
+  expect(oil.world.engine.cursor).toEqual({ line: 3, col: 1 });
+  expect(oil.story.flags['marked.oil']).toBe(true);
+});
+it.each(['x'])('seals the %s pocket against walking and absolute edge motions without a mark', item => {
   const pocket = dismiss(keys(start(), `/${item}<CR>`));
   // Explore all reachable walking cells using the actual reducer; no hand-coded reachability rules.
   const pending = [pocket];
@@ -147,7 +161,7 @@ it('draws the oil jar and lights both item cells once collected', () => {
   expect(SPRITES['lamp-oil']).toBeDefined();
   expect(SPRITES['mark-flag']).toBeDefined();
   expect(darknessFor(marked, {})).toEqual({ radius: 3, lights: [] });
-  expect(darknessFor(marked, { 'marked.crystal': true, 'marked.oil': true })).toEqual({ radius: 3, lights: [{ line: 1, col: 2 }, { line: 3, col: 13 }] });
+  expect(darknessFor(marked, { 'marked.crystal': true, 'marked.oil': true })).toEqual({ radius: 3, lights: [{ line: 1, col: 2 }, { line: 3, col: 1 }] });
 });
 it('bounds the gallery vocabulary by expansions and simulation steps', () => {
   const solver = sessionSolver(dependencies);

@@ -17,7 +17,7 @@ const tile = (sprite: string): TileDef => ({ sprite, char: ' ', kind: 'ground', 
 describe('P-18 ground regressions', () => {
   it('classifies every shipped ground explicitly, preserving all built and specialised floors', () => {
     const ground = Object.values(legends).flatMap(legend => [...legend.tiles, ...(legend.emptyRow ? [legend.emptyRow] : [])]).filter(tile => tile.kind === 'ground');
-    expect(ground).toHaveLength(13);
+    expect(ground).toHaveLength(14);
     for (const tile of ground) {
       expect(surface(tile.sprite), tile.sprite).toBeDefined();
       expect(replacesGround(tile), tile.sprite).toBe(['grass', 'dirt'].includes(tile.sprite));

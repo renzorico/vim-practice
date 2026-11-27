@@ -109,8 +109,8 @@ it('persists only improving bests, loads old saves, and rejects invalid best res
 
 
 it('pins caps for authored Gallery, Mouth, and Margin solutions', () => {
-  expect(solutionCaps(gallery)).toEqual(['#', 'w', '#', 'w', '#', 'e', '<CR>']);
-  expect(solutionCaps(mouth)).toEqual(['?x<CR>', 'n', 'n', 'l', '<CR>']);
+  expect(solutionCaps(gallery)).toEqual(['*', 'w', '#', 'w', '*', 'e', '<CR>']);
+  expect(solutionCaps(mouth)).toEqual(['?x<CR>', 'n', 'n', '/=<CR>', '<CR>']);
   expect(solutionCaps(stage)).toEqual(['5h', '4k', '<CR>', '7j', '4l', '<CR>', '3k', '28l']);
 });
 it('never labels the player cell after a completed find', () => {
