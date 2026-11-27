@@ -3,6 +3,12 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · The Mouth: a blot between the crystals
+**Who:** Opus (design, tests); Codex (review). Continuing audit step 3 overnight.
+
+- **Mouth** (par 4): a dead crystal with a blot on it sits between the deep and the middle crystal in search order. `?x`, then `2n` skips it; `n n n` lands on it and costs a heart and a turn. Echo's deep-crystal line teaches the count.
+- **Left alone, on purpose:** World 1 (no enemy has been introduced yet; the first one should come with a story beat), the Cut, Shaft, Jetty, Reading and Archive (edit puzzles where `dd`, `u` and text objects move the map: enemies there need playtesting, not just the solver), and the Labyrinth (its threat is the Minotaur's fuse; it is the boss).
+
 ## 2026-11-28 · World 3: longer Glades, enemies on the route
 **Who:** Opus (design, solver checks, tests); Codex (review). Renzo: "World 3 first" (audit step 3: longer stages, an enemy on the route so hearts count).
 
