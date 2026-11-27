@@ -3,7 +3,7 @@
   "world": "echo-caves",
   "type": "text",
   "title": "The Scribe's Study",
-  "goalText": "Strike the shelf column, mark every entry found, star the index, and keep only the final draft.",
+  "goalText": "Mark every entry found, star the index, strike the draft, and mend the final line.",
   "autoScript": "study.book",
   "map": [
     " "
@@ -20,7 +20,7 @@
     {
       "id": "study.book",
       "title": "The Scribe's index",
-      "goalText": "Strike the shelf column, mark every entry found, star the index, and keep only the final draft.",
+      "goalText": "Mark every entry found, star the index, strike the draft, and mend the final line.",
       "startLines": [
         "THE SCRIBE'S INDEX",
         "",
@@ -33,10 +33,9 @@
         "chalk | shelf 8 | lost",
         "quill | shelf 7 | lost",
         "",
-        "draft: the Last Page",
-        "draft: the Last Page",
-        "draft: the Last Page",
-        "final: the Last Page"
+        "final: the Lost",
+        "x-x-x-x-x-x Last Page",
+        "draft: the Last Page"
       ],
       "startCursor": {
         "line": 0,
@@ -61,18 +60,9 @@
           ]
         }
       ],
-      "par": 35,
+      "par": 30,
       "solution": [
-        "2",
-        "j",
-        "f",
-        "|",
-        "<C-v>",
-        "7",
-        "j",
-        "9",
-        "l",
-        "d",
+        "8",
         "w",
         "<C-v>",
         "7",
@@ -94,15 +84,19 @@
         " ",
         "<Esc>",
         "}",
+        "4",
+        "w",
+        "v",
         "j",
-        "3",
         "d",
+        "j",
+        "V",
         "d"
       ],
       "hints": [
-        "`Ctrl-v` starts a block: `7j` takes it down all eight rows, `9l` across. `d` deletes the block.",
-        "In a block, `$` reaches every row's end: then `c` changes the end of every row at once.",
-        "`Ctrl-v`, then `I` types the same thing at the start of every row of the block. `V` selects whole rows."
+        "`Ctrl-v` starts a block: `7j` takes it down all eight rows. In a block, `$` reaches every row's end, and `c` changes them all at once.",
+        "`Ctrl-v`, then `I` types the same thing at the start of every row of the block.",
+        "`V` selects whole rows: `Vd` strikes the draft. `v` selects characters, across rows too: on the L of Lost, `vjd` mends the final line."
       ],
       "effects": []
     }
@@ -117,16 +111,7 @@
   "requires": [],
   "parTurns": 0,
   "solution": [
-    "2",
-    "j",
-    "f",
-    "|",
-    "<C-v>",
-    "7",
-    "j",
-    "9",
-    "l",
-    "d",
+    "8",
     "w",
     "<C-v>",
     "7",
@@ -148,14 +133,18 @@
     " ",
     "<Esc>",
     "}",
+    "4",
+    "w",
+    "v",
     "j",
-    "3",
     "d",
+    "j",
+    "V",
     "d"
   ],
   "hints": [
-    "`Ctrl-v` starts a block: `7j` takes it down all eight rows, `9l` across. `d` deletes the block.",
-    "In a block, `$` reaches every row's end: then `c` changes the end of every row at once.",
-    "`Ctrl-v`, then `I` types the same thing at the start of every row of the block. `V` selects whole rows."
+    "`Ctrl-v` starts a block: `7j` takes it down all eight rows. In a block, `$` reaches every row's end, and `c` changes them all at once.",
+    "`Ctrl-v`, then `I` types the same thing at the start of every row of the block.",
+    "`V` selects whole rows: `Vd` strikes the draft. `v` selects characters, across rows too: on the L of Lost, `vjd` mends the final line."
   ]
 }

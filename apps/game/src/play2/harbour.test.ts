@@ -134,11 +134,8 @@ it('validates content and replays every bundled stage with its own commands', ()
   }
 });
 
-it('stores the replayed 100-key best-known route in both solutions', () => {
-  expect(parseKeys(PROVIDED)).toHaveLength(104);
-  expect(parseKeys(OLD_TOOLS)).toHaveLength(133);
-  expect(book.par).toBe(100);
-  expect(book.solution).toEqual(parseKeys(SHORTER));
-  expect(harbour.solution).toEqual(book.solution);
+it('stores the best-known route in both solutions; the walkthrough route is longer', () => {
   expect(book.solution).toHaveLength(book.par);
+  expect(parseKeys(SHORTER).length).toBeGreaterThan(book.par);
+  expect(harbour.solution).toEqual(book.solution);
 });

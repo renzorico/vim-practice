@@ -16,10 +16,13 @@ const count = (text: string, part: string): number => text.split(part).length - 
  */
 const TASKS: Readonly<Record<string, readonly ScriptTask[]>> = {
   'ledger.book': [
+    { task: 'Title the ledger', unfinished: lacks("THE MASON'S LEDGER, SETTLED"),
+      how: 'On the title row, `i` types before the cursor: type “THE ” with a space, then `Esc`. `A` types at the end of the row: type “, SETTLED”, then `Esc`.' },
     { task: 'Strike the wall rows', unfinished: has(/^wall *$/m),
       how: 'Go to a row that says wall. Press `dd`: the row is gone. On the other two, `.` does it again.' },
     { task: 'Mark everyone paid', unfinished: has('unpaid'),
       how: 'Cursor on the u of unpaid. Press `2x`: un is gone. Then `j` to the next row and `.` to repeat.' },
+    { task: "Fix Kit's name", unfinished: lacks('Kit '), how: 'Cursor on the K of Kt. `a` types after it: type “i”, then `Esc`.' },
     { task: "Fix Bram's name", unfinished: lacks('Bram'), how: 'Cursor on the e of Brem. Press `r`, then `a`.' },
     { task: "Cut Mira's note", unfinished: has('owed'),
       how: "On Mira's row, cursor on the first space after paid. Press `D`: the rest of the row is gone." },
@@ -63,6 +66,8 @@ const TASKS: Readonly<Record<string, readonly ScriptTask[]>> = {
       how: 'On row 3, `$` jumps to the last quote. `ci"`, type “the Readers”, then `Esc`.' },
     { task: 'Free clause 1', unfinished: lacks('(unless they want to)'),
       how: 'From the start of row 5, `f(` jumps to the outer bracket. `ci(`, type “unless they want to”, then `Esc`.' },
+    { task: 'Unbind the vault', unfinished: has('"always"'),
+      how: 'From the start of the Clause 2 row, `da"` cuts "always", its quotes and one space.' },
     { task: 'Open the vault', unfinished: lacks('[until the Scribe returns]'),
       how: 'From the start of the next row, `f[` jumps to the bracket. `ci[`, type “until the Scribe returns”, then `Esc`.' },
     { task: 'Strike clause 3', unfinished: has(/Clause 3|a single page/),
@@ -73,14 +78,14 @@ const TASKS: Readonly<Record<string, readonly ScriptTask[]>> = {
       how: 'On the Notes row, `cip` changes both rows. Type “Guardian of the caves: the Minotaur.”, then `Esc`.' },
   ],
   'study.book': [
-    { task: 'Strike the shelf column', unfinished: has('shelf'),
-      how: 'From the start of the ink row, `f|` jumps to the first bar. `Ctrl-v` starts a block, `7j` takes it down, `9l` across, `d` cuts it.' },
-    { task: 'Mark every entry found', unfinished: text => count(text, '| found') < 8,
-      how: 'Cursor on the l of the first lost. `Ctrl-v`, `7j`, `$`, then `c`, type “found”, and `Esc`.' },
+    { task: 'Mark every entry found', unfinished: text => has('shelf')(text) || count(text, '| found') < 8,
+      how: 'Cursor on the s of the first shelf. `Ctrl-v`, `7j`, `$`, then `c`: type “found”, and `Esc`. Shelf and lost go together.' },
     { task: 'Star every entry', unfinished: text => count(text, '* ') < 8,
       how: 'At the start of the ink row: `Ctrl-v`, `7j`, then `I`, type “* ” (star, space), and `Esc`.' },
-    { task: 'Keep the final draft', unfinished: has('draft'),
-      how: 'On the first draft row, `V` selects it, `2j` adds the next two, `d` cuts them.' },
+    { task: 'Strike the draft', unfinished: has(/^draft:/m),
+      how: 'On the draft row, `V` selects the whole row. `d` cuts it.' },
+    { task: 'Mend the final line', unfinished: lacks('final: the Last Page'),
+      how: 'Cursor on the L of Lost. `v` starts a selection, `j` stretches it to the row below, `d` cuts it: the two rows become one.' },
   ],
 };
 

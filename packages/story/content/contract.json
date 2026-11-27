@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "contract",
-          "objective": "Rewrite it: `ci\"`, `ci(`, `dap`, `cit`.",
+          "objective": "Rewrite it: `ci\"`, `ci(`, `da\"`, `dap`, `cit`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "contract"

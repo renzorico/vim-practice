@@ -9,7 +9,7 @@
       "steps": [
         {
           "id": "index",
-          "objective": "Fix the index: `Ctrl-v`, then `d`, `c`, `I`.",
+          "objective": "Fix the index: `Ctrl-v`, then `c` and `I`; `V` and `v`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "study"

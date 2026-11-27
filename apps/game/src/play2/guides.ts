@@ -53,12 +53,12 @@ export const GUIDES: Readonly<Record<string, Readonly<Record<string, Guide>>>> =
   'library.reading': { chains: use('da(', 'd2a('), folio: guide(['<CR>']) },
   'library.archive': { file: use('dap', 'p', 'yip', 'P') },
   'library.notary': { open: use('da[', 'da{', 'dit') },
-  'library.contract': { contract: use('ci"', 'ci(', 'dap', 'cit') },
+  'library.contract': { contract: use('ci"', 'ci(', 'da"', 'dap', 'cit') },
   'caves.mouth': { crystals: use('?x', '<CR>', 'n'), echo: guide(['<CR>']) },
   'caves.gallery': { follow: use('*', 'w') },
   'caves.marked': { fetch: use('ma', "'a", '`a'), echo: guide(['<CR>']) },
   'caves.labyrinth': { levers: use('ma', '?', '`a') },
-  'caves.study': { index: use('<C-v>') },
+  'caves.study': { index: use('<C-v>', 'V', 'v') },
   'last.page': { write: guide([':w', '<CR>']) },
 };
 
