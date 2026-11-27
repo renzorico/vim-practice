@@ -39,7 +39,7 @@
         "type": "put",
         "text": "\"s\" "
       },
-      "every": 4,
+      "every": 3,
       "damage": 0,
       "solid": true
     },
@@ -84,17 +84,45 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 23,
+  "parTurns": 14,
   "solution": [
-    "j", "w", "d", "a", "[",
-    "0", "2", "j", "w", "d", "a", "{",
-    "0", "2", "j", "w", "d", "i", "t",
-    "0", "2", "j", "w", "d", "i", "[",
-    "0", "2", "j", "w", "d", "i", "{",
-    "0", "2", "j", "w", "d", "a", "t"
+    "3",
+    "G",
+    "d",
+    "a",
+    "[",
+    "5",
+    "G",
+    "d",
+    "a",
+    "{",
+    "7",
+    "G",
+    "w",
+    "d",
+    "i",
+    "t",
+    "9",
+    "G",
+    "d",
+    "i",
+    "[",
+    "1",
+    "1",
+    "G",
+    "d",
+    "i",
+    "{",
+    "1",
+    "3",
+    "G",
+    "w",
+    "d",
+    "a",
+    "t"
   ],
   "hints": [
     "`da[` takes a lock whole; `di[` empties it and keeps the lock. Same for `da{` and `di{`. `dit` empties a tag, `dat` removes it whole.",
-    "`0` takes you back to the stair, `2j` down one vault. `w` lands inside the next lock."
+    "`3G` goes straight to row 3; the brackets are found from the stair. `w` steps inside a tag."
   ]
 }
