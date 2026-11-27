@@ -3,10 +3,16 @@
   "world": "library",
   "type": "castle",
   "title": "The Notary",
-  "goalText": "Open the three vault locks before the Notary signs seven clauses.",
+  "goalText": "Open the six vault locks before the Notary signs seven clauses.",
   "map": [
     "#|...........",
     ".######.#####",
+    ".[kkk]......#",
+    ".############",
+    ".{kkk}......#",
+    ".############",
+    ".<w>wwww</w>.#",
+    ".############",
     ".[kkk]......#",
     ".############",
     ".{kkk}......#",
@@ -33,7 +39,7 @@
         "type": "put",
         "text": "\"s\" "
       },
-      "every": 2,
+      "every": 4,
       "damage": 0,
       "solid": true
     },
@@ -59,7 +65,7 @@
       "once": true,
       "on": "text",
       "anchor": "vault",
-      "text": "......#\n.############\n.......#\n.############\n.<w></w>.#"
+      "text": "......#\n.############\n.......#\n.############\n.<w></w>.#\n.############\n.[]......#\n.############\n.{}......#\n.############\n..#"
     },
     {
       "id": "notary.fuse",
@@ -78,30 +84,17 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 11,
+  "parTurns": 23,
   "solution": [
-    "j",
-    "w",
-    "d",
-    "a",
-    "[",
-    "0",
-    "2",
-    "j",
-    "w",
-    "d",
-    "a",
-    "{",
-    "0",
-    "2",
-    "j",
-    "w",
-    "d",
-    "i",
-    "t"
+    "j", "w", "d", "a", "[",
+    "0", "2", "j", "w", "d", "a", "{",
+    "0", "2", "j", "w", "d", "i", "t",
+    "0", "2", "j", "w", "d", "i", "[",
+    "0", "2", "j", "w", "d", "i", "{",
+    "0", "2", "j", "w", "d", "a", "t"
   ],
   "hints": [
-    "`da[` opens a lock from anywhere inside it; `da{` breaks a seal. `dit` empties a tag and keeps the tag.",
+    "`da[` takes a lock whole; `di[` empties it and keeps the lock. Same for `da{` and `di{`. `dit` empties a tag, `dat` removes it whole.",
     "`0` takes you back to the stair, `2j` down one vault. `w` lands inside the next lock."
   ]
 }

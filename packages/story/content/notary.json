@@ -11,7 +11,7 @@
       "steps": [
         {
           "id": "open",
-          "objective": "Open three locks: `da[`, `da{`, `dit`.",
+          "objective": "Open six locks: `da[` `da{` `dit`, then `di[` `di{` `dat`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "notary"
@@ -28,11 +28,11 @@
         {
           "speaker": "npc",
           "name": "Notary",
-          "text": "Notary. A clause every two turns. At seven the\nvault shuts for good. You need it open: hurry."
+          "text": "Notary. A clause every four turns. At seven the\nvault shuts for good. You need it open: hurry."
         },
         {
           "speaker": "system",
-          "text": "In a lock, press `da[`. In a seal, `da{`.\nIn a tag, `dit`. Three locks, in that order."
+          "text": "`da[` `da{` `dit`: take it whole, or empty it.\nThen `di[` `di{` `dat`. Six locks, top down."
         }
       ],
       "then": []
@@ -59,6 +59,16 @@
           "speaker": "npc",
           "name": "Notary",
           "text": "Unlocked. Unsealed. Emptied.\nNone of that was in the contract."
+        },
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "Empty the lock, keep the lock. Empty the seal.\nThe contract does not say you may."
+        },
+        {
+          "speaker": "npc",
+          "name": "Notary",
+          "text": "And a whole tag gone, tag and all.\nI will need a new form."
         }
       ],
       "then": []
@@ -68,7 +78,7 @@
       "lines": [
         {
           "speaker": "system",
-          "text": "In the lock, `da[`. Then `0` `2j` `w` and `da{`.\nAgain `0` `2j` `w`, then `dit` for the tag."
+          "text": "Each row: `0` `2j` `w`, then the edit.\n`da[` `da{` `dit`, then `di[` `di{` `dat`."
         }
       ],
       "then": []

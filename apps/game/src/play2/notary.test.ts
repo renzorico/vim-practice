@@ -38,13 +38,17 @@ const markup = (session: Session) => renderToStaticMarkup(createElement(PlayScre
   session, stage: notary, legend: notaryLegend, content, objectives: [], showSource: false, onAdvance: () => {},
 }));
 
-it('opens the three locks in 11 turns with 3 hearts and 5 clauses', () => {
+it('opens the six locks in 23 turns with 3 hearts and 5 clauses', () => {
   const session = route(start(), notary.solution);
   expect(session.world.status).toBe('cleared');
-  expect(session.world.turn).toBe(11);
+  expect(session.world.turn).toBe(23);
+  expect(notary.parTurns).toBe(23);
   expect(session.world.hearts).toBe(3);
   expect(notaryClauses(session.world)).toBe(5);
-  expect(session.world.engine.lines.slice(2, 7)).toEqual(['.......#', '.############', '.......#', '.############', '.<w></w>.#']);
+  expect(session.world.engine.lines.slice(2, 13)).toEqual([
+    '.......#', '.############', '.......#', '.############', '.<w></w>.#', '.############',
+    '.[]......#', '.############', '.{}......#', '.############', '..#',
+  ]);
   expect(session.queue).toEqual([
     { type: 'dialogue', dialogue: 'notary.open', index: 0 },
     { type: 'cutscene', cutscene: 'notary.end', index: 0 },
@@ -73,6 +77,19 @@ it('lands inside locks; deletes around brackets, inside tags, but leaves [] with
   expect(inner.world.status).toBe('playing');
 });
 
+it('keeps the lock and seal with di[ / di{, and removes the whole tag with dat', () => {
+  const lock = keys(start(), 'jw' + 'da[02jwda{02jwdit02jwdi[');
+  expect(lock.world.engine.lines[8]).toBe('.[]......#');
+  expect(jettyDeletion(lock.world, lock.lastEvents)?.junk).toBe('kkk');
+  const seal = keys(lock, '02jwdi{');
+  expect(seal.world.engine.lines[10]).toBe('.{}......#');
+  const tag = keys(seal, '02jwdat');
+  expect(tag.world.engine.lines[12]).toBe('..#');
+  // The splash planner (scene/jettyDeletion.ts) does not match whole tags yet, so no splash plan.
+  expect(jettyDeletion(tag.world, tag.lastEvents)).toBeNull();
+  expect(tag.world.status).toBe('cleared');
+});
+
 it.each(['k', 'gg'])('cannot reach the Notary with %s', input => {
   const session = keys(start(), input);
   expect(session.world.engine.cursor).toEqual(notary.start);
@@ -87,18 +104,18 @@ it('2G stays on the supplied walkable start row rather than reaching the desk', 
   expect(session.world.hearts).toBe(3);
 });
 
-it('the 15-turn Archive route loses on turn 14, repeats its fuse line, and retries cleanly', () => {
-  const oldRoute = parseKeys('jw%d%02jw%d%02jwf>ldt<');
+it('a stalled run loses on turn 28, repeats its fuse line, and retries cleanly', () => {
+  const stall = parseKeys('jk'.repeat(14));
   let attempt = start();
   for (let index = 0; index < 2; index++) {
-    const fused = route(attempt, oldRoute);
-    expect(fused.world.turn).toBe(14);
+    const fused = route(attempt, stall);
+    expect(fused.world.turn).toBe(28);
     expect(fused.queue[0]).toMatchObject({ dialogue: 'notary.fuse' });
     expect(markup(fused)).toContain('Seven. Signed and sealed.');
     const dead = dismiss(fused);
     expect(dead.world.hearts).toBe(0);
     expect(dead.world.status).toBe('dead');
-    expect(visibleText(markup(dead))).toContain(plainText('In the lock, `da[`.'));
+    expect(visibleText(markup(dead))).toContain(plainText('Each row: `0` `2j` `w`, then the edit.'));
     attempt = controller.reduce(dead, 'j');
     expect(attempt.world.engine.lines).toEqual(notary.map);
     expect(attempt.world.turn).toBe(0);
@@ -107,14 +124,14 @@ it('the 15-turn Archive route loses on turn 14, repeats its fuse line, and retri
   }
 });
 
-it('idle turns fill the gauge and fuse at 14; signing slides one whole clause', () => {
+it('idle turns fill the gauge and fuse at 28; signing slides one whole clause', () => {
   let session = start();
-  for (let turn = 1; turn <= 14; turn++) {
+  for (let turn = 1; turn <= 28; turn++) {
     const before = session;
     session = keys(session, turn % 2 ? 'j' : 'k');
-    expect(notaryClauses(session.world)).toBe(Math.floor(turn / 2));
-    expect(markup(session)).toContain('Clauses ' + Math.floor(turn / 2) + '/7');
-    expect(counterStamp(before.world, session.world, session.lastEvents)).toEqual(turn % 2 ? null
+    expect(notaryClauses(session.world)).toBe(Math.floor(turn / 4));
+    expect(markup(session)).toContain('Clauses ' + Math.floor(turn / 4) + '/7');
+    expect(counterStamp(before.world, session.world, session.lastEvents)).toEqual(turn % 4 ? null
       : { entity: 'notary', line: 0, col: 2, length: 4 });
   }
   expect(markup(session)).toContain('data-full="true"');
@@ -122,9 +139,9 @@ it('idle turns fill the gauge and fuse at 14; signing slides one whole clause', 
 });
 
 it('clear wins on clause seven: no fuse line or damage; Q lights only after the ending', () => {
-  // Three safe stair turns delay the normal 11-turn route until turn 14.
-  const session = route(keys(start(), 'jkj'), parseKeys('kwda[02jwda{02jwdit'));
-  expect(session.world.turn).toBe(14);
+  // Five safe turns (two stair trips and a `2G` on the start row) delay the 23-turn route until turn 28.
+  const session = route(keys(start(), 'jkjk2G'), notary.solution);
+  expect(session.world.turn).toBe(28);
   expect(notaryClauses(session.world)).toBe(7);
   expect(session.world.status).toBe('cleared');
   expect(session.queue.some(item => item.type === 'dialogue' && item.dialogue === 'notary.fuse')).toBe(false);
