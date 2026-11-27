@@ -13,7 +13,8 @@ export function jettyDeletion(state: WorldState, events: readonly WorldEvent[]):
     || !events.some(event => event.type === 'rows-changed' && event.by === 'player')
     || events.some(event => event.type === 'command' && event.command.kind === 'undo')) return null;
   // An entity can edit the buffer in the same turn (the Notary's fuse): its undo entries sit above the player's.
-  const lastPlayer = events.findLastIndex(event => event.type === 'rows-changed' && event.by === 'player');
+  let lastPlayer = -1;
+  events.forEach((event, index) => { if (event.type === 'rows-changed' && event.by === 'player') lastPlayer = index; });
   const entityAfter = events.slice(lastPlayer + 1).filter(event => event.type === 'rows-changed' && event.by === 'entity').length;
   const snapshot = state.engine.undoStack.at(-1 - entityAfter);
   const edit = snapshot?.edits[0];
