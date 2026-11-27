@@ -8,7 +8,7 @@ Written so it can become a LinkedIn post or a talk later: each entry ends with t
 
 - **Mouth** (par 4): `?x n n /=`: the last step searches forward to the ledge beside Echo (`l` ties).
 - **Gallery** (par 6): `* w # w * e`.
-- **Marked** (par 4, proven exactly over its allowed commands): the oil moved to the start of the fork's line, behind rock, past a dark edge tile, so `'a` lands on it; Echo's platform is ledge tiles and Echo sits at its far end. Route `ma /x 'a \`a`. Review rounds closed three bypasses: walking to the oil (`/x /o 5l`, 3 turns), `/.` and `/=` searches landing beside Echo, and a same-row `4f=` from the oil. Finds are now off in the Marked (`allowedCommands` without `f t ; ,`: the caves are dark).
+- **Marked** (par 4 to 3): the oil moved to the start of the fork's line, behind rock, past a dark edge tile, so `'a` lands on it; Echo's platform is ledge tiles and Echo sits at its far end. Route `ma /x 'a \`a`. Review rounds closed three bypasses: walking to the oil (`/x /o 5l`, 3 turns), `/.` and `/=` searches landing beside Echo, and a same-row `4f=` from the oil. Finds are now off in the Marked (`allowedCommands` without `f t ; ,`: the caves are dark). Then Codex found `/x /o ?==` (3 turns): a multi-character search lands on any cell in one turn, so marks can never beat searches here. The solver's proof had only tried one-character searches. Par is 3 with that route; the Marked leaves `challenge.test.ts` with the reason written there. Forcing marks needs a stage without `/ ?` (open).
 - **Labyrinth** teaches nothing new.
 
 **Ties:** the Mouth's `/` and the Marked's `'` each tie another one-turn move; the routes use them.

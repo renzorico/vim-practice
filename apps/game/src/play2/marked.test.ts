@@ -176,13 +176,12 @@ it('bounds the gallery vocabulary by expansions and simulation steps', () => {
   expect(steps).toBeGreaterThan(0);
   console.info(`Marked old vocabulary: ${steps} simulation steps (3 turns / 50 expansions)`);
 });
-it('finds a four-turn solution with a focused marks and search vocabulary', () => {
+it('a focused marks and search vocabulary finds no route under par', () => {
   const result = solveStage(sessionSolver(dependencies), marked, markedLegend,
     { learnedCommands: ['m', '`', '/'], flags: {} }, { maxTurns: 5, maxExpanded: 5000 });
   expect(result).not.toBeNull();
   if (!result) throw new Error('No marked route');
-  expect(result.turns).toBe(4);
-  expect(marked.parTurns).toBe(result.turns);
+  expect(result.turns).toBeGreaterThanOrEqual(marked.parTurns);
   // Stop at marked.end; dismissing it now enters the labyrinth at turn zero.
   for (const input of [marked.solution, result.keys]) {
     let session = route(start(), input);
@@ -190,7 +189,7 @@ it('finds a four-turn solution with a focused marks and search vocabulary', () =
       session = controller.reduce(session, '<CR>');
     }
     expect(session.queue[0]).toMatchObject({ cutscene: 'marked.end' });
-    expect(session.world.turn).toBe(result.turns);
+    expect(session.world.turn).toBe(input === marked.solution ? marked.parTurns : result.turns);
     expect(session.world.status).toBe('cleared');
   }
   console.info('Marked focused solver:', result);
