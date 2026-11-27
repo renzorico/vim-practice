@@ -493,11 +493,12 @@ it('renders Glades terrain and actors and follows G and gg over all eighteen row
     const playback = fake.tween.mock.calls.at(-1)?.[0];
     expect(playback.duration).toBeLessThanOrEqual(360);
     playback.targets.value = (playback.duration - 90) / (2 * playback.duration); playback.onUpdate();
-    expect(fake.centerOn).toHaveBeenLastCalledWith(72, keys[0] === 'G' ? 212 : 76);
+    // The floor row is 16 cells wide (the gate room), so the camera centres on x = 16 * 16 / 2.
+    expect(fake.centerOn).toHaveBeenLastCalledWith(128, keys[0] === 'G' ? 212 : 76);
     expect(player?.y).toBeCloseTo(134); // long vertical jumps flatten the capped arc to ten pixels
     playback.targets.value = 1; playback.onUpdate(); scene.finish();
     expect(player?.y).toBe(jumped.state.engine.cursor.line * 16 + 8);
-    expect(fake.centerOn).toHaveBeenLastCalledWith(72, keys[0] === 'G' ? 238 : 50);
+    expect(fake.centerOn).toHaveBeenLastCalledWith(128, keys[0] === 'G' ? 238 : 50);
     state = jumped.state;
   }
 });

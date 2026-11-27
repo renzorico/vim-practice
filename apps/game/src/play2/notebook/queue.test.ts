@@ -90,7 +90,7 @@ it('opens paired lessons as one page at their first dialogue, with no leftovers 
     ['margin', 'margin.mira', ['3l'], ['3l']],
     ['cut', 'cut.ledge', ['dd', 'u'], ['dd']],
     ['glades', 'glades.intro', ['{', '}'], ['}']],
-    ['glades', 'glades.lamp', ['gg', 'G'], ['gg']],
+    ['glades', 'glades.lamps-lit', ['gg', 'G'], ['gg']],
     ['warehouse', 'warehouse.intro', ['y', 'p'], ['y']],
   ] as const) {
     const entry = stages.find(item => item.stage.id === stageId)!;

@@ -40,6 +40,14 @@
       "walkable": false,
       "fixed": true,
       "label": "bramble"
+    },
+    {
+      "char": "=",
+      "kind": "barrier",
+      "sprite": "gate-open",
+      "walkable": true,
+      "fixed": true,
+      "label": "gate"
     }
   ]
 }

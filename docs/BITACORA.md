@@ -3,6 +3,16 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · World 3: longer Glades, enemies on the route
+**Who:** Opus (design, solver checks, tests); Codex (review). Renzo: "World 3 first" (audit step 3: longer stages, an enemy on the route so hearts count).
+
+- **Measured first:** 12 scored field stages had par under 8, and no stage's par route lost a heart; the damaging enemies sat where no route went.
+- **Glades** (par 4 to 6, proven, opt-in `glades-proof.test.ts`): two dark lamps (the next glade up and the top glade) and a blot crouching in the middle glade. `{`, then `2{` jumps past it; `{{` lands on it and costs a heart. A gate at the far end of the floor, past bramble, is the new room: `}` runs to it (`f=` ties). The stage now allows only motions, so the full search fits.
+- **Canopy** (par 7): a fast blot (moves every turn) hunts the bottom branch. `2j` down the last two ladders and `;` away leaves it behind; splitting either of those descents into single `j`s lets it catch you.
+- **Gates** (par 8): a blot patrols the lower lamp's ledge, timed so `24 Ctrl-d` lands and leaves safely while `Ctrl-d` twice arrives a turn late and is hit. Ope's lines and the quest now teach the counted scroll.
+
+**Agentic lesson:** the theme came out of the measurement: World 3 teaches counts, so its enemies punish the slow way. A count is the turn that keeps the heart.
+
 ## 2026-11-27 · Text stages scored
 **Who:** Opus (scoring, tests, browser check); Codex (review). Renzo: "Score text stages".
 
