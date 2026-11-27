@@ -3,6 +3,23 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-27 · World 5 by dispatch: Stacks, Archive, Notary
+**Who:** Opus (design, briefs, integration, review fixes); three Claude Sonnet builders via `tools/agents/dispatch.sh` (W5-stacks, W5-archive, W5-notary, one worktree each); Codex (review). Renzo: "use dispatch for World 5".
+
+**Design (lead), built by Sonnet:**
+- **Stacks** (par 6 to 8): a fourth shelf whose target keeps its gap (`bb  bbb`): `diw` leaves the two spaces, `daw` closes them. Route `j daw j . j . j diw`.
+- **Archive** (par 8): the copied atlases go into a gap that already has blank rows on both sides: `yip` fits, `yap` adds a row and the trigger does not fire. Route `dap } p 6k yip G k P`.
+- **Notary** (par 11 to 23): three more rows: an empty lock (`di[`), an empty seal (`di{`), a whole tag (`dat`). The vault's fuse is now every 4 turns (was 2), or a 23-turn route dies first.
+- **Reading** needed nothing: `ib ab iB aB` are aliases and no longer count as separate lessons (`REFERENCE_ONLY` is exported and `challenge.test.ts` skips them).
+
+**Proofs:** none of the three fits in memory (3.6-4.8 GB): their pars are best known, the proofs are opt-in (`PROVE=1`). The audit probe finds no shortcut. A Stacks "proof" first returned null under par with a node cap: null also means the budget ran out, so proofs now search to par and expect par.
+
+**Dispatch lessons:** the first run of all three builders stopped at once: a global hook rewrites `npx vitest` to `rtk vitest`, which `dispatch.sh`'s allow-list did not cover. Added the `rtk` forms; the second runs finished (5-18 min each). Builders ran only their own tests; the orchestrator runs the full suite.
+
+**Open:** `dat` at the Notary has no splash plan (`jettyDeletion.ts` matches only `[k+] {k+} k+ w+`). The Notary's 23 turns are six times the same four moves; it meets the rule but is the least interesting stage so far.
+
+---
+
 ## 2026-11-27 · World 4 checked: no changes needed
 **Who:** Opus. Renzo: "Start World 4".
 
