@@ -39,7 +39,7 @@
         "type": "put",
         "text": "\"s\" "
       },
-      "every": 3,
+      "every": 2,
       "damage": 0,
       "solid": true
     },
@@ -84,7 +84,7 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 14,
+  "parTurns": 12,
   "solution": [
     "3",
     "G",
@@ -98,7 +98,6 @@
     "{",
     "7",
     "G",
-    "w",
     "d",
     "i",
     "t",
@@ -116,13 +115,12 @@
     "1",
     "3",
     "G",
-    "w",
     "d",
     "a",
     "t"
   ],
   "hints": [
     "`da[` takes a lock whole; `di[` empties it and keeps the lock. Same for `da{` and `di{`. `dit` empties a tag, `dat` removes it whole.",
-    "`3G` goes straight to row 3; the brackets are found from the stair. `w` steps inside a tag."
+    "`3G` goes straight to row 3; each lock, seal and tag is found from the stair."
   ]
 }
