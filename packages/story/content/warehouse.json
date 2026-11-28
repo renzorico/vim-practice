@@ -52,6 +52,10 @@
         {
           "speaker": "system",
           "text": "Stand on the first jar, press `yw`: all four are\ncopied. On a shelf's marker, `p` puts them down."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot sits between the middle and bottom\nshelves. `2j` jumps it; `j` twice stops on it."
         }
       ],
       "then": []

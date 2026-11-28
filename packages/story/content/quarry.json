@@ -60,6 +60,10 @@
         {
           "speaker": "system",
           "text": "The Quarry. You need the road south, and the\nUnwriter buried it. Rubble, then a river."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot sits in the west column. Climb past it\nwith a count, `7k`, not one `k` at a time."
         }
       ],
       "then": []

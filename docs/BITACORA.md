@@ -3,6 +3,17 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · Threats for the remaining field stages
+**Who:** Opus (design, tests); Codex (review). Renzo: "Remaining stages".
+
+- **Quarry Road** (par 10): a blot in the west column; `7k` climbs past, single `k`s stop on it.
+- **Warehouse** (15): a blot in the gap between the middle and bottom shelf; `2j` jumps it, `j j` stops on it.
+- **Customs** (16): a blot on the middle floor by the crate; `f[` jumps it, walking stops on it.
+- **Counter** (12): a blot in the column above the counter; `2j` jumps it, `j j` stops on it.
+- **Already had one:** the Lowlands (blots crawl up the jetty; `$` escapes them).
+- **Left without:** the Stacks (its route is one `j` per shelf, so a blot could only be landed on, never skipped), the Gallery (decoy rooms unreachable) and the Margin (hub).
+- Intro lines and hints warn; the music is urgent where a blot lives. Par routes keep every heart.
+
 ## 2026-11-28 · Notary splashes: `dat` and fuse turns
 **Who:** Opus. Two backlog items, one cause.
 
