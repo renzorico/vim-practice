@@ -13,7 +13,7 @@ Written so it can become a LinkedIn post or a talk later: each entry ends with t
 **Who:** Opus (design, solver checks, tests); Codex (review). Renzo: "World 3 first" (audit step 3: longer stages, an enemy on the route so hearts count).
 
 - **Measured first:** 12 scored field stages had par under 8, and no stage's par route lost a heart; the damaging enemies sat where no route went.
-- **Glades** (par 4 to 6, proven, opt-in `glades-proof.test.ts`): two dark lamps (the next glade up and the top glade) and a blot crouching in the middle glade. `{`, then `2{` jumps past it; `{{` lands on it and costs a heart. A gate at the far end of the floor, past bramble, is the new room: `}` runs to it (`f=` ties). The stage now allows only motions, so the full search fits.
+- **Glades** (par 4 to 6, proven; the Glades and Canopy proofs are now opt-in, `PROVE=1`, since moving blots made them too slow for CI): two dark lamps (the next glade up and the top glade) and a blot crouching in the middle glade. `{`, then `2{` jumps past it; `{{` lands on it and costs a heart. A gate at the far end of the floor, past bramble, is the new room: `}` runs to it (`f=` ties). The stage now allows only motions, so the full search fits.
 - **Canopy** (par 7): a fast blot (moves every turn) hunts the bottom branch. `2j` down the last two ladders and `;` away leaves it behind; splitting either of those descents into single `j`s lets it catch you.
 - **Gates** (par 8): a blot patrols the lower lamp's ledge, timed so `24 Ctrl-d` lands and leaves safely while `Ctrl-d` twice arrives a turn late and is hit. Ope's lines and the quest now teach the counted scroll.
 
