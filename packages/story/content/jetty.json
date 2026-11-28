@@ -153,6 +153,11 @@
           "speaker": "npc",
           "text": "Thirteen planks, end to end. Ha!\nUp the ladder. Ream's at the top.",
           "name": "Bitt"
+        },
+        {
+          "speaker": "npc",
+          "name": "Bitt",
+          "text": "Mind the middle rung: a blot clings to it.\nOn the ladder `2k` climbs past; `2 Ctrl-u` too."
         }
       ],
       "then": [

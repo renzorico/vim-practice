@@ -62,13 +62,14 @@ it('lifts the misfiled paragraph from its middle, files it and copies atlases in
   expect(end.world.firedTriggers).toContain('archive.filed');
 });
 it.each([
-  ['paragraph objects', archive.solution, 7, ARCHIVE_COMMANDS],
-  ['old commands', parseKeys('{j4dd}pgg2j2yyGkP'), 11, oldCommands],
-] as const)('replays %s with 3 hearts', (_label, input, turns, commands) => {
+  // The old-commands route starts with `{`, which lands on the blot in the empty row under the atlases.
+  ['paragraph objects', archive.solution, 7, 3, ARCHIVE_COMMANDS],
+  ['old commands', parseKeys('{j4dd}pgg2j2yyGkP'), 11, 2, oldCommands],
+] as const)('replays %s', (_label, input, turns, hearts, commands) => {
   const session = route(start(), input);
   expect(session.world.status).toBe('cleared');
   expect(session.world.turn).toBe(turns);
-  expect(session.world.hearts).toBe(3);
+  expect(session.world.hearts).toBe(hearts);
   expect(session.queue.map(item => item.type === 'dialogue' ? item.dialogue : item.type === 'cutscene' ? item.cutscene : item.type))
     .toEqual(['archive.filed', 'archive.end']);
   expect(markup(dismiss(session))).toContain('To be continued.');

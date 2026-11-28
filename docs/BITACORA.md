@@ -3,6 +3,15 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · Enemies in the edit stages
+**Who:** Opus (design, tests); Codex (review). Renzo: "Yes, add them".
+
+- **Already there:** the Cut's three guards stand on the bridge row (`dd` takes them with it; walking across is three hits, death), and the Shaft's blots appear on the boards and go with the next `.`. No change.
+- **Jetty** (par 6): a blot clings to the middle rung of the ladder. `2 Ctrl-u` or `2k` passes it; `k` twice stops on it.
+- **Reading** (par 6): a blot sits on the floor between the first two chains. `w` jumps chain to chain over it; walking onto it costs a heart.
+- **Archive** (par 7): a blot sleeps in the empty row under the atlases. `6k` passes it; `{` or single `k`s stop on it (the old-commands route now ends with 2 hearts).
+- Same rule as Worlds 3 and 6: the par route never loses a heart, a slower habit does. Each stage's music is urgent now (stages with enemies must be).
+
 ## 2026-11-28 · The Mouth: a blot between the crystals
 **Who:** Opus (design, tests); Codex (review). Continuing audit step 3 overnight.
 
