@@ -34,7 +34,7 @@ it('searches deepest first, repeats backwards and clears in four turns with thre
   let session = keys(start(), '?x');
   expect(session.world.engine.commandLine).toBe('?x');
   expect(screen(session)).toContain('?x');
-  for (const [input, line, col, flag] of [['<CR>', 5, 14, 'deep'], ['n', 3, 13, 'middle'], ['n', 1, 13, 'top']] as const) {
+  for (const [input, line, col, flag] of [['<CR>', 5, 14, 'deep'], ['2n', 3, 13, 'middle'], ['n', 1, 13, 'top']] as const) {
     session = keys(dismiss(session), input);
     expect(session.world.engine.cursor).toEqual({ line, col });
     expect(session.world.flags['mouth.' + flag]).toBe(true);
@@ -46,7 +46,7 @@ it('searches deepest first, repeats backwards and clears in four turns with thre
   expect(session.world.hearts).toBe(3);
   expect(screen(session)).toContain('To be continued.');
 });
-it('does not consume out-of-order triggers, and N reverses a forward search', () => {
+it('does not consume out-of-order triggers, and N reverses a forward search (2N past the blot)', () => {
   let session = keys(start(), '/x<CR>');
   expect(session.world.engine.cursor).toEqual({ line: 1, col: 13 });
   expect(session.world.flags['mouth.top']).not.toBe(true);
@@ -54,9 +54,16 @@ it('does not consume out-of-order triggers, and N reverses a forward search', ()
   expect(queued(session)).toEqual([]);
   session = keys(session, 'N');
   expect(session.world.engine.cursor).toEqual({ line: 5, col: 14 });
-  session = keys(dismiss(session), 'N');
+  session = keys(dismiss(session), '2N');
   session = keys(dismiss(session), 'N');
   expect(session.world.flags['mouth.top']).toBe(true);
+  expect(session.world.hearts).toBe(3);
+});
+it('a plain n from the deep crystal lands on the blot and costs a heart', () => {
+  const deep = dismiss(keys(start(), '?x<CR>'));
+  const hit = keys(deep, 'n');
+  expect(hit.world.engine.cursor).toEqual({ line: 4, col: 16 });
+  expect(hit.world.hearts).toBe(2);
 });
 it.each([false, true])('shows every Echo line exclusively with top lit=%s', lit => {
   let session = lit ? dismiss(route(start(), mouth.solution.slice(0, -1))) : keys(start(), '/x<CR>l');

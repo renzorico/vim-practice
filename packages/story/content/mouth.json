@@ -26,7 +26,7 @@
       "steps": [
         {
           "id": "crystals",
-          "objective": "Light the crystals, deepest first: `?x` `Enter`, then `n`.",
+          "objective": "Light the crystals, deepest first: `?x` `Enter`, `2n` past the blot, then `n`.",
           "completeWhen": {
             "type": "flag",
             "flag": "mouth.top",
@@ -36,7 +36,7 @@
         },
         {
           "id": "echo",
-          "objective": "Talk to the Echo by the top crystal: `Enter`.",
+          "objective": "Talk to the Echo by the top crystal: `l`, then `Enter`.",
           "completeWhen": {
             "type": "stage-cleared",
             "stage": "mouth"
@@ -56,7 +56,7 @@
         },
         {
           "speaker": "system",
-          "text": "From the mouth, press `?x`, then `Enter`:\nthe deepest crystal. Then `n` for the next."
+          "text": "From the mouth, press `?x`, then `Enter`:\nthe deepest crystal. Then `2n`, then `n`."
         }
       ],
       "then": []
@@ -67,6 +67,10 @@
         {
           "speaker": "system",
           "text": "The deepest crystal wakes."
+        },
+        {
+          "speaker": "system",
+          "text": "Above it, a blot crouches on a dead crystal.\n`2n` skips one match: the count jumps past it."
         }
       ],
       "then": []
