@@ -32,6 +32,10 @@
         {
           "speaker": "system",
           "text": "On the way down: `\"ayl` on oil, `\"byl` on rope.\nOn a crate's post: `\"a8p` drops eight oil."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot sits in the column above the counter.\n`2j` jumps it; `j` twice stops on it."
         }
       ],
       "then": []

@@ -52,6 +52,10 @@
         {
           "speaker": "system",
           "text": "Nets first: stand just past them, press `db`.\nThen `yw` on oil, `\"0p` on the crate's end."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot sits on the middle floor by the crate.\n`f[` jumps past it; walking stops on it."
         }
       ],
       "then": []
