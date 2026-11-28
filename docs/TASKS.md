@@ -102,5 +102,3 @@ Supersedes P3-H: the Phase 3 ASCII game was replaced by masterplan v2 before its
 | W5-stacks | Stacks par route needs `iw` (a shelf that keeps its gap) | `packages/world/content/stacks/**`, `packages/story/content/stacks.json`, `apps/game/src/play2/stacks*.test.ts` | claude-sonnet | codex | task/W5-stacks | review |
 | W5-archive | Archive par route needs `ip` (paste into a gap that has its blank lines) | `packages/world/content/archive/**`, `packages/story/content/archive.json`, `apps/game/src/play2/archive*.test.ts` | claude-sonnet | codex | task/W5-archive | review |
 | W5-notary | Notary par route needs `i[ i{ at` (empty lock, empty seal, whole tag) | `packages/world/content/notary/**`, `packages/story/content/notary.json`, `apps/game/src/play2/notary*.test.ts` | claude-sonnet | codex | task/W5-notary | review |
-| W5-notary | `dat` deletion has no splash plan (`apps/game/src/play2/jettyDeletion.ts`) | claude-haiku |
-| W5 review | Notary splash plans never play on fuse turns (every par-route edit with the fuse every 2) | claude-sonnet |

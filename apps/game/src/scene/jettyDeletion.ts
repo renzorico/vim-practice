@@ -12,12 +12,16 @@ export function jettyDeletion(state: WorldState, events: readonly WorldEvent[]):
   if (!['jetty', 'customs', 'stacks', 'reading', 'notary'].includes(state.stage) || state.pending !== null
     || !events.some(event => event.type === 'rows-changed' && event.by === 'player')
     || events.some(event => event.type === 'command' && event.command.kind === 'undo')) return null;
-  const snapshot = state.engine.undoStack.at(-1);
+  // An entity can edit the buffer in the same turn (the Notary's fuse): its undo entries sit above the player's.
+  let lastPlayer = -1;
+  events.forEach((event, index) => { if (event.type === 'rows-changed' && event.by === 'player') lastPlayer = index; });
+  const entityAfter = events.slice(lastPlayer + 1).filter(event => event.type === 'rows-changed' && event.by === 'entity').length;
+  const snapshot = state.engine.undoStack.at(-1 - entityAfter);
   const edit = snapshot?.edits[0];
   if (!snapshot || snapshot.edits.length !== 1 || !edit || edit.inserted !== '' || edit.removed === 0) return null;
   const text = snapshot.lines.join('\n');
   const junk = text.slice(edit.start, edit.start + edit.removed);
-  if (!(state.stage === 'notary' ? /^(\[k+\]|\{k+\}|k+|w+)$/ : state.stage === 'reading' ? /^[()c]+$/ : state.stage === 'stacks' ? /^ *d+ *$/ : /^[cn]+$/).test(junk)) return null;
+  if (!(state.stage === 'notary' ? /^(\[k+\]|\{k+\}|k+|w+|<w>w+<\/w>)$/ : state.stage === 'reading' ? /^[()c]+$/ : state.stage === 'stacks' ? /^ *d+ *$/ : /^[cn]+$/).test(junk)) return null;
   const prefix = text.slice(0, edit.start).split('\n');
   return { line: prefix.length - 1, col: prefix.at(-1)?.length ?? 0, junk };
 }

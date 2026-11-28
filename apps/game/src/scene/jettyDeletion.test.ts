@@ -45,3 +45,12 @@ it.each(['u', 'u<C-r>'])('blocks %s when the Vim undo cursor would land on crate
   expect(state.turn).toBe(deleted.state.turn);
   expect(jettyDeletion(state, events)).toEqual({ line: 3, col: 6, junk: 'ccccc' });
 });
+
+it.each([
+  ['3Gda[', '[kkk]'], ['5Gda{', '{kkk}'], ['7G0ldit', 'wwww'], ['9Gdi[', 'kkk'], ['11Gdi{', 'kkk'], ['13G0ldat', '<w>wwww</w>'],
+] as const)('splashes every Notary deletion, the whole tag pair included: %s', async (keys, junk) => {
+  const { notary, notaryLegend } = await import('../play2/content.js');
+  const { NOTARY_COMMANDS } = await import('../play2/session.js');
+  const result = playKeys(sim, notary, notaryLegend, { learnedCommands: NOTARY_COMMANDS, flags: {} }, parseKeys(keys));
+  expect(jettyDeletion(result.state, result.events)?.junk ?? null).toBe(junk);
+});
