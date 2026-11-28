@@ -53,6 +53,7 @@ it.each([['x', 'o'], ['o', 'x']])('collects items in order %s, %s with exclusive
     'At the fork, press `ma`: it marks the spot.\nLater, `` `a `` brings you back from anywhere.',
     "`'a` goes to the start of the marked line:\nthe oil is there. `` `a `` is the exact spot.",
     'The crystal is at the end of the tunnel.\nWalk there; the mark will bring you home.',
+    'A blot squats in the top corridor. Run past\nwith a count: `7l`, not `l` after `l`.',
   ]);
   for (const item of [null, first, second]) {
     if (item) session = dismiss(keys(session, item === 'x' ? TUNNEL : "'a"));
