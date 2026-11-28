@@ -61,6 +61,21 @@
       "every": 1,
       "damage": 0,
       "solid": true
+    },
+    {
+      "id": "blot-rung",
+      "kind": "blot",
+      "sprite": "blot",
+      "at": {
+        "line": 2,
+        "col": 3
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 1,
+      "solid": false
     }
   ],
   "triggers": [
@@ -127,6 +142,7 @@
   ],
   "hints": [
     "`d` deletes and the key after says how far. `db` deletes back to the start of the word behind you: one pile.",
-    "Stand just past a pile and press `db`. Then `b`, and `.` repeats the `db` on the next pile."
+    "Stand just past a pile and press `db`. Then `b`, and `.` repeats the `db` on the next pile.",
+    "A blot clings to the middle rung of the ladder. Standing on the ladder, `2k` climbs past it; `2 Ctrl-u` scrolls straight to the quay; `k` twice stops on it."
   ]
 }

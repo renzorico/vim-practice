@@ -129,6 +129,10 @@ so `V` cannot win outright. Text stages are now scored in keys against par (same
 par 4 to 6 (proven) with a blot only a counted `{` skips and a gate room; Canopy and Gates keep par 7 and 8 but now
 have a blot that hits the slower route (single `j`, `Ctrl-d` twice) and not the par route.
 
+**Update 2026-11-28 (edit stages):** Jetty, Reading and Archive get a still blot that a counted or word motion skips
+and a single step lands on; the Cut and the Shaft already had enemies on the route. World 1 has none yet (its first
+enemy should come with a story beat); the Labyrinth's threat stays the fuse.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

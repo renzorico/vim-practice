@@ -43,6 +43,11 @@
         {
           "speaker": "system",
           "text": "Stand inside a chain. Press `da(`: chain and\nshackles go. Folio's own chain: `di(` instead."
+        },
+        {
+          "speaker": "npc",
+          "name": "Folio",
+          "text": "Mind the blot between the first two chains.\n`w` jumps over it; walking steps onto it."
         }
       ],
       "then": []
