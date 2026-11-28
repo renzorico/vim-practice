@@ -125,6 +125,10 @@ golf rounds: without `A`, `a` or `o` the Ledger takes 53, without `v` the Study 
 was found at 154 or less. Ties: the Study's `V` (`Vd`, `dd`), the Contract's `i"` (`cw`), the Ledger's `i` (`I`). Visual mode has no `p`,
 so `V` cannot win outright. Text stages are now scored in keys against par (same stars as field stages).
 
+**Update 2026-11-28 (World 3, step 3):** before: 12 scored field stages under par 8, no par route lost a heart. Glades
+par 4 to 6 (proven) with a blot only a counted `{` skips and a gate room; Canopy and Gates keep par 7 and 8 but now
+have a blot that hits the slower route (single `j`, `Ctrl-d` twice) and not the par route.
+
 ## Findings, worst first
 
 1. **Stages are short.** Seven of the 22 field and castle stages clear in 4 turns or fewer (Quarry Road 3, Shaft 3,

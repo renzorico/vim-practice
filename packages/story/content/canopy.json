@@ -132,6 +132,10 @@
         {
           "speaker": "system",
           "text": "Thorns again past the lift, below. `;`\nrepeats your `t@`: it stops you on the lift."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot hunts the bottom branch. Don't dawdle:\n`2j` down the ladder, then `;` at once."
         }
       ],
       "then": [

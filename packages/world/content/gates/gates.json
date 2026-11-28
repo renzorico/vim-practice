@@ -187,35 +187,35 @@
       "kind": "blot",
       "sprite": "blot",
       "at": {
-        "line": 30,
+        "line": 24,
         "col": 6
       },
       "behaviour": {
         "type": "patrol",
         "path": [
           {
-            "line": 30,
-            "col": 4
-          },
-          {
-            "line": 30,
-            "col": 4
-          },
-          {
-            "line": 30,
-            "col": 5
-          },
-          {
-            "line": 30,
+            "line": 24,
             "col": 6
           },
           {
-            "line": 30,
+            "line": 24,
             "col": 6
           },
           {
-            "line": 30,
+            "line": 24,
+            "col": 6
+          },
+          {
+            "line": 24,
+            "col": 6
+          },
+          {
+            "line": 24,
             "col": 5
+          },
+          {
+            "line": 24,
+            "col": 6
           }
         ]
       },
@@ -355,6 +355,7 @@
   ],
   "hints": [
     "Stand on a gate mark and press `%`: you land on its partner.",
-    "`Ctrl-d` drops half a screen, `Ctrl-u` climbs half a screen. A count sets how far: `12 Ctrl-u`."
+    "`Ctrl-d` drops half a screen, `Ctrl-u` climbs half a screen. A count sets how far: `12 Ctrl-u`.",
+    "A blot lunges at the lower lamp. `24 Ctrl-d` lands there in one turn and leaves before it strikes; `Ctrl-d` twice is a turn too slow."
   ]
 }

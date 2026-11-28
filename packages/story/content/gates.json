@@ -39,7 +39,7 @@
         },
         {
           "id": "lamp-a",
-          "objective": "Light the lower lamp in the trunk: `Ctrl-d`.",
+          "objective": "Light the lower lamp in the trunk: `24 Ctrl-d`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-a",
@@ -49,7 +49,7 @@
         },
         {
           "id": "lamp-b",
-          "objective": "Light the upper lamp: `Ctrl-u`.",
+          "objective": "Light the upper lamp: `12 Ctrl-u`.",
           "completeWhen": {
             "type": "flag",
             "flag": "gates.lamp-b",
@@ -152,7 +152,11 @@
         },
         {
           "speaker": "system",
-          "text": "Stand over the hollow, top of the trunk. Press\n`Ctrl-d` twice: down to the lower lamp."
+          "text": "Stand over the hollow, top of the trunk.\n`24 Ctrl-d` drops straight to the lower lamp."
+        },
+        {
+          "speaker": "system",
+          "text": "`Ctrl-d` twice takes a turn longer, and a blot\nlunges at the lower lamp. Use the count."
         }
       ],
       "then": [
