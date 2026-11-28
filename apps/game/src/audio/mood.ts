@@ -32,7 +32,7 @@ export const STAGE_PACE: Readonly<Record<string, Pace>> = {
   margin: 'still', lowlands: 'still', lighthouse: 'urgent', 'quarry-road': 'urgent', cut: 'urgent', shaft: 'urgent',
   ledger: 'still', canopy: 'urgent', glades: 'urgent', gates: 'urgent', manifest: 'still', jetty: 'urgent',
   warehouse: 'steady', customs: 'steady', counter: 'urgent', harbour: 'still', stacks: 'still', reading: 'urgent',
-  archive: 'urgent', notary: 'urgent', contract: 'still', mouth: 'urgent', gallery: 'still', marked: 'steady',
+  archive: 'urgent', notary: 'urgent', contract: 'still', mouth: 'urgent', gallery: 'still', marked: 'urgent',
   labyrinth: 'urgent', study: 'still', 'last-page': 'urgent',
 };
 export function paceFor(stageId: string): Pace { return STAGE_PACE[stageId] ?? 'still'; }

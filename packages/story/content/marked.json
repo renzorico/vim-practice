@@ -50,6 +50,10 @@
         {
           "speaker": "system",
           "text": "The crystal is at the end of the tunnel.\nWalk there; the mark will bring you home."
+        },
+        {
+          "speaker": "system",
+          "text": "A blot squats in the top corridor. Run past\nwith a count: `7l`, not `l` after `l`."
         }
       ],
       "then": []

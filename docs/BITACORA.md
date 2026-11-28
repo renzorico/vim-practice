@@ -3,6 +3,14 @@
 A log of what changed, why, and who (which model) did it. One entry per phase step or merge.
 Written so it can become a LinkedIn post or a talk later: each entry ends with the agentic lesson.
 
+## 2026-11-28 · The Marked's tunnel blot; World 1 and the Gallery checked
+**Who:** Opus (design, tests); Codex (review). Renzo: "continue with the next".
+
+- **Marked** (par 7): a blot squats in the top corridor of the tunnel. `7l` runs past it; walking with single `l`s stops on it. The intro warns, the music is urgent.
+- **Lighthouse:** no blot needed. The Unwriter spawns on the climb and wipes the floor rows behind you, so a slow climb already loses the ground.
+- **Gallery:** left alone. Its lesson is that `*` matches whole words; the decoy rooms (inkwell, maps, keys) cannot be reached with its keys, so a blot there would never matter.
+- With this, every world has a threat on the par route that a slower habit runs into. Field stages still without one: the Margin (hub), the Lowlands, the Quarry Road, the Gallery, the warehouses (Warehouse, Customs, Counter) and the Stacks. The Notary and the Labyrinth have lethal fuses. Text stages have none by design.
+
 ## 2026-11-28 · Enemies in the edit stages
 **Who:** Opus (design, tests); Codex (review). Renzo: "Yes, add them".
 
