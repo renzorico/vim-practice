@@ -3,7 +3,7 @@
   "world": "wordwood",
   "type": "field",
   "title": "The Glades",
-  "goalText": "Get down to the forest floor.",
+  "goalText": "Light the two dark lamps, pull the rope at the lookout, and leave through the gate on the forest floor.",
   "map": [
     "...",
     ".m.m.####",
@@ -22,7 +22,7 @@
     ".m.m.####",
     "####.####",
     ".m.m.####",
-    "..."
+    "...#.m.m.m.m.m.="
   ],
   "legend": "glades",
   "start": {
@@ -77,51 +77,6 @@
       "solid": true
     },
     {
-      "id": "lamp-1",
-      "kind": "prop",
-      "sprite": "lamp-lit",
-      "at": {
-        "line": 4,
-        "col": 0
-      },
-      "behaviour": {
-        "type": "still"
-      },
-      "every": 1,
-      "damage": 0,
-      "solid": false
-    },
-    {
-      "id": "lamp-2",
-      "kind": "prop",
-      "sprite": "lamp-out",
-      "at": {
-        "line": 8,
-        "col": 0
-      },
-      "behaviour": {
-        "type": "still"
-      },
-      "every": 1,
-      "damage": 0,
-      "solid": false
-    },
-    {
-      "id": "lamp-3",
-      "kind": "prop",
-      "sprite": "lamp-lit",
-      "at": {
-        "line": 13,
-        "col": 0
-      },
-      "behaviour": {
-        "type": "still"
-      },
-      "every": 1,
-      "damage": 0,
-      "solid": false
-    },
-    {
       "id": "blot-a",
       "kind": "blot",
       "sprite": "blot",
@@ -150,6 +105,66 @@
       "every": 2,
       "damage": 1,
       "solid": false
+    },
+    {
+      "id": "lamp-1",
+      "kind": "prop",
+      "sprite": "lamp-out",
+      "at": {
+        "line": 4,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "lamp-2",
+      "kind": "prop",
+      "sprite": "lamp-lit",
+      "at": {
+        "line": 8,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "lamp-3",
+      "kind": "prop",
+      "sprite": "lamp-out",
+      "at": {
+        "line": 13,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 0,
+      "solid": false
+    },
+    {
+      "id": "blot-c",
+      "kind": "blot",
+      "sprite": "blot",
+      "at": {
+        "line": 8,
+        "col": 0
+      },
+      "behaviour": {
+        "type": "still"
+      },
+      "every": 1,
+      "damage": 1,
+      "solid": false
     }
   ],
   "triggers": [
@@ -161,22 +176,6 @@
         "type": "entity",
         "entity": "pilcrow"
       }
-    },
-    {
-      "id": "glades.lamp",
-      "once": true,
-      "on": "enter",
-      "area": {
-        "from": {
-          "line": 8,
-          "col": 0
-        },
-        "to": {
-          "line": 8,
-          "col": 0
-        }
-      },
-      "onlyIf": "glades.asked"
     },
     {
       "id": "glades.talk-rope",
@@ -195,6 +194,54 @@
         "type": "entity",
         "entity": "stump"
       }
+    },
+    {
+      "id": "glades.lamp-low",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 13,
+          "col": 0
+        },
+        "to": {
+          "line": 13,
+          "col": 0
+        }
+      },
+      "onlyIf": "glades.asked"
+    },
+    {
+      "id": "glades.lamp-top",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 4,
+          "col": 0
+        },
+        "to": {
+          "line": 4,
+          "col": 0
+        }
+      },
+      "onlyIf": "glades.asked"
+    },
+    {
+      "id": "glades.gate",
+      "once": true,
+      "on": "enter",
+      "area": {
+        "from": {
+          "line": 17,
+          "col": 15
+        },
+        "to": {
+          "line": 17,
+          "col": 15
+        }
+      },
+      "onlyIf": "glades.told"
     }
   ],
   "scripts": [],
@@ -206,21 +253,42 @@
   ],
   "teaches": [],
   "requires": [],
-  "parTurns": 4,
+  "parTurns": 6,
   "solution": [
     "G",
     "<CR>",
+    "{",
     "2",
     "{",
     "g",
     "g",
     "<CR>",
-    "4",
-    "}",
-    "<CR>"
+    "G",
+    "<CR>",
+    "}"
   ],
   "hints": [
-    "`}` drops to the next clearing. `{` climbs back to the one above.",
-    "`gg` jumps to the top row, `G` to the last. No walking through thickets."
+    "`}` drops to the next clearing, `{` climbs one. A count jumps several: `2{` skips the glade between.",
+    "`gg` jumps to the top row, `G` to the last. No walking through thickets.",
+    "On the floor, bramble blocks the path: `}` runs to the gate at the far end (so does `f=`)."
+  ],
+  "allowedCommands": [
+    "h",
+    "j",
+    "k",
+    "l",
+    "w",
+    "b",
+    "e",
+    "0",
+    "$",
+    "f",
+    "t",
+    ";",
+    ",",
+    "{",
+    "}",
+    "gg",
+    "G"
   ]
 }

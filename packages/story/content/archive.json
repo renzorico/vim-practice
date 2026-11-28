@@ -42,6 +42,11 @@
         {
           "speaker": "system",
           "text": "Paragraph without its empty row: `yip`. Then\nstand on that gap and press `P`."
+        },
+        {
+          "speaker": "npc",
+          "name": "Index",
+          "text": "A blot sleeps in the empty row under the\natlases. `6k` passes it; `{` stops on it."
         }
       ],
       "then": []

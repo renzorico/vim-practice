@@ -31,9 +31,10 @@ function at(route: string, flags: Readonly<Record<string, boolean>> = {}) {
 export const LEARNER = 'h<CR>%<CR>2l<C-d><C-d><C-u><C-d><C-d>2h<CR>%<CR>';
 it('enters gates after glades.end and starts the quest', () => {
   const previous = dismiss(controller.resume({ stage: 'glades', story: storyEngine.init(content) }));
-  const clear = keys(previous, 'G<CR>{{gg<CR>G<CR>');
+  const clear = parseKeys('G<CR>{2{gg<CR>G<CR>}').reduce((session, key) => controller.reduce(dismiss(session), key), previous);
   expect(clear.world.stage).toBe('glades');
-  const ending = controller.reduce(controller.reduce(clear, '<CR>'), '<CR>');
+  let ending = clear;
+  for (let line = 0; line < 20 && !ending.queue.some(item => item.type === 'cutscene'); line++) ending = controller.reduce(ending, '<CR>');
   expect(ending.queue[0]).toMatchObject({ cutscene: 'glades.end' });
   expect(ending.story.quests['wordwood.gates']).toEqual({ step: 0, done: false });
   expect(dismiss(clear).world.stage).toBe('gates');

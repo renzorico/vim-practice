@@ -43,7 +43,7 @@ it('enters Glades after canopy.end with story and the main quest kept', () => {
 });
 it('paragraph jumps land on each clearing and return from the floor', () => {
   let session = start();
-  for (const position of [{ line: 4, col: 0 }, { line: 8, col: 0 }, { line: 13, col: 0 }, { line: 17, col: 2 }]) {
+  for (const position of [{ line: 4, col: 0 }, { line: 8, col: 0 }, { line: 13, col: 0 }, { line: 17, col: 15 }]) {
     session = keys(session, '}');
     expect(session.world.engine.cursor).toEqual(position);
     expect(animationSteps(session.lastEvents)).toContainEqual(expect.objectContaining({ type: 'jump' }));
@@ -57,22 +57,32 @@ it('clearing has one cell; walking into brambles bumps', () => {
   const clearing = keys(start(), '}');
   expect(keys(clearing, 'l').lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'edge' }));
   expect(keys(start(), '4j').lastEvents).toContainEqual(expect.objectContaining({ type: 'bump', reason: 'wall' }));
-  expect(tileGrid(glades.map, gladesLegend)[4]).toEqual(['clearing', ...Array<string>(8).fill('blank')]);
+  expect(tileGrid(glades.map, gladesLegend)[4]).toEqual(['clearing', ...Array<string>(15).fill('blank')]);
 });
-it('lights the lamp only after asking Pilcrow, swapping the entity', () => {
-  expect(keys(start(), '}}').story.flags['glades.lamp']).toBeUndefined();
-  const lit = dismiss(keys(start(), 'G<CR>{{'));
+it('lights both dark lamps only after asking Pilcrow, swapping the entities', () => {
+  expect(dismiss(keys(start(), '}')).story.flags['glades.lamp-top']).toBeUndefined();
+  const low = dismiss(keys(start(), 'G<CR>{'));
+  expect(low.story.flags['glades.lamp-low']).toBe(true);
+  expect(low.story.flags['glades.lamp']).toBeUndefined();
+  const lit = dismiss(keys(low, '2{'));
   expect(lit.story.flags['glades.lamp']).toBe(true);
-  expect(lit.world.entities.find(entity => entity.id === 'lamp-2')?.def.sprite).toBe('lamp-lit');
-  expect(lit.world.entities.filter(entity => entity.id === 'lamp-2')).toHaveLength(1);
-  expect(lit.lastEvents).toContainEqual(expect.objectContaining({ type: 'entity-removed', entity: 'lamp-2' }));
+  for (const id of ['lamp-1', 'lamp-3']) {
+    expect(lit.world.entities.find(entity => entity.id === id)?.def.sprite).toBe('lamp-lit');
+    expect(lit.world.entities.filter(entity => entity.id === id)).toHaveLength(1);
+  }
+  expect(lit.world.hearts).toBe(3);
+});
+it('the blot in the middle glade costs a heart to `{{` but not to `2{`', () => {
+  const low = dismiss(keys(start(), 'G<CR>{'));
+  expect(dismiss(keys(low, '{{')).world.hearts).toBe(2);
+  expect(dismiss(keys(low, '2{')).world.hearts).toBe(3);
 });
 it('a visit to the lamp glade before Pilcrow asks does not use up the lamp trigger', () => {
-  const early = dismiss(keys(start(), '}}{}'));
-  expect(early.story.flags['glades.lamp']).toBeUndefined();
-  const lit = dismiss(keys(early, 'G<CR>{{'));
+  const early = dismiss(keys(start(), '}{}'));
+  expect(early.story.flags['glades.lamp-top']).toBeUndefined();
+  const lit = dismiss(keys(early, 'G<CR>{2{'));
   expect(lit.story.flags['glades.lamp']).toBe(true);
-  expect(dismiss(keys(lit, 'gg<CR>G<CR>')).world.stage).toBe('gates');
+  expect(dismiss(keys(lit, 'gg<CR>G<CR>}')).world.stage).toBe('gates');
 });
 it.each([
   ['G<CR>', {}, 'pilcrow-ask'],
@@ -85,12 +95,12 @@ it.each([
 ] as const)('selects exactly %s in state %j: %s', (route, flags, dialogue) => {
   expect(at(route, flags).queue).toEqual([{ type: 'dialogue', dialogue: `glades.${dialogue}`, index: 0 }]);
 });
-it('learner route clears with three hearts, eight turns and the ending', () => {
-  const talking = keys(start(), '}}}}<CR>{{gg<CR>G<CR>');
-  const clear = controller.reduce(controller.reduce(talking, '<CR>'), '<CR>');
+it('a one-glade-at-a-time route clears in seven turns but loses a heart to the blot', () => {
+  let clear = parseKeys('G<CR>{{{gg<CR>G<CR>}').reduce((session, key) => controller.reduce(dismiss(session), key), start());
+  for (let line = 0; line < 20 && clear.world.status !== 'cleared'; line++) clear = controller.reduce(clear, '<CR>');
   expect(clear.world.status).toBe('cleared');
-  expect(clear.world.hearts).toBe(3);
-  expect(clear.world.turn).toBe(8);
+  expect(clear.world.hearts).toBe(2);
+  expect(clear.world.turn).toBe(7);
   const html = renderToStaticMarkup(createElement(PlayScreen, { session: clear, stage: glades, legend: gladesLegend,
     content, objectives: [], showSource: false, onAdvance: () => {} }));
   expect(html).toContain('Past the ferns, two gates face each other.');
